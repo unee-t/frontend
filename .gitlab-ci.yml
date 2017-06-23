@@ -1,0 +1,9 @@
+cache:
+  paths:
+    - node_modules
+
+node.js:
+  image: node:latest
+  script:
+    - NPM_CONFIG_LOGLEVEL=warn
+    - npm it
