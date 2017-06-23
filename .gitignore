@@ -1,2 +1,5 @@
-node_modules/
-.idea
+/.idea
+/node_modules/
+/.meteor/
+/package-lock.json
+/.vscode/
