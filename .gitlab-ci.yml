@@ -14,8 +14,12 @@ node.js:
     # Install Meteor
     - curl https://install.meteor.com/ | bash
 
+    # Set-up locale for MongoDB
+    - apt-get install locales
+    - locale-gen en_US.UTF-8
+    - localedef -i en_GB -f UTF-8 en_US.UTF-8
+
     # Install dependencies and run tests
     - export NPM_CONFIG_LOGLEVEL="warn"
     - export METEOR_ALLOW_SUPERUSER="true"
-    - export LC_ALL=en_US.UTF-8
     - npm it
