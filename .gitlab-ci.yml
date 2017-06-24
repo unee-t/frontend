@@ -5,13 +5,10 @@ node.js:
       - node_modules
   script:
     # Workaround for https://github.com/docker/hub-feedback/issues/727
-    - ps -p $$ # which shell is this?
-    - bash --version # do we have bash installed?
     - apt-get update
     - apt-get install -y --no-install-recommends bsdtar
     - tar --version # before
-    - export tar="bsdtar --absolute-names"
-    - alias tar=bsdtar
+    - ln -sf `which bsdtar` `which tar` # 🖕 tar
     - tar --version # after
     - bsdtar --version
 
