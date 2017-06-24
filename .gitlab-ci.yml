@@ -4,6 +4,13 @@ node.js:
     paths:
       - node_modules
   script:
+    # Workaround for https://github.com/docker/hub-feedback/issues/727
+    - apt-get install -y --no-install-recommends bsdtar
+    - export tar='bsdtar'
+
+    # Install Meteor
     - curl https://install.meteor.com/ | sh
+
+    # Install dependencies and run tests
     - NPM_CONFIG_LOGLEVEL=warn
     - npm it
