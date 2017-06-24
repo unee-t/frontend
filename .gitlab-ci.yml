@@ -1,9 +1,29 @@
-cache:
-  paths:
-    - node_modules
-
 node.js:
   image: node:latest
+  cache:
+    paths:
+      - node_modules
   script:
-    - NPM_CONFIG_LOGLEVEL=warn
+    # Set up packages registry
+    - apt-get update
+
+    # Set-up locale for MongoDB
+    - apt-get install -y --no-install-recommends apt-utils locales
+    - locale-gen en_US.UTF-8
+    - localedef -i en_GB -f UTF-8 en_US.UTF-8
+
+    # Workaround for bug in OverlayFS
+    # - https://github.com/docker/hub-feedback/issues/727
+    # - https://gitlab.com/gitlab-com/support-forum/issues/1411
+    - apt-get install -y --no-install-recommends bsdtar
+    - ln -sf `which bsdtar` `which tar` # 🖕 tar
+
+    # Install Meteor
+    - curl https://install.meteor.com/ | bash
+
+    # STFU meteor
+    - export METEOR_ALLOW_SUPERUSER="true"
+
+    # Install dependencies and run tests
+    - export NPM_CONFIG_LOGLEVEL="warn"
     - npm it
