@@ -10,10 +10,10 @@ node.js:
     - apt-get update
     - apt-get install -y --no-install-recommends bsdtar
     - tar --version # before
-    - export tar='bsdtar'
+    - export tar="bsdtar --absolute-names"
+    - alias tar=bsdtar
     - tar --version # after
     - bsdtar --version
-    - export tar='bsdtar --absolute-names'
 
     # Install Meteor
     - curl https://install.meteor.com/ | bash
