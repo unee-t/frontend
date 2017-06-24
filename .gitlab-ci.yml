@@ -7,9 +7,11 @@ node.js:
     # Workaround for https://github.com/docker/hub-feedback/issues/727
     - ps -p $$ # which shell is this?
     - bash --version # do we have bash installed?
-    # - apt-get update
-    # - apt-get install -y --no-install-recommends bsdtar
-    # - export tar='bsdtar'
+    - apt-get update
+    - apt-get install -y --no-install-recommends bsdtar
+    - tar --version # before
+    - export tar='bsdtar'
+    - tar --version # after
     - export tar='tar --absolute-names'
 
     # Install Meteor
