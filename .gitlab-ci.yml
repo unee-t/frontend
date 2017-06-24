@@ -5,6 +5,7 @@ node.js:
       - node_modules
   script:
     # Workaround for https://github.com/docker/hub-feedback/issues/727
+    - apt-get update
     - apt-get install -y --no-install-recommends bsdtar
     - export tar='bsdtar'
 
