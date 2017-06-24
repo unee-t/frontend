@@ -15,7 +15,7 @@ node.js:
     - curl https://install.meteor.com/ | bash
 
     # Set-up locale for MongoDB
-    - apt-get install locales
+    - apt-get install -y --no-install-recommends locales
     - locale-gen en_US.UTF-8
     - localedef -i en_GB -f UTF-8 en_US.UTF-8
 
