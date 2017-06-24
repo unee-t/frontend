@@ -4,13 +4,12 @@ node.js:
     paths:
       - node_modules
   script:
-    # Workaround for https://github.com/docker/hub-feedback/issues/727
+    # Workaround for bug in OverlayFS
+    # - https://github.com/docker/hub-feedback/issues/727
+    # - https://gitlab.com/gitlab-com/support-forum/issues/1411
     - apt-get update
     - apt-get install -y --no-install-recommends bsdtar
-    - tar --version # before
     - ln -sf `which bsdtar` `which tar` # 🖕 tar
-    - tar --version # after
-    - bsdtar --version
 
     # Install Meteor
     - curl https://install.meteor.com/ | bash
@@ -18,4 +17,5 @@ node.js:
     # Install dependencies and run tests
     - export NPM_CONFIG_LOGLEVEL="warn"
     - export METEOR_ALLOW_SUPERUSER="true"
+    - export LC_ALL=en_US.UTF-8
     - npm it
