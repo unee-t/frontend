@@ -12,7 +12,8 @@ node.js:
     - tar --version # before
     - export tar='bsdtar'
     - tar --version # after
-    - export tar='tar --absolute-names'
+    - bsdtar --version
+    - export tar='bsdtar --absolute-names'
 
     # Install Meteor
     - curl https://install.meteor.com/ | bash
