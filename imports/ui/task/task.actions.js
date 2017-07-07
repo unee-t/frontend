@@ -12,8 +12,15 @@ export function remove(id) {
 
 export function setChecked(id, isChecked) {
 	return () => {
-		Meteor.call('tasks.setChecked', id, isChecked);
-	};
+		Meteor.call('tasks.setChecked', id, isChecked)
+	}
+}
+
+export function toggleHideCompleted(hideCompleted) {
+	return {
+		type: 'TOGGLE_HIDE_COMPLETED',
+		value: hideCompleted,
+	}
 }
 
 

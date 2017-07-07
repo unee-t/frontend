@@ -1,10 +1,8 @@
-import { combineReducers } from 'redux';
-// import visibilityFilter from '../../../imports/client/reducers/visibilityFilter';
-// import pageSkip from '../../../imports/client/reducers/pageSkip';
+import { combineReducers } from 'redux'
+import hideCompleted from './reducers/hide-completed'
 
 const rootReducer = combineReducers({
-	// visibilityFilter,
-	// pageSkip
-});
+	hideCompleted,
+})
 
-export default rootReducer;
+export default rootReducer

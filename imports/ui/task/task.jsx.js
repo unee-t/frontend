@@ -1,38 +1,14 @@
-import React, { Component, PropTypes } from 'react';
-import classnames from 'classnames';
-// import { Tasks } from '../../api/tasks.js';
-// import { Meteor } from 'meteor/meteor';
-// import { remove, togglePrivate, setChecked } from './task.actions';
-
-// Task component - represents a single todo item
+import React, { Component, PropTypes } from 'react'
+import classnames from 'classnames'
 export default class Task extends Component {
-	// toggleChecked() {
-	//
-	// 	// Set the checked property to the opposite of its current value
-	// 	// Meteor API
-	// 	// Tasks.update(this.props.task._id, {
-	// 	// 	$set: { checked: !this.props.task.checked },
-	// 	// });
-	// 	Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
-	// }
-
-	// deleteThisTask() {
-	// 	// Meteor API
-	// 	// Tasks.remove(this.props.task._id);
-	// 	Meteor.call('tasks.remove', this.props.task._id);
-	// }
-
-	// togglePrivate() {
-	// 	Meteor.call('tasks.setPrivate', this.props.task._id, ! this.props.task.private);
-	// }
 
 	render() {
-		const { task, onRemove, onTogglePrivate, onSetChecked} = this.props;
+		const { task, onRemove, onTogglePrivate, onSetChecked} = this.props
 
 		const taskClassName = classnames({
 			checked: this.props.task.checked,
 			private: this.props.task.private,
-		});
+		})
 
 		return (
 			<li className={taskClassName}>
@@ -57,7 +33,7 @@ export default class Task extends Component {
           <strong>{task.username}</strong>: {task.text}
         </span>
 			</li>
-		);
+		)
 	}
 }
 
@@ -67,5 +43,6 @@ Task.propTypes = {
 	task: PropTypes.object.isRequired,
 	onRemove: PropTypes.func.isRequired,
 	onTogglePrivate: PropTypes.func.isRequired,
-	onSetChecked: PropTypes.func.isRequired
-};
+	onSetChecked: PropTypes.func.isRequired,
+	showPrivateButton: PropTypes.bool
+}

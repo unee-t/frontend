@@ -1,39 +1,29 @@
-import React, { Component, PropTypes } from 'react';
-import ReactDOM from 'react-dom';
-import { createContainer } from 'meteor/react-meteor-data';
-import { Meteor } from 'meteor/meteor';
-import { Tasks } from '../api/tasks.js';
-import actions from './task/task.actions';
-import { connect }  from 'react-redux';
+import React, { Component, PropTypes } from 'react'
+import ReactDOM from 'react-dom'
+import { createContainer } from 'meteor/react-meteor-data'
+import { Meteor } from 'meteor/meteor'
+import { Tasks } from '../api/tasks'
+import actions from './task/task.actions'
+import { connect }  from 'react-redux'
 
-import Task from './task/task.jsx.js';
-import AccountsUIWrapper from './accounts-ui-wrapper.jsx';
+import Task from './task/task.jsx'
+import AccountsUIWrapper from './accounts-ui-wrapper.jsx'
 
 // App component - represents the whole app
 class App extends Component {
 	constructor(props) {
-		super(props);
-
-		this.state = {
-			hideCompleted: false,
-		};
-	}
-
-	toggleHideCompleted() {
-		this.setState({
-			hideCompleted: !this.state.hideCompleted,
-		});
+		super(props)
 	}
 
 	renderTasks() {
-		let filteredTasks = this.props.tasks;
-		const { dispatch } = this.props;
-		if (this.state.hideCompleted) {
-			filteredTasks = filteredTasks.filter(task => !task.checked);
+		let filteredTasks = this.props.tasks
+		const { dispatch } = this.props
+		if (this.props.hideCompleted) {
+			filteredTasks = filteredTasks.filter(task => !task.checked)
 		}
 		return filteredTasks.map((task) => {
 			const currentUserId = this.props.currentUser && this.props.currentUser._id;
-			// const showPrivateButton = task.owner === currentUserId;
+			const showPrivateButton = task.owner === currentUserId
 
 			return (
 				<Task
@@ -41,10 +31,11 @@ class App extends Component {
 					onRemove={id => dispatch(actions.remove(id))}
 					onSetChecked={(id, isChecked) => dispatch(actions.setChecked(id, isChecked))}
 					onTogglePrivate={(id, isPrivate) => dispatch(actions.togglePrivate(id, isPrivate))}
+					showPrivateButton={showPrivateButton}
 					task={task}
 				/>
-			);
-		});
+			)
+		})
 	}
 
 	handleSubmit(event) {
@@ -60,6 +51,7 @@ class App extends Component {
 	}
 
 	render() {
+		const { dispatch } = this.props
 		return (
 			<div className="container">
 				<header>
@@ -69,8 +61,8 @@ class App extends Component {
 						<input
 							type="checkbox"
 							readOnly
-							checked={this.state.hideCompleted}
-							onClick={this.toggleHideCompleted.bind(this)}
+							checked={this.props.hideCompleted}
+							onClick={() => dispatch(actions.toggleHideCompleted(!this.props.hideCompleted))}
 						/>
 						Hide Completed Tasks
 					</label>
@@ -92,7 +84,7 @@ class App extends Component {
 					{this.renderTasks()}
 				</ul>
 			</div>
-		);
+		)
 	}
 }
 
@@ -100,8 +92,8 @@ App.propTypes = {
 	tasks: PropTypes.array.isRequired,
 	incompleteCount: PropTypes.number.isRequired,
 	currentUser: PropTypes.object,
-	// showPrivateButton: React.PropTypes.bool.isRequired,
-};
+	hideCompleted: React.PropTypes.bool.isRequired,
+}
 
 const AppContainer = createContainer(() => {
 	Meteor.subscribe('tasks');
@@ -110,15 +102,14 @@ const AppContainer = createContainer(() => {
 		tasks: Tasks.find({},  { sort: { createdAt: -1 } }).fetch(),
 		incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
 		currentUser: Meteor.user(),
-	};
-}, App);
+	}
+}, App)
 
 function mapStateToProps(state) {
 	return {
-		// visibilityFilter: state.visibilityFilter,
-		// pageSkip: state.pageSkip
-	};
+		hideCompleted: state.hideCompleted,
+	}
 }
 
 
-export default connect(mapStateToProps)(AppContainer);
+export default connect(mapStateToProps)(AppContainer)
