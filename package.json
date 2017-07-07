@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
-    "test": "./node_modules/spacejam/bin/spacejam test --driver-package practicalmeteor:mocha",
+    "test": "npm run lint && npm run proof",
+    "lint": "standard --verbose | snazzy",
+    "proof": "./node_modules/spacejam/bin/spacejam test --driver-package practicalmeteor:mocha",
     "test-local": "meteor test --driver-package practicalmeteor:mocha"
   },
   "dependencies": {
@@ -15,10 +17,13 @@
     "react-addons-pure-render-mixin": "^15.6.0",
     "react-dom": "^15.6.1",
     "spacejam": "^1.6.1",
-    "react-dom": "^15.6.1",
     "react-redux": "^5.0.5",
     "redux": "^3.7.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.2.0"
+  },
+  "devDependencies": {
+    "snazzy": "^7.0.0",
+    "standard": "^10.0.2"
   }
 }
