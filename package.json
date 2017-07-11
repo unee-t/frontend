@@ -23,7 +23,27 @@
     "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
+    "autoprefixer": "^7.1.2",
+    "postcss-modules-extract-imports": "^1.1.0",
+    "postcss-modules-local-by-default": "^1.2.0",
+    "postcss-modules-scope": "^1.1.0",
+    "postcss-nested": "^2.0.2",
     "snazzy": "^7.0.0",
     "standard": "^10.0.2"
+  },
+  "cssModules": {
+    "postcssPlugins": {
+      "postcss-nested": {},
+      "postcss-modules-local-by-default": {},
+      "postcss-modules-extract-imports": {},
+      "postcss-modules-scope": {},
+      "autoprefixer": {
+        "inlineOptions": {
+          "browsers": [
+            "last 2 versions"
+          ]
+        }
+      }
+    }
   }
 }
