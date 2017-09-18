@@ -1,13 +1,16 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import { createContainer } from 'meteor/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
-import { Tasks } from '../api/tasks'
+import { Tasks } from '../../api/tasks'
 import actions from './task/task.actions'
 import { connect } from 'react-redux'
 
 import Task from './task/task.jsx'
-import AccountsUIWrapper from './accounts-ui-wrapper.jsx'
+import AccountsUIWrapper from '../accounts-ui-wrapper.jsx'
+
+import styles from './app.mss'
 
 // App component - represents the whole app
 class App extends Component {
@@ -49,11 +52,11 @@ class App extends Component {
   render () {
     const { dispatch } = this.props
     return (
-      <div className='container'>
-        <header>
-          <h1>Todo List</h1>
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>Todo List</h1>
 
-          <label className='hide-completed'>
+          <label className={styles.hideCompleted}>
             <input
               type='checkbox'
               readOnly
@@ -66,7 +69,7 @@ class App extends Component {
           <AccountsUIWrapper />
 
           { this.props.currentUser
-            ? <form className='new-task' onSubmit={this.handleSubmit.bind(this)} >
+            ? <form className={styles.newTask} onSubmit={this.handleSubmit.bind(this)} >
               <input
                 type='text'
                 ref='textInput'
@@ -76,7 +79,7 @@ class App extends Component {
           }
         </header>
 
-        <ul>
+        <ul className={styles.list}>
           {this.renderTasks()}
         </ul>
       </div>
@@ -88,7 +91,7 @@ App.propTypes = {
   tasks: PropTypes.array.isRequired,
   incompleteCount: PropTypes.number.isRequired,
   currentUser: PropTypes.object,
-  hideCompleted: React.PropTypes.bool.isRequired
+  hideCompleted: PropTypes.bool.isRequired
 }
 
 const AppContainer = createContainer(() => {

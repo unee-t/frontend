@@ -12,28 +12,41 @@
     "babel-runtime": "^6.20.0",
     "bcrypt": "^1.0.2",
     "classnames": "^2.2.5",
+    "history": "^4.6.3",
     "meteor-node-stubs": "~0.2.4",
+    "moment": "^2.18.1",
+    "prop-types": "^15.5.10",
     "react": "^15.6.1",
     "react-addons-pure-render-mixin": "^15.6.0",
     "react-dom": "^15.6.1",
-    "spacejam": "^1.6.1",
     "react-redux": "^5.0.5",
+    "react-router-dom": "^4.1.1",
+    "react-router-redux": "^5.0.0-alpha.6",
     "redux": "^3.7.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.2.0",
-    "react-router-dom": "^4.1.1"
+    "spacejam": "^1.6.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
+
+    "postcss-easy-import": "^2.1.0",
     "postcss-modules-extract-imports": "^1.1.0",
     "postcss-modules-local-by-default": "^1.2.0",
     "postcss-modules-scope": "^1.1.0",
     "postcss-nested": "^1.0.1",
     "snazzy": "^7.0.0",
-    "standard": "^10.0.2"
+    "standard": "^10.0.2",
+    "tachyons": "^4.7.0"
   },
   "cssModules": {
+    "cssClassNamingConvention": {
+      "replacements": [
+        "_client__main__"
+      ]
+    },
     "postcssPlugins": {
+      "postcss-easy-import": {},
       "postcss-nested": {},
       "postcss-modules-local-by-default": {},
       "postcss-modules-extract-imports": {},

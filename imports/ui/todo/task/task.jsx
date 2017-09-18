@@ -1,18 +1,21 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import classnames from 'classnames'
+import styles from '../app.mss'
 
 export default class Task extends Component {
   render () {
     const { task, onRemove, onTogglePrivate, onSetChecked } = this.props
 
     const taskClassName = classnames({
-      checked: this.props.task.checked,
-      private: this.props.task.private
+      [styles.checked]: this.props.task.checked,
+      [styles.private]: this.props.task.private,
+      [styles.listItem]: true
     })
 
     return (
       <li className={taskClassName}>
-        <button className='delete' onClick={() => onRemove(task._id)}>
+        <button className={styles.delete} onClick={() => onRemove(task._id)}>
           &times;
         </button>
 
@@ -25,12 +28,12 @@ export default class Task extends Component {
 
         { this.props.showPrivateButton
           ? (
-            <button className='toggle-private' onClick={() => onTogglePrivate(task._id, !task.private)}>
+            <button className={styles.togglePrivate} onClick={() => onTogglePrivate(task._id, !task.private)}>
               { task.private ? 'Private' : 'Public' }
             </button>
           ) : ''}
 
-        <span className='text'>
+        <span className={styles.text}>
           <strong>{task.username}</strong>: {task.text}
         </span>
       </li>
