@@ -15,8 +15,9 @@ if (Meteor.isServer) {
   Meteor.publish('claims', function () {
     if (!this.userId) return
     const currUser = Meteor.users.findOne({_id: this.userId})
+    const dummyClaimId = 21
     // Fetching simple data
-    callAPI('get', '/rest/bug/21', {token: currUser.bugzillaCreds.token})
+    callAPI('get', `/rest/bug/${dummyClaimId}`, {token: currUser.bugzillaCreds.token})
       .then(data => {
         this.added('claims', '1', data.bugs[0])
         this.ready()
