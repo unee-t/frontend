@@ -44,11 +44,13 @@
       outline: 0;
     }
   }
-} .list {
-    margin: 0;
-    padding: 0;
-    background: white;
-  }
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  background: white;
+}
 
 .delete {
   float: right;
