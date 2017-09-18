@@ -7,7 +7,7 @@ import SignupPage from './signup/signup.jsx'
 
 import UnderConstruction from './under-construction.jsx'
 
-export const App = () => (
+export default App = () => (
   <div className='sans-serif'>
     <Route exact path='/' component={LoginPage} />
     <Route exact path='/signup' component={SignupPage} />
