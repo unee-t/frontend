@@ -14,3 +14,7 @@ npm install
 ```shell
 npm start
 ```
+
+# Backend
+
+	export BUGZILLA_ADMIN_KEY=I6zRu7bPak687rcIBCkNbFKblfRXPn2X3xgEFz99
