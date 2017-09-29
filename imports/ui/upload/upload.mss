@@ -1,0 +1,1 @@
+.progress-bar{width:0px;height:20px;background-color:#6bd450;margin:10px 0 5px;text-align:center;border-radius:5px;}
