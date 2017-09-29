@@ -5,9 +5,9 @@ import { connect } from 'react-redux'
 
 import InputRow from '../components/input-row'
 import PasswordInput from '../components/password-input'
-import { submitSignupInfo } from './signup.actions'
+import actions from './signup.actions'
 
-class SignupPage extends Component {
+export class SignupPage extends Component {
   constructor () {
     super(...arguments)
     this.info = {}
@@ -16,11 +16,15 @@ class SignupPage extends Component {
     this.info[memName] = el
   }
   handleSubmit (event) {
+    // Stopping default form behavior
     event.preventDefault()
+    // Copying all the input values and trimming them
+    console.log('this.info', this.info)
     const signupInfo = Object.keys(this.info).reduce((all, curr) => {
       all[curr] = this.info[curr].value.trim()
       return all
     }, {})
+    const { submitSignupInfo } = actions
     this.props.dispatch(submitSignupInfo(signupInfo))
   }
   render () {
