@@ -2,17 +2,18 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { submitCredentials } from './login.actions'
+import actions from './login.actions'
 import PropTypes from 'prop-types'
 
 import InputRow from '../components/input-row'
 import PasswordInput from '../components/password-input'
 
-class LoginPage extends Component {
+export class LoginPage extends Component {
   handleSubmit (event) {
     event.preventDefault()
     const email = this.emailInput.value.trim()
     const pass = this.passInput.value.trim()
+    const { submitCredentials } = actions
     this.props.dispatch(submitCredentials(email, pass))
   }
   // Handles setting members on the component as "standard" doesn't allow for assignment as return values in handlers
