@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor'
-import { push } from 'react-router-redux'
+import routerRedux from 'react-router-redux'
 
 export const LOGIN_ERROR = 'login_error'
 export const LOGIN_PROCESS = 'login_process'
 
 export function submitCredentials (email, password) {
+  const { push } = routerRedux
   return (dispatch) => {
     dispatch({
       type: LOGIN_PROCESS
