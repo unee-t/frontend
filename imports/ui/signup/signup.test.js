@@ -29,9 +29,9 @@ if (Meteor.isClient) {
         const signup = shallow(<SignupPage dispatch={dispatchStub} />)
         const formData = {
           fullName: 'test testminson',
-          phoneNumber: '99991929',
+          phoneNumber: '49991929',
           country: 'testolandia',
-          emailAddress: 'tst@testsonian.tes',
+          emailAddress: 'tst@example.com',
           password: '5up34C0mp1cat3d'
         }
         // Filling out form data

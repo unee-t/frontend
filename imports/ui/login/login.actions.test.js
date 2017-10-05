@@ -10,7 +10,7 @@ if (Meteor.isClient) {
   describe('Login page actions', () => {
     describe('submitCredentials', () => {
       const fakes = {
-        email: 'ytb@asdk.com',
+        email: 'ytb@example.com',
         password: '553SA434dsd#@sd!@#'
       }
 

@@ -11,9 +11,9 @@ if (Meteor.isClient) {
   describe('Signup page actions', () => {
     describe('submitSignupInfo', () => {
       const makeFakeInfo = () => ({
-        emailAddress: 'ytb@asdk.com',
+        emailAddress: 'ytb@example.org',
         password: '553SA434dsd#@sd!@#',
-        phoneNumber: '91288292',
+        phoneNumber: '31288292',
         fullName: 'Kanye West',
         country: 'Singapore'
       })

@@ -15,7 +15,6 @@ export function submitSignupInfo (info) {
       }
     }, (err) => {
       if (err) return console.error(err)
-      console.log('bla')
       dispatch(push('/unit/new'))
     })
   }
