@@ -24,20 +24,22 @@
     "react-router-redux": "^5.0.0-alpha.6",
     "redux": "^3.7.1",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.2.0",
-    "spacejam": "^1.6.1"
+    "redux-thunk": "^2.2.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
-
+    "enzyme": "^2.9.1",
     "postcss-easy-import": "^2.1.0",
     "postcss-modules-extract-imports": "^1.1.0",
     "postcss-modules-local-by-default": "^1.2.0",
     "postcss-modules-scope": "^1.1.0",
     "postcss-nested": "^1.0.1",
+    "react-addons-test-utils": "^15.6.0",
+    "react-test-renderer": "^15.6.1",
     "snazzy": "^7.0.0",
     "standard": "^10.0.2",
-    "tachyons": "^4.7.0"
+    "tachyons": "^4.7.0",
+    "spacejam": "^1.6.1"
   },
   "cssModules": {
     "cssClassNamingConvention": {
