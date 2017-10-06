@@ -41,5 +41,38 @@ if (Meteor.isClient) {
         expect(row.find('input').props().type).to.equal('number')
       })
     })
+
+    describe('children', () => {
+      it('should render a standard input if no children are specified', () => {
+        const row = shallow(<InputRow label='bla' identifier='bla1' />)
+        expect(row.find('input')).to.have.lengthOf(1)
+      })
+      it('should render children instead of the input if they are specified', () => {
+        const row = shallow(
+          <InputRow label='bla' identifier='bla1'>
+            <select>
+              <option>1</option>
+              <option>2</option>
+            </select>
+          </InputRow>
+        )
+        expect(row.find('input')).to.have.lengthOf(0)
+        expect(row.find('select')).to.have.lengthOf(1)
+      })
+      it('should assign the props to the children object', () => {
+        const row = shallow(
+          <InputRow label='bla' identifier='bla1' inpRef={() => {}}>
+            <select>
+              <option>1</option>
+            </select>
+          </InputRow>
+        )
+        const child = row.find('select')
+        expect(child.props().className).to.exist()
+        expect(child.props().name).to.exist()
+        expect(child.props().id).to.exist()
+        // "Ref" can't be tested with enzyme for some reason
+      })
+    })
   })
 }
