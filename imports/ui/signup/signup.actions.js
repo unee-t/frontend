@@ -1,8 +1,9 @@
 // import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
-import { push } from 'react-router-redux'
+import routerRedux from 'react-router-redux'
 
 export function submitSignupInfo (info) {
+  const { push } = routerRedux
   return (dispatch) => {
     Accounts.createUser({
       email: info.emailAddress,
