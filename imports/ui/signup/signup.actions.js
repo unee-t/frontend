@@ -1,4 +1,3 @@
-// import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import routerRedux from 'react-router-redux'
 
