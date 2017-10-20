@@ -37,9 +37,8 @@
     "react-addons-test-utils": "^15.6.0",
     "react-test-renderer": "^15.6.1",
     "snazzy": "^7.0.0",
-    "standard": "^10.0.2",
-    "tachyons": "^4.7.0",
-    "spacejam": "^1.6.1"
+    "spacejam": "^1.6.1",
+    "standard": "^10.0.2"
   },
   "cssModules": {
     "cssClassNamingConvention": {
