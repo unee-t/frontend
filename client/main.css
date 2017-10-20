@@ -1,1 +1,4 @@
-@import 'tachyons/src/tachyons.css';
+/* Tachyons fixes and overrides */
+.b--transparent {
+  border-color: transparent;
+}
