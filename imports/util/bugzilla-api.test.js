@@ -74,7 +74,7 @@ if (Meteor.isServer) {
         HTTP.call.yields(new Error('dummy'))
 
         try {
-          const result = await callAPI('get', '/dummy', {})
+          await callAPI('get', '/dummy', {})
 
           done('The error should have been caught')
         } catch (e) {
