@@ -1,8 +1,10 @@
 import { Accounts } from 'meteor/accounts-base'
 import { Meteor } from 'meteor/meteor'
-import { callAPI } from '../../util/bugzilla-api'
+import bugzillaApi from '../../util/bugzilla-api'
 
-Accounts.onCreateUser((options, user) => {
+// Exported for testing purposes
+export function onCreateUser (options, user) {
+  const { callAPI } = bugzillaApi
   const password = 'a' + Math.floor(0xffffff * Math.random()) + '!'
   const { email } = options
   console.log('creating user for', email)
@@ -33,4 +35,7 @@ Accounts.onCreateUser((options, user) => {
   customizedUser.profile = options.profile
   console.log(`User for ${email} was created successfully`)
   return customizedUser
-})
+}
+if (Meteor.isServer) {
+  Accounts.onCreateUser(onCreateUser)
+}
