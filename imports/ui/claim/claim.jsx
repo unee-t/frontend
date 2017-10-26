@@ -108,11 +108,12 @@ Claim.propTypes = {
   claim: PropTypes.object
 }
 
-const ClaimContainer = createContainer(() => {
-  Meteor.subscribe('claims')
+const ClaimContainer = createContainer(props => {
+  const { claimId } = props.match.params
+  Meteor.subscribe('claim', claimId)
 
   return {
-    claim: Claims.findOne({})
+    claim: Claims.findOne(claimId)
   }
 }, Claim)
 
