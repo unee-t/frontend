@@ -1,7 +1,6 @@
 /* eslint-env mocha */
 
 import { Meteor } from 'meteor/meteor'
-// import { callAPI } from '../../util/bugzilla-api'
 import bugzillaApi from '../../util/bugzilla-api'
 import { sinon } from 'meteor/practicalmeteor:sinon'
 import { expect } from 'meteor/practicalmeteor:chai'
