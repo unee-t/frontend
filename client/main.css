@@ -2,3 +2,18 @@
 .b--transparent {
   border-color: transparent;
 }
+
+/* Functional CSS additions */
+.flex{
+  display: flex;
+}
+
+.flex-grow {
+  flex: 1;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

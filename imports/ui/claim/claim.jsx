@@ -5,13 +5,25 @@ import { createContainer } from 'meteor/react-meteor-data'
 import moment from 'moment'
 import { Meteor } from 'meteor/meteor'
 import Claims from '../../api/claims'
+import AppBar from 'material-ui/AppBar'
+import Subheader from 'material-ui/Subheader'
+import IconButton from 'material-ui/IconButton'
+import SvgIcon from 'material-ui/SvgIcon'
+import FontIcon from 'material-ui/FontIcon'
 
 import styles from './claim.mss'
+import { logoIconStyle, logoButtonStyle, subheaderStyle, titleStyle, moreVertIconColor } from './claim.mui-styles'
 
 // const dateFormat = 'DD MMM YYYY'
 function formatDate (date) {
   return moment(date).format('DD MMM YYYY')
 }
+
+const UneeTIcon = (props) => (
+  <SvgIcon {...props} viewBox='3 3 39 39'>
+    <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
+  </SvgIcon>
+)
 
 class Claim extends Component {
   render () {
@@ -19,7 +31,7 @@ class Claim extends Component {
     if (!claim) return <h1>Loading...</h1>
 
     return (
-      <div className={styles.container}>
+      <div>
         {this.renderTitle(claim)}
         {this.renderStatusLine(claim)}
         {this.renderDependenciesLine(claim)}
@@ -28,15 +40,25 @@ class Claim extends Component {
     )
   }
 
-  renderTitle ({ id, summary, creation_time }) {
+  renderTitle ({ summary, product }) {
     return (
-      <div className={styles.section}>
-        <div>{id}</div>
-        <div className={styles.itemFlow} title={summary}>{summary}</div>
-        <div>
-          <button className={styles.editButton}><i className='icon icon-edit' /></button>
-        </div>
-        <div>{formatDate(creation_time)}</div>
+      <div>
+        <AppBar title={product}
+          titleStyle={titleStyle}
+          iconElementLeft={
+            <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
+              <UneeTIcon />
+            </IconButton>
+          }
+        />
+        <Subheader style={subheaderStyle} className='flex'>
+          <div className='flex-grow ellipsis' title={summary}>{summary}</div>
+          <div>
+            <IconButton>
+              <FontIcon className='material-icons' color={moreVertIconColor}>more_vert</FontIcon>
+            </IconButton>
+          </div>
+        </Subheader>
       </div>
     )
   }
@@ -97,9 +119,7 @@ class Claim extends Component {
 
   renderBody () {
     return (
-      <div className={styles.section}>
-        <h1>asdasdsad</h1>
-      </div>
+      <div className={styles.section} />
     )
   }
 }
