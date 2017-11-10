@@ -1,6 +1,14 @@
-/* Tachyons fixes and overrides */
+/* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;
+}
+
+.f7 {
+  font-size: .75rem;
+}
+
+.lh3 {
+  line-height: 4rem;
 }
 
 /* Functional CSS additions */
@@ -12,8 +20,20 @@
   flex: 1;
 }
 
+.flex-column {
+  flex-direction: column;
+}
+
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.full-height {
+  height: 100vh;
+}
+
+.roboto {
+  font-family: Roboto, sans-serif;
 }

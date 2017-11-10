@@ -5,6 +5,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import moment from 'moment'
 import { Meteor } from 'meteor/meteor'
 import Claims from '../../api/claims'
+import Comments from '../../api/comments'
 import AppBar from 'material-ui/AppBar'
 import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
@@ -14,11 +15,6 @@ import FontIcon from 'material-ui/FontIcon'
 import styles from './claim.mss'
 import { logoIconStyle, logoButtonStyle, subheaderStyle, titleStyle, moreVertIconColor } from './claim.mui-styles'
 
-// const dateFormat = 'DD MMM YYYY'
-function formatDate (date) {
-  return moment(date).format('DD MMM YYYY')
-}
-
 const UneeTIcon = (props) => (
   <SvgIcon {...props} viewBox='3 3 39 39'>
     <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
@@ -27,14 +23,14 @@ const UneeTIcon = (props) => (
 
 class Claim extends Component {
   render () {
-    const { claim } = this.props
-    if (!claim) return <h1>Loading...</h1>
+    const { claim, comments, loadingClaim, claimError } = this.props
+    if (claimError) return <h1>{claimError.error.message}</h1>
+    if (loadingClaim) return <h1>Loading...</h1>
 
     return (
-      <div>
+      <div className='flex flex-column full-height roboto'>
         {this.renderTitle(claim)}
-        {this.renderStatusLine(claim)}
-        {this.renderDependenciesLine(claim)}
+        {this.renderMessages(comments)}
         {this.renderBody(claim)}
       </div>
     )
@@ -63,56 +59,23 @@ class Claim extends Component {
     )
   }
 
-  renderStatusLine ({ status, last_change_time }) {
+  renderMessages (comments) {
     return (
-      <div className={styles.section}>
-        <div>
-          <select name='status'>
-            <option value={status}>{status}</option>
-          </select>
-        </div>
-        <div className={styles.itemFlow} title={formatDate(last_change_time)}>
-          Since {formatDate(last_change_time)}
-        </div>
-        <div>
-          <button>M</button>
-        </div>
-        <div>
-          <button>H</button>
-        </div>
-      </div>
-    )
-  }
-
-  renderDependenciesLine ({ depends_on, blocks }) {
-    return (
-      <div className={styles.section}>
-        <div className={[styles.dependenciesDetails, styles.itemFlow].join(' ')}>
-          <div className={styles.labels}>
-            <div>Depends on:</div>
-            <div>Blocks:</div>
+      <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')}>
+        {comments.map(({id, creator, text, creation_time}) => (
+          <div className='mv2' key={id}>
+            <div className={[styles.messageAvatar, 'dib bg-gray v-btm br-100 tc white'].join(' ')}>
+              {creator.slice(0, 1).toUpperCase()}
+            </div>
+            <div className={[styles.messageBox, 'cf bg-white br3 pt2 pl3 pr2 ml2 dib'].join(' ')}>
+              <div className={[styles.messageCreator, 'f6'].join(' ')}>{creator}</div>
+              <span className='f5 mr3'>{text}</span>
+              <div className={[styles.messageTime, 'fr', 'f7'].join(' ')}>
+                {moment(creation_time).format('hh:mma')}
+              </div>
+            </div>
           </div>
-          <div>
-            <div>{depends_on.length ? depends_on.join(', ') : ' -'}</div>
-            <div>{blocks.length ? depends_on.join(', ') : ' -'}</div>
-          </div>
-        </div>
-        <div>
-          <div>
-            <button><i className='icon icon-edit' /></button>
-          </div>
-          <div>
-            <button className={styles.editButton}><i className='icon icon-edit' /></button>
-          </div>
-        </div>
-        <div className={styles.dependencyTreeAccess}>
-          <div className={styles.label}>
-            Dependency<br />trees
-          </div>
-          <div>
-            <button className={styles.treeViewerButton}><i className='icon icon-tree' /></button>
-          </div>
-        </div>
+        ))}
       </div>
     )
   }
@@ -125,15 +88,35 @@ class Claim extends Component {
 }
 
 Claim.propTypes = {
-  claim: PropTypes.object
+  loadingClaim: PropTypes.bool,
+  claimError: PropTypes.object,
+  claim: PropTypes.object,
+  loadingComments: PropTypes.bool,
+  commentsError: PropTypes.object,
+  comments: PropTypes.array
 }
 
+let claimError, commentsError
 const ClaimContainer = createContainer(props => {
   const { claimId } = props.match.params
-  Meteor.subscribe('claim', claimId)
+  const claimHandle = Meteor.subscribe('claim', claimId, {
+    onStop: (error) => {
+      claimError = error
+    }
+  })
+  const commentsHandle = Meteor.subscribe('claimComments', claimId, {
+    onStop: (error) => {
+      commentsError = error
+    }
+  })
 
   return {
-    claim: Claims.findOne(claimId)
+    loadingClaim: !claimHandle.ready(),
+    claimError,
+    claim: Claims.findOne(claimId),
+    loadingComments: !commentsHandle.ready(),
+    commentsError,
+    comments: Comments.find({bug_id: parseInt(claimId)}).fetch()
   }
 }, Claim)
 
