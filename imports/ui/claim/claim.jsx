@@ -96,6 +96,7 @@ Claim.propTypes = {
   comments: PropTypes.array
 }
 
+
 let claimError, commentsError
 const ClaimContainer = createContainer(props => {
   const { claimId } = props.match.params

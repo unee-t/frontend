@@ -7,6 +7,8 @@ node_js:
 before_install:
   - curl https://install.meteor.com | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
 
 cache:
   directories:
@@ -17,4 +19,9 @@ before_script:
 
 script:
   - npm t
+  - meteor build $HOME
+  - aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${COMMIT}.tar.gz
 
+env:
+  global:
+  - COMMIT=${TRAVIS_COMMIT::7}
