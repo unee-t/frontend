@@ -17,9 +17,10 @@ export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync
       innerResolve(result.data)
     }
   }
-  const httpCall = HTTP.call(method, base + endpoint, options, callback)
-  return isSync ? httpCall : new Promise((resolve, reject) => {
+  const returnedPromise = !isSync && new Promise((resolve, reject) => {
     innerResolve = resolve
     innerReject = reject
   })
+  const httpCall = HTTP.call(method, base + endpoint, options, callback)
+  return returnedPromise || httpCall
 }
