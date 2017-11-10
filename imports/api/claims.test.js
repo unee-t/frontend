@@ -1,6 +1,5 @@
 /* eslint-env mocha */
 
-import { sinon } from 'meteor/practicalmeteor:sinon'
 import { expect } from 'meteor/practicalmeteor:chai'
 import { Meteor } from 'meteor/meteor'
 import { factoryOptions } from './claims'
