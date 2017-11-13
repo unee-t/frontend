@@ -24,7 +24,7 @@ export default (options, isMulti) => function (resourceId) {
   const currUser = Meteor.users.findOne({_id: this.userId})
 
   // Fetching the data from bugzilla using the uriTemplate given by the using resource implementation
-  return callAPI('get', uriTemplate(resourceId), {token: currUser.bugzillaCreds.token})
+  callAPI('get', uriTemplate(resourceId), {token: currUser.bugzillaCreds.token})
     .then(data => {
       // Using the dataResolver callback to focus on the relevant data from the response object
       const payload = dataResolver(data, resourceId)
