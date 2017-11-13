@@ -13,7 +13,6 @@ import SvgIcon from 'material-ui/SvgIcon'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-import ContentSend from 'material-ui/svg-icons/content/send'
 import Preloader from '../preloader/preloader'
 import colors from '../../mui-theme/colors'
 
@@ -103,7 +102,7 @@ class Claim extends Component {
         <input type='text' placeholder='Type your response'
           className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib flex-grow outline-0' />
         <div className='mh2'>
-          <FloatingActionButton mini={true} zDepth={0} iconStyle={sendIconStyle}>
+          <FloatingActionButton mini zDepth={0} iconStyle={sendIconStyle}>
             <FontIcon className='material-icons'>send</FontIcon>
           </FloatingActionButton>
         </div>
@@ -120,7 +119,6 @@ Claim.propTypes = {
   commentsError: PropTypes.object,
   comments: PropTypes.array
 }
-
 
 let claimError, commentsError
 const ClaimContainer = createContainer(props => {
