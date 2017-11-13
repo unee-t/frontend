@@ -37,3 +37,8 @@
   color: #a4a4a4;
   line-height: 1.5rem;
 }
+
+.inputRow {
+  background-color: #ddd;
+  height: 3rem;
+}
