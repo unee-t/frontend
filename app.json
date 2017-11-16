@@ -4,7 +4,7 @@
   "scripts": {
   },
   "env": {
-    "ROOT_URL": "https://unee-t-pr-16.herokuapp.com"
+    "ROOT_URL": "https://unee-t.herokuapp.com"
   },
   "formation": {
   },
