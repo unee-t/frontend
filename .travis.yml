@@ -20,7 +20,7 @@ before_script:
 script:
   - npm t
   - meteor build $HOME
-  - aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${COMMIT}.tar.gz
+  - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${COMMIT}.tar.gz; fi'
 
 env:
   global:
