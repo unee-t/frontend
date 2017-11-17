@@ -8,10 +8,10 @@ import publishFactory from './rest-resource-factory'
 
 if (Meteor.isServer) {
   describe('RestResourceFactory publication base', () => {
-    it('should return a function', () => {
+    it('should return an object with a publicFunc', () => {
       const func = publishFactory({}, false)
 
-      expect(func).to.be.a('function')
+      expect(func.publishFunc).to.be.a('function')
     })
 
     describe('generated publication', () => {
@@ -34,7 +34,7 @@ if (Meteor.isServer) {
         usersFindOneStub.restore()
       })
       it('should return use the "ready" and "error" triggers if the user is not authenticated, and not try to fetch the user', () => {
-        const publishFunc = publishFactory({}, false)
+        const publishFunc = publishFactory({}, false).publishFunc
         const ready = sinon.spy()
         const error = sinon.spy()
         publishFunc.call({ userId: null, ready, error }, 11)
@@ -49,7 +49,7 @@ if (Meteor.isServer) {
         const userId = 2848
         const publishFunc = publishFactory({
           uriTemplate: (id) => `/bla/${id}/blabla`
-        }, false)
+        }, false).publishFunc
 
         publishFunc.call({ userId }, resourceId)
 
@@ -66,7 +66,7 @@ if (Meteor.isServer) {
           uriTemplate: (id) => `/resource/${id}`,
           collectionName: 'apples',
           dataResolver: (data) => data.bla.things[3]
-        }, false)
+        }, false).publishFunc
         const fakeApple = { description: 'Fuji', id: 111 }
         const fakePayload = {
           bla: {
@@ -91,7 +91,7 @@ if (Meteor.isServer) {
           uriTemplate: (id) => `/resource/${id}`,
           collectionName: 'oranges',
           dataResolver: (data) => data.oranges.list
-        }, true)
+        }, true).publishFunc
         const oranges = [
           { id: 111, size: 3 },
           { id: 222, size: 7 },
@@ -120,7 +120,7 @@ if (Meteor.isServer) {
         }
         const publishFunc = publishFactory({
           uriTemplate: (id) => `/resource/${id}`
-        }, false)
+        }, false).publishFunc
 
         innerReject()
         publishFunc.call(context, 444)
@@ -131,6 +131,10 @@ if (Meteor.isServer) {
           done()
         })
       })
+    })
+
+    describe('mutation handlers', () => {
+      // TODO: complete testing
     })
   })
 }
