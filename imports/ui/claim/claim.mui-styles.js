@@ -11,7 +11,8 @@ export const logoButtonStyle = {
 export const subheaderStyle = {
   fontSize: '18px',
   fontFamily: 'Roboto, sans-serif',
-  color: '#1187AE'
+  color: '#1187AE',
+  height: 48
 }
 export const titleStyle = {
   fontSize: '21px',
@@ -34,7 +35,6 @@ export const attachmentButtonStyle = {
 export const sendIconStyle = {
   height: 34,
   lineHeight: '34px',
-  verticalAlign: 'middle',
   width: 34,
   fontSize: 20
 }
