@@ -31,7 +31,6 @@ Accounts.onEnrollmentLink((token, done) => {
     done()
     Tracker.autorun((cmp) => {
       const user = Meteor.user()
-
       if (user) {
         cmp.stop()
         if (user.profile.invitedToClaim) {
