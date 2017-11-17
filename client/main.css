@@ -27,6 +27,10 @@
   background-color: transparent;
 }
 
+.bg-rad-green {
+  background-color: #C9FB65;
+}
+
 .outline-0 {
   outline: 0;
 }
