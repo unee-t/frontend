@@ -18,7 +18,7 @@
     },
     "BUGZILLA_ADMIN_KEY": {
       "required": true
-    },
+    }
   },
   "formation": {
   },
