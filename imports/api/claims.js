@@ -13,7 +13,7 @@ export const factoryOptions = {
 }
 
 if (Meteor.isServer) {
-  Meteor.publish('claim', publicationFactory(factoryOptions, false))
+  Meteor.publish('claim', publicationFactory(factoryOptions, false).publishFunc)
 }
 let Claims
 if (Meteor.isClient) {
