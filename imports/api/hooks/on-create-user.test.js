@@ -19,7 +19,7 @@ if (Meteor.isServer) {
     it('should call "callAPI" with "POST /rest/user" and the right arguments and throw an error if it throws', () => {
       callAPIStub.throws()
 
-      const boundFunc = onCreateUser.bind(null, { email: fakeEmail }, {})
+      const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
 
       expect(boundFunc).to.throw()
       expect(callAPIStub).to.have.been.calledWith('post', '/rest/user', sinon.match({ email: fakeEmail, password: sinon.match.string }), true, true)
@@ -28,7 +28,7 @@ if (Meteor.isServer) {
       callAPIStub.onFirstCall().returns({ data: {} })
       callAPIStub.onSecondCall().throws()
 
-      const boundFunc = onCreateUser.bind(null, { email: fakeEmail }, {})
+      const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
 
       expect(boundFunc).to.throw()
       expect(callAPIStub).to.have.been.calledTwice()
@@ -48,7 +48,7 @@ if (Meteor.isServer) {
         profile: fakeProfile
       }
       callAPIStub.onFirstCall().returns({ data: { id: fakeId } })
-      callAPIStub.onSecondCall().returns({ data: { token: fakeToken } })
+      callAPIStub.onSecondCall().returns({ data: { token: fakeToken, id: fakeId } })
 
       const customizedUser = onCreateUser(fakeOptions, fakeUser)
 
@@ -74,6 +74,34 @@ if (Meteor.isServer) {
       //   },
       //   profile: fakeProfile
       // })
+    })
+
+    describe('Existing BZ user handling', () => {
+      it('should skip creating a new user if bzLogin and bzPass are provided', () => {
+        callAPIStub.throws()
+        const bzLogin = 'bla'
+        const bzPass = 'bla bla'
+
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+
+        expect(boundFunc).to.throw()
+        expect(callAPIStub).to.have.been.calledOnce()
+        expect(callAPIStub).to.have.been.calledWith('get', '/rest/login', sinon.match({ login: fakeEmail, password: sinon.match.string }), false, true)
+      })
+
+      it('should not store the password on the bugzillaCreds object if bzLogin and bzPass are provided', () => {
+        const bzLogin = 'bla'
+        const bzPass = 'bla bla'
+        const fakeId = 1337
+        const fakeToken = '453dDFs4SDsds9G'
+        callAPIStub.returns({ data: { token: fakeToken, id: fakeId } })
+
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+        const customizedUser = boundFunc()
+
+        expect(customizedUser.bugzillaCreds.password).to.not.be.ok()
+        expect(customizedUser.profile).to.not.have.keys('bzLogin', 'bzPass')
+      })
     })
   })
 }
