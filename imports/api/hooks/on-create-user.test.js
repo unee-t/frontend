@@ -19,7 +19,7 @@ if (Meteor.isServer) {
     it('should call "callAPI" with "POST /rest/user" and the right arguments and throw an error if it throws', () => {
       callAPIStub.throws()
 
-      const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: {}}, {})
+      const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
 
       expect(boundFunc).to.throw()
       expect(callAPIStub).to.have.been.calledWith('post', '/rest/user', sinon.match({ email: fakeEmail, password: sinon.match.string }), true, true)
@@ -28,7 +28,7 @@ if (Meteor.isServer) {
       callAPIStub.onFirstCall().returns({ data: {} })
       callAPIStub.onSecondCall().throws()
 
-      const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: {}}, {})
+      const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
 
       expect(boundFunc).to.throw()
       expect(callAPIStub).to.have.been.calledTwice()
@@ -82,7 +82,7 @@ if (Meteor.isServer) {
         const bzLogin = 'bla'
         const bzPass = 'bla bla'
 
-        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
 
         expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledOnce()
@@ -96,7 +96,7 @@ if (Meteor.isServer) {
         const fakeToken = '453dDFs4SDsds9G'
         callAPIStub.returns({ data: { token: fakeToken, id: fakeId } })
 
-        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
         const customizedUser = boundFunc()
 
         expect(customizedUser.bugzillaCreds.password).to.not.be.ok()
