@@ -15,7 +15,9 @@ if (Meteor.isClient) {
         password: '553SA434dsd#@sd!@#',
         phoneNumber: '31288292',
         fullName: 'Kanye West',
-        country: 'Singapore'
+        country: 'Singapore',
+        bzLogin: 'bla',
+        bzPass: 'superSecret'
       })
 
       it('should return a thunk action function', () => {
@@ -46,7 +48,9 @@ if (Meteor.isClient) {
             profile: {
               phone: info.phoneNumber,
               name: info.fullName,
-              country: info.country
+              country: info.country,
+              bzLogin: info.bzLogin,
+              bzPass: info.bzPass
             }
           })
         })

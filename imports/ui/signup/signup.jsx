@@ -11,6 +11,9 @@ export class SignupPage extends Component {
   constructor () {
     super(...arguments)
     this.info = {}
+    this.state = {
+      existingBz: false
+    }
   }
   setMember (memName, el) {
     this.info[memName] = el
@@ -20,11 +23,18 @@ export class SignupPage extends Component {
     event.preventDefault()
     // Copying all the input values and trimming them
     const signupInfo = Object.keys(this.info).reduce((all, curr) => {
-      all[curr] = this.info[curr].value.trim()
+      if (this.info[curr]) {
+        all[curr] = this.info[curr].value.trim()
+      }
       return all
     }, {})
     const { submitSignupInfo } = actions
     this.props.dispatch(submitSignupInfo(signupInfo))
+  }
+  toggleExistingBz () {
+    this.setState({
+      existingBz: !this.state.existingBz
+    })
   }
   render () {
     const inputs = [
@@ -57,6 +67,16 @@ export class SignupPage extends Component {
           <h3 className='f4 fw3 ph0 mh0 tc'>Sign up</h3>
           <form className='measure center' onSubmit={this.handleSubmit.bind(this)}>
             <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
+              <label className='pa0 ma0 lh-copy f6 pointer'>
+                <input type='checkbox' checked={this.state.existingBz} onChange={this.toggleExistingBz.bind(this)} ref='showBZ' /> Existing BZ user?
+              </label>
+              {this.state.existingBz ? (
+                <div className='ph3 b--black b--solid'>
+                  <h4>Bugzilla credentials</h4>
+                  <InputRow label='BZ login name' identifier='bzLogin' inpRef={el => this.setMember('bzLogin', el)} />
+                  <InputRow label='BZ password' identifier='bzPass' inptype='password' inpRef={el => this.setMember('bzPass', el)} />
+                </div>
+              ) : ''}
               {inputs.map(({label, identifier, placeholder, type}, i) => (
                 <InputRow key={i} label={label} identifier={identifier} placeholder={placeholder} inpType={type} inpRef={el => this.setMember(identifier, el)} />
                 ))}

@@ -5,24 +5,30 @@ import bugzillaApi from '../../util/bugzilla-api'
 // Exported for testing purposes
 export function onCreateUser (options, user) {
   const { callAPI } = bugzillaApi
-  const password = 'a' + Math.floor(0xffffff * Math.random()) + '!'
+  const {bzLogin, bzPass} = options.profile
+  delete options.profile.bzLogin
+  delete options.profile.bzPass
+
+  // Creating a random bz pass if one was not provided
+  const password = bzPass || 'a' + Math.floor(0xffffff * Math.random()) + '!'
   const { email } = options
   console.log('creating user for', email)
   const customizedUser = Object.assign({
     bugzillaCreds: {
-      login: email,
-      password
+      login: bzLogin || email,
+      password: bzPass ? null : password
     }
   }, user)
 
-  let creationResult
-  try {
-    creationResult = callAPI('post', '/rest/user', {email, password}, true, true)
-  } catch (e) {
-    console.error(e)
-    throw new Meteor.Error({message: 'REST API error', origError: e})
+  // Checking if there's an existing bz user, or creating one
+  if (!bzLogin && !bzPass) {
+    try {
+      callAPI('post', '/rest/user', {email, password}, true, true)
+    } catch (e) {
+      console.error(e)
+      throw new Meteor.Error({message: 'REST API error', origError: e})
+    }
   }
-  Object.assign(customizedUser.bugzillaCreds, {id: creationResult.data.id})
 
   let loginResult
   try {
@@ -31,7 +37,8 @@ export function onCreateUser (options, user) {
     console.error(e)
     throw new Meteor.Error({message: 'REST API error', origError: e})
   }
-  Object.assign(customizedUser.bugzillaCreds, {token: loginResult.data.token})
+  const {token, id} = loginResult.data
+  Object.assign(customizedUser.bugzillaCreds, {token, id})
   customizedUser.profile = options.profile
   console.log(`User for ${email} was created successfully`)
   return customizedUser
