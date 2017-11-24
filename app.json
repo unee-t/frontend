@@ -3,8 +3,22 @@
   "description": "",
   "scripts": {
   },
-  "env": {
-    "ROOT_URL": "https://<appname>.herokuapp.com"
+  "env":{
+    "HEROKU_APP_NAME": {
+      "required": true
+    },
+    "HEROKU_PARENT_APP_NAME": {
+      "required": true
+    },
+    "MONGO_URL": {
+      "required": true
+    },
+    "BUGZILLA_URL": {
+      "required": true
+    },
+    "BUGZILLA_ADMIN_KEY": {
+      "required": true
+    }
   },
   "formation": {
   },

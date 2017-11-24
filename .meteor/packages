@@ -17,7 +17,6 @@ ecmascript@0.8.0              # Enable ECMAScript2015+ syntax in app code
 shell-server@0.2.3            # Server-side component of the `meteor shell` command
 
 react-meteor-data
-accounts-ui
 accounts-password
 practicalmeteor:mocha
 http
@@ -27,3 +26,4 @@ dburles:factory
 practicalmeteor:sinon
 omega:dirty-chai
 hasse:tachyons
+simple:json-routes

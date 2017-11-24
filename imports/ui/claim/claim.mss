@@ -10,43 +10,35 @@
   }
 }
 
-.section {
-  display: flex;
-  border: 1px solid lightskyblue;
-  padding: 0.25rem;
-  margin-bottom: 1px;
-
-  & > * {
-    margin: 0.25rem;
-  }
-
-  & > :not(.itemFlow) {
-    flex-basis: fit-content;
-  }
-
-  & > .itemFlow {
-    flex: 1;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
+:root {
+  --creator-color: #2682A0;
 }
 
-.dependenciesDetails {
-  display: flex;
-
-  & .labels {
-    text-align: right;
-    margin-right: 5px;
-  }
+.messagesContainer {
+  background-color: #f0f0f0;
 }
 
-.dependencyTreeAccess {
-  display: flex;
-
-  & .label {
-    text-align: right;
-    margin-right: 5px;
-  }
+.messageBox {
+  max-width: 60%;
 }
 
+.messageCreator {
+  color: var(--creator-color);
+}
+
+.messageAvatar {
+  background-color: var(--creator-color);
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+}
+
+.messageTime {
+  color: #a4a4a4;
+  line-height: 1.5rem;
+}
+
+.inputRow {
+  background-color: #ddd;
+  height: 3rem;
+}

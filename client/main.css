@@ -1,4 +1,67 @@
-/* Tachyons fixes and overrides */
+/* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;
+}
+
+.b--moon-gray {
+  border-color: #ccc;
+}
+
+.f7 {
+  font-size: .75rem;
+}
+
+.lh3 {
+  line-height: 4rem;
+}
+
+.lh-input {
+  line-height: 1.9;
+}
+
+.br-pill {
+  border-radius: 9999px;
+}
+
+.bg-transparent {
+  background-color: transparent;
+}
+
+.bg-rad-green {
+  background-color: #C9FB65;
+}
+
+.outline-0 {
+  outline: 0;
+}
+
+/* Functional CSS additions */
+.flex{
+  display: flex;
+}
+
+.flex-grow {
+  flex: 1;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.full-height {
+  height: 100vh;
+}
+
+.roboto {
+  font-family: Roboto, sans-serif;
 }
