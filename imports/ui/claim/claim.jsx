@@ -129,7 +129,7 @@ class Claim extends Component {
           ) : ''}
           <span className='f5 mr3'>{text}</span>
           <div className={[styles.messageTime, 'fr', 'f7'].join(' ')}>
-            {moment(creation_time).format('hh:mma')}
+            {moment(creation_time).format('HH:mm')}
           </div>
         </div>
       </div>
