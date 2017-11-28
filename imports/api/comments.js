@@ -38,7 +38,7 @@ Meteor.methods({
         id: Math.round(Math.random() * Number.MAX_VALUE),
         creator: currUser.emails[0].address,
         text,
-        creation_time: new Date(),
+        creation_time: (new Date()).toISOString(),
         bug_id: claimId
       })
     } else {

@@ -107,19 +107,53 @@ class Claim extends Component {
   }
 
   renderMessages (comments) {
+    let lastDay = comments.length && comments[0].creation_time.slice(0, 10)
+    let currKey = 0
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
-        {comments.map(this.renderSingleMessage.bind(this))}
+        {comments.slice(1).reduce((listItems, comment) => { // Rendering all starting from the second
+          const currDay = comment.creation_time.slice(0, 10)
+
+          // Checking if the day of this message is different than the previous
+          if (currDay !== lastDay) {
+            lastDay = currDay
+
+            // Creating a day label
+            listItems.push(this.renderDayLabel(comment, currKey++))
+          }
+
+          // Creating a message item
+          listItems.push(this.renderSingleMessage(comment, currKey++))
+          return listItems
+        }, [ // Rendering the first day label and message
+          comments.length ? this.renderDayLabel(comments[0], currKey++) : '',
+          comments.length ? this.renderSingleMessage(comments[0], currKey++) : ''
+        ])}
       </div>
     )
   }
 
-  renderSingleMessage ({id, creator, text, creation_time}) {
+  renderDayLabel ({creation_time}, key) {
+    const dayString = moment(creation_time).calendar(null, {
+      sameDay: '[Today]',
+      lastDay: '[Yesterday]',
+      sameElse: function (now) {
+        return (this.diff(now, 'years') < 1) ? 'MMMM DD' : 'MM/DD/YY'
+      }
+    })
+    return (
+      <div className='tc mt3 mb2' key={key}>
+        <span className='br-pill bg-gray ph3 lh-dbl f7 white dib'>{dayString}</span>
+      </div>
+    )
+  }
+
+  renderSingleMessage ({id, creator, text, creation_time}, key) {
     const isSelf = this.props.userEmail === creator
     return (
-      <div className={'mv3' + (isSelf ? ' tr' : '')} key={id}>
+      <div className={'mb3' + (isSelf ? ' tr' : '')} key={key}>
         { !isSelf ? (
-          <div className={[styles.messageAvatar, 'dib ml2 bg-gray v-btm br-100 tc white'].join(' ')}>
+          <div className={[styles.messageAvatar, 'dib ml2 v-btm br-100 tc white'].join(' ')}>
             {creator.slice(0, 1).toUpperCase()}
           </div>
         ) : ''}
