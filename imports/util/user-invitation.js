@@ -1,14 +1,14 @@
 import { Accounts } from 'meteor/accounts-base'
 
-export function inviteUser (emailAddress, claimId, unitId, role) {
+export function inviteUser (emailAddress, caseId, unitId, role) {
   // TODO: Handle the scenario in which the user already exists for this email
 
   // Using Meteor accounts package to create the user with no signup
   Accounts.createUser({
     email: emailAddress,
     profile: {
-      invitedToClaim: {
-        claimId,
+      invitedToCase: {
+        caseId,
         role,
         unitId
       }

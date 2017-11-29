@@ -16,13 +16,13 @@ export const factoryOptions = {
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions, true)
-  Meteor.publish('claimComments', publicationObj.publishFunc)
+  Meteor.publish('caseComments', publicationObj.publishFunc)
 }
 
 Meteor.methods({
-  'comments.insert' (text, claimId) {
+  'comments.insert' (text, caseId) {
     check(text, String)
-    check(claimId, Number)
+    check(caseId, Number)
 
     // Make sure the user is logged in before inserting a task
     if (!Meteor.userId()) {
@@ -39,7 +39,7 @@ Meteor.methods({
         creator: currUser.emails[0].address,
         text,
         creation_time: (new Date()).toISOString(),
-        bug_id: claimId
+        bug_id: caseId
       })
     } else {
       const payload = {
@@ -49,7 +49,7 @@ Meteor.methods({
 
       try {
         // Creating the comment
-        const createData = callAPI('post', `/rest/bug/${claimId}/comment`, payload, false, true)
+        const createData = callAPI('post', `/rest/bug/${caseId}/comment`, payload, false, true)
         const { token } = currUser.bugzillaCreds.token
 
         // Fetching the full comment object by the returned id from the creation operation
@@ -57,7 +57,7 @@ Meteor.methods({
 
         // Digging the new comment object out of the response
         const newComment = commentData.data.comments[createData.data.id.toString()]
-        publicationObj.handleAdded(claimId, newComment)
+        publicationObj.handleAdded(caseId, newComment)
       } catch (e) {
         console.error(e)
         throw new Meteor.Error('API error')

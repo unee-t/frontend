@@ -3,21 +3,21 @@ import { Mongo } from 'meteor/mongo'
 
 import publicationFactory from './base/rest-resource-factory'
 
-const collectionName = 'claims'
+const collectionName = 'cases'
 
 // Exported for testing purposes
 export const factoryOptions = {
-  uriTemplate: (claimId) => `/rest/bug/${claimId}`,
+  uriTemplate: (caseId) => `/rest/bug/${caseId}`,
   collectionName,
   dataResolver: (data) => data.bugs[0]
 }
 
 if (Meteor.isServer) {
-  Meteor.publish('claim', publicationFactory(factoryOptions, false).publishFunc)
+  Meteor.publish('case', publicationFactory(factoryOptions, false).publishFunc)
 }
-let Claims
+let Cases
 if (Meteor.isClient) {
-  Claims = new Mongo.Collection(collectionName)
+  Cases = new Mongo.Collection(collectionName)
 }
 
-export default Claims
+export default Cases

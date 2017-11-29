@@ -2,10 +2,10 @@
 
 import { expect } from 'meteor/practicalmeteor:chai'
 import { Meteor } from 'meteor/meteor'
-import { factoryOptions } from './claims'
+import { factoryOptions } from './cases'
 
 if (Meteor.isServer) {
-  describe('Claims collection', () => {
+  describe('Cases collection', () => {
     describe('RestResourceFactory options', () => {
       it('should contain a proper uriTemplate', () => {
         const resourceUri = factoryOptions.uriTemplate(3)

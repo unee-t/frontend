@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import moment from 'moment'
 import { Meteor } from 'meteor/meteor'
-import Claims from '../../api/claims'
+import Cases from '../../api/cases'
 import Comments from '../../api/comments'
 import AppBar from 'material-ui/AppBar'
 import Subheader from 'material-ui/Subheader'
@@ -15,9 +15,9 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import Preloader from '../preloader/preloader'
 import colors from '../../mui-theme/colors'
-import actions from './claim.actions'
+import actions from './case.actions'
 
-import styles from './claim.mss'
+import styles from './case.mss'
 import {
   logoIconStyle,
   logoButtonStyle,
@@ -27,7 +27,7 @@ import {
   attachmentIconStyle,
   attachmentButtonStyle,
   sendIconStyle
-} from './claim.mui-styles'
+} from './case.mui-styles'
 
 const UneeTIcon = (props) => (
   <SvgIcon {...props} viewBox='3 3 39 39'>
@@ -35,7 +35,7 @@ const UneeTIcon = (props) => (
   </SvgIcon>
 )
 
-class Claim extends Component {
+class Case extends Component {
   constructor () {
     super(...arguments)
     this.state = {
@@ -53,15 +53,15 @@ class Claim extends Component {
   }
 
   render () {
-    const { claim, comments, loadingClaim, claimError } = this.props
-    if (claimError) return <h1>{claimError.error.message}</h1>
-    if (loadingClaim) return <Preloader />
+    const { caseItem, comments, loadingCase, caseError } = this.props
+    if (caseError) return <h1>{caseError.error.message}</h1>
+    if (loadingCase) return <Preloader />
 
     return (
       <div className='flex flex-column full-height roboto'>
-        {this.renderTitle(claim)}
+        {this.renderTitle(caseItem)}
         {this.renderMessages(comments)}
-        {this.renderInputControls(claim)}
+        {this.renderInputControls(caseItem)}
       </div>
     )
   }
@@ -75,7 +75,7 @@ class Claim extends Component {
   handleCreateMessage (evt) {
     const { createComment } = actions
     evt.preventDefault()
-    this.props.dispatch(createComment(this.state.message, this.props.match.params.claimId))
+    this.props.dispatch(createComment(this.state.message, this.props.match.params.caseId))
 
     // Clearing the input
     this.setState({
@@ -190,44 +190,44 @@ class Claim extends Component {
   }
 }
 
-Claim.propTypes = {
-  loadingClaim: PropTypes.bool,
-  claimError: PropTypes.object,
-  claim: PropTypes.object,
+Case.propTypes = {
+  loadingCase: PropTypes.bool,
+  caseError: PropTypes.object,
+  caseItem: PropTypes.object,
   loadingComments: PropTypes.bool,
   commentsError: PropTypes.object,
   comments: PropTypes.array,
   userEmail: PropTypes.string
 }
 
-let claimError, commentsError
-const ClaimContainer = createContainer(props => {
-  const { claimId } = props.match.params
-  const claimHandle = Meteor.subscribe('claim', claimId, {
+let caseError, commentsError
+const CaseContainer = createContainer(props => {
+  const { caseId } = props.match.params
+  const caseHandle = Meteor.subscribe('case', caseId, {
     onStop: (error) => {
-      claimError = error
+      caseError = error
     }
   })
-  const commentsHandle = Meteor.subscribe('claimComments', claimId, {
+  const commentsHandle = Meteor.subscribe('caseComments', caseId, {
     onStop: (error) => {
       commentsError = error
     }
   })
 
   return {
-    loadingClaim: !claimHandle.ready(),
-    claimError,
-    claim: Claims.findOne(claimId),
+    loadingCase: !caseHandle.ready(),
+    caseError,
+    caseItem: Cases.findOne(caseId),
     loadingComments: !commentsHandle.ready(),
     commentsError,
-    comments: Comments.find({bug_id: parseInt(claimId)}).fetch(),
+    comments: Comments.find({bug_id: parseInt(caseId)}).fetch(),
     userEmail: Meteor.user() ? Meteor.user().emails[0].address : null
   }
-}, Claim)
+}, Case)
 
 function mapStateToProps () {
   return {
   }
 }
 
-export default connect(mapStateToProps)(ClaimContainer)
+export default connect(mapStateToProps)(CaseContainer)
