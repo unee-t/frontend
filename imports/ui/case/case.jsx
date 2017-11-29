@@ -138,7 +138,7 @@ class Case extends Component {
       sameDay: '[Today]',
       lastDay: '[Yesterday]',
       sameElse: function (now) {
-        return (this.diff(now, 'years') < 1) ? 'MMMM DD' : 'MM/DD/YY'
+        return (this.diff(now, 'years') > -1) ? 'MMMM DD' : 'MM/DD/YY'
       }
     })
     return (
