@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Link, Redirect } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
+import { Meteor } from 'meteor/meteor'
 import actions from './login.actions'
 import PropTypes from 'prop-types'
 
