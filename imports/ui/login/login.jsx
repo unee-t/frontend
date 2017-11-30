@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Redirect } from 'react-router-dom'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import actions from './login.actions'
@@ -21,6 +21,9 @@ export class LoginPage extends Component {
     this[memName] = el
   }
   render () {
+    if (this.props.loggedIn) {
+      return <Redirect to='/case' />
+    }
     return (
       <div className='w-100'>
         <main className='pa4 black-80'>
@@ -68,9 +71,12 @@ export class LoginPage extends Component {
 }
 
 LoginPage.propTypes = {
-  showLoginError: PropTypes.string
+  showLoginError: PropTypes.string,
+  loggedIn: PropTypes.bool
 }
 
 export default connect(
   ({showLoginError}) => ({showLoginError}) // map redux state to props
-)(createContainer(() => ({}), LoginPage)) // map meteor state to props
+)(createContainer(() => ({ // map meteor state to props
+  loggedIn: !!Meteor.user()
+}), LoginPage))
