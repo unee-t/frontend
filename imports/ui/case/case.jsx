@@ -134,11 +134,13 @@ class Case extends Component {
   }
 
   renderDayLabel ({creation_time}, key) {
+    const generalFormat = 'MMMM DD'
     const dayString = moment(creation_time).calendar(null, {
       sameDay: '[Today]',
       lastDay: '[Yesterday]',
+      lastWeek: generalFormat,
       sameElse: function (now) {
-        return (this.diff(now, 'years') > -1) ? 'MMMM DD' : 'MMMM DD, YYYY'
+        return (this.diff(now, 'years') > -1) ? generalFormat : generalFormat + ', YYYY'
       }
     })
     return (
