@@ -13,7 +13,7 @@ export const factoryOptions = {
   dataResolver: (data, claimId) => data.bugs[claimId.toString()].comments
 }
 
-let publicationObj
+export let publicationObj // Exported for testing purposes
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions, true)
   Meteor.publish('caseComments', publicationObj.publishFunc)
@@ -24,7 +24,7 @@ Meteor.methods({
     check(text, String)
     check(caseId, Number)
 
-    // Make sure the user is logged in before inserting a task
+    // Making sure the user is logged in before inserting a comment
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
@@ -50,7 +50,7 @@ Meteor.methods({
       try {
         // Creating the comment
         const createData = callAPI('post', `/rest/bug/${caseId}/comment`, payload, false, true)
-        const { token } = currUser.bugzillaCreds.token
+        const { token } = currUser.bugzillaCreds
 
         // Fetching the full comment object by the returned id from the creation operation
         const commentData = callAPI('get', `/rest/bug/comment/${createData.data.id}`, {token}, false, true)
