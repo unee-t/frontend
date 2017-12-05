@@ -14,7 +14,7 @@ if (Meteor.isServer) {
     afterEach(() => {
       inviteUserUtil.inviteUser.restore()
     })
-    it ('should call "inviteUser" with the params from body, and "res.send" with a success message', () => {
+    it('should call "inviteUser" with the params from body, and "res.send" with a success message', () => {
       const sendSpy = sinon.spy()
       const body = {
         email: 'a@example.com',
