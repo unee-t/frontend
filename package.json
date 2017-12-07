@@ -8,6 +8,9 @@
     "proof": "./node_modules/spacejam/bin/spacejam test --driver-package practicalmeteor:mocha",
     "test-local": "meteor test --driver-package practicalmeteor:mocha"
   },
+  "standard": {
+    "parser": "babel-eslint"
+  },
   "dependencies": {
     "babel-runtime": "^6.20.0",
     "bcrypt": "^1.0.2",
@@ -31,6 +34,8 @@
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
+    "babel-eslint": "^8.0.3",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "enzyme": "^2.9.1",
     "postcss-easy-import": "^2.1.0",
     "postcss-modules-extract-imports": "^1.1.0",
