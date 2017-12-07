@@ -33,8 +33,8 @@ Accounts.onEnrollmentLink((token, done) => {
       const user = Meteor.user()
       if (user) {
         cmp.stop()
-        if (user.profile.invitedToClaim) {
-          const {caseId} = user.profile.invitedToClaim
+        if (user.profile.invitedToCase) {
+          const {caseId} = user.profile.invitedToCase
           history.push(`/case/${caseId}`)
         }
       }
