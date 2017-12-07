@@ -35,7 +35,7 @@ const UneeTIcon = (props) => (
   </SvgIcon>
 )
 
-class Case extends Component {
+export class Case extends Component {
   constructor () {
     super(...arguments)
     this.state = {
@@ -150,7 +150,7 @@ class Case extends Component {
     )
   }
 
-  renderSingleMessage ({id, creator, text, creation_time}, key) {
+  renderSingleMessage ({creator, text, creation_time}, key) {
     const isSelf = this.props.userEmail === creator
     return (
       <div className={'mb3' + (isSelf ? ' tr' : '')} key={key}>
