@@ -34,8 +34,8 @@ Accounts.onEnrollmentLink((token, done) => {
       if (user) {
         cmp.stop()
         if (user.profile.invitedToClaim) {
-          const {claimId} = user.profile.invitedToClaim
-          history.push(`/claim/${claimId}`)
+          const {caseId} = user.profile.invitedToClaim
+          history.push(`/case/${caseId}`)
         }
       }
     })
