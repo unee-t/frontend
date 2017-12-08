@@ -21,11 +21,6 @@ export const titleStyle = {
   textOverflow: 'ellipsis'
 }
 
-export const attachmentIconStyle = {
-  width: 28,
-  height: 28,
-  fontSize: 28
-}
 export const attachmentButtonStyle = {
   width: 36,
   height: 36,

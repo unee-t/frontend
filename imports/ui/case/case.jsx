@@ -26,7 +26,6 @@ import {
   subheaderStyle,
   titleStyle,
   moreVertIconColor,
-  attachmentIconStyle,
   attachmentButtonStyle,
   sendIconStyle
 } from './case.mui-styles'
@@ -78,6 +77,10 @@ export class Case extends Component {
   handleCreateMessage (evt) {
     const { createComment } = actions
     evt.preventDefault()
+
+    // TODO: Handle later
+    if (this.state.previewImage) return
+
     this.props.dispatch(createComment(this.state.message, this.props.match.params.caseId))
 
     // Clearing the input
@@ -97,6 +100,14 @@ export class Case extends Component {
     }
     this.imageFile = file
     reader.readAsDataURL(file)
+  }
+
+  removePreview (evt) {
+    evt.preventDefault()
+    this.setState({
+      previewImage: ''
+    })
+    this.imageFile = null
   }
 
   renderTitle ({ summary, product }) {
@@ -191,10 +202,14 @@ export class Case extends Component {
   renderInputControls () {
     return (
       <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
-        <IconButton iconStyle={attachmentIconStyle} style={attachmentButtonStyle}>
+        <IconButton style={attachmentButtonStyle} onClick={this.state.previewImage ? this.removePreview.bind(this) : undefined}>
           <label>
-            <ContentAdd color={colors.main} />
-            <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
+            <ContentAdd
+              color={this.state.previewImage ? 'red' : colors.main}
+              className={this.state.previewImage ? 'rotate-45' : ''} />
+            {!this.state.previewImage ? (
+              <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
+            ) : ''}
           </label>
         </IconButton>
         <div className='flex-grow relative'>
@@ -208,7 +223,8 @@ export class Case extends Component {
         </div>
         <div className='mh2'>
           <FloatingActionButton mini zDepth={0} iconStyle={sendIconStyle}
-            onClick={this.handleCreateMessage.bind(this)} disabled={this.state.message === ''}>
+            onClick={this.handleCreateMessage.bind(this)}
+            disabled={this.state.message === '' && this.state.previewImage === ''}>
             <FontIcon className='material-icons'>send</FontIcon>
           </FloatingActionButton>
         </div>
