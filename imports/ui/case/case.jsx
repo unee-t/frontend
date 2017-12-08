@@ -1,3 +1,5 @@
+/* global FileReader */
+
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -39,7 +41,8 @@ export class Case extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      message: ''
+      message: '',
+      previewImage: ''
     }
   }
 
@@ -81,6 +84,19 @@ export class Case extends Component {
     this.setState({
       message: ''
     })
+  }
+
+  handleFileSelection (evt) {
+    evt.persist()
+    const file = evt.target.files[0]
+    let reader = new FileReader()
+    reader.onload = (evt) => {
+      this.setState({
+        previewImage: evt.target.result
+      })
+    }
+    this.imageFile = file
+    reader.readAsDataURL(file)
   }
 
   renderTitle ({ summary, product }) {
@@ -174,13 +190,22 @@ export class Case extends Component {
 
   renderInputControls () {
     return (
-      <div className={[styles.inputRow, 'flex items-center'].join(' ')}>
+      <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
         <IconButton iconStyle={attachmentIconStyle} style={attachmentButtonStyle}>
-          <ContentAdd color={colors.main} />
+          <label>
+            <ContentAdd color={colors.main} />
+            <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
+          </label>
         </IconButton>
-        <input type='text' placeholder='Type your response'
-          onChange={this.handleMessageInput.bind(this)} value={this.state.message}
-          className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib flex-grow outline-0' />
+        <div className='flex-grow relative'>
+          {this.state.previewImage ? (
+            <img className='w-100 absolute br3 bottom--1 shadow-1' src={this.state.previewImage} alt='X' />
+          ) : (
+            <input type='text' placeholder='Type your response' ref='messageInput'
+              onChange={this.handleMessageInput.bind(this)} value={this.state.message}
+              className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib outline-0 w-100' />
+          )}
+        </div>
         <div className='mh2'>
           <FloatingActionButton mini zDepth={0} iconStyle={sendIconStyle}
             onClick={this.handleCreateMessage.bind(this)} disabled={this.state.message === ''}>
