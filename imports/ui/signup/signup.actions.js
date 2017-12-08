@@ -17,7 +17,7 @@ export function submitSignupInfo (info) {
       }
     }, (err) => {
       if (err) return console.error(err)
-      dispatch(push('/unit/new'))
+      dispatch(push('/case'))
     })
   }
 }

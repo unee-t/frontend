@@ -19,6 +19,10 @@
   line-height: 1.9;
 }
 
+.lh-dbl {
+  line-height: 2;
+}
+
 .br-pill {
   border-radius: 9999px;
 }

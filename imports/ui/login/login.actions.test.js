@@ -51,7 +51,7 @@ if (Meteor.isClient) {
             value: someError
           })
         })
-        it('should dispatch a navigation action to "/unit/new" if the API yields with no error', () => {
+        it('should dispatch a navigation action to "/case" if the API yields with no error', () => {
           const mockAction = { fake: true }
           Meteor.loginWithPassword.yields()
           pushStub.returns(mockAction)
@@ -59,7 +59,7 @@ if (Meteor.isClient) {
           const action = submitCredentials(fakes.email, fakes.password)
           action(dispatchStub)
 
-          expect(pushStub).to.have.been.calledWith('/unit/new')
+          expect(pushStub).to.have.been.calledWith('/case')
           expect(dispatchStub).to.have.been.calledTwice()
           expect(dispatchStub.secondCall).to.have.been.calledWith(mockAction)
         })
