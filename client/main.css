@@ -53,9 +53,30 @@
 .rotate-315 { -webkit-transform: rotate( 315deg ); transform: rotate( 315deg ); }
 /* Tachyons rotations - end */
 
-/* Functional CSS additions */
+/* Tachyons Height Scale - start */
+.h1 { height: 1rem; }
+.h2 { height: 2rem; }
+.h3 { height: 4rem; }
+.h4 { height: 8rem; }
+.h5 { height: 16rem; }
+/* Tachyons Height Scale - end */
+
+.mw-60 {
+  max-width: 60%;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
 .flex{
   display: flex;
+}
+
+.inline-flex {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
 }
 
 .flex-grow {
@@ -69,6 +90,8 @@
 .items-center {
   align-items: center;
 }
+
+/* Functional CSS additions */
 
 .ellipsis {
   white-space: nowrap;

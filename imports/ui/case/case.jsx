@@ -18,6 +18,7 @@ import ContentAdd from 'material-ui/svg-icons/content/add'
 import Preloader from '../preloader/preloader'
 import colors from '../../mui-theme/colors'
 import actions from './case.actions'
+import { attachmentTextMatcher } from '../../util/matchers'
 
 import styles from './case.mss'
 import {
@@ -35,6 +36,18 @@ const UneeTIcon = (props) => (
     <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
   </SvgIcon>
 )
+
+const formatDayText = time => {
+  const generalFormat = 'MMMM DD'
+  return moment(time).calendar(null, {
+    sameDay: '[Today]',
+    lastDay: '[Yesterday]',
+    lastWeek: generalFormat,
+    sameElse: function (now) {
+      return (this.diff(now, 'years') > -1) ? generalFormat : generalFormat + ', YYYY'
+    }
+  })
+}
 
 export class Case extends Component {
   constructor () {
@@ -54,20 +67,6 @@ export class Case extends Component {
     }
   }
 
-  render () {
-    const { caseItem, comments, loadingCase, caseError } = this.props
-    if (caseError) return <h1>{caseError.error.message}</h1>
-    if (loadingCase) return <Preloader />
-
-    return (
-      <div className='flex flex-column full-height roboto'>
-        {this.renderTitle(caseItem)}
-        {this.renderMessages(comments)}
-        {this.renderInputControls(caseItem)}
-      </div>
-    )
-  }
-
   handleMessageInput (evt) {
     this.setState({
       message: evt.target.value
@@ -75,18 +74,25 @@ export class Case extends Component {
   }
 
   handleCreateMessage (evt) {
-    const { createComment } = actions
+    const { createComment, createAttachment } = actions
+    const caseId = this.props.match.params.caseId
     evt.preventDefault()
 
-    // TODO: Handle later
-    if (this.state.previewImage) return
+    if (this.state.previewImage) {
+      this.props.dispatch(createAttachment(
+        this.state.previewImage,
+        this.imageFile,
+        caseId
+      ))
+      this.handleRemovePreview()
+    } else {
+      this.props.dispatch(createComment(this.state.message, caseId))
 
-    this.props.dispatch(createComment(this.state.message, this.props.match.params.caseId))
-
-    // Clearing the input
-    this.setState({
-      message: ''
-    })
+      // Clearing the input
+      this.setState({
+        message: ''
+      })
+    }
   }
 
   handleFileSelection (evt) {
@@ -102,12 +108,48 @@ export class Case extends Component {
     reader.readAsDataURL(file)
   }
 
-  removePreview (evt) {
-    evt.preventDefault()
+  handleRemovePreview (evt) {
+    if (evt) evt.preventDefault()
     this.setState({
       previewImage: ''
     })
     this.imageFile = null
+  }
+
+  render () {
+    const { caseItem, comments, loadingCase, caseError } = this.props
+    if (caseError) return <h1>{caseError.error.message}</h1>
+    if (loadingCase) return <Preloader />
+
+    if (this.state.selectedAttachment) {
+      return this.renderMaximizedAttachment(this.state.selectedAttachment)
+    } else {
+      return (
+        <div className='flex flex-column full-height roboto'>
+          {this.renderTitle(caseItem)}
+          {this.renderMessages(comments)}
+          {this.renderInputControls(caseItem)}
+        </div>
+      )
+    }
+  }
+
+  renderMaximizedAttachment ({creatorText, creationTime, attachmentUrl}) {
+    const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
+    return (
+      <div className='flex items-center full-height roboto bg-black'>
+        <div className='fixed top-0 w-100 bg-black-20 flex items-center'>
+          <IconButton onClick={() => this.setState({selectedAttachment: null})}>
+            <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
+          </IconButton>
+          <div className='white'>
+            <h4 className='mv1'>{creatorText}</h4>
+            <h5 className='mv1'>{timeText}</h5>
+          </div>
+        </div>
+        <img className='w-100' src={attachmentUrl} alt='Image failed to load' />
+      </div>
+    )
   }
 
   renderTitle ({ summary, product }) {
@@ -161,15 +203,7 @@ export class Case extends Component {
   }
 
   renderDayLabel ({creation_time}, key) {
-    const generalFormat = 'MMMM DD'
-    const dayString = moment(creation_time).calendar(null, {
-      sameDay: '[Today]',
-      lastDay: '[Yesterday]',
-      lastWeek: generalFormat,
-      sameElse: function (now) {
-        return (this.diff(now, 'years') > -1) ? generalFormat : generalFormat + ', YYYY'
-      }
-    })
+    const dayString = formatDayText(creation_time)
     return (
       <div className='tc mt3 mb2' key={key}>
         <span className='br-pill bg-gray ph3 lh-dbl f7 white dib'>{dayString}</span>
@@ -179,21 +213,45 @@ export class Case extends Component {
 
   renderSingleMessage ({creator, text, creation_time}, key) {
     const isSelf = this.props.userEmail === creator
+    const contentRenderer = attachmentTextMatcher(text)
+      ? this.renderMessageImageContent.bind(this)
+      : this.renderMessageTextContent.bind(this)
     return (
       <div className={'mb3' + (isSelf ? ' tr' : '')} key={key}>
         { !isSelf ? (
-          <div className={[styles.messageAvatar, 'dib ml2 v-btm br-100 tc white'].join(' ')}>
+          <div className={styles.messageAvatar + ' dib ml2 v-btm br-100 tc white'}>
             {creator.slice(0, 1).toUpperCase()}
           </div>
         ) : ''}
-        <div className={[styles.messageBox, isSelf ? 'bg-rad-green' : 'bg-white', 'cf br3 pt2 pl3 pr2 mh2 dib tl'].join(' ')}>
-          { !isSelf ? (
-            <div className={[styles.messageCreator, 'f6'].join(' ')}>{creator}</div>
-          ) : ''}
-          <span className='f5 mr3'>{text}</span>
-          <div className={[styles.messageTime, 'fr', 'f7'].join(' ')}>
-            {moment(creation_time).format('HH:mm')}
-          </div>
+        { contentRenderer(isSelf, creator, text, creation_time) }
+      </div>
+    )
+  }
+
+  renderMessageTextContent (isSelf, creator, text, creationTime) {
+    return (
+      <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl ' + (isSelf ? 'bg-rad-green' : 'bg-white')}>
+        { !isSelf ? (
+          <div className={styles.messageCreator + ' f6'}>{creator}</div>
+        ) : ''}
+        <span className='f5 mr3'>{text}</span>
+        <div className={styles.messageTime + ' fr f7'}>
+          {moment(creationTime).format('HH:mm')}
+        </div>
+      </div>
+    )
+  }
+
+  renderMessageImageContent (isSelf, creator, text, creationTime) {
+    const attachmentUrl = text.split('\n')[1]
+    const creatorText = isSelf ? 'You' : creator
+    return (
+      <div className={
+        'w-60 br3 mh2 dib tc overflow-hidden h4 bg-white relative inline-flex items-center' + (isSelf ? ' ml-auto' : '')
+      } onClick={() => this.setState({selectedAttachment: {creatorText, creationTime, attachmentUrl}})}>
+        <img className='w-100 absolute' src={attachmentUrl} alt={attachmentUrl} />
+        <div className='fr f7 white absolute bottom-0 right-0 lh-dbl pr2'>
+          {moment(creationTime).format('HH:mm')}
         </div>
       </div>
     )
@@ -202,7 +260,7 @@ export class Case extends Component {
   renderInputControls () {
     return (
       <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
-        <IconButton style={attachmentButtonStyle} onClick={this.state.previewImage ? this.removePreview.bind(this) : undefined}>
+        <IconButton style={attachmentButtonStyle} onClick={this.state.previewImage ? this.handleRemovePreview.bind(this) : undefined}>
           <label>
             <ContentAdd
               color={this.state.previewImage ? 'red' : colors.main}
@@ -214,7 +272,7 @@ export class Case extends Component {
         </IconButton>
         <div className='flex-grow relative'>
           {this.state.previewImage ? (
-            <img className='w-100 absolute br3 bottom--1 shadow-1' src={this.state.previewImage} alt='X' />
+            <img className='w-100 absolute bottom--1 br3 shadow-1' src={this.state.previewImage} alt='X' />
           ) : (
             <input type='text' placeholder='Type your response' ref='messageInput'
               onChange={this.handleMessageInput.bind(this)} value={this.state.message}
