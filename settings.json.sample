@@ -1,0 +1,6 @@
+{
+  "public": {
+    "CLOUDINARY_URL": "cloudinary API url that ends with /image/upload",
+    "CLOUDINARY_PRESET": "cloudinary preset name (look into 'Unsigned Uploading')"
+  }
+}
