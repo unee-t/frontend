@@ -232,7 +232,7 @@ export class Case extends Component {
     return (
       <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl ' + (isSelf ? 'bg-rad-green' : 'bg-white')}>
         { !isSelf ? (
-          <div className={styles.messageCreator + ' f6'}>{creator}</div>
+          <div className={styles.messageCreator + ' f6 ellipsis'}>{creator}</div>
         ) : ''}
         <span className='f5 mr3'>{text}</span>
         <div className={styles.messageTime + ' fr f7'}>
