@@ -7,6 +7,10 @@
   border-color: #ccc;
 }
 
+.b--gray-93 {
+  border-color: #ededed;
+}
+
 .f7 {
   font-size: .75rem;
 }
@@ -56,10 +60,22 @@
   align-items: center;
 }
 
+.justify-center {
+  justify-content: center;
+}
+
+.b--solid-right {
+  border-right-style: solid;
+}
+
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.break-word {
+  word-wrap: break-word;
 }
 
 .full-height {

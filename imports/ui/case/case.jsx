@@ -23,7 +23,7 @@ import {
   logoButtonStyle,
   subheaderStyle,
   titleStyle,
-  moreVertIconColor,
+  infoIconStyle,
   attachmentIconStyle,
   attachmentButtonStyle,
   sendIconStyle
@@ -57,6 +57,8 @@ export class Case extends Component {
     if (caseError) return <h1>{caseError.error.message}</h1>
     if (loadingCase) return <Preloader />
 
+    console.log('caseItem', caseItem)
+
     return (
       <div className='flex flex-column full-height roboto'>
         {this.renderTitle(caseItem)}
@@ -83,10 +85,11 @@ export class Case extends Component {
     })
   }
 
-  renderTitle ({ summary, product }) {
+  renderTitle ({ summary, id, priority }) {
+    const subheaderBoxClasses = 'flex-grow tc b--gray-93'
     return (
       <div>
-        <AppBar title={product}
+        <AppBar title={summary}
           titleStyle={titleStyle}
           iconElementLeft={
             <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
@@ -95,11 +98,10 @@ export class Case extends Component {
           }
         />
         <Subheader style={subheaderStyle} className='flex'>
-          <div className='flex-grow ellipsis' title={summary}>{summary}</div>
-          <div>
-            <IconButton>
-              <FontIcon className='material-icons' color={moreVertIconColor}>more_vert</FontIcon>
-            </IconButton>
+          <div className={subheaderBoxClasses + ' b--solid-right'}>Issue: #{id}</div>
+          <div className={subheaderBoxClasses + ' b--solid-right'}>Priority: {priority}</div>
+          <div className={subheaderBoxClasses + ' flex items-center justify-center'}>
+            <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
           </div>
         </Subheader>
       </div>
@@ -163,7 +165,7 @@ export class Case extends Component {
           { !isSelf ? (
             <div className={[styles.messageCreator, 'f6'].join(' ')}>{creator}</div>
           ) : ''}
-          <span className='f5 mr3'>{text}</span>
+          <span className='f5 mr3 break-word'>{text}</span>
           <div className={[styles.messageTime, 'fr', 'f7'].join(' ')}>
             {moment(creation_time).format('HH:mm')}
           </div>
