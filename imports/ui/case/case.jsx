@@ -15,6 +15,7 @@ import SvgIcon from 'material-ui/SvgIcon'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
+import CircularProgress from 'material-ui/CircularProgress'
 import Preloader from '../preloader/preloader'
 import colors from '../../mui-theme/colors'
 import actions from './case.actions'
@@ -59,10 +60,11 @@ export class Case extends Component {
   }
 
   componentDidUpdate (prevProps) {
-    const { comments } = this.props
+    const { comments, attachmentUploads } = this.props
 
     // Scrolling down to the latest message, if the messages were already rendered, and a comment has been added
-    if (this.refs.messages && prevProps.comments.length !== comments.length) {
+    if (this.refs.messages && (prevProps.comments.length !== comments.length ||
+      prevProps.attachmentUploads.length !== attachmentUploads.length)) {
       this.refs.messages.scrollTop = this.refs.messages.scrollHeight
     }
   }
@@ -117,7 +119,7 @@ export class Case extends Component {
   }
 
   render () {
-    const { caseItem, comments, loadingCase, caseError } = this.props
+    const { caseItem, comments, loadingCase, caseError, attachmentUploads } = this.props
     if (caseError) return <h1>{caseError.error.message}</h1>
     if (loadingCase) return <Preloader />
 
@@ -127,7 +129,7 @@ export class Case extends Component {
       return (
         <div className='flex flex-column full-height roboto'>
           {this.renderTitle(caseItem)}
-          {this.renderMessages(comments)}
+          {this.renderMessages(comments, attachmentUploads)}
           {this.renderInputControls(caseItem)}
         </div>
       )
@@ -175,12 +177,18 @@ export class Case extends Component {
     )
   }
 
-  renderMessages (comments) {
-    let lastDay = comments.length && comments[0].creation_time.slice(0, 10)
+  renderMessages (comments, uploads) {
+    const messageList = comments.concat(uploads.map(process => ({
+      creation_time: (new Date()).toISOString(),
+      creator: this.props.userEmail,
+      text: '[!attachment]\n' + process.preview,
+      process
+    })))
+    let lastDay = messageList.length && messageList[0].creation_time.slice(0, 10)
     let currKey = 0
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
-        {comments.slice(1).reduce((listItems, comment) => { // Rendering all starting from the second
+        {messageList.slice(1).reduce((listItems, comment) => { // Rendering all starting from the second
           const currDay = comment.creation_time.slice(0, 10)
 
           // Checking if the day of this message is different than the previous
@@ -195,8 +203,8 @@ export class Case extends Component {
           listItems.push(this.renderSingleMessage(comment, currKey++))
           return listItems
         }, [ // Rendering the first day label and message
-          comments.length ? this.renderDayLabel(comments[0], currKey++) : '',
-          comments.length ? this.renderSingleMessage(comments[0], currKey++) : ''
+          messageList.length ? this.renderDayLabel(messageList[0], currKey++) : '',
+          messageList.length ? this.renderSingleMessage(messageList[0], currKey++) : ''
         ])}
       </div>
     )
@@ -211,7 +219,7 @@ export class Case extends Component {
     )
   }
 
-  renderSingleMessage ({creator, text, creation_time}, key) {
+  renderSingleMessage ({creator, text, creation_time, process}, key) {
     const isSelf = this.props.userEmail === creator
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
@@ -223,7 +231,7 @@ export class Case extends Component {
             {creator.slice(0, 1).toUpperCase()}
           </div>
         ) : ''}
-        { contentRenderer(isSelf, creator, text, creation_time) }
+        { contentRenderer(isSelf, creator, text, creation_time, process) }
       </div>
     )
   }
@@ -242,17 +250,32 @@ export class Case extends Component {
     )
   }
 
-  renderMessageImageContent (isSelf, creator, text, creationTime) {
+  renderMessageImageContent (isSelf, creator, text, creationTime, process) {
     const attachmentUrl = text.split('\n')[1]
     const creatorText = isSelf ? 'You' : creator
     return (
       <div className={
         'w-60 br3 mh2 dib tc overflow-hidden h4 bg-white relative inline-flex items-center' + (isSelf ? ' ml-auto' : '')
-      } onClick={() => this.setState({selectedAttachment: {creatorText, creationTime, attachmentUrl}})}>
+      } onClick={() => !process && this.setState({selectedAttachment: {creatorText, creationTime, attachmentUrl}})}>
         <img className='w-100 absolute' src={attachmentUrl} alt={attachmentUrl} />
         <div className='fr f7 white absolute bottom-0 right-0 lh-dbl pr2'>
           {moment(creationTime).format('HH:mm')}
         </div>
+        {!!process && (
+          <div className='w-100 tc'>
+            <div className='relative'>
+              {process.percent ? (
+                <CircularProgress
+                  className='bg-black-20 br-100' size={40} thickness={5} mode='determinate' value={process.percent} />
+              ) : (
+                <div className='dib'>
+                  <CircularProgress
+                    className='bg-black-20 br-100' size={40} thickness={5} mode='indeterminate' />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -298,7 +321,8 @@ Case.propTypes = {
   loadingComments: PropTypes.bool,
   commentsError: PropTypes.object,
   comments: PropTypes.array,
-  userEmail: PropTypes.string
+  userEmail: PropTypes.string,
+  attachmentUploads: PropTypes.array
 }
 
 let caseError, commentsError
@@ -326,8 +350,9 @@ const CaseContainer = createContainer(props => {
   }
 }, Case)
 
-function mapStateToProps () {
+function mapStateToProps ({caseAttachmentUploads}, props) {
   return {
+    attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || []
   }
 }
 
