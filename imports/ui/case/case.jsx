@@ -29,6 +29,8 @@ import {
   titleStyle,
   moreVertIconColor,
   attachmentButtonStyle,
+  retryButtonStyle,
+  replayIconColor,
   sendIconStyle
 } from './case.mui-styles'
 
@@ -37,6 +39,8 @@ const UneeTIcon = (props) => (
     <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
   </SvgIcon>
 )
+
+const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
 const formatDayText = time => {
   const generalFormat = 'MMMM DD'
@@ -57,15 +61,20 @@ export class Case extends Component {
       message: '',
       previewImage: ''
     }
+    this.computedMessageWidth = 100
   }
 
   componentDidUpdate (prevProps) {
     const { comments, attachmentUploads } = this.props
 
-    // Scrolling down to the latest message, if the messages were already rendered, and a comment has been added
-    if (this.refs.messages && (prevProps.comments.length !== comments.length ||
-      prevProps.attachmentUploads.length !== attachmentUploads.length)) {
-      this.refs.messages.scrollTop = this.refs.messages.scrollHeight
+    if (this.refs.messages) {
+      this.computedMessageWidth = Math.round(this.refs.messages.offsetWidth * messagePercentWidth)
+
+      // Scrolling down to the latest message, if the messages were already rendered, and a comment has been added
+      if ((prevProps.comments.length !== comments.length ||
+        prevProps.attachmentUploads.length !== attachmentUploads.length)) {
+        this.refs.messages.scrollTop = this.refs.messages.scrollHeight
+      }
     }
   }
 
@@ -95,6 +104,13 @@ export class Case extends Component {
         message: ''
       })
     }
+  }
+
+  handleRetryUpload (evt, process) {
+    const { retryAttachment } = actions
+    evt.preventDefault()
+
+    this.props.dispatch(retryAttachment(process))
   }
 
   handleFileSelection (evt) {
@@ -252,28 +268,40 @@ export class Case extends Component {
 
   renderMessageImageContent (isSelf, creator, text, creationTime, process) {
     const attachmentUrl = text.split('\n')[1]
+    const thumbUrl = attachmentUrl.replace(/\/upload\/[^/]*\//, `/upload/w_${this.computedMessageWidth}/`)
     const creatorText = isSelf ? 'You' : creator
     return (
       <div className={
         'w-60 br3 mh2 dib tc overflow-hidden h4 bg-white relative inline-flex items-center' + (isSelf ? ' ml-auto' : '')
       } onClick={() => !process && this.setState({selectedAttachment: {creatorText, creationTime, attachmentUrl}})}>
-        <img className='w-100 absolute' src={attachmentUrl} alt={attachmentUrl} />
+        <img className='w-100 absolute' src={thumbUrl} alt={attachmentUrl} />
         <div className='fr f7 white absolute bottom-0 right-0 lh-dbl pr2'>
           {moment(creationTime).format('HH:mm')}
         </div>
         {!!process && (
           <div className='w-100 tc'>
-            <div className='relative'>
-              {process.percent ? (
+            <div className='relative dib bg-black-20 br-100'>
+              {process.error ? (
+                <IconButton style={retryButtonStyle} onClick={evt => this.handleRetryUpload(evt, process)}>
+                  <FontIcon className='material-icons' color={replayIconColor}>refresh</FontIcon>
+                </IconButton>
+              ) : process.percent ? (
                 <CircularProgress
-                  className='bg-black-20 br-100' size={40} thickness={5} mode='determinate' value={process.percent} />
+                  size={40} thickness={5} mode='determinate' value={process.percent} />
               ) : (
                 <div className='dib'>
                   <CircularProgress
-                    className='bg-black-20 br-100' size={40} thickness={5} mode='indeterminate' />
+                    size={40} thickness={5} mode='indeterminate' />
                 </div>
               )}
             </div>
+            {!!process.errorMessage && (
+              <div className='relative'>
+                <div className='bg-black-30 br-pill f7 white dib ph2'>
+                  {process.errorMessage}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

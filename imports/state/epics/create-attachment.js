@@ -3,6 +3,7 @@
 import { Meteor } from 'meteor/meteor'
 import { merge } from 'rxjs/observable/merge'
 import { of } from 'rxjs/observable/of'
+import { onErrorResumeNext } from 'rxjs/observable/onErrorResumeNext'
 import { interval } from 'rxjs/observable/interval'
 import { Subject } from 'rxjs/Subject'
 import {
@@ -19,6 +20,7 @@ import 'rxjs/add/operator/mergeMap'
 import 'rxjs/add/operator/catch'
 import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/throttle'
+import 'rxjs/add/operator/ignoreElements'
 
 const { CLOUDINARY_URL, CLOUDINARY_PRESET } = Meteor.settings.public
 
@@ -46,8 +48,8 @@ export const createAttachment = (action$, store, { ajax }) => {
       method: 'POST',
       body: formData,
       progressSubscriber: progress$
-    }).mergeMap(result => { // For any successful call
-      return merge( // Publish both "COMPLETED" and "CREATE_COMMENT"
+    }).mergeMap(result => // For any successful call
+      merge( // Publish both "COMPLETED" and "CREATE_COMMENT"
         of({
           ...action,
           type: ATTACHMENT_UPLOAD_COMPLETED
@@ -58,7 +60,7 @@ export const createAttachment = (action$, store, { ajax }) => {
           caseId
         })
       )
-    }).catch(error => of({ // Catching AJAX errors and publishing "ERROR"
+    ).catch(error => of({ // Catching AJAX errors and publishing "ERROR"
       ...action,
       type: ATTACHMENT_UPLOAD_ERROR,
       errorMessage: 'Upload failed',
@@ -78,7 +80,7 @@ export const createAttachment = (action$, store, { ajax }) => {
           type: ATTACHMENT_UPLOADING
         }),
         ajax$,
-        progress$
+        onErrorResumeNext(progress$)
       )
     })
 }
