@@ -9,6 +9,9 @@ before_install:
   - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
+  - aws configure set profile.lmb-dev.aws_access_key_id $AWS_ACCESS_KEY_ID
+  - aws configure set profile.lmb-dev.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+  - aws configure set profile.lmb-dev.region ap-southeast-1
 
 cache:
   directories:
@@ -23,8 +26,12 @@ script:
   - aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/commit/${COMMIT}.tar.gz
   - aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${TRAVIS_BRANCH}.tar.gz
 
-after_success:
-    - ./deploy.sh
+deploy:
+  provider: script
+  script: deploy.sh $COMMIT
+  on:
+    tags: true
+    all_branches: true
 
 env:
   global:
