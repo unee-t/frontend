@@ -43,9 +43,12 @@ then
 	exit 1
 fi
 
-if ! test -x /usr/local/bin/ecs-cli
+if ! hash ecs-cli
 then
-	curl -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest && chmod +x /usr/local/bin/ecs-cli
+	echo Please install https://github.com/aws/amazon-ecs-cli and ensure it is in your \$PATH
+	echo curl -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest && chmod +x /usr/local/bin/ecs-cli
+else
+	ecs-cli -version
 fi
 
 ecs-cli configure --cluster master --region ap-southeast-1 --compose-service-name-prefix ecscompose-service-
@@ -53,4 +56,4 @@ test -f aws-env.$STAGE && source aws-env.$STAGE
 
 COMMIT=$1 envsubst < AWS-docker-compose-meteor.yml > docker-compose-meteor.yml
 
-/usr/local/bin/ecs-cli compose --aws-profile $AWS_PROFILE -p meteor -f docker-compose-meteor.yml service up
+ecs-cli compose --aws-profile $AWS_PROFILE -p meteor -f docker-compose-meteor.yml service up
