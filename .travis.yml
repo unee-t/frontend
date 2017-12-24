@@ -30,6 +30,8 @@ deploy:
   provider: script
   script: sh deploy.sh $COMMIT
   skip_cleanup: true
+  on:
+      all_branches: true
 
 env:
   global:
