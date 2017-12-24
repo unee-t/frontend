@@ -28,10 +28,8 @@ script:
 
 deploy:
   provider: script
-  script: deploy.sh $COMMIT
-  on:
-    tags: true
-    all_branches: true
+  script: sh deploy.sh $COMMIT
+  skip_cleanup: true
 
 env:
   global:

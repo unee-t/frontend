@@ -35,6 +35,7 @@ then
 	show_help >&2
 	exit 1
 fi
+echo COMMIT: $1
 
 if ! aws configure --profile $AWS_PROFILE list
 then
