@@ -56,4 +56,6 @@ test -f aws-env.$STAGE && source aws-env.$STAGE
 
 COMMIT=$1 envsubst < AWS-docker-compose-meteor.yml > docker-compose-meteor.yml
 
-ecs-cli compose --aws-profile $AWS_PROFILE -p meteor -f docker-compose-meteor.yml service up
+ecs-cli compose --aws-profile $AWS_PROFILE -p meteor -f docker-compose-meteor.yml service up --timeout 7
+
+ecs-cli compose --aws-profile $AWS_PROFILE -p meteor -f docker-compose-meteor.yml service ps
