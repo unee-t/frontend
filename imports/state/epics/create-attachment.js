@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor'
 import { merge } from 'rxjs/observable/merge'
 import { of } from 'rxjs/observable/of'
 import { onErrorResumeNext } from 'rxjs/observable/onErrorResumeNext'
-import { interval } from 'rxjs/observable/interval'
 import { Subject } from 'rxjs/Subject'
 import {
   CREATE_ATTACHMENT,
@@ -19,18 +18,21 @@ import 'rxjs/add/operator/filter'
 import 'rxjs/add/operator/mergeMap'
 import 'rxjs/add/operator/catch'
 import 'rxjs/add/operator/map'
-import 'rxjs/add/operator/throttle'
-import 'rxjs/add/operator/ignoreElements'
-
-const { CLOUDINARY_URL, CLOUDINARY_PRESET } = Meteor.settings.public
+import 'rxjs/add/operator/takeUntil'
+import 'rxjs/add/operator/bufferTime'
+import 'rxjs/add/operator/take'
 
 export const createAttachment = (action$, store, { ajax }) => {
+  const { CLOUDINARY_URL, CLOUDINARY_PRESET } = Meteor.settings.public
+
   // Creating a stream to public upload progress actions
-  const buildProgressStream = action => (new Subject()).map(evt => evt.lengthComputable && {
-    ...action,
-    type: ATTACHMENT_UPLOAD_PROGRESS,
-    percent: Math.round(evt.loaded / evt.total * 100)
-  }).throttle(val => interval(1000))
+  const buildProgressStream = action => (new Subject())
+    .filter(evt => evt.lengthComputable)
+    .map(evt => ({
+      ...action,
+      type: ATTACHMENT_UPLOAD_PROGRESS,
+      percent: Math.round(evt.loaded / evt.total * 100)
+    }))
 
   // Creating a stream to execute the upload and chaining to publish completion, error and "CREATE_COMMENT"
   const buildAjaxStream = (action, progress$) => {
@@ -74,13 +76,37 @@ export const createAttachment = (action$, store, { ajax }) => {
     .mergeMap(action => { // For any matching action
       const progress$ = buildProgressStream(action)
       const ajax$ = buildAjaxStream(action, progress$)
+
+      // Produces a stream that can output up to 1 value per "timeoutMs", but also outputs immediately if no value was
+      //   sent as input for more than "timeoutMs"
+      const steadyStream = (stream, timeoutMs) => stream
+        .take(1)
+        .mergeMap(val => merge(
+          of(val),
+          stream
+            .bufferTime(timeoutMs)
+            .take(1)
+            .mergeMap(values => {
+              if (values.length) {
+                return merge(
+                  of(values.slice(-1)[0]),
+                  steadyStream(stream, timeoutMs)
+                )
+              } else {
+                return steadyStream(stream, timeoutMs)
+              }
+            })
+        ))
+
+      const steadyProgress$ = steadyStream(onErrorResumeNext(progress$), 1000).takeUntil(ajax$)
+
       return merge( // Publish an initial "UPLOADING" action, and the AJAX and progress streams that will dispatch later
         of({
           ...action,
           type: ATTACHMENT_UPLOADING
         }),
         ajax$,
-        onErrorResumeNext(progress$)
+        steadyProgress$
       )
     })
 }
