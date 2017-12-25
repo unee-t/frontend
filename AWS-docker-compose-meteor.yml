@@ -12,6 +12,7 @@ services:
        - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
        - CLOUDINARY_URL=${CLOUDINARY_URL}
        - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
+       - COMMIT=${COMMIT}
       logging:
             driver: awslogs
             options:
