@@ -39,9 +39,44 @@
   outline: 0;
 }
 
-/* Functional CSS additions */
+.shadow-1 {
+  box-shadow: 0px 0px 4px 2px rgba( 0, 0, 0, 0.2 );
+}
+
+/* Tachyons rotations - start */
+.rotate-45 { -webkit-transform: rotate( 45deg ); transform: rotate( 45deg ); }
+.rotate-90 { -webkit-transform: rotate( 90deg ); transform: rotate( 90deg ); }
+.rotate-135 { -webkit-transform: rotate( 135deg ); transform: rotate( 135deg ); }
+.rotate-180 { -webkit-transform: rotate( 180deg ); transform: rotate( 180deg ); }
+.rotate-225 { -webkit-transform: rotate( 225deg ); transform: rotate( 225deg ); }
+.rotate-270 { -webkit-transform: rotate( 270deg ); transform: rotate( 270deg ); }
+.rotate-315 { -webkit-transform: rotate( 315deg ); transform: rotate( 315deg ); }
+/* Tachyons rotations - end */
+
+/* Tachyons Height Scale - start */
+.h1 { height: 1rem; }
+.h2 { height: 2rem; }
+.h3 { height: 4rem; }
+.h4 { height: 8rem; }
+.h5 { height: 16rem; }
+/* Tachyons Height Scale - end */
+
+.mw-60 {
+  max-width: 60%;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
 .flex{
   display: flex;
+}
+
+.inline-flex {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
 }
 
 .flex-grow {
@@ -56,6 +91,7 @@
   align-items: center;
 }
 
+/* Functional CSS additions */
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;

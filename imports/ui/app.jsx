@@ -19,7 +19,7 @@ class App extends Component {
           <Route exact path='/unit/new' component={UnderConstruction} />
           <Route exact path='/dashboard' component={Dashboard} />
           <AuthRoute exact path='/case' component={CaseExplorer} />
-          <AuthRoute exact path='/case/:caseId' component={Case} />
+          <AuthRoute path='/case/:caseId' component={Case} />
           <Redirect to='/' />
         </Switch>
       </div>
