@@ -79,24 +79,27 @@ export const createAttachment = (action$, store, { ajax }) => {
 
       // Produces a stream that can output up to 1 value per "timeoutMs", but also outputs immediately if no value was
       //   sent as input for more than "timeoutMs"
-      const steadyStream = (stream, timeoutMs) => stream
-        .take(1)
-        .mergeMap(val => merge(
-          of(val),
-          stream
-            .bufferTime(timeoutMs)
-            .take(1)
-            .mergeMap(values => {
-              if (values.length) {
-                return merge(
-                  of(values.slice(-1)[0]),
-                  steadyStream(stream, timeoutMs)
-                )
-              } else {
-                return steadyStream(stream, timeoutMs)
-              }
-            })
-        ))
+      const steadyStream = (() => {
+        const bufferedStream = (stream, timeoutMs) => stream
+          .bufferTime(timeoutMs)
+          .take(1)
+          .mergeMap(values => {
+            if (values.length) {
+              return merge(
+                of(values.slice(-1)[0]),
+                bufferedStream(stream, timeoutMs)
+              )
+            } else {
+              return steadyStream(stream, timeoutMs)
+            }
+          })
+        return (stream, timeoutMs) => stream
+          .take(1)
+          .mergeMap(val => merge(
+            of(val),
+            bufferedStream(stream, timeoutMs)
+          ))
+      })()
 
       const steadyProgress$ = steadyStream(onErrorResumeNext(progress$), 1000).takeUntil(ajax$)
 

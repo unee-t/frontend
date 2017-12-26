@@ -80,36 +80,43 @@ if (Meteor.isClient) {
 
         const { progressSubscriber } = ajaxStub.firstCall.args[0]
         progressSubscriber.next({lengthComputable: false}) // Should not yield any action
-        progressSubscriber.next({
+        const dispatchProgress = loaded => progressSubscriber.next({
           lengthComputable: true,
-          loaded: 400,
-          total: 2000 // 20%
-        }) // Should yield the first progress action immediately
-        clock.tick(500)
-        progressSubscriber.next({
-          lengthComputable: true,
-          loaded: 800,
+          loaded,
           total: 2000
-        }) // Should not yield any action, as it is being swallowed by the buffer
+        })
+
+        // Should yield the first progress action immediately
+        dispatchProgress(400)// 20%
+        clock.tick(500)
+
+        // Should not yield any action, as it is being swallowed by the buffer
+        dispatchProgress(800) // 40%
         clock.tick(300)
-        progressSubscriber.next({
-          lengthComputable: true,
-          loaded: 1500,
-          total: 2000 // 75%
-        }) // Added as the last action in the buffer of this 1000ms
-        clock.tick(1300) // Should make the previous event yield an action
-        progressSubscriber.next({
-          lengthComputable: true,
-          loaded: 1800,
-          total: 2000 // 90%
-        }) // Should yield an action, as 1100ms should have passed since the last event
-        clock.tick(1100)
+
+        // Added as the last action in the buffer of this 1000ms
+        dispatchProgress(1500) // 75%
+        clock.tick(300) // Should make the previous event yield an action
+
+        // Should not yield any action, as it is being swallowed by the buffer
+        dispatchProgress(1600) // 80%
+        clock.tick(500)
+
+        // Added as the last action in the buffer of this 1000ms (400ms till the buffer elapses)
+        dispatchProgress(1800) // 90%
+        clock.tick(1500) // Should make the previous event yield an action, and return the stream to idle (no buffering)
         progressSubscriber.next({
           lengthComputable: true,
           loaded: 1900,
           total: 2000 // 95%
         }) // Should yield the action immediately (to be received before the stream is cut by ajaxStream output)
         clock.tick(100)
+        progressSubscriber.next({
+          lengthComputable: true,
+          loaded: 1940,
+          total: 2000 // 97%
+        }) // Should not yield this action ever, as the previous was just dispatched, and the ajaxStream will stop it
+        clock.tick(200)
 
         ajaxStream.next({
           response: {
