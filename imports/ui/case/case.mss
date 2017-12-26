@@ -18,10 +18,6 @@
   background-color: #f0f0f0;
 }
 
-.messageBox {
-  max-width: 60%;
-}
-
 .messageCreator {
   color: var(--creator-color);
 }
