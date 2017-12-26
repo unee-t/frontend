@@ -105,17 +105,13 @@ if (Meteor.isClient) {
         // Added as the last action in the buffer of this 1000ms (400ms till the buffer elapses)
         dispatchProgress(1800) // 90%
         clock.tick(1500) // Should make the previous event yield an action, and return the stream to idle (no buffering)
-        progressSubscriber.next({
-          lengthComputable: true,
-          loaded: 1900,
-          total: 2000 // 95%
-        }) // Should yield the action immediately (to be received before the stream is cut by ajaxStream output)
+
+        // Should yield the action immediately (to be received before the stream is cut by ajaxStream output)
+        dispatchProgress(1900) // 95%
         clock.tick(100)
-        progressSubscriber.next({
-          lengthComputable: true,
-          loaded: 1940,
-          total: 2000 // 97%
-        }) // Should not yield this action ever, as the previous was just dispatched, and the ajaxStream will stop it
+
+        // Should not yield this action ever, as it is being buffer, but the ajaxStream will cut it off
+        dispatchProgress(1940) // 97%
         clock.tick(200)
 
         ajaxStream.next({
