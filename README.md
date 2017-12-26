@@ -1,7 +1,7 @@
 # Unee-T
 
 * [How to test with Bugzilla in a local environment](https://unee-t-media.s3-accelerate.amazonaws.com/frontend/MEFE.mp4)
-* [How to deploy to AWS ECS](https://s.natalian.org/2017-10-27/frontend-updates.mp4)
+* [ECS deploy](https://unee-t-media.s3-accelerate.amazonaws.com/2017/ecs-deploy.mp4) with `./deploy.sh`
 
 # Meteor builds
 

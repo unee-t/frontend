@@ -1,0 +1,20 @@
+version: '2'
+services:
+    meteor:
+      image: ulexus/meteor
+      ports:
+       - "8080:3000"
+      environment:
+       - ROOT_URL=${ROOT_URL}
+       - BUNDLE_URL=https://unee-t-media.s3-accelerate.amazonaws.com/frontend/commit/${COMMIT}.tar.gz
+       - BUGZILLA_URL=${BUGZILLA_URL}
+       - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
+       - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
+       - CLOUDINARY_URL=${CLOUDINARY_URL}
+       - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
+       - COMMIT=${COMMIT}
+      logging:
+            driver: awslogs
+            options:
+              awslogs-region: ap-southeast-1
+              awslogs-group: meteor
