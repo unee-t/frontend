@@ -1,14 +1,34 @@
+:root {
+  --strong-cerulean: #2682A0;
+  --bitter-lemon: #cfd924;
+  --moon-gray: #ccc; /* exists in the tachyons palette */
+  --gray-93: #ededed;
+  --rad-green: #c9fb65;
+}
+
 /* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;
 }
 
 .b--moon-gray {
-  border-color: #ccc;
+  border-color: var(--moon-gray);
 }
 
 .b--gray-93 {
-  border-color: #ededed;
+  border-color: var(--gray-93);
+}
+
+.b--bitter-lemon {
+  border-color: var(--bitter-lemon)
+}
+
+.strong-cerulean{
+  color: var(--strong-cerulean);
+}
+
+.moon-gray {
+  color: var(--moon-gray);
 }
 
 .f7 {
@@ -36,7 +56,7 @@
 }
 
 .bg-rad-green {
-  background-color: #C9FB65;
+  background-color: var(--rad-green);
 }
 
 .outline-0 {
@@ -44,7 +64,7 @@
 }
 
 .shadow-1 {
-  box-shadow: 0px 0px 4px 2px rgba( 0, 0, 0, 0.2 );
+  box-shadow: 0 0 4px 2px rgba( 0, 0, 0, 0.2 );
 }
 
 /* Tachyons rotations - start */
@@ -101,6 +121,18 @@
 
 .b--solid-right {
   border-right-style: solid;
+}
+
+.b--solid-left {
+  border-left-style: solid;
+}
+
+.b--solid-top {
+  border-top-style: solid;
+}
+
+.b--solid-bottom {
+  border-bottom-style: solid;
 }
 
 /* Functional CSS additions */

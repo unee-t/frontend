@@ -3,10 +3,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
-import AppBar from 'material-ui/AppBar'
 import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
-import SvgIcon from 'material-ui/SvgIcon'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
@@ -17,11 +15,8 @@ import { attachmentTextMatcher } from '../../util/matchers'
 import styles from './case.mss'
 import colors from '../../mui-theme/colors'
 import {
-  logoIconStyle,
-  logoButtonStyle,
   subheaderStyle,
-  titleStyle,
-  moreVertIconColor,
+  infoIconStyle,
   attachmentButtonStyle,
   retryButtonStyle,
   replayIconColor,
@@ -30,10 +25,16 @@ import {
 
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
-const UneeTIcon = (props) => (
-  <SvgIcon {...props} viewBox='3 3 39 39'>
-    <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
-  </SvgIcon>
+const additionalSubHeader = (label, info, onClick) => (
+  <Subheader className='bt b--gray-93 pv2 ph3' key='2'>
+    <div className='pl2 bl bw1 b--bitter-lemon'>
+      <div className='strong-cerulean f7 lh-title mv1'>{label}</div>
+      <div className='lh-title mt1 mb2 flex'>
+        <div className='ellipsis mid-gray flex-grow'>{info}</div>
+        <a className='moon-gray' onClick={onClick}>More</a>
+      </div>
+    </div>
+  </Subheader>
 )
 
 class CaseMessages extends Component {
@@ -115,8 +116,10 @@ class CaseMessages extends Component {
 
   render () {
     const { caseItem, comments, attachmentUploads } = this.props
+    console.log('caseItem', caseItem)
+
     return (
-      <div className='flex flex-column full-height roboto overflow-hidden'>
+      <div className='flex flex-column flex-grow roboto overflow-hidden'>
         {this.renderTitle(caseItem)}
         {this.renderMessages(comments, attachmentUploads)}
         {this.renderInputControls(caseItem)}
@@ -124,27 +127,24 @@ class CaseMessages extends Component {
     )
   }
 
-  renderTitle ({ summary, product }) {
-    return (
-      <div>
-        <AppBar title={product}
-          titleStyle={titleStyle}
-          iconElementLeft={
-            <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-              <UneeTIcon />
-            </IconButton>
-          }
-        />
-        <Subheader style={subheaderStyle} className='flex'>
-          <div className='flex-grow ellipsis' title={summary}>{summary}</div>
-          <div>
-            <IconButton>
-              <FontIcon className='material-icons' color={moreVertIconColor}>more_vert</FontIcon>
-            </IconButton>
-          </div>
-        </Subheader>
-      </div>
-    )
+  renderTitle ({ id, priority, cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution }) {
+    const subheaderBoxClasses = 'flex-grow tc b--gray-93'
+    let additional
+    if (solution) {
+      additional = additionalSubHeader('Solution', solution, this.props.onMoreInfo)
+    } else if (nextSteps) {
+      additional = additionalSubHeader('Next steps', nextSteps, this.props.onMoreInfo)
+    }
+    return [
+      (<Subheader style={subheaderStyle} className='flex' key='1'>
+        <div className={subheaderBoxClasses + ' br'}>Issue: #{id}</div>
+        <div className={subheaderBoxClasses + ' br'}>Priority: {priority}</div>
+        <div className={subheaderBoxClasses + ' flex items-center justify-center'} onClick={this.props.onMoreInfo}>
+          <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
+        </div>
+      </Subheader>),
+      additional
+    ]
   }
 
   renderMessages (comments, uploads) {
@@ -304,7 +304,8 @@ CaseMessages.propTypes = {
   onCreateComment: PropTypes.func.isRequired,
   onCreateAttachment: PropTypes.func.isRequired,
   onRetryAttachment: PropTypes.func.isRequired,
-  onThumbClicked: PropTypes.func.isRequired
+  onThumbClicked: PropTypes.func.isRequired,
+  onMoreInfo: PropTypes.func.isRequired
 }
 
 export default CaseMessages

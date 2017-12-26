@@ -10,20 +10,16 @@
   }
 }
 
-:root {
-  --creator-color: #2682A0;
-}
-
 .messagesContainer {
   background-color: #f0f0f0;
 }
 
 .messageCreator {
-  color: var(--creator-color);
+  color: var(--strong-cerulean);
 }
 
 .messageAvatar {
-  background-color: var(--creator-color);
+  background-color: var(--strong-cerulean);
   width: 2.5rem;
   height: 2.5rem;
   line-height: 2.5rem;
