@@ -1,5 +1,4 @@
 /* eslint-env mocha */
-/* global FormData */
 
 import { Meteor } from 'meteor/meteor'
 import { expect } from 'meteor/practicalmeteor:chai'
@@ -21,10 +20,6 @@ if (Meteor.isClient) {
     let input, output, nextSpy, ajaxStub, ajaxStream, clock, initialPublicSettings
     const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/demo-env/image/upload'
     const CLOUDINARY_PRESET = 'asddsd23asd'
-    // // Stupid hacky way to create a file: https://github.com/ariya/phantomjs/issues/14247
-    // const file = new Blob(['Image content'])
-    // file.name = 'image.jpg'
-    // file.lastModifiedDate = new Date()
     const inputAction = {
       type: CREATE_ATTACHMENT,
       processId: 12828,
@@ -135,7 +130,7 @@ if (Meteor.isClient) {
           progressSubscriber: sinon.match.instanceOf(Subject)
         })
 
-        // PhantomJS is preventing this from running in CI...  https://github.com/ariya/phantomjs/issues/14867
+        // PhantomJS is preventing this from running on CI...  https://github.com/ariya/phantomjs/issues/14867
         // expect(ajaxStub.firstCall.args[0].body.get('file')).to.equal(inputAction.file)
         // expect(ajaxStub.firstCall.args[0].body.get('upload_preset')).to.equal(CLOUDINARY_PRESET)
         // expect(ajaxStub.firstCall.args[0].body.get('folder')).to.equal('42')
