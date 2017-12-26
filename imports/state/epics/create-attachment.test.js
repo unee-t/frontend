@@ -1,5 +1,4 @@
 /* eslint-env mocha */
-/* global FormData */
 
 import { Meteor } from 'meteor/meteor'
 import { expect } from 'meteor/practicalmeteor:chai'
