@@ -2,17 +2,23 @@
   "name": "unee-t-fe",
   "private": true,
   "scripts": {
-    "start": "meteor run",
+    "start": "source .env ; meteor run --settings settings.json",
     "test": "npm run lint && npm run proof",
     "lint": "standard --verbose | snazzy",
     "proof": "./node_modules/spacejam/bin/spacejam test --driver-package practicalmeteor:mocha",
     "test-local": "meteor test --driver-package practicalmeteor:mocha"
   },
+  "standard": {
+    "parser": "babel-eslint"
+  },
   "dependencies": {
     "babel-runtime": "^6.20.0",
     "bcrypt": "^1.0.2",
+    "body-parser": "^1.18.2",
     "classnames": "^2.2.5",
     "history": "^4.6.3",
+    "lodash": "^4.17.4",
+    "material-ui": "^0.19.4",
     "meteor-node-stubs": "~0.2.4",
     "moment": "^2.18.1",
     "prop-types": "^15.5.10",
@@ -24,10 +30,14 @@
     "react-router-redux": "^5.0.0-alpha.6",
     "redux": "^3.7.1",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.2.0"
+    "redux-observable": "^0.17.0",
+    "redux-thunk": "^2.2.0",
+    "rxjs": "^5.5.5"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
+    "babel-eslint": "^8.0.3",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
     "enzyme": "^2.9.1",
     "postcss-easy-import": "^2.1.0",
     "postcss-modules-extract-imports": "^1.1.0",

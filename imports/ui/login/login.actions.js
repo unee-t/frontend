@@ -17,7 +17,7 @@ export function submitCredentials (email, password) {
           value: err
         })
       } else {
-        dispatch(push('/unit/new'))
+        dispatch(push('/case'))
       }
     })
   }

@@ -44,6 +44,20 @@ if (Meteor.isClient) {
         expect(actions.submitSignupInfo).to.have.been.calledWithMatch(formData)
         expect(dispatchStub).to.have.been.calledWith(mockAction)
       })
+      it('should not show the BZ inputs initially', () => {
+        const signup = shallow(<SignupPage />)
+
+        expect(signup.find('InputRow[identifier="bzLogin"]')).to.have.lengthOf(0)
+        expect(signup.find('InputRow[identifier="bzPass"]')).to.have.lengthOf(0)
+      })
+      it('should show the BZ inputs after the checkbox was checked', () => {
+        const signup = shallow(<SignupPage />)
+
+        signup.setState({existingBz: true})
+
+        expect(signup.find('InputRow[identifier="bzLogin"]')).to.have.lengthOf(1)
+        expect(signup.find('InputRow[identifier="bzPass"]')).to.have.lengthOf(1)
+      })
     })
   })
 }

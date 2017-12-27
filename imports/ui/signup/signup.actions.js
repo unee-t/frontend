@@ -11,11 +11,13 @@ export function submitSignupInfo (info) {
       profile: {
         phone: info.phoneNumber,
         name: info.fullName,
-        country: info.country
+        country: info.country,
+        bzLogin: info.bzLogin,
+        bzPass: info.bzPass
       }
     }, (err) => {
       if (err) return console.error(err)
-      dispatch(push('/unit/new'))
+      dispatch(push('/case'))
     })
   }
 }
