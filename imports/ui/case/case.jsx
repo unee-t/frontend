@@ -9,6 +9,7 @@ import _ from 'lodash'
 import AppBar from 'material-ui/AppBar'
 import SvgIcon from 'material-ui/SvgIcon'
 import IconButton from 'material-ui/IconButton'
+import FontIcon from 'material-ui/FontIcon'
 import Cases from '../../api/cases'
 import Comments from '../../api/comments'
 import Preloader from '../preloader/preloader'
@@ -57,14 +58,20 @@ export class Case extends Component {
               onBack={() => this.props.dispatch(goBack())} />
           }
         }} />
-        <Route path={match.url} render={() => (
+        <Route path={match.url} render={props => (
           <div className='flex flex-column full-height roboto overflow-hidden'>
             <AppBar title={caseItem.summary}
               titleStyle={titleStyle}
               iconElementLeft={
-                <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-                  <UneeTIcon />
-                </IconButton>
+                props.match.isExact ? (
+                  <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
+                    <UneeTIcon />
+                  </IconButton>
+                ) : (
+                  <IconButton onClick={() => this.props.dispatch(goBack())}>
+                    <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
+                  </IconButton>
+                )
               }
             />
             <Route exact path={match.url} render={() => (
