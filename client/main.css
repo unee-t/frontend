@@ -1,5 +1,5 @@
 :root {
-  --strong-cerulean: #2682A0;
+  --strong-cerulean: #2D94B0;
   --bitter-lemon: #cfd924;
   --moon-gray: #ccc; /* exists in the tachyons palette */
   --gray-93: #ededed;
@@ -83,6 +83,9 @@
 .h3 { height: 4rem; }
 .h4 { height: 8rem; }
 .h5 { height: 16rem; }
+
+/* custom addition */
+.h2-5 { height: 3rem; }
 /* Tachyons Height Scale - end */
 
 .mw-60 {

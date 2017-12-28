@@ -11,8 +11,10 @@ import ContentAdd from 'material-ui/svg-icons/content/add'
 import CircularProgress from 'material-ui/CircularProgress'
 import { formatDayText } from '../../util/formatters'
 import { attachmentTextMatcher } from '../../util/matchers'
+import UserAvatar from '../components/user-avatar'
 
 import styles from './case.mss'
+import themes from '../components/user-themes.mss'
 import colors from '../../mui-theme/colors'
 import {
   subheaderStyle,
@@ -116,8 +118,6 @@ class CaseMessages extends Component {
 
   render () {
     const { caseItem, comments, attachmentUploads } = this.props
-    console.log('caseItem', caseItem)
-
     return (
       <div className='flex flex-column flex-grow roboto overflow-hidden'>
         {this.renderTitle(caseItem)}
@@ -156,6 +156,7 @@ class CaseMessages extends Component {
     })))
     let lastDay = ''
     let currKey = 0
+    this.creators = []
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
         {messageList.reduce((listItems, comment) => { // Rendering all starting from the second
@@ -191,12 +192,19 @@ class CaseMessages extends Component {
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
       : this.renderMessageTextContent.bind(this)
+    let themeClass
+    if (!isSelf) {
+      let creatorIndex = this.creators.indexOf(creator)
+      if (creatorIndex === -1) {
+        this.creators.push(creator)
+        creatorIndex = this.creators.length - 1
+      }
+      themeClass = themes['theme' + ((creatorIndex % 10) + 1)]
+    }
     return (
-      <div className={'mb3' + (isSelf ? ' tr' : '')} key={key}>
+      <div className={['mb3' + (isSelf ? ' tr' : ''), themeClass || ''].join(' ')} key={key}>
         { !isSelf ? (
-          <div className={styles.messageAvatar + ' dib ml2 v-btm br-100 tc white'}>
-            {creator.slice(0, 1).toUpperCase()}
-          </div>
+          <UserAvatar creator={creator} />
         ) : ''}
         { contentRenderer(isSelf, creator, text, creation_time, id, process) }
       </div>
@@ -207,7 +215,7 @@ class CaseMessages extends Component {
     return (
       <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl ' + (isSelf ? 'bg-rad-green' : 'bg-white')}>
         { !isSelf ? (
-          <div className={styles.messageCreator + ' f6 ellipsis'}>{creator}</div>
+          <div className={themes.creatorText + ' f6 ellipsis'}>{creator}</div>
         ) : ''}
         <span className='f5 mr3'>{text}</span>
         <div className={styles.messageTime + ' fr f7'}>
