@@ -48,3 +48,5 @@ export const infoIconStyle = {
   fontSize: 16,
   marginRight: '0.25rem'
 }
+
+export const detailLineIconColor = '#777'

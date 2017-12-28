@@ -15,6 +15,7 @@ import Preloader from '../preloader/preloader'
 import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
+import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
 
 import {
@@ -39,7 +40,7 @@ export class Case extends Component {
     const { goBack, push } = routerRedux
     const { createComment, createAttachment, retryAttachment } = actions
     const { caseId } = match.params
-
+    const detailsUrl = `${match.url}/details`
     return (
       <Switch>
         <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
@@ -73,11 +74,11 @@ export class Case extends Component {
                 onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
                 onRetryAttachment={process => dispatch(retryAttachment(process))}
                 onThumbClicked={id => dispatch(push(`${match.url}/attachment/${id}`))}
-                onMoreInfo={() => dispatch(push(`${match.url}/info`))}
+                onMoreInfo={() => dispatch(push(detailsUrl))}
               />
             )} />
-            <Route exact path={`${match.url}/info`} render={() => (
-              <h1>More info</h1>
+            <Route exact path={detailsUrl} render={() => (
+              <CaseDetails caseItem={caseItem} comments={comments} />
             )} />
           </div>
         )} />
