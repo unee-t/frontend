@@ -4,6 +4,8 @@
   --moon-gray: #ccc; /* exists in the tachyons palette */
   --gray-93: #ededed;
   --rad-green: #c9fb65;
+  --very-light-gray: #f0f0f0;
+  --bondi-blue: #0095b6;
 }
 
 /* Tachyons fixes, overrides and additions */
@@ -19,12 +21,20 @@
   border-color: var(--gray-93);
 }
 
+.b--very-light-gray {
+  border-color: var(--very-light-gray);
+}
+
 .b--bitter-lemon {
   border-color: var(--bitter-lemon)
 }
 
-.strong-cerulean{
+.strong-cerulean {
   color: var(--strong-cerulean);
+}
+
+.bondi-blue {
+  color: var(--bondi-blue)
 }
 
 .moon-gray {
@@ -120,22 +130,6 @@
 
 .justify-center {
   justify-content: center;
-}
-
-.b--solid-right {
-  border-right-style: solid;
-}
-
-.b--solid-left {
-  border-left-style: solid;
-}
-
-.b--solid-top {
-  border-top-style: solid;
-}
-
-.b--solid-bottom {
-  border-bottom-style: solid;
 }
 
 /* Functional CSS additions */

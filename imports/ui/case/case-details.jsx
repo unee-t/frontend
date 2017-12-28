@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import FontIcon from 'material-ui/FontIcon'
 import _ from 'lodash'
+import moment from 'moment'
 import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
 
@@ -10,7 +11,13 @@ import { detailLineIconColor } from './case.mui-styles'
 const CaseDetails = (props) => {
   const { caseItem, comments } = props
   console.log('props.caseItem', caseItem)
-  const { summary, cf_ipi_clust_6_claim_type: claimType } = caseItem
+  const {
+    summary,
+    cf_ipi_clust_6_claim_type: claimType,
+    cf_ipi_clust_1_next_step: nextSteps,
+    cf_ipi_clust_1_solution: solution,
+    deadline
+  } = caseItem
   const participants = _.chain(comments).map('creator').uniq().value()
   return (
     <div>
@@ -28,6 +35,27 @@ const CaseDetails = (props) => {
             </div>
           ))}
         </div>
+      </div>
+      <div className='bb bt bw4 b--very-light-gray'>
+        {[
+          [solution, 'Solution', 'mid-gray'],
+          [nextSteps, 'Next steps', 'mid-gray'],
+          [deadline, 'Due date', 'b gray', val => moment(val).format('D MMM YYYY')]
+        ].reduce((all, [value, label, classes, formatter = _.identity]) => {
+          if (value) {
+            all.push(
+              <div className='bb bt b--very-light-gray pa3' key={all.length}>
+                <div className='f6 bondi-blue mb2'>
+                  {label}
+                </div>
+                <div className={classes + ' lh-copy'}>
+                  {formatter(value)}
+                </div>
+              </div>
+            )
+          }
+          return all
+        }, [])}
       </div>
     </div>
   )
