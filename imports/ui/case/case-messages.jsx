@@ -10,6 +10,7 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import CircularProgress from 'material-ui/CircularProgress'
 import { formatDayText } from '../../util/formatters'
+import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
 
@@ -228,8 +229,7 @@ class CaseMessages extends Component {
   renderMessageImageContent (isSelf, creator, text, creationTime, id, process) {
     const attachmentUrl = text.split('\n')[1]
     const { computedMessageWidth } = this.state
-    const thumbUrl = computedMessageWidth &&
-      attachmentUrl.replace(/\/upload\/[^/]*\//, `/upload/w_${computedMessageWidth}/`)
+    const thumbUrl = computedMessageWidth && matchWidth(attachmentUrl, computedMessageWidth)
     return (
       <div className={
         'w-60 br3 mh2 dib tc overflow-hidden h4 bg-white relative inline-flex items-center' + (isSelf ? ' ml-auto' : '')

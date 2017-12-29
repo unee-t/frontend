@@ -32,6 +32,10 @@ const UneeTIcon = (props) => (
 )
 
 export class Case extends Component {
+  navigateToAttachment (id) {
+    const { push } = routerRedux
+    this.props.dispatch(push(`${this.props.match.url}/attachment/${id}`))
+  }
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, caseError, attachmentUploads, match, userEmail, dispatch
@@ -80,12 +84,14 @@ export class Case extends Component {
                 onCreateComment={text => dispatch(createComment(text, caseId))}
                 onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
                 onRetryAttachment={process => dispatch(retryAttachment(process))}
-                onThumbClicked={id => dispatch(push(`${match.url}/attachment/${id}`))}
+                onThumbClicked={this.navigateToAttachment.bind(this)}
                 onMoreInfo={() => dispatch(push(detailsUrl))}
               />
             )} />
             <Route exact path={detailsUrl} render={() => (
-              <CaseDetails caseItem={caseItem} comments={comments} />
+              <CaseDetails caseItem={caseItem} comments={comments}
+                onSelectAttachment={this.navigateToAttachment.bind(this)}
+              />
             )} />
           </div>
         )} />

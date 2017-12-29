@@ -150,3 +150,19 @@
 .roboto {
   font-family: Roboto, sans-serif;
 }
+
+.grid {
+  display: grid;
+}
+
+.flow-row {
+  grid-auto-flow: row;
+}
+
+.col3-1fr {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.gap1 {
+  grid-gap: 0.25rem;
+}

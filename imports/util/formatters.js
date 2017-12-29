@@ -11,3 +11,5 @@ export const formatDayText = time => {
     }
   })
 }
+
+export const formatThumbUrl = (url, pixelWidth) => url.replace(/\/upload\/[^/]*\//, `/upload/w_${pixelWidth}/`)
