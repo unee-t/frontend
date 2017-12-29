@@ -46,6 +46,12 @@ then
 	aws configure set profile.lmb-dev.region ap-southeast-1
 fi
 
+if ! aws configure --profile $AWS_PROFILE list
+then
+	echo Profile $AWS_PROFILE does not exist >&2
+	exit 1
+fi
+
 if ! hash ecs-cli
 then
 	echo Please install https://github.com/aws/amazon-ecs-cli and ensure it is in your \$PATH
