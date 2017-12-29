@@ -3,6 +3,26 @@
 * [How to test with Bugzilla in a local environment](https://unee-t-media.s3-accelerate.amazonaws.com/frontend/MEFE.mp4)
 * [ECS deploy](https://unee-t-media.s3-accelerate.amazonaws.com/2017/ecs-deploy.mp4) with `./deploy.sh`
 
+# Environment variables
+
+They are securely managed in AWS's [parameter store](https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Parameters:sort=Name). The variables are retrieved via [an environment setup script](https://github.com/unee-t/frontend/blob/master/aws-env.dev), which is utilised by `deploy.sh`.
+
+# Deployment
+
+Happens automatically on master on the development AWS account 8126-4485-3088
+with AWS_PROFILE `lmb-dev`. Travis CI deployments made via pull request will fail since it will
+not have access to `AWS_SECRET_ACCESS_KEY`.
+
+Production deployment on AWS account 1924-5899-3663 is done manually via
+`./deploy.sh -p` via the AWS_PROFILE `aws-prod`.
+
+# Logs
+
+Frontend logs to the [meteor log group in
+CloudWatch](https://ap-southeast-1.console.aws.amazon.com/cloudwatch/home?region=ap-southeast-1#logs:),
+which is controlled by the [compose
+file](https://github.com/unee-t/frontend/blob/master/AWS-docker-compose-meteor.yml#L16).
+
 # Meteor builds
 
 The canonical master branch CI build location is <https://unee-t-media.s3-accelerate.amazonaws.com/frontend/master.tar.gz>

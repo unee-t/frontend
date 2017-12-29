@@ -40,7 +40,10 @@ echo COMMIT: $1
 if ! aws configure --profile $AWS_PROFILE list
 then
 	echo Profile $AWS_PROFILE does not exist >&2
-	exit 1
+	echo Attempting to setup one from the environment >&2
+	aws configure set profile.lmb-dev.aws_access_key_id $AWS_ACCESS_KEY_ID
+	aws configure set profile.lmb-dev.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+	aws configure set profile.lmb-dev.region ap-southeast-1
 fi
 
 if ! hash ecs-cli
