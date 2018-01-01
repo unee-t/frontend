@@ -28,8 +28,8 @@ import {
 
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
-const additionalSubHeader = (label, info, onClick) => (
-  <Subheader className='bt b--gray-93 pv2 ph3' key='2'>
+const additionalSubHeader = (label, info, onClick, lastIndex) => (
+  <Subheader className='bt b--gray-93 pv2 ph3' key={lastIndex + 1}>
     <div className='pl2 bl bw1 b--bitter-lemon'>
       <div className='strong-cerulean f7 lh-title mv1'>{label}</div>
       <div className='lh-title mt1 mb2 flex'>
@@ -130,22 +130,22 @@ class CaseMessages extends Component {
 
   renderTitle ({ id, priority, cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution }) {
     const subheaderBoxClasses = 'flex-grow tc b--gray-93'
-    let additional
+    const additionalSubheaders = []
+    if (nextSteps) {
+      additionalSubheaders.push(additionalSubHeader('Next steps', nextSteps, this.props.onMoreInfo, additionalSubheaders.length))
+    }
     if (solution) {
-      additional = additionalSubHeader('Solution', solution, this.props.onMoreInfo)
-    } else if (nextSteps) {
-      additional = additionalSubHeader('Next steps', nextSteps, this.props.onMoreInfo)
+      additionalSubheaders.push(additionalSubHeader('Solution', solution, this.props.onMoreInfo, additionalSubheaders.length))
     }
     return [
-      (<Subheader style={subheaderStyle} className='flex' key='1'>
+      (<Subheader style={subheaderStyle} className='flex' key='0'>
         <div className={subheaderBoxClasses + ' br'}>Issue: #{id}</div>
         <div className={subheaderBoxClasses + ' br'}>Priority: {priority}</div>
         <div className={subheaderBoxClasses + ' flex items-center justify-center'} onClick={this.props.onMoreInfo}>
           <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
         </div>
-      </Subheader>),
-      additional
-    ]
+      </Subheader>)
+    ].concat(additionalSubheaders)
   }
 
   renderMessages (comments, uploads) {
