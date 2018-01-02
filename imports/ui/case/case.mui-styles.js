@@ -9,10 +9,12 @@ export const logoButtonStyle = {
 }
 
 export const subheaderStyle = {
-  fontSize: '18px',
+  fontWeight: 500,
+  fontSize: 14,
   fontFamily: 'Roboto, sans-serif',
-  color: '#1187AE',
-  height: 48
+  color: '#646464',
+  height: 48,
+  padding: 0
 }
 export const titleStyle = {
   fontSize: '21px',
@@ -41,4 +43,10 @@ export const sendIconStyle = {
   fontSize: 20
 }
 
-export const moreVertIconColor = '#A4A4A4'
+export const infoIconStyle = {
+  color: '#646464',
+  fontSize: 16,
+  marginRight: '0.25rem'
+}
+
+export const detailLineIconColor = '#777'

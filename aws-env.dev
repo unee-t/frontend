@@ -1,6 +1,7 @@
 export ROOT_URL=https://dev.case.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile lmb-dev ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
 export BUGZILLA_URL=https://dev.dashboard.unee-t.com
+export METEOR_SETTINGS=$(aws --profile lmb-dev ssm get-parameters --names METEOR_SETTINGS --query Parameters[0].Value --output text)
 export MONGO_PASSWORD=$(aws --profile lmb-dev ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
 export MONGO_CONNECT="dev-shard-00-00-qxxao.mongodb.net:27017,dev-shard-00-01-qxxao.mongodb.net:27017,dev-shard-00-02-qxxao.mongodb.net:27017/test?ssl=true&replicaSet=Dev-shard-0&authSource=admin"
 export CLOUDINARY_PRESET=$(aws --profile lmb-dev ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
