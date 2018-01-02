@@ -5,7 +5,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
 import { Route, Redirect } from 'react-router-dom'
 
-const initTimeout = 500
+const initTimeout = 2000
 
 class ConditionRoute extends Component {
   constructor () {

@@ -1,10 +1,44 @@
+:root {
+  --strong-cerulean: #2D94B0;
+  --bitter-lemon: #cfd924;
+  --moon-gray: #ccc; /* exists in the tachyons palette */
+  --gray-93: #ededed;
+  --rad-green: #c9fb65;
+  --very-light-gray: #f0f0f0;
+  --bondi-blue: #0095b6;
+}
+
 /* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;
 }
 
 .b--moon-gray {
-  border-color: #ccc;
+  border-color: var(--moon-gray);
+}
+
+.b--gray-93 {
+  border-color: var(--gray-93);
+}
+
+.b--very-light-gray {
+  border-color: var(--very-light-gray);
+}
+
+.b--bitter-lemon {
+  border-color: var(--bitter-lemon)
+}
+
+.strong-cerulean {
+  color: var(--strong-cerulean);
+}
+
+.bondi-blue {
+  color: var(--bondi-blue)
+}
+
+.moon-gray {
+  color: var(--moon-gray);
 }
 
 .f7 {
@@ -32,7 +66,7 @@
 }
 
 .bg-rad-green {
-  background-color: #C9FB65;
+  background-color: var(--rad-green);
 }
 
 .outline-0 {
@@ -40,7 +74,7 @@
 }
 
 .shadow-1 {
-  box-shadow: 0px 0px 4px 2px rgba( 0, 0, 0, 0.2 );
+  box-shadow: 0 0 4px 2px rgba( 0, 0, 0, 0.2 );
 }
 
 /* Tachyons rotations - start */
@@ -59,6 +93,9 @@
 .h3 { height: 4rem; }
 .h4 { height: 8rem; }
 .h5 { height: 16rem; }
+
+/* custom addition */
+.h2-5 { height: 3rem; }
 /* Tachyons Height Scale - end */
 
 .mw-60 {
@@ -91,11 +128,19 @@
   align-items: center;
 }
 
+.justify-center {
+  justify-content: center;
+}
+
 /* Functional CSS additions */
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.break-word {
+  word-wrap: break-word;
 }
 
 .full-height {
@@ -104,4 +149,20 @@
 
 .roboto {
   font-family: Roboto, sans-serif;
+}
+
+.grid {
+  display: grid;
+}
+
+.flow-row {
+  grid-auto-flow: row;
+}
+
+.col3-1fr {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.gap1 {
+  grid-gap: 0.25rem;
 }
