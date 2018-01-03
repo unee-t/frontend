@@ -27,7 +27,7 @@ script:
 # https://docs.travis-ci.com/user/deployment/script/
 deploy:
   provider: script
-  script: bash deploy.sh $COMMIT
+  script: bash deploy.sh
   skip_cleanup: true
   on:
       branch: master
