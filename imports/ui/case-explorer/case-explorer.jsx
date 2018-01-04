@@ -52,7 +52,7 @@ let casesError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
-  const casesHandle = Meteor.subscribe('my-cases', {
+  const casesHandle = Meteor.subscribe('myCases', {
     onStop: (error) => {
       casesError = error
     }
