@@ -11,6 +11,8 @@ export const factoryOptions = {
   dataResolver: data => data.bugs
 }
 
+const MAX_RESULTS = 20
+
 if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
   Meteor.publish('case', factory.publishById({
@@ -34,7 +36,8 @@ if (Meteor.isServer) {
         v3: userIdentifier,
         j_top: 'OR',
         list_id: '78',
-        query_format: 'advanced'
+        query_format: 'advanced',
+        limit: MAX_RESULTS
       }
     },
     addedMatcherFactory: strQuery => {
