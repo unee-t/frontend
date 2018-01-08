@@ -30,6 +30,16 @@ export default ({collectionName, dataResolver}) => {
           }
           addedMatcherDescriptors.push(matchersDict[identifier])
         }
+
+        // Clearing the subscription handle from the dictionary, and the entire descriptor from the main array
+        subHandle.onStop(() => {
+          const handleIndex = matchersDict[identifier].handles.indexOf(subHandle)
+          matchersDict[identifier].handles.splice(handleIndex, 1)
+          if (matchersDict[identifier].handles.length === 0) { // No more handles left for this descriptor
+            const descInd = addedMatcherDescriptors.indexOf(matchersDict[identifier])
+            addedMatcherDescriptors.splice(descInd, 1)
+          }
+        })
       }
     }
   }
@@ -45,6 +55,7 @@ export default ({collectionName, dataResolver}) => {
 
     // Fetching the current user
     const currUser = Meteor.users.findOne({_id: subHandle.userId})
+    let handleStopped
 
     // Fetching the data from bugzilla using the uriTemplate given by the resource implementation
     callAPI('get', url, Object.assign({token: currUser.bugzillaCreds.token}, payload))
@@ -52,20 +63,28 @@ export default ({collectionName, dataResolver}) => {
         // Using the dataResolver callback to focus on the relevant data from the response object
         const payload = resolver(data)
 
-        // Creating a function that could be used to add every item to the simulated collection
-        const collectionAdd = item => {
-          const idStr = item.id.toString()
-          const resourceHandles = changedHandles[idStr] = changedHandles[idStr] || []
-          resourceHandles.push(subHandle)
-          subHandle.added(collectionName, idStr, item)
-        }
+        // Checking whether this resource was intended to be a list or a single item, assigning strategy func
+        const doPayloadAction = Array.isArray(payload)
+          ? (payload, func) => payload.forEach(func)
+          : (payload, func) => func(payload)
 
-        // Checking whether this resource was intended to be a list or a single item
-        if (Array.isArray(payload)) {
-          payload.forEach(collectionAdd)
-        } else {
-          collectionAdd(payload)
-        }
+        // Creating a function that could be used to add every item to the simulated collection
+        doPayloadAction(payload, item => {
+          const idStr = item.id.toString()
+          if (!handleStopped) {
+            const resourceHandles = changedHandles[idStr] = changedHandles[idStr] || []
+            resourceHandles.push(subHandle)
+          }
+          subHandle.added(collectionName, idStr, item)
+        })
+
+        subHandle.onStop(() => {
+          doPayloadAction(payload, item => {
+            const idStr = item.id.toString()
+            const handleInd = changedHandles[idStr].indexOf(subHandle)
+            changedHandles[idStr].splice(handleInd, 1)
+          })
+        })
 
         // Signaling the subscribed client that the data has finished loading
         subHandle.ready()
@@ -74,7 +93,9 @@ export default ({collectionName, dataResolver}) => {
         subHandle.ready()
         subHandle.error(new Meteor.Error({message: 'REST API error', origError: err}))
       })
-    // TODO: IMPORTANT! handle sub.onStop and remove from the stores
+    subHandle.onStop(() => {
+      handleStopped = true
+    })
     return true
   }
   return {
@@ -100,6 +121,7 @@ export default ({collectionName, dataResolver}) => {
         }
       }
     },
+    // TODO: Add tests for all the changes observation sequences
     handleAdded (item) {
       addedMatcherDescriptors
         .filter(desc => desc.matcher(item))
