@@ -27,3 +27,4 @@ practicalmeteor:sinon
 omega:dirty-chai
 hasse:tachyons
 simple:json-routes
+pauldowman:dotenv

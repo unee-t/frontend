@@ -13,7 +13,6 @@ services:
        - CLOUDINARY_URL=${CLOUDINARY_URL}
        - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
        - COMMIT=${COMMIT}
-       - METEOR_SETTINGS=${METEOR_SETTINGS}
       logging:
             driver: awslogs
             options:

@@ -2,7 +2,7 @@
   "name": "unee-t-fe",
   "private": true,
   "scripts": {
-    "start": "source .env ; meteor run --settings settings.json",
+    "start": "meteor run",
     "test": "npm run lint && npm run proof",
     "lint": "standard --verbose | snazzy",
     "proof": "./node_modules/spacejam/bin/spacejam test --driver-package practicalmeteor:mocha",
