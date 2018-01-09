@@ -49,7 +49,7 @@ if (Meteor.isServer) {
         const userId = 2848
         const publishFunc = publishFactory({}).publishById({uriTemplate: (id) => `/bla/${id}/blabla`})
 
-        publishFunc.call({ userId }, resourceId)
+        publishFunc.call(({ userId, onStop: () => {} }), resourceId)
 
         expect(usersFindOneStub).to.have.been.calledWithMatch({ _id: userId })
         expect(callAPIStub).to.have.been.calledWith('get', `/bla/${resourceId}/blabla`, sinon.match({ token: fakeToken }))
@@ -58,7 +58,8 @@ if (Meteor.isServer) {
         const context = {
           userId: 3523,
           added: sinon.spy(),
-          ready: sinon.spy()
+          ready: sinon.spy(),
+          onStop: () => {} // TODO: make it a spy and test
         }
         const publishFunc = publishFactory({
           collectionName: 'apples',
@@ -82,7 +83,8 @@ if (Meteor.isServer) {
         const context = {
           userId: 2132,
           added: sinon.spy(),
-          ready: sinon.spy()
+          ready: sinon.spy(),
+          onStop: () => {} // TODO: make it a spy and test
         }
         const publishFunc = publishFactory({
           collectionName: 'oranges',
@@ -112,7 +114,8 @@ if (Meteor.isServer) {
         const context = {
           userId: 2132,
           error: sinon.spy(),
-          ready: sinon.spy()
+          ready: sinon.spy(),
+          onStop: () => {} // TODO: make it a spy and test
         }
         const publishFunc = publishFactory({}).publishById({uriTemplate: id => `/resource/${id}`})
 
