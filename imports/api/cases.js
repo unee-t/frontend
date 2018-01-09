@@ -36,6 +36,7 @@ if (Meteor.isServer) {
         v3: userIdentifier,
         j_top: 'OR',
         list_id: '78',
+        resolution: '---',
         query_format: 'advanced',
         limit: MAX_RESULTS
       }
