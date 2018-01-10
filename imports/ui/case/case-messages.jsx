@@ -313,7 +313,7 @@ CaseMessages.propTypes = {
   onCreateAttachment: PropTypes.func.isRequired,
   onRetryAttachment: PropTypes.func.isRequired,
   onThumbClicked: PropTypes.func.isRequired,
-  onMoreInfo: PropTypes.func.isRequired
+  onMoreInfo: PropTypes.func
 }
 
 export default CaseMessages

@@ -9,11 +9,6 @@ import Comments, { factoryOptions, publicationObj } from './comments'
 describe('Comments collection', () => {
   if (Meteor.isServer) {
     describe('RestResourceFactory options', () => {
-      it('should contain a proper uriTemplate', () => {
-        const resourceUri = factoryOptions.uriTemplate(77)
-
-        expect(resourceUri).to.equal('/rest/bug/77/comment')
-      })
       it('should contain a proper dataResolver', () => {
         const data = factoryOptions.dataResolver({
           bugs: {
@@ -133,7 +128,7 @@ describe('Comments collection', () => {
 
           commentsInsert(msgContent, caseId)
 
-          expect(handleAddedStub).to.have.been.calledWith(caseId, newCommentObj)
+          expect(handleAddedStub).to.have.been.calledWith(newCommentObj)
         })
       })
     }

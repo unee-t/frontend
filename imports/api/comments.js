@@ -8,15 +8,17 @@ const collectionName = 'comments'
 
 // Exported for testing purposes
 export const factoryOptions = {
-  uriTemplate: (claimId) => `/rest/bug/${claimId}/comment`,
   collectionName,
   dataResolver: (data, claimId) => data.bugs[claimId.toString()].comments
 }
 
 export let publicationObj // Exported for testing purposes
 if (Meteor.isServer) {
-  publicationObj = publicationFactory(factoryOptions, true)
-  Meteor.publish('caseComments', publicationObj.publishFunc)
+  publicationObj = publicationFactory(factoryOptions)
+  Meteor.publish('caseComments', publicationObj.publishById({
+    uriTemplate: caseId => `/rest/bug/${caseId}/comment`,
+    addedMatcherFactory: caseId => comment => comment.bug_id.toString() === caseId.toString()
+  }))
 }
 
 Meteor.methods({
@@ -57,7 +59,7 @@ Meteor.methods({
 
         // Digging the new comment object out of the response
         const newComment = commentData.data.comments[createData.data.id.toString()]
-        publicationObj.handleAdded(caseId, newComment)
+        publicationObj.handleAdded(newComment)
       } catch (e) {
         console.error(e)
         throw new Meteor.Error('API error')
