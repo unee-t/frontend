@@ -4,3 +4,4 @@
 /.vscode/
 .env
 /settings.json
+/pre-commit-hook.sh
