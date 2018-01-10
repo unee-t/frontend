@@ -7,7 +7,6 @@ import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
 import AppBar from 'material-ui/AppBar'
-import SvgIcon from 'material-ui/SvgIcon'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import Cases from '../../api/cases'
@@ -17,6 +16,7 @@ import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
+import UneeTIcon from '../components/unee-t-icon'
 import { attachmentTextMatcher } from '../../util/matchers'
 
 import {
@@ -24,12 +24,6 @@ import {
   logoButtonStyle,
   titleStyle
 } from './case.mui-styles'
-
-const UneeTIcon = (props) => (
-  <SvgIcon {...props} viewBox='3 3 39 39'>
-    <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
-  </SvgIcon>
-)
 
 export class Case extends Component {
   navigateToAttachment (id) {
