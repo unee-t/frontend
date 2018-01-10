@@ -21,9 +21,10 @@ import { attachmentTextMatcher } from '../../util/matchers'
 
 import {
   logoIconStyle,
-  logoButtonStyle,
-  titleStyle
+  logoButtonStyle
 } from './case.mui-styles'
+
+import { titleStyle } from '../components/app-bar.mui-styles'
 
 export class Case extends Component {
   navigateToAttachment (id) {

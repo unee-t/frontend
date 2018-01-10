@@ -16,12 +16,6 @@ export const subheaderStyle = {
   height: 48,
   padding: 0
 }
-export const titleStyle = {
-  fontSize: '21px',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis'
-}
 
 export const attachmentButtonStyle = {
   width: 36,
