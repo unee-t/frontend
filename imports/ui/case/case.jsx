@@ -20,11 +20,10 @@ import UneeTIcon from '../components/unee-t-icon'
 import { attachmentTextMatcher } from '../../util/matchers'
 
 import {
+  titleStyle,
   logoIconStyle,
   logoButtonStyle
-} from './case.mui-styles'
-
-import { titleStyle } from '../components/app-bar.mui-styles'
+} from '../components/app-bar.mui-styles'
 
 export class Case extends Component {
   navigateToAttachment (id) {

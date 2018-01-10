@@ -1,13 +1,3 @@
-export const logoIconStyle = {
-  width: 39,
-  height: 39
-}
-export const logoButtonStyle = {
-  width: 46,
-  height: 46,
-  padding: 0
-}
-
 export const subheaderStyle = {
   fontWeight: 500,
   fontSize: 14,
