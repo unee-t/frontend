@@ -25,11 +25,28 @@ class CaseExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      caseId: ''
+      caseId: '',
+      expandedUnits: []
     }
+  }
+  handleExpandUnit (evt, unitTitle) {
+    evt.preventDefault()
+    const { expandedUnits } = this.state
+    let stateMutation
+    if (expandedUnits.includes(unitTitle)) {
+      stateMutation = {
+        expandedUnits: expandedUnits.filter(title => title !== unitTitle)
+      }
+    } else {
+      stateMutation = {
+        expandedUnits: this.state.expandedUnits.concat([unitTitle])
+      }
+    }
+    this.setState(stateMutation)
   }
   render () {
     const { caseList, isLoading } = this.props
+    console.log('this.props.match', this.props.match)
     let unitsDict
     if (!isLoading) {
       unitsDict = caseList.reduce((dict, caseItem) => {
@@ -60,31 +77,40 @@ class CaseExplorer extends Component {
         />
         {!isLoading && (
           <div className='bb b--black-10'>
-            {Object.keys(unitsDict).map(unitTitle => (
-              <div key={unitTitle}>
-                <div className='flex items-center h3 bt b--light-gray'>
-                  <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
-                  <div className='flex-grow ellipsis mid-gray'>
-                    {unitTitle}
+            {Object.keys(unitsDict).map(unitTitle => {
+              const isExpanded = this.state.expandedUnits.includes(unitTitle)
+              return (
+                <div key={unitTitle}>
+                  <div className='flex items-center h3 bt b--light-gray'
+                    onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
+                    <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
+                    <div className='flex-grow ellipsis mid-gray'>
+                      {unitTitle}
+                    </div>
+                    <FontIcon className={'material-icons mr2 pr1' + (isExpanded ? ' rotate-90' : '')}
+                      style={unitIconsStyle}>
+                      keyboard_arrow_right
+                    </FontIcon>
                   </div>
-                  <FontIcon className='material-icons mr2 pr1' style={unitIconsStyle}>keyboard_arrow_down</FontIcon>
+                  {isExpanded && (
+                    <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
+                      {unitsDict[unitTitle].map(caseItem => (
+                        <li key={caseItem.id} className='h2-5 bt b--black-10'>
+                          <div className='flex items-center'>
+                            <Link className='link flex-grow ellipsis bondi-blue ml3 pl1' to={`/case/${caseItem.id}`}>
+                              {caseItem.summary}
+                            </Link>
+                            <IconButton>
+                              <FontIcon className='material-icons mr3' color={moreIconColor}>more_horiz</FontIcon>
+                            </IconButton>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                  {unitsDict[unitTitle].map(caseItem => (
-                    <li key={caseItem.id} className='h2-5 bt b--black-10'>
-                      <div className='flex items-center'>
-                        <Link className='link flex-grow ellipsis bondi-blue ml3 pl1' to={`/case/${caseItem.id}`}>
-                          {caseItem.summary}
-                        </Link>
-                        <IconButton>
-                          <FontIcon className='material-icons mr3' color={moreIconColor}>more_horiz</FontIcon>
-                        </IconButton>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
