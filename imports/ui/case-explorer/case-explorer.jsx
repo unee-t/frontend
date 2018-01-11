@@ -41,11 +41,23 @@ class CaseExplorer extends Component {
     }
     return (
       <div className='flex flex-column full-height roboto overflow-hidden'>
-        <AppBar title='Cases' titleStyle={titleStyle} iconElementLeft={
-          <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-            <UneeTIcon />
-          </IconButton>
-        } />
+        <AppBar title='Cases' titleStyle={titleStyle}
+          iconElementLeft={
+            <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
+              <UneeTIcon />
+            </IconButton>
+          }
+          iconElementRight={
+            <div>
+              <IconButton>
+                <FontIcon className='material-icons' color='white'>search</FontIcon>
+              </IconButton>
+              <IconButton>
+                <FontIcon className='material-icons' color='white'>notifications</FontIcon>
+              </IconButton>
+            </div>
+          }
+        />
         {!isLoading && (
           <div className='bb b--black-10'>
             {Object.keys(unitsDict).map(unitTitle => (
