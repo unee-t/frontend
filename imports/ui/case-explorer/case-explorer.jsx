@@ -39,14 +39,13 @@ class CaseExplorer extends Component {
       }
     } else {
       stateMutation = {
-        expandedUnits: this.state.expandedUnits.concat([unitTitle])
+        expandedUnits: expandedUnits.concat([unitTitle])
       }
     }
     this.setState(stateMutation)
   }
   render () {
     const { caseList, isLoading } = this.props
-    console.log('this.props.match', this.props.match)
     let unitsDict
     if (!isLoading) {
       unitsDict = caseList.reduce((dict, caseItem) => {

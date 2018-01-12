@@ -16,13 +16,10 @@ import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
-import UneeTIcon from '../components/unee-t-icon'
 import { attachmentTextMatcher } from '../../util/matchers'
 
 import {
-  titleStyle,
-  logoIconStyle,
-  logoButtonStyle
+  titleStyle
 } from '../components/app-bar.mui-styles'
 
 export class Case extends Component {
@@ -30,16 +27,27 @@ export class Case extends Component {
     const { push } = routerRedux
     this.props.dispatch(push(`${this.props.match.url}/attachment/${id}`))
   }
+
+  handleBack (defaultPath) {
+    const { push, goBack } = routerRedux
+    if (this.props.location.action === 'PUSH') {
+      this.props.dispatch(goBack())
+    } else {
+      this.props.dispatch(push(defaultPath || this.props.location.pathname.split('/').slice(0, -1).join('/')))
+    }
+  }
+
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, caseError, attachmentUploads, match, userEmail, dispatch
     } = this.props
     if (caseError) return <h1>{caseError.error.message}</h1>
     if (loadingCase || loadingComments) return <Preloader />
-    const { goBack, push } = routerRedux
+    const { push } = routerRedux
     const { createComment, createAttachment, retryAttachment } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
+
     return (
       <Switch>
         <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
@@ -53,7 +61,7 @@ export class Case extends Component {
             const creatorText = userEmail === creator ? 'You' : creator
             return <MaximizedAttachment
               creatorText={creatorText} attachmentUrl={attachmentUrl} creationTime={selectedComment.creation_time}
-              onBack={() => this.props.dispatch(goBack())} />
+              onBack={() => this.handleBack(match.url)} />
           }
         }} />
         <Route path={match.url} render={props => (
@@ -61,15 +69,9 @@ export class Case extends Component {
             <AppBar title={caseItem.summary}
               titleStyle={titleStyle}
               iconElementLeft={
-                props.match.isExact ? (
-                  <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-                    <UneeTIcon />
-                  </IconButton>
-                ) : (
-                  <IconButton onClick={() => this.props.dispatch(goBack())}>
-                    <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
-                  </IconButton>
-                )
+                <IconButton onClick={() => this.handleBack(props.match.isExact ? null : match.url)}>
+                  <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
+                </IconButton>
               }
             />
             <Route exact path={match.url} render={() => (
@@ -131,10 +133,8 @@ const CaseContainer = createContainer(props => {
   }
 }, Case)
 
-function mapStateToProps ({caseAttachmentUploads}, props) {
-  return {
+export default connect(
+  ({caseAttachmentUploads}, props) => ({
     attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || []
-  }
-}
-
-export default connect(mapStateToProps)(CaseContainer)
+  })
+)(CaseContainer)
