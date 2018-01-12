@@ -76,6 +76,11 @@
 .shadow-1 {
   box-shadow: 0 0 4px 2px rgba( 0, 0, 0, 0.2 );
 }
+/* Custom Shadows - start */
+.shadow-in-top-1 {
+  box-shadow: inset 0 5px 5px -3px rgba(0, 0, 0, 0.16);
+}
+/* Custom Shadows - end */
 
 /* Tachyons rotations - start */
 .rotate-45 { -webkit-transform: rotate( 45deg ); transform: rotate( 45deg ); }

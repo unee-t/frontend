@@ -7,7 +7,6 @@ import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
 import AppBar from 'material-ui/AppBar'
-import SvgIcon from 'material-ui/SvgIcon'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import Cases from '../../api/cases'
@@ -20,32 +19,35 @@ import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
 
 import {
-  logoIconStyle,
-  logoButtonStyle,
   titleStyle
-} from './case.mui-styles'
-
-const UneeTIcon = (props) => (
-  <SvgIcon {...props} viewBox='3 3 39 39'>
-    <use xlinkHref='/unee-t_logo_reverse.svg#icon' />
-  </SvgIcon>
-)
+} from '../components/app-bar.mui-styles'
 
 export class Case extends Component {
   navigateToAttachment (id) {
     const { push } = routerRedux
     this.props.dispatch(push(`${this.props.match.url}/attachment/${id}`))
   }
+
+  handleBack (defaultPath) {
+    const { push, goBack } = routerRedux
+    if (this.props.location.action === 'PUSH') {
+      this.props.dispatch(goBack())
+    } else {
+      this.props.dispatch(push(defaultPath || this.props.location.pathname.split('/').slice(0, -1).join('/')))
+    }
+  }
+
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, caseError, attachmentUploads, match, userEmail, dispatch
     } = this.props
     if (caseError) return <h1>{caseError.error.message}</h1>
     if (loadingCase || loadingComments) return <Preloader />
-    const { goBack, push } = routerRedux
+    const { push } = routerRedux
     const { createComment, createAttachment, retryAttachment } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
+
     return (
       <Switch>
         <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
@@ -59,7 +61,7 @@ export class Case extends Component {
             const creatorText = userEmail === creator ? 'You' : creator
             return <MaximizedAttachment
               creatorText={creatorText} attachmentUrl={attachmentUrl} creationTime={selectedComment.creation_time}
-              onBack={() => this.props.dispatch(goBack())} />
+              onBack={() => this.handleBack(match.url)} />
           }
         }} />
         <Route path={match.url} render={props => (
@@ -67,15 +69,9 @@ export class Case extends Component {
             <AppBar title={caseItem.summary}
               titleStyle={titleStyle}
               iconElementLeft={
-                props.match.isExact ? (
-                  <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-                    <UneeTIcon />
-                  </IconButton>
-                ) : (
-                  <IconButton onClick={() => this.props.dispatch(goBack())}>
-                    <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
-                  </IconButton>
-                )
+                <IconButton onClick={() => this.handleBack(props.match.isExact ? null : match.url)}>
+                  <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
+                </IconButton>
               }
             />
             <Route exact path={match.url} render={() => (
@@ -137,10 +133,8 @@ const CaseContainer = createContainer(props => {
   }
 }, Case)
 
-function mapStateToProps ({caseAttachmentUploads}, props) {
-  return {
+export default connect(
+  ({caseAttachmentUploads}, props) => ({
     attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || []
-  }
-}
-
-export default connect(mapStateToProps)(CaseContainer)
+  })
+)(CaseContainer)
