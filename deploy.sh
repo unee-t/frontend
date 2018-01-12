@@ -30,7 +30,11 @@ done
 AWS_PROFILE=uneet-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
-export COMMIT=$(git describe --always)
+test "$COMMIT" || export COMMIT=$(git describe --always)
+
+PKGURL=https://unee-t-media.s3-accelerate.amazonaws.com/frontend/commit/${COMMIT}.tar.gz
+echo Checking $PKGURL exists
+curl -I -f $PKGURL || exit
 
 if ! aws configure --profile $AWS_PROFILE list
 then
