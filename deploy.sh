@@ -27,10 +27,14 @@ do
 			;;
 	esac
 done
-AWS_PROFILE=lmb-$STAGE
+AWS_PROFILE=uneet-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
-export COMMIT=$(git describe --always)
+test "$COMMIT" || export COMMIT=$(git describe --always)
+
+PKGURL=https://unee-t-media.s3-accelerate.amazonaws.com/frontend/commit/${COMMIT}.tar.gz
+echo Checking $PKGURL exists
+curl -I -f $PKGURL || exit
 
 if ! aws configure --profile $AWS_PROFILE list
 then
@@ -43,9 +47,9 @@ then
 	fi
 
 	echo Attempting to setup one from the environment >&2
-	aws configure set profile.lmb-${STAGE}.aws_access_key_id $AWS_ACCESS_KEY_ID
-	aws configure set profile.lmb-${STAGE}.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-	aws configure set profile.lmb-${STAGE}.region ap-southeast-1
+	aws configure set profile.uneet-${STAGE}.aws_access_key_id $AWS_ACCESS_KEY_ID
+	aws configure set profile.uneet-${STAGE}.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+	aws configure set profile.uneet-${STAGE}.region ap-southeast-1
 
 	if ! aws configure --profile $AWS_PROFILE list
 	then
@@ -79,5 +83,14 @@ echo Deploying $service with commit $COMMIT >&2
 envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up --timeout 7
+
+
+if test "$STAGE" == "prod"
+then
+	TAG=$(date "+$STAGE-%Y%m%d%H%M%S")
+	git tag $TAG $COMMIT
+	git push upstream $TAG
+fi
+
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service ps

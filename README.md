@@ -10,7 +10,7 @@ They are securely managed in AWS's [parameter store](https://ap-southeast-1.cons
 # Deployment
 
 Happens automatically on master on the development AWS account 8126-4485-3088
-with AWS_PROFILE `lmb-dev`. Travis CI deployments made via pull request will fail since it will
+with AWS_PROFILE `uneet-dev`. Travis CI deployments made via pull request will fail since it will
 not have access to `AWS_SECRET_ACCESS_KEY`.
 
 Production deployment on AWS account 1924-5899-3663 is done manually via
@@ -29,11 +29,11 @@ The canonical master branch CI build location is <https://unee-t-media.s3-accele
 
 To discover other branches:
 
-	aws --profile lmb-dev s3 ls s3://unee-t-media/frontend/
+	aws --profile uneet-dev s3 ls s3://unee-t-media/frontend/
 
 Every commit is also uploaded to:
 
-	aws --profile lmb-dev s3 ls s3://unee-t-media/frontend/commit
+	aws --profile uneet-dev s3 ls s3://unee-t-media/frontend/commit
 
 [Commits are expired after 90 days](https://s3.console.aws.amazon.com/s3/buckets/unee-t-media/?region=ap-southeast-1&tab=management)
 
