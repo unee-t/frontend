@@ -27,7 +27,7 @@ do
 			;;
 	esac
 done
-AWS_PROFILE=lmb-$STAGE
+AWS_PROFILE=uneet-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 export COMMIT=$(git describe --always)
@@ -43,9 +43,9 @@ then
 	fi
 
 	echo Attempting to setup one from the environment >&2
-	aws configure set profile.lmb-${STAGE}.aws_access_key_id $AWS_ACCESS_KEY_ID
-	aws configure set profile.lmb-${STAGE}.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-	aws configure set profile.lmb-${STAGE}.region ap-southeast-1
+	aws configure set profile.uneet-${STAGE}.aws_access_key_id $AWS_ACCESS_KEY_ID
+	aws configure set profile.uneet-${STAGE}.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+	aws configure set profile.uneet-${STAGE}.region ap-southeast-1
 
 	if ! aws configure --profile $AWS_PROFILE list
 	then
