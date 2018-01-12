@@ -84,4 +84,13 @@ envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up --timeout 7
 
+
+if test "$STAGE" == "prod"
+then
+	TAG=$(date "+$STAGE-%Y%m%d%H%M%S")
+	git tag $TAG $COMMIT
+	git push upstream $TAG
+fi
+
+
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service ps
