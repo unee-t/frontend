@@ -44,8 +44,7 @@ class CaseMessages extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      message: '',
-      previewImage: ''
+      message: ''
     }
   }
 
@@ -258,9 +257,7 @@ class CaseMessages extends Component {
       <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
         <IconButton style={attachmentButtonStyle}>
           <label>
-            <ContentAdd
-              color={this.state.previewImage ? 'red' : colors.main}
-              className={this.state.previewImage ? 'rotate-45' : ''} />
+            <ContentAdd color={colors.main} />
             <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
           </label>
         </IconButton>
