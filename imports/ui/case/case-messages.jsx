@@ -44,8 +44,7 @@ class CaseMessages extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      message: '',
-      previewImage: ''
+      message: ''
     }
   }
 
@@ -76,18 +75,12 @@ class CaseMessages extends Component {
 
   handleCreateMessage (evt) {
     evt.preventDefault()
+    this.props.onCreateComment(this.state.message)
 
-    if (this.state.previewImage) {
-      this.props.onCreateAttachment(this.state.previewImage, this.imageFile)
-      this.handleRemovePreview()
-    } else {
-      this.props.onCreateComment(this.state.message)
-
-      // Clearing the input
-      this.setState({
-        message: ''
-      })
-    }
+    // Clearing the input
+    this.setState({
+      message: ''
+    })
   }
 
   handleRetryUpload (evt, process) {
@@ -101,20 +94,9 @@ class CaseMessages extends Component {
     const file = evt.target.files[0]
     const reader = new FileReader()
     reader.onload = (evt) => {
-      this.setState({
-        previewImage: evt.target.result
-      })
+      this.props.onCreateAttachment(evt.target.result, file)
     }
-    this.imageFile = file
     reader.readAsDataURL(file)
-  }
-
-  handleRemovePreview (evt) {
-    if (evt) evt.preventDefault()
-    this.setState({
-      previewImage: ''
-    })
-    this.imageFile = null
   }
 
   render () {
@@ -207,12 +189,12 @@ class CaseMessages extends Component {
         { !isSelf ? (
           <UserAvatar creator={creator} />
         ) : ''}
-        { contentRenderer(isSelf, creator, text, creation_time, id, process) }
+        { contentRenderer({isSelf, creator, text, creation_time, id, process}) }
       </div>
     )
   }
 
-  renderMessageTextContent (isSelf, creator, text, creationTime) {
+  renderMessageTextContent ({isSelf, creator, text, creationTime}) {
     return (
       <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl ' + (isSelf ? 'bg-rad-green' : 'bg-white')}>
         { !isSelf ? (
@@ -226,7 +208,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderMessageImageContent (isSelf, creator, text, creationTime, id, process) {
+  renderMessageImageContent ({isSelf, text, creationTime, id, process}) {
     const attachmentUrl = text.split('\n')[1]
     const { computedMessageWidth } = this.state
     const thumbUrl = computedMessageWidth && matchWidth(attachmentUrl, computedMessageWidth)
@@ -273,29 +255,21 @@ class CaseMessages extends Component {
   renderInputControls () {
     return (
       <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
-        <IconButton style={attachmentButtonStyle} onClick={this.state.previewImage ? this.handleRemovePreview.bind(this) : undefined}>
+        <IconButton style={attachmentButtonStyle}>
           <label>
-            <ContentAdd
-              color={this.state.previewImage ? 'red' : colors.main}
-              className={this.state.previewImage ? 'rotate-45' : ''} />
-            {!this.state.previewImage ? (
-              <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
-            ) : ''}
+            <ContentAdd color={colors.main} />
+            <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
           </label>
         </IconButton>
         <div className='flex-grow relative'>
-          {this.state.previewImage ? (
-            <img className='w-100 absolute bottom--1 br3 shadow-1' src={this.state.previewImage} alt='X' />
-          ) : (
-            <input type='text' placeholder='Type your response' ref='messageInput'
-              onChange={this.handleMessageInput.bind(this)} value={this.state.message}
-              className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib outline-0 w-100' />
-          )}
+          <input type='text' placeholder='Type your response' ref='messageInput'
+            onChange={this.handleMessageInput.bind(this)} value={this.state.message}
+            className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib outline-0 w-100' />
         </div>
         <div className='mh2'>
           <FloatingActionButton mini zDepth={0} iconStyle={sendIconStyle}
             onClick={this.handleCreateMessage.bind(this)}
-            disabled={this.state.message === '' && this.state.previewImage === ''}>
+            disabled={this.state.message === ''}>
             <FontIcon className='material-icons'>send</FontIcon>
           </FloatingActionButton>
         </div>
