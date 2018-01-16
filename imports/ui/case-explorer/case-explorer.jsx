@@ -75,7 +75,7 @@ class CaseExplorer extends Component {
           }
         />
         {!isLoading && (
-          <div className='bb b--black-10'>
+          <div className='bb b--black-10 overflow-auto flex-grow'>
             {Object.keys(unitsDict).map(unitTitle => {
               const isExpanded = this.state.expandedUnits.includes(unitTitle)
               return (
@@ -100,7 +100,7 @@ class CaseExplorer extends Component {
                               {caseItem.summary}
                             </Link>
                             <IconButton>
-                              <FontIcon className='material-icons mr3' color={moreIconColor}>more_horiz</FontIcon>
+                              <FontIcon className='material-icons' color={moreIconColor}>more_horiz</FontIcon>
                             </IconButton>
                           </div>
                         </li>
