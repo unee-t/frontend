@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import { Route, Switch, Redirect, withRouter } from 'react-router-dom'
 import { Dashboard } from './components/dashboard.jsx'
-import Case from './case/case.jsx'
 import LoginPage from './login/login.jsx'
 import SignupPage from './signup/signup.jsx'
-import CaseExplorer from './case-explorer/case-explorer'
+import CaseMaster from './case/case-master'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -21,8 +20,7 @@ class App extends Component {
           <Switch>
             <Route exact path='/unit/new' component={UnderConstruction} />
             <Route exact path='/dashboard' component={Dashboard} />
-            <Route exact path='/case' component={CaseExplorer} />
-            <Route path='/case/:caseId' component={Case} />
+            <Route path='/case' component={CaseMaster} />
             <Redirect to='/case' />
           </Switch>
         ) : (
