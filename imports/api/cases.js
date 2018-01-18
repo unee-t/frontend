@@ -22,6 +22,9 @@ if (Meteor.isServer) {
   Meteor.publish('myCases', factory.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: subHandle => {
+      if (!subHandle.userId) {
+        return {}
+      }
       const currUser = Meteor.users.findOne(subHandle.userId)
       const { login: userIdentifier } = currUser.bugzillaCreds
       return {
