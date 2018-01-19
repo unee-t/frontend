@@ -134,7 +134,7 @@ class CaseMaster extends Component {
             ))}
           </Switch>
         ) : (
-          <div className={isLoading ? 'dn' : 'flex flex-grow'}>
+          <div className={isLoading ? 'dn' : 'flex flex-grow overflow-hidden'}>
             <div className='flex-3'>
               <CaseExplorer dispatchLoadingResult={() => {
                 this.setState({
@@ -142,7 +142,7 @@ class CaseMaster extends Component {
                 })
               }} />
             </div>
-            <div className='flex-10 flex items-center justify-center bg-very-light-gray'>
+            <div className='flex-10 flex items-center justify-center bg-very-light-gray h-100'>
               <Route path='/case/:caseId' children={({match}) => {
                 if (match) {
                   const { isSubLoading } = this.state
