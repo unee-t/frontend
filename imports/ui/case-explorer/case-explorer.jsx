@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
-import UneeTIcon from '../components/unee-t-icon'
+import { UneeTIcon } from '../components/unee-t-icons'
 import Cases from '../../api/cases'
 
 import {
@@ -44,6 +44,11 @@ class CaseExplorer extends Component {
     }
     this.setState(stateMutation)
   }
+  componentWillReceiveProps ({isLoading, casesError, caseList}) {
+    if (!isLoading && !casesError && isLoading !== this.props.isLoading) {
+      this.props.dispatchLoadingResult({caseList})
+    }
+  }
   render () {
     const { caseList, isLoading } = this.props
     let unitsDict
@@ -56,62 +61,43 @@ class CaseExplorer extends Component {
       }, {})
     }
     return (
-      <div className='flex flex-column full-height roboto overflow-hidden'>
-        <AppBar title='Cases' titleStyle={titleStyle}
-          iconElementLeft={
-            <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-              <UneeTIcon />
-            </IconButton>
-          }
-          iconElementRight={
-            <div>
-              <IconButton>
-                <FontIcon className='material-icons' color='white'>search</FontIcon>
-              </IconButton>
-              <IconButton>
-                <FontIcon className='material-icons' color='white'>notifications</FontIcon>
-              </IconButton>
-            </div>
-          }
-        />
-        {!isLoading && (
-          <div className='bb b--black-10 overflow-auto flex-grow'>
-            {Object.keys(unitsDict).map(unitTitle => {
-              const isExpanded = this.state.expandedUnits.includes(unitTitle)
-              return (
-                <div key={unitTitle}>
-                  <div className='flex items-center h3 bt b--light-gray'
-                    onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
-                    <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
-                    <div className='flex-grow ellipsis mid-gray'>
-                      {unitTitle}
-                    </div>
-                    <FontIcon className={'material-icons mr2 pr1' + (isExpanded ? ' rotate-90' : '')}
-                      style={unitIconsStyle}>
-                      keyboard_arrow_right
-                    </FontIcon>
+      <div className='overflow-auto flex-grow h-100'>
+        <div className='bb b--black-10'>
+          {!isLoading && Object.keys(unitsDict).map(unitTitle => {
+            const isExpanded = this.state.expandedUnits.includes(unitTitle)
+            return (
+              <div key={unitTitle}>
+                <div className='flex items-center h3 bt b--light-gray'
+                  onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
+                  <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
+                  <div className='flex-grow ellipsis mid-gray'>
+                    {unitTitle}
                   </div>
-                  {isExpanded && (
-                    <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                      {unitsDict[unitTitle].map(caseItem => (
-                        <li key={caseItem.id} className='h2-5 bt b--black-10'>
-                          <div className='flex items-center'>
-                            <Link className='link flex-grow ellipsis bondi-blue ml3 pl1' to={`/case/${caseItem.id}`}>
-                              {caseItem.summary}
-                            </Link>
-                            <IconButton>
-                              <FontIcon className='material-icons' color={moreIconColor}>more_horiz</FontIcon>
-                            </IconButton>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <FontIcon className={'material-icons mr2 pr1' + (isExpanded ? ' rotate-90' : '')}
+                    style={unitIconsStyle}>
+                    keyboard_arrow_right
+                  </FontIcon>
                 </div>
-              )
-            })}
-          </div>
-        )}
+                {isExpanded && (
+                  <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
+                    {unitsDict[unitTitle].map(caseItem => (
+                      <li key={caseItem.id} className='h2-5 bt b--black-10'>
+                        <div className='flex items-center'>
+                          <Link className='link flex-grow ellipsis bondi-blue ml3 pl1' to={`/case/${caseItem.id}`}>
+                            {caseItem.summary}
+                          </Link>
+                          <IconButton>
+                            <FontIcon className='material-icons' color={moreIconColor}>more_horiz</FontIcon>
+                          </IconButton>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
     )
   }
@@ -120,10 +106,12 @@ class CaseExplorer extends Component {
 CaseExplorer.propTypes = {
   caseList: PropTypes.array,
   isLoading: PropTypes.bool,
-  casesError: PropTypes.object
+  casesError: PropTypes.object,
+  dispatchLoadingResult: PropTypes.func.isRequired
 }
+
 let casesError
-export default connect(
+const connectedWrapper = connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
   const casesHandle = Meteor.subscribe('myCases', {
@@ -137,3 +125,25 @@ export default connect(
     casesError
   }
 }, CaseExplorer))
+
+connectedWrapper.MobileHeader = props => (
+  <AppBar title='Cases' titleStyle={titleStyle}
+    iconElementLeft={
+      <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
+        <UneeTIcon />
+      </IconButton>
+    }
+    iconElementRight={
+      <div>
+        <IconButton>
+          <FontIcon className='material-icons' color='white'>search</FontIcon>
+        </IconButton>
+        <IconButton>
+          <FontIcon className='material-icons' color='white'>notifications</FontIcon>
+        </IconButton>
+      </div>
+    }
+  />
+)
+
+export default connectedWrapper
