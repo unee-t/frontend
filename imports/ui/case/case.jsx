@@ -25,8 +25,9 @@ import {
 
 export class Case extends Component {
   componentWillReceiveProps ({caseItem, comments, loadingCase, loadingComments, caseError, dispatch, userEmail}) {
-    if (!loadingCase && !loadingComments && !caseError && !this.loadNotified) {
-      this.loadNotified = true
+    if (!loadingCase && !loadingComments && !caseError &&
+      (loadingCase !== this.props.loadingCase || loadingComments !== this.props.loadingComments)
+    ) {
       this.props.dispatchLoadingResult({caseItem, comments, dispatch, userEmail})
     }
   }

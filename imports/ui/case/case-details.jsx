@@ -75,7 +75,7 @@ class CaseDetails extends Component {
     const { caseItem, comments } = this.props
     console.log('props.caseItem', caseItem)
     return (
-      <div className='flex-grow overflow-auto'>
+      <div className='flex-grow overflow-auto h-100'>
         {renderSummaryLine(caseItem)}
         {renderCaseType(caseItem)}
         {renderParticipants(comments)}
