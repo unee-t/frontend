@@ -185,7 +185,7 @@ class CaseMessages extends Component {
       themeClass = themes['theme' + ((creatorIndex % 10) + 1)]
     }
     return (
-      <div className={['mb3' + (isSelf ? ' tr' : ''), themeClass || ''].join(' ')} key={key}>
+      <div className={['mb3 ml2' + (isSelf ? ' tr' : ''), themeClass || ''].join(' ')} key={key}>
         { !isSelf ? (
           <UserAvatar creator={creator} />
         ) : ''}
