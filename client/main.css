@@ -6,6 +6,7 @@
   --rad-green: #c9fb65;
   --very-light-gray: #f0f0f0;
   --bondi-blue: #0095b6;
+  --warn-crimson: #ab0530;
 }
 
 /* Tachyons fixes, overrides and additions */
@@ -40,6 +41,9 @@
 .moon-gray {
   color: var(--moon-gray);
 }
+.warn-crimson {
+  color: var(--warn-crimson);
+}
 
 .f7 {
   font-size: .75rem;
@@ -67,6 +71,10 @@
 
 .bg-rad-green {
   background-color: var(--rad-green);
+}
+
+.bg-bondi-blue {
+  background-color: var(--bondi-blue);
 }
 
 .outline-0 {
@@ -125,6 +133,10 @@
   flex: 1;
 }
 
+.no-shrink {
+  flex-shrink: 0;
+}
+
 .flex-column {
   flex-direction: column;
 }
@@ -171,3 +183,27 @@
 .gap1 {
   grid-gap: 0.25rem;
 }
+
+/* Custom text-indent scale -start */
+.ti1 {
+  text-indent: 0.25rem;
+}
+.ti2 {
+  text-indent: 0.5rem;
+}
+.ti3 {
+  text-indent: 1rem;
+}
+.ti4 {
+  text-indent: 2rem;
+}
+.ti5 {
+  text-indent: 4rem;
+}
+.ti6 {
+  text-indent: 8rem;
+}
+.ti7 {
+  text-indent: 16rem;
+}
+/* Custom text-indent scale -end */
