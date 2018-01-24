@@ -62,29 +62,6 @@ class CaseDetails extends Component {
       dialogOpen: false,
       filterString: ''
     }
-
-    this.dummyUsers = [
-      {
-        email: 'marley@example.com',
-        name: 'Marley Robisnson',
-        role: 'Owner'
-      },
-      {
-        email: 'jeany@example.com',
-        name: 'Jeany Penkata',
-        role: 'Agent'
-      },
-      {
-        email: 'bryan@example.com',
-        name: 'Bryan Grant',
-        role: 'Tenant'
-      },
-      {
-        email: 'rob@examble.com',
-        name: 'Robert Jackson',
-        role: 'Contractor'
-      }
-    ]
   }
   componentDidMount () {
     this.setState({
@@ -113,15 +90,16 @@ class CaseDetails extends Component {
       dialogOpen: false
     })
   }
-  renderParticipants = comments => {
+  renderParticipants = (comments, unitUsers) => {
+    // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
     const participants = _.chain(comments).map('creator').uniq().value()
     const matcher = this.state.filterString ? new RegExp(this.state.filterString, 'i') : null
-    const filteredUsers = this.dummyUsers.reduce((all, user, idx) => {
-      if (!matcher || user.name.match(matcher) || user.email.match(matcher)) {
+    const filteredUsers = unitUsers ? unitUsers.reduce((all, user, idx) => {
+      if (!matcher || (user.name && user.name.match(matcher)) || user.email.match(matcher)) {
         all.push(Object.assign({origIdx: idx}, user))
       }
       return all
-    }, [])
+    }, []) : []
     return (
       <div className='ph3 h2-5 flex items-center'>
         <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
@@ -132,7 +110,7 @@ class CaseDetails extends Component {
             </div>
           ))}
           <div>
-            <button className='button-reset h2 w2 br-100 ba b--moon-gray bg-transparent outline-0'
+            <button className='button-reset h2 w2 br-100 ba b--moon-gray bg-transparent outline-0 dim'
               onClick={this.handleAddPerson}>
               <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
             </button>
@@ -157,11 +135,11 @@ class CaseDetails extends Component {
                 <div className='h5'>
                   {filteredUsers.length ? (
                     <ul className='list ph1'>
-                      { filteredUsers.map(user => (
+                      {filteredUsers.map(user => (
                         <li key={user.email} className={themes['theme' + ((user.origIdx % 10) + 1)] + ' flex mb3'}>
-                          <UserAvatar className='mr3' creator={user.name} />
+                          <UserAvatar className='mr3' creator={user.name || user.email} />
                           <div className='ml2'>
-                            <div className='f5 bondi-blue'>{user.name}</div>
+                            <div className='f5 bondi-blue'>{user.name || user.email}</div>
                             <div className='f6 gray'>{user.role}</div>
                           </div>
                         </li>
@@ -184,12 +162,12 @@ class CaseDetails extends Component {
     )
   }
   render () {
-    const { caseItem, comments } = this.props
+    const { caseItem, comments, unitUsers } = this.props
     return (
       <div className='flex-grow overflow-auto'>
         {renderSummaryLine(caseItem)}
         {renderCaseType(caseItem)}
-        {this.renderParticipants(comments)}
+        {this.renderParticipants(comments, unitUsers)}
         {renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
       </div>
@@ -220,7 +198,8 @@ class CaseDetails extends Component {
 CaseDetails.propTypes = {
   caseItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
-  onSelectAttachment: PropTypes.func
+  onSelectAttachment: PropTypes.func,
+  unitUsers: PropTypes.array
 }
 
 export default CaseDetails

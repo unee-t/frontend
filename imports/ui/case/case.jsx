@@ -11,6 +11,7 @@ import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import Cases from '../../api/cases'
 import Comments from '../../api/comments'
+import Units, { getUnitRoles } from '../../api/units'
 import Preloader from '../preloader/preloader'
 import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
@@ -39,7 +40,8 @@ export class Case extends Component {
 
   render () {
     const {
-      caseItem, comments, loadingCase, loadingComments, caseError, attachmentUploads, match, userEmail, dispatch
+      caseItem, comments, loadingCase, loadingComments, caseError,
+      attachmentUploads, match, userEmail, dispatch, unitUsers
     } = this.props
     if (caseError) return <h1>{caseError.error.message}</h1>
     if (loadingCase || loadingComments) return <Preloader />
@@ -85,7 +87,7 @@ export class Case extends Component {
               />
             )} />
             <Route exact path={detailsUrl} render={() => (
-              <CaseDetails caseItem={caseItem} comments={comments}
+              <CaseDetails {...{caseItem, comments, unitUsers}}
                 onSelectAttachment={this.navigateToAttachment.bind(this)}
               />
             )} />
@@ -105,11 +107,12 @@ Case.propTypes = {
   commentsError: PropTypes.object,
   comments: PropTypes.array,
   userEmail: PropTypes.string,
-  attachmentUploads: PropTypes.array
+  attachmentUploads: PropTypes.array,
+  unitUsers: PropTypes.array
 }
 
 let caseError, commentsError
-const CaseContainer = createContainer(props => {
+const CaseContainer = createContainer(function (props, ...rest) {
   const { caseId } = props.match.params
   const caseHandle = Meteor.subscribe('case', caseId, {
     onStop: (error) => {
@@ -121,15 +124,29 @@ const CaseContainer = createContainer(props => {
       commentsError = error
     }
   })
+  const currCase = Cases.findOne(caseId)
+  let currUnit
+  if (currCase) {
+    Meteor.subscribe('unit', currCase.product)
+    currUnit = Units.findOne({name: currCase.product})
+  }
+
+  if (currCase) {
+    currUnit = Units.findOne({name: currCase.product})
+  }
 
   return {
     loadingCase: !caseHandle.ready(),
     caseError,
-    caseItem: Cases.findOne(caseId),
+    caseItem: currCase,
     loadingComments: !commentsHandle.ready(),
     commentsError,
     comments: Comments.find({bug_id: parseInt(caseId)}).fetch(),
-    userEmail: Meteor.user() ? Meteor.user().emails[0].address : null
+    userEmail: Meteor.user() ? Meteor.user().emails[0].address : null,
+    unitUsers: currUnit && getUnitRoles(currUnit).map(rolePerson => {
+      const regUser = Meteor.users.findOne({'emails.0.address': rolePerson.email})
+      return regUser ? Object.assign({}, rolePerson, regUser.profile) : rolePerson
+    })
   }
 }, Case)
 
