@@ -99,7 +99,8 @@ class CaseDetails extends Component {
         all.push(Object.assign({origIdx: idx, alreadyInvited: caseItem.cc.includes(user.email)}, user))
       }
       return all
-    }, []).sort((a, b) => {
+      // TODO: to be use to resolve #80
+    }, [])/* .sort((a, b) => {
       if (a.alreadyInvited && !b.alreadyInvited) {
         return 1
       } else if (b.alreadyInvited && !a.alreadyInvited) {
@@ -107,7 +108,7 @@ class CaseDetails extends Component {
       } else {
         return 0
       }
-    }) : []
+    }) */ : []
     return (
       <div className='ph3 h2-5 flex items-center'>
         <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
@@ -141,13 +142,13 @@ class CaseDetails extends Component {
               </div>
               <div className='ba b--moon-gray flex-grow'>
                 <div className='h5 overflow-auto pb2'>
-                  {!!filteredUsers.length && (
+                  {filteredUsers.length ? (
                     <ul className='list mv0 pa0 pt1'>
                       {filteredUsers.map(user => (
                         <li key={user.email}
                           className={
                             themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 ' +
-                              (user.alreadyInvited ? 'bg-light-gray' : 'dim')
+                              (user.alreadyInvited ? '' : 'dim')
                           }
                           onClick={() => { !user.alreadyInvited && this.props.onUserInvited(user) }}>
                           <div className='ml1'>
@@ -155,28 +156,28 @@ class CaseDetails extends Component {
                           </div>
                           <div className='ml2 flex-grow'>
                             <div className='f5 bondi-blue'>{user.name || user.email}</div>
-                            <div className='f6 gray'>{user.role}</div>
+                            <div className='f7 gray'>{user.role}</div>
                           </div>
-                          {user.alreadyInvited && (
+                          {user.alreadyInvited ? (
                             <div className='ml2 flex flex-column items-center justify-center'>
-                              <FontIcon className='material-icons' color='green'>check_circle</FontIcon>
+                              <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
                             </div>
+                          ) : (
+                            <span className='ml2 f6 silver'>Invite</span>
                           )}
                         </li>
                       ))}
                     </ul>
+                  ) : (
+                    <p className='tc i warn-crimson'>We couldn't find any users with the name entered.</p>
                   )}
-                  <div className='ph3'>
-                    {filteredUsers.length ? (
-                      <p className='tc i mid-gray'>Can't find who you're looking for?</p>
-                    ) : (
-                      <p className='tc i warn-crimson'>We couldn't find any users with the name entered.</p>
-                    )}
-                    <button className='button-reset bg-bondi-blue white br1 b--none pv2 lh-title w-100 dim'>
-                      Invite a new user
-                    </button>
-                  </div>
                 </div>
+              </div>
+              <div className='no-shrink'>
+                <p className='tc i mid-gray'>Can't find who you're looking for?</p>
+                <button className='button-reset bg-bondi-blue white br1 b--none pv2 lh-title w-100 dim'>
+                  Invite a new user
+                </button>
               </div>
             </Dialog>
           </div>

@@ -7,6 +7,7 @@
   --very-light-gray: #f0f0f0;
   --bondi-blue: #0095b6;
   --warn-crimson: #ab0530;
+  --success-green: #99cc33
 }
 
 /* Tachyons fixes, overrides and additions */
@@ -43,6 +44,10 @@
 }
 .warn-crimson {
   color: var(--warn-crimson);
+}
+
+.success-green {
+  color: var(--success-green);
 }
 
 .f7 {
