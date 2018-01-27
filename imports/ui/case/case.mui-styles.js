@@ -40,30 +40,3 @@ export const addPersonIconStyle = {
   fontSize: 16,
   lineHeight: '1.7rem'
 }
-
-export const closeDialogButtonStyle = {
-  color: '#777',
-  fontSize: 21
-}
-
-export const modalTitleStyle = {
-  padding: '0.75rem 1rem',
-  color: '#222',
-  fontSize: 21,
-  fontWeight: 500
-}
-
-export const modalCustomContentStyle = {
-  width: '90%',
-  maxWidth: 'none',
-  padding: '0.5rem',
-  fontFamily: 'Roboto, sans-serif'
-}
-
-export const modalBodyStyle = {
-  paddingBottom: '1.5rem',
-  paddingLeft: '1rem',
-  paddingRight: '1rem',
-  display: 'flex',
-  flexDirection: 'column'
-}

@@ -5,7 +5,7 @@ export const ATTACHMENT_UPLOAD_COMPLETED = 'attachment_upload_completed'
 export const RETRY_ATTACHMENT = 'retry_attachment'
 export const CREATE_ATTACHMENT = 'create_attachment'
 export const CREATE_COMMENT = 'create_comment'
-export const INVITE_USER = 'invite_user'
+export const ADD_ROLE_USER = 'add_role_user'
 
 export function createComment (text, caseId) {
   return {
@@ -33,9 +33,9 @@ export function retryAttachment (process) {
   }
 }
 
-export function inviteUser (userEmail, caseId) {
+export function addRoleUser (userEmail, caseId) {
   return {
-    type: INVITE_USER,
+    type: ADD_ROLE_USER,
     userEmail,
     caseId
   }

@@ -46,7 +46,7 @@ export class Case extends Component {
     if (caseError) return <h1>{caseError.error.message}</h1>
     if (loadingCase || loadingComments) return <Preloader />
     const { push } = routerRedux
-    const { createComment, createAttachment, retryAttachment, inviteUser } = actions
+    const { createComment, createAttachment, retryAttachment, addRoleUser } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
 
@@ -86,10 +86,11 @@ export class Case extends Component {
                 onMoreInfo={() => dispatch(push(detailsUrl))}
               />
             )} />
-            <Route exact path={detailsUrl} render={() => (
+            <Route path={detailsUrl} render={() => (
               <CaseDetails
                 {...{caseItem, comments, unitUsers}}
-                onUserInvited={user => dispatch(inviteUser(user.email, caseId))}
+                onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
+                onNewUserInvited={(email, role, isOccupant) => {}}
                 onSelectAttachment={this.navigateToAttachment.bind(this)}
               />
             )} />

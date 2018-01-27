@@ -2,6 +2,6 @@ import { combineEpics } from 'redux-observable'
 import { createAttachment } from './epics/create-attachment'
 import { createComment } from './epics/create-comment'
 import { retryAttachment } from './epics/retry-attachment'
-import { inviteUser } from './epics/invite-user'
+import { addRoleUser } from './epics/add-role-user'
 
-export const rootEpic = combineEpics(createAttachment, retryAttachment, createComment, inviteUser)
+export const rootEpic = combineEpics(createAttachment, retryAttachment, createComment, addRoleUser)

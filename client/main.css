@@ -153,6 +153,9 @@
 .justify-center {
   justify-content: center;
 }
+.justify-space {
+  justify-content: space-between;
+}
 
 /* Functional CSS additions */
 .ellipsis {

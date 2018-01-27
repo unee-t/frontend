@@ -1,21 +1,18 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Link, withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import _ from 'lodash'
 import moment from 'moment'
 import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
-import Dialog from 'material-ui/Dialog'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
+import InviteDialog from '../components/invite-dialog'
 
 import {
   detailLineIconColor,
-  addPersonIconStyle,
-  closeDialogButtonStyle,
-  modalTitleStyle,
-  modalCustomContentStyle,
-  modalBodyStyle
+  addPersonIconStyle
 } from './case.mui-styles'
 
 const renderSummaryLine = ({summary}) => (
@@ -59,7 +56,6 @@ class CaseDetails extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      dialogOpen: false,
       filterString: ''
     }
   }
@@ -68,47 +64,10 @@ class CaseDetails extends Component {
       computedMediaItemWidth: Math.round((this.refs.media.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
     })
   }
-  componentDidUpdate (prevProps, prevState) {
-    if (this.state.dialogOpen && !prevState.dialogOpen) {
-      setTimeout(() => { // Had to set timeout as the dialog doesn't create the content immediately
-        this.searchFilter.focus()
-      }, 500)
-    }
-  }
-  handleAddPerson = () => {
-    this.setState({
-      dialogOpen: true
-    })
-  }
-  handleFilterChange = evt => {
-    this.setState({
-      filterString: evt.target.value
-    })
-  }
-  handleCloseDialog = () => {
-    this.setState({
-      dialogOpen: false
-    })
-  }
   renderParticipants = (comments, unitUsers, caseItem) => {
     // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
     const participants = _.chain(comments).map('creator').uniq().value()
-    const matcher = this.state.filterString ? new RegExp(this.state.filterString, 'i') : null
-    const filteredUsers = unitUsers ? unitUsers.reduce((all, user, idx) => {
-      if (!matcher || (user.name && user.name.match(matcher)) || user.email.match(matcher)) {
-        all.push(Object.assign({origIdx: idx, alreadyInvited: caseItem.cc.includes(user.email)}, user))
-      }
-      return all
-      // TODO: to be use to resolve #80
-    }, [])/* .sort((a, b) => {
-      if (a.alreadyInvited && !b.alreadyInvited) {
-        return 1
-      } else if (b.alreadyInvited && !a.alreadyInvited) {
-        return -1
-      } else {
-        return 0
-      }
-    }) */ : []
+    const { match, onRoleUserAdded, onNewUserInvited } = this.props
     return (
       <div className='ph3 h2-5 flex items-center'>
         <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
@@ -119,67 +78,16 @@ class CaseDetails extends Component {
             </div>
           ))}
           <div>
-            <button className='button-reset h2 w2 br-100 ba b--moon-gray bg-transparent outline-0 dim'
-              onClick={this.handleAddPerson}>
+            <Link to={`${match.url}/invite`}
+              className='link h2 w2 br-100 ba b--moon-gray bg-transparent outline-0 dim dib tc'>
               <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
-            </button>
-            <Dialog
-              title='Who would you like to invite?'
-              titleStyle={modalTitleStyle}
-              modal
-              open={this.state.dialogOpen}
-              contentStyle={modalCustomContentStyle}
-              bodyStyle={modalBodyStyle}
-            >
-              <button className='button-reset b--none bg-transparent absolute top-1 pt2 right-1 outline-0'
-                onClick={this.handleCloseDialog}>
-                <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
-              </button>
-              <div className='flex no-shrink'>
-                <input placeholder='Enter the name or email' ref={input => { this.searchFilter = input }}
-                  className='input-reset ba b--moon-gray outline-0 lh-dbl mb2 ti3 flex-grow'
-                  value={this.state.filterString} onChange={this.handleFilterChange} />
-              </div>
-              <div className='ba b--moon-gray flex-grow'>
-                <div className='h5 overflow-auto pb2'>
-                  {filteredUsers.length ? (
-                    <ul className='list mv0 pa0 pt1'>
-                      {filteredUsers.map(user => (
-                        <li key={user.email}
-                          className={
-                            themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 ' +
-                              (user.alreadyInvited ? '' : 'dim')
-                          }
-                          onClick={() => { !user.alreadyInvited && this.props.onUserInvited(user) }}>
-                          <div className='ml1'>
-                            <UserAvatar creator={user.name || user.email} />
-                          </div>
-                          <div className='ml2 flex-grow'>
-                            <div className='f5 bondi-blue'>{user.name || user.email}</div>
-                            <div className='f7 gray'>{user.role}</div>
-                          </div>
-                          {user.alreadyInvited ? (
-                            <div className='ml2 flex flex-column items-center justify-center'>
-                              <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
-                            </div>
-                          ) : (
-                            <span className='ml2 f6 silver'>Invite</span>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className='tc i warn-crimson'>We couldn't find any users with the name entered.</p>
-                  )}
-                </div>
-              </div>
-              <div className='no-shrink'>
-                <p className='tc i mid-gray'>Can't find who you're looking for?</p>
-                <button className='button-reset bg-bondi-blue white br1 b--none pv2 lh-title w-100 dim'>
-                  Invite a new user
-                </button>
-              </div>
-            </Dialog>
+            </Link>
+            <InviteDialog
+              basePath={match.url} relPath='invite'
+              potentialInvitees={unitUsers || []}
+              invitedUserEmails={caseItem.cc}
+              {...{onRoleUserAdded, onNewUserInvited}}
+            />
           </div>
         </div>
       </div>
@@ -223,8 +131,9 @@ CaseDetails.propTypes = {
   caseItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
   onSelectAttachment: PropTypes.func,
-  onUserInvited: PropTypes.func,
+  onRoleUserAdded: PropTypes.func,
+  onNewUserInvited: PropTypes.func,
   unitUsers: PropTypes.array
 }
 
-export default CaseDetails
+export default withRouter(CaseDetails)
