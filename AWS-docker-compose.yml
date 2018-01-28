@@ -13,6 +13,7 @@ services:
        - CLOUDINARY_URL=${CLOUDINARY_URL}
        - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
        - COMMIT=${COMMIT}
+       - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
       logging:
             driver: awslogs
             options:
