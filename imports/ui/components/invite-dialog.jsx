@@ -7,7 +7,9 @@ import TextField from 'material-ui/TextField'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import Checkbox from 'material-ui/Checkbox'
+import CircularProgress from 'material-ui/CircularProgress'
 import UserAvatar from './user-avatar'
+import { emailValidator } from '../../util/validators'
 import themes from './user-themes.mss'
 
 import {
@@ -19,7 +21,8 @@ import {
   inviteNewLabelStyle,
   inviteNewInputStyle,
   inviteNewUnderlineFocusStyle,
-  inviteSelectIconStyle
+  inviteSelectIconStyle,
+  inviteSuccessIconStyle
 } from './invite-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
@@ -67,10 +70,9 @@ class InviteDialog extends Component {
   }
 
   handleEmailChanged = evt => {
-    const emailRegex = /^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i
     const { value } = evt.target
     let emailError
-    if (!value || !value.match(emailRegex)) {
+    if (!value || !emailValidator(value)) {
       emailError = !value ? 'Email is required' : 'This address is invalid'
 
       // Checking whether the email belongs to an existing role bearer for this unit
@@ -95,8 +97,11 @@ class InviteDialog extends Component {
   }
 
   render () {
-    const { basePath, relPath, onRoleUserAdded, potentialInvitees, invitedUserEmails } = this.props
-    const matcher = this.state.filterString ? new RegExp(this.state.filterString, 'i') : null
+    const {
+      basePath, relPath, onRoleUserAdded, potentialInvitees, invitedUserEmails, invitationState, onResetInvitation
+    } = this.props
+    const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
+    const matcher = filterString ? new RegExp(filterString, 'i') : null
     const filteredUsers = potentialInvitees.length ? potentialInvitees.reduce((all, user, idx) => {
       if (!matcher || (user.name && user.name.match(matcher)) || user.email.match(matcher)) {
         all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.email)}, user))
@@ -116,28 +121,35 @@ class InviteDialog extends Component {
       <Route path={`${basePath}/${relPath}`} children={({match}) => {
         return (
           <Dialog
-            title='Who would you like to invite?'
+            title={invitationState.loading ? 'Please wait... '
+              : !invitationState.completed ? 'Who would you like to invite?'
+              : null
+            }
             titleStyle={modalTitleStyle}
             modal
             open={!!match}
             contentStyle={modalCustomContentStyle}
             bodyStyle={modalBodyStyle}
           >
-            <Link to={basePath}
-              className='link b--none bg-transparent absolute top-1 pt2 right-1 outline-0'>
+            <Link to={basePath} onClick={onResetInvitation}
+              className={
+                'link b--none bg-transparent absolute top-1 pt2 right-1 outline-0' +
+                (invitationState.loading ? ' dn' : '')
+              }
+            >
               <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
             </Link>
             <Route exact path={`${basePath}/${relPath}`} render={() => (
-              <div>
+              <div className='mt2 flex flex-column flex-grow'>
                 <div className='flex no-shrink'>
                   <input placeholder='Enter the name or email'
                     className='input-reset ba b--moon-gray outline-0 lh-dbl mb2 ti3 flex-grow'
-                    value={this.state.filterString} onChange={evt => this.setState({filterString: evt.target.value})}
+                    value={filterString} onChange={evt => this.setState({filterString: evt.target.value})}
                     ref={input => { this.inputToFocus = input }}
                   />
                 </div>
-                <div className='ba b--moon-gray flex-grow'>
-                  <div className='h5 overflow-auto pb2'>
+                <div className='ba b--moon-gray flex-grow h5 overflow-auto'>
+                  <div className='pb2'>
                     {filteredUsers.length ? (
                       <ul className='list mv0 pa0 pt1'>
                         {filteredUsers.map(user => (
@@ -150,9 +162,9 @@ class InviteDialog extends Component {
                             <div className='ml1'>
                               <UserAvatar creator={user.name || user.email} />
                             </div>
-                            <div className='ml2 flex-grow'>
-                              <div className='f5 bondi-blue'>{user.name || user.email}</div>
-                              <div className='f7 gray'>{user.role}</div>
+                            <div className='ml2 flex-grow overflow-hidden'>
+                              <div className='f5 bondi-blue ellipsis'>{user.name || user.email}</div>
+                              <div className='f7 gray ellipsis'>{user.role}</div>
                             </div>
                             {user.alreadyInvited ? (
                               <div className='ml2 flex flex-column items-center justify-center'>
@@ -178,12 +190,25 @@ class InviteDialog extends Component {
                 </div>
               </div>
             )} />
-            <Route path={`${basePath}/${relPath}/new`} render={() => (
-              <div>
+            <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? (
+              <div className='tc mt3 pt2'>
+                <FontIcon className='material-icons' style={inviteSuccessIconStyle}>check_circle</FontIcon>
+                <p className='f4 mv0'>Awesome! Very soon we’ll send an invite to&nbsp;
+                  <span className='fw5'>
+                    {invitationState.email}
+                  </span>
+                  &nbsp;so you could collaborate on this case.
+                </p>
+                <button className={simpleButtonClasses + ' mt4'} onClick={onResetInvitation}>
+                  Invite another user
+                </button>
+              </div>
+            ) : (
+              <div className='pt1 mt2'>
                 <TextField
                   hintText='Type the email address'
                   floatingLabelText='Email of the user to invite'
-                  errorText={this.state.emailError}
+                  errorText={emailError}
                   floatingLabelFixed
                   fullWidth
                   floatingLabelStyle={inviteNewFloatingLabelStyle}
@@ -193,6 +218,7 @@ class InviteDialog extends Component {
                   required
                   ref={input => { this.inputToFocus = input }}
                   onChange={this.handleEmailChanged}
+                  disabled={invitationState.loading}
                 />
                 <SelectField
                   floatingLabelText='Relationship to this unit'
@@ -203,41 +229,70 @@ class InviteDialog extends Component {
                   menuStyle={inviteNewInputStyle}
                   iconStyle={inviteSelectIconStyle}
                   underlineFocusStyle={inviteNewUnderlineFocusStyle}
-                  value={this.state.selectedRole}
+                  value={selectedRole}
                   onChange={(evt, idx, val) => {
                     this.setState({
                       selectedRole: val,
                       isOccupant: false
                     })
                   }}
+                  disabled={invitationState.loading}
                 >
                   {this.roleTypes.map(type => (
                     <MenuItem key={type.name} value={type} primaryText={type.name} />
                   ))}
                 </SelectField>
-                {this.state.selectedRole && this.state.selectedRole.canBeOccupant && (
+                {selectedRole && selectedRole.canBeOccupant && (
                   <Checkbox
-                    label={`The ${this.state.selectedRole.name} is also the occupant of this unit`}
+                    label={`The ${selectedRole.name} is also the occupant of this unit`}
                     labelStyle={inviteNewLabelStyle}
-                    checked={this.state.isOccupant}
+                    checked={isOccupant}
                     onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
+                    disabled={invitationState.loading}
                   />
                 )}
                 <div className='flex justify-space mt3'>
-                  <button className={simpleButtonClasses} onClick={this.handleSendInviteClick}>
-                    Send Invitation
+                  <button
+                    className={simpleButtonClasses + ' relative' + (invitationState.loading ? ' o-60' : '')}
+                    onClick={this.handleSendInviteClick}
+                    disabled={invitationState.loading}
+                  >
+                    {invitationState.loading && (
+                      <div className='absolute top-0 right-0 bottom-0 left-0'>
+                        <CircularProgress color='white' size={30} />
+                      </div>
+                    )}
+                    <span className={invitationState.loading ? 'o-0' : ''}>
+                      Send Invitation
+                    </span>
                   </button>
-                  <Link to={`${basePath}/${relPath}`} className={simpleLinkClasses + ' ph3'}>
+                  <Link
+                    to={`${basePath}/${relPath}`}
+                    className={simpleLinkClasses + ' ph3' + (invitationState.loading ? ' disabled o-60' : '')}>
                     Back
                   </Link>
                 </div>
                 <Dialog
                   title='Please fill in all the details properly'
                   titleStyle={modalTitleStyle}
-                  open={this.state.inputErrorModalOpen}
+                  open={inputErrorModalOpen}
                 >
                   <div className='tr'>
-                    <button className={simpleButtonClasses + ' mt3'} onClick={() => this.setState({inputErrorModalOpen: false})}>
+                    <button
+                      className={simpleButtonClasses + ' mt3'}
+                      onClick={() => this.setState({inputErrorModalOpen: false})}
+                    >
+                      Ok
+                    </button>
+                  </div>
+                </Dialog>
+                <Dialog
+                  title={invitationState.errorText}
+                  titleStyle={modalTitleStyle}
+                  open={!!invitationState.errorText}
+                >
+                  <div className='tr'>
+                    <button className={simpleButtonClasses + ' mt3'} onClick={onResetInvitation}>
                       Ok
                     </button>
                   </div>
@@ -257,7 +312,9 @@ InviteDialog.propTypes = {
   potentialInvitees: PropTypes.array.isRequired,
   onRoleUserAdded: PropTypes.func.isRequired,
   invitedUserEmails: PropTypes.array.isRequired,
-  onNewUserInvited: PropTypes.func.isRequired
+  onNewUserInvited: PropTypes.func.isRequired,
+  onResetInvitation: PropTypes.func.isRequired,
+  invitationState: PropTypes.object.isRequired
 }
 
 export default InviteDialog

@@ -35,10 +35,16 @@ export const modalBodyStyle = {
   paddingBottom: '1.5rem',
   paddingLeft: '1rem',
   paddingRight: '1rem',
+  // paddingTop: 0,
   display: 'flex',
   flexDirection: 'column'
 }
 
 export const inviteSelectIconStyle = {
   fill: 'var(--mid-gray)'
+}
+
+export const inviteSuccessIconStyle = {
+  color: 'var(--success-green)',
+  fontSize: '80px'
 }

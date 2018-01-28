@@ -40,15 +40,15 @@ export class Case extends Component {
 
   render () {
     const {
-      caseItem, comments, loadingCase, loadingComments, loadingUnitUsers, caseError, commentsError, unitUsersError,
-      attachmentUploads, match, userEmail, dispatch, unitUsers
+      caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
+      attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState
     } = this.props
     if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
     if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
-    if (unitUsersError) return <h1>Error loading the unit's users: {unitUsersError.error.message}</h1>
-    if (loadingCase || loadingComments || loadingUnitUsers) return <Preloader />
+    if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
+    if (loadingCase || loadingComments || loadingUnit) return <Preloader />
     const { push } = routerRedux
-    const { createComment, createAttachment, retryAttachment, addRoleUser } = actions
+    const { createComment, createAttachment, retryAttachment, addRoleUser, inviteNewUser, clearInvitation } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
 
@@ -90,9 +90,12 @@ export class Case extends Component {
             )} />
             <Route path={detailsUrl} render={() => (
               <CaseDetails
-                {...{caseItem, comments, unitUsers}}
+                {...{caseItem, comments, unitUsers, invitationState}}
                 onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
-                onNewUserInvited={(email, role, isOccupant) => {}}
+                onNewUserInvited={
+                  (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
+                }
+                onResetInvitation={() => dispatch(clearInvitation())}
                 onSelectAttachment={this.navigateToAttachment.bind(this)}
               />
             )} />
@@ -113,12 +116,14 @@ Case.propTypes = {
   comments: PropTypes.array,
   userEmail: PropTypes.string,
   attachmentUploads: PropTypes.array,
-  loadingUnitUsers: PropTypes.bool,
-  unitUsersError: PropTypes.object,
-  unitUsers: PropTypes.array
+  loadingUnit: PropTypes.bool,
+  unitError: PropTypes.object,
+  unitItem: PropTypes.object,
+  unitUsers: PropTypes.array,
+  invitationState: PropTypes.object.isRequired
 }
 
-let caseError, commentsError, unitUsersError
+let caseError, commentsError, unitError
 const CaseContainer = createContainer(function (props, ...rest) {
   const { caseId } = props.match.params
   const caseHandle = Meteor.subscribe('case', caseId, {
@@ -136,7 +141,7 @@ const CaseContainer = createContainer(function (props, ...rest) {
   if (currCase) {
     unitHandle = Meteor.subscribe('unit', currCase.product, {
       onStop: error => {
-        unitUsersError = error
+        unitError = error
       }
     })
     currUnit = Units.findOne({name: currCase.product})
@@ -150,8 +155,9 @@ const CaseContainer = createContainer(function (props, ...rest) {
     commentsError,
     comments: Comments.find({bug_id: parseInt(caseId)}).fetch(),
     userEmail: Meteor.user() ? Meteor.user().emails[0].address : null,
-    loadingUnitUsers: !unitHandle || !unitHandle.ready(),
-    unitUsersError,
+    loadingUnit: !unitHandle || !unitHandle.ready(),
+    unitError,
+    unitItem: currUnit,
     unitUsers: currUnit && getUnitRoles(currUnit).map(rolePerson => {
       const regUser = Meteor.users.findOne({'emails.0.address': rolePerson.email})
       return regUser ? Object.assign({}, rolePerson, regUser.profile) : rolePerson
@@ -160,7 +166,8 @@ const CaseContainer = createContainer(function (props, ...rest) {
 }, Case)
 
 export default connect(
-  ({caseAttachmentUploads}, props) => ({
-    attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || []
+  ({caseAttachmentUploads, invitationState}, props) => ({
+    attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || [],
+    invitationState
   })
 )(CaseContainer)

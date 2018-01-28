@@ -3,6 +3,7 @@ import '../imports/api/tasks'
 import '../imports/api/cases'
 import '../imports/api/comments'
 import '../imports/api/units'
+import '../imports/api/pending-invitations'
 import '../imports/api/hooks/on-create-user'
 import '../imports/api/rest/rest-routes'
 

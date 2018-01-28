@@ -67,7 +67,7 @@ class CaseDetails extends Component {
   renderParticipants = (comments, unitUsers, caseItem) => {
     // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
     const participants = _.chain(comments).map('creator').uniq().value()
-    const { match, onRoleUserAdded, onNewUserInvited } = this.props
+    const { match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation } = this.props
     return (
       <div className='ph3 h2-5 flex items-center'>
         <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
@@ -84,9 +84,9 @@ class CaseDetails extends Component {
             </Link>
             <InviteDialog
               basePath={match.url} relPath='invite'
-              potentialInvitees={unitUsers || []}
+              potentialInvitees={unitUsers}
               invitedUserEmails={caseItem.cc}
-              {...{onRoleUserAdded, onNewUserInvited}}
+              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation}}
             />
           </div>
         </div>
@@ -130,10 +130,12 @@ class CaseDetails extends Component {
 CaseDetails.propTypes = {
   caseItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
-  onSelectAttachment: PropTypes.func,
-  onRoleUserAdded: PropTypes.func,
-  onNewUserInvited: PropTypes.func,
-  unitUsers: PropTypes.array
+  onSelectAttachment: PropTypes.func.isRequired,
+  onRoleUserAdded: PropTypes.func.isRequired,
+  onNewUserInvited: PropTypes.func.isRequired,
+  onResetInvitation: PropTypes.func.isRequired,
+  unitUsers: PropTypes.array.isRequired,
+  invitationState: PropTypes.object.isRequired
 }
 
 export default withRouter(CaseDetails)

@@ -4,6 +4,7 @@ import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
 
 import publicationFactory from './base/rest-resource-factory'
+import { emailValidator } from '../util/validators'
 
 const collectionName = 'cases'
 
@@ -62,11 +63,13 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'cases.addParticipant' (email, caseId) {
-    console.log('cases.addParticipant called')
-
+  [`${collectionName}.addParticipant`] (email, caseId) {
     check(email, String)
     check(caseId, Number)
+
+    if (!emailValidator(email)) {
+      throw new Meteor.Error('Email is no valid')
+    }
 
     // Making sure the user is logged in before inserting a comment
     if (!Meteor.userId()) {
@@ -96,6 +99,7 @@ Meteor.methods({
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
         const { cc } = caseData.data.bugs[0]
+        console.log(`${email} was subscribed to case ${caseId}`)
         publicationObj.handleChanged(caseId, {cc})
       } catch (e) {
         console.error(e)
