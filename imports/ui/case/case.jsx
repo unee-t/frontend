@@ -40,11 +40,13 @@ export class Case extends Component {
 
   render () {
     const {
-      caseItem, comments, loadingCase, loadingComments, caseError,
+      caseItem, comments, loadingCase, loadingComments, loadingUnitUsers, caseError, commentsError, unitUsersError,
       attachmentUploads, match, userEmail, dispatch, unitUsers
     } = this.props
-    if (caseError) return <h1>{caseError.error.message}</h1>
-    if (loadingCase || loadingComments) return <Preloader />
+    if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
+    if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
+    if (unitUsersError) return <h1>Error loading the unit's users: {unitUsersError.error.message}</h1>
+    if (loadingCase || loadingComments || loadingUnitUsers) return <Preloader />
     const { push } = routerRedux
     const { createComment, createAttachment, retryAttachment, addRoleUser } = actions
     const { caseId } = match.params
@@ -111,30 +113,32 @@ Case.propTypes = {
   comments: PropTypes.array,
   userEmail: PropTypes.string,
   attachmentUploads: PropTypes.array,
+  loadingUnitUsers: PropTypes.bool,
+  unitUsersError: PropTypes.object,
   unitUsers: PropTypes.array
 }
 
-let caseError, commentsError
+let caseError, commentsError, unitUsersError
 const CaseContainer = createContainer(function (props, ...rest) {
   const { caseId } = props.match.params
   const caseHandle = Meteor.subscribe('case', caseId, {
-    onStop: (error) => {
+    onStop: error => {
       caseError = error
     }
   })
   const commentsHandle = Meteor.subscribe('caseComments', caseId, {
-    onStop: (error) => {
+    onStop: error => {
       commentsError = error
     }
   })
   const currCase = Cases.findOne(caseId)
-  let currUnit
+  let currUnit, unitHandle
   if (currCase) {
-    Meteor.subscribe('unit', currCase.product)
-    currUnit = Units.findOne({name: currCase.product})
-  }
-
-  if (currCase) {
+    unitHandle = Meteor.subscribe('unit', currCase.product, {
+      onStop: error => {
+        unitUsersError = error
+      }
+    })
     currUnit = Units.findOne({name: currCase.product})
   }
 
@@ -146,6 +150,8 @@ const CaseContainer = createContainer(function (props, ...rest) {
     commentsError,
     comments: Comments.find({bug_id: parseInt(caseId)}).fetch(),
     userEmail: Meteor.user() ? Meteor.user().emails[0].address : null,
+    loadingUnitUsers: !unitHandle || !unitHandle.ready(),
+    unitUsersError,
     unitUsers: currUnit && getUnitRoles(currUnit).map(rolePerson => {
       const regUser = Meteor.users.findOne({'emails.0.address': rolePerson.email})
       return regUser ? Object.assign({}, rolePerson, regUser.profile) : rolePerson
