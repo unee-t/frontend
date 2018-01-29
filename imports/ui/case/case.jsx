@@ -6,22 +6,16 @@ import { Route, Redirect, Switch } from 'react-router-dom'
 import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
-import AppBar from 'material-ui/AppBar'
-import IconButton from 'material-ui/IconButton'
-import FontIcon from 'material-ui/FontIcon'
 import Cases from '../../api/cases'
 import Comments from '../../api/comments'
 import Units, { getUnitRoles } from '../../api/units'
 import Preloader from '../preloader/preloader'
+import InnerAppBar from '../components/inner-app-bar'
 import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
-
-import {
-  titleStyle
-} from '../components/app-bar.mui-styles'
 
 export class Case extends Component {
   navigateToAttachment (id) {
@@ -70,13 +64,8 @@ export class Case extends Component {
         }} />
         <Route path={match.url} render={props => (
           <div className='flex flex-column full-height roboto overflow-hidden'>
-            <AppBar title={caseItem.summary}
-              titleStyle={titleStyle}
-              iconElementLeft={
-                <IconButton onClick={() => this.handleBack(props.match.isExact ? null : match.url)}>
-                  <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
-                </IconButton>
-              }
+            <InnerAppBar
+              title={caseItem.summary} onBack={() => this.handleBack(props.match.isExact ? null : match.url)}
             />
             <Route exact path={match.url} render={() => (
               <CaseMessages
