@@ -102,7 +102,14 @@ export default ({collectionName, dataResolver}) => {
     publishById ({uriTemplate, addedMatcherFactory}) {
       const store = matchersStore(addedMatcherFactory)
       return function (resourceId) {
-        const accepted = basePublish(this, uriTemplate(resourceId), data => dataResolver(data, resourceId))
+        const resolvedRoute = uriTemplate(resourceId)
+        let accepted
+        if (typeof resolvedRoute === 'string') {
+          accepted = basePublish(this, resolvedRoute, data => dataResolver(data, resourceId))
+        } else {
+          const {url, params} = resolvedRoute
+          accepted = basePublish(this, url, data => dataResolver(data, resourceId), params)
+        }
 
         if (accepted) {
           store(this, resourceId.toString())
