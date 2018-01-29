@@ -34,3 +34,9 @@ export const infoIconStyle = {
 }
 
 export const detailLineIconColor = '#777'
+
+export const addPersonIconStyle = {
+  color: '#a4a4a4',
+  fontSize: 16,
+  lineHeight: '1.7rem'
+}

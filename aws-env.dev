@@ -5,3 +5,4 @@ export MONGO_PASSWORD=$(aws --profile uneet-dev ssm get-parameters --names MONGO
 export MONGO_CONNECT="dev-shard-00-00-qxxao.mongodb.net:27017,dev-shard-00-01-qxxao.mongodb.net:27017,dev-shard-00-02-qxxao.mongodb.net:27017/test?ssl=true&replicaSet=Dev-shard-0&authSource=admin"
 export CLOUDINARY_PRESET=$(aws --profile uneet-dev ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
 export CLOUDINARY_URL=$(aws --profile uneet-dev ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
+export API_ACCESS_TOKEN=$(aws --profile uneet-dev ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)

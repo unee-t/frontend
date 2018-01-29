@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { Link, withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import _ from 'lodash'
 import moment from 'moment'
@@ -7,8 +8,12 @@ import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
+import InviteDialog from '../components/invite-dialog'
 
-import { detailLineIconColor } from './case.mui-styles'
+import {
+  detailLineIconColor,
+  addPersonIconStyle
+} from './case.mui-styles'
 
 const renderSummaryLine = ({summary}) => (
   <div className='pv1 ph3 mv2 mid-gray'>{summary}</div>
@@ -19,21 +24,7 @@ const renderCaseType = ({cf_ipi_clust_6_claim_type: caseType}) => (
     <div>{caseType}</div>
   </div>
 )
-const renderParticipants = comments => {
-  const participants = _.chain(comments).map('creator').uniq().value()
-  return (
-    <div className='ph3 h2-5 flex items-center'>
-      <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
-      <div className='flex'>
-        {participants.map((creator, ind) => (
-          <div key={ind} className={themes['theme' + ((ind % 10) + 1)]}>
-            <UserAvatar creator={creator} isSmall />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+
 const renderResolutions = ({cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution, deadline: dueDate}) => (
   <div className='bb bt bw4 b--very-light-gray'>
     {[
@@ -64,21 +55,51 @@ const mediaItemRowCount = 3
 class CaseDetails extends Component {
   constructor () {
     super(...arguments)
-    this.state = {}
+    this.state = {
+      filterString: ''
+    }
   }
   componentDidMount () {
     this.setState({
       computedMediaItemWidth: Math.round((this.refs.media.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
     })
   }
+  renderParticipants = (comments, unitUsers, caseItem) => {
+    // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
+    const participants = _.chain(comments).map('creator').uniq().value()
+    const { match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation } = this.props
+    return (
+      <div className='ph3 h2-5 flex items-center'>
+        <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
+        <div className='flex'>
+          {participants.map((creator, ind) => (
+            <div key={ind} className={themes['theme' + ((ind % 10) + 1)] + ' mr2'}>
+              <UserAvatar creator={creator} isSmall />
+            </div>
+          ))}
+          <div>
+            <Link to={`${match.url}/invite`}
+              className='link h2 w2 br-100 ba b--moon-gray bg-transparent outline-0 dim dib tc'>
+              <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
+            </Link>
+            <InviteDialog
+              basePath={match.url} relPath='invite'
+              potentialInvitees={unitUsers}
+              invitedUserEmails={caseItem.cc}
+              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation}}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
   render () {
-    const { caseItem, comments } = this.props
-    console.log('props.caseItem', caseItem)
+    const { caseItem, comments, unitUsers } = this.props
     return (
       <div className='flex-grow overflow-auto'>
         {renderSummaryLine(caseItem)}
         {renderCaseType(caseItem)}
-        {renderParticipants(comments)}
+        {this.renderParticipants(comments, unitUsers, caseItem)}
         {renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
       </div>
@@ -109,7 +130,12 @@ class CaseDetails extends Component {
 CaseDetails.propTypes = {
   caseItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
-  onSelectAttachment: PropTypes.func
+  onSelectAttachment: PropTypes.func.isRequired,
+  onRoleUserAdded: PropTypes.func.isRequired,
+  onNewUserInvited: PropTypes.func.isRequired,
+  onResetInvitation: PropTypes.func.isRequired,
+  unitUsers: PropTypes.array.isRequired,
+  invitationState: PropTypes.object.isRequired
 }
 
-export default CaseDetails
+export default withRouter(CaseDetails)

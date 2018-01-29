@@ -1,7 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
+import { check } from 'meteor/check'
+import bugzillaApi from '../util/bugzilla-api'
 
 import publicationFactory from './base/rest-resource-factory'
+import { emailValidator } from '../util/validators'
 
 const collectionName = 'cases'
 
@@ -13,13 +16,14 @@ export const factoryOptions = {
 
 const MAX_RESULTS = 20
 
+let publicationObj
 if (Meteor.isServer) {
-  const factory = publicationFactory(factoryOptions)
-  Meteor.publish('case', factory.publishById({
+  publicationObj = publicationFactory(factoryOptions)
+  Meteor.publish('case', publicationObj.publishById({
     uriTemplate: caseId => `/rest/bug/${caseId}`
   }))
   // TODO: Add tests for this
-  Meteor.publish('myCases', factory.publishByCustomQuery({
+  Meteor.publish('myCases', publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: subHandle => {
       if (!subHandle.userId) {
@@ -57,6 +61,54 @@ if (Meteor.isServer) {
     }
   }))
 }
+
+Meteor.methods({
+  [`${collectionName}.addParticipant`] (email, caseId) {
+    check(email, String)
+    check(caseId, Number)
+
+    if (!emailValidator(email)) {
+      throw new Meteor.Error('Email is no valid')
+    }
+
+    // Making sure the user is logged in before inserting a comment
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    const { callAPI } = bugzillaApi
+    const currUser = Meteor.users.findOne({_id: Meteor.userId()})
+
+    if (Meteor.isClient) {
+      Cases.update({id: caseId}, {
+        $push: {
+          cc: email
+        }
+      })
+    } else {
+      const { token } = currUser.bugzillaCreds
+      const payload = {
+        token,
+        cc: {
+          add: [email]
+        }
+      }
+
+      try {
+        callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
+
+        const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
+        const { cc } = caseData.data.bugs[0]
+        console.log(`${email} was subscribed to case ${caseId}`)
+        publicationObj.handleChanged(caseId, {cc})
+      } catch (e) {
+        console.error(e)
+        throw new Meteor.Error('API error')
+      }
+    }
+  }
+})
+
 let Cases
 if (Meteor.isClient) {
   Cases = new Mongo.Collection(collectionName)

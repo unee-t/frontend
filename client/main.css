@@ -6,6 +6,8 @@
   --rad-green: #c9fb65;
   --very-light-gray: #f0f0f0;
   --bondi-blue: #0095b6;
+  --warn-crimson: #ab0530;
+  --success-green: #99cc33
 }
 
 /* Tachyons fixes, overrides and additions */
@@ -40,6 +42,13 @@
 .moon-gray {
   color: var(--moon-gray);
 }
+.warn-crimson {
+  color: var(--warn-crimson);
+}
+
+.success-green {
+  color: var(--success-green);
+}
 
 .f7 {
   font-size: .75rem;
@@ -67,6 +76,10 @@
 
 .bg-rad-green {
   background-color: var(--rad-green);
+}
+
+.bg-bondi-blue {
+  background-color: var(--bondi-blue);
 }
 
 .outline-0 {
@@ -103,6 +116,22 @@
 .h2-5 { height: 3rem; }
 /* Tachyons Height Scale - end */
 
+/* Tachyons Opacity scale - start */
+.o-100 { opacity: 1;    }
+.o-90  { opacity: .9;   }
+.o-80  { opacity: .8;   }
+.o-70  { opacity: .7;   }
+.o-60  { opacity: .6;   }
+.o-50  { opacity: .5;   }
+.o-40  { opacity: .4;   }
+.o-30  { opacity: .3;   }
+.o-20  { opacity: .2;   }
+.o-10  { opacity: .1;   }
+.o-05  { opacity: .05;  }
+.o-025 { opacity: .025; }
+.o-0   { opacity: 0; }
+/* Tachyons Opacity scale - end */
+
 .mw-60 {
   max-width: 60%;
 }
@@ -125,6 +154,10 @@
   flex: 1;
 }
 
+.no-shrink {
+  flex-shrink: 0;
+}
+
 .flex-column {
   flex-direction: column;
 }
@@ -135,6 +168,9 @@
 
 .justify-center {
   justify-content: center;
+}
+.justify-space {
+  justify-content: space-between;
 }
 
 /* Functional CSS additions */
@@ -171,3 +207,31 @@
 .gap1 {
   grid-gap: 0.25rem;
 }
+
+.disabled {
+  pointer-events: none;
+}
+
+/* Custom text-indent scale -start */
+.ti1 {
+  text-indent: 0.25rem;
+}
+.ti2 {
+  text-indent: 0.5rem;
+}
+.ti3 {
+  text-indent: 1rem;
+}
+.ti4 {
+  text-indent: 2rem;
+}
+.ti5 {
+  text-indent: 4rem;
+}
+.ti6 {
+  text-indent: 8rem;
+}
+.ti7 {
+  text-indent: 16rem;
+}
+/* Custom text-indent scale -end */

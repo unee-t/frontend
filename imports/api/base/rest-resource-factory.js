@@ -128,8 +128,14 @@ export default ({collectionName, dataResolver}) => {
         .reduce((flatList, desc) => flatList.concat(desc.handles), [])
         .forEach(handle => handle.added(collectionName, item.id.toString(), item))
     },
-    handleChanged (resourceId, item) {
-      // TODO: complete implementation
+    handleChanged (resourceId, itemDiff) {
+      const idStr = resourceId.toString()
+      const handles = changedHandles[idStr]
+      if (handles) { // unlikely to be false, but I can imagine some edge cases
+        handles.forEach(handle => {
+          handle.changed(collectionName, idStr, itemDiff)
+        })
+      }
     },
     handleRemoved (resourceId, itemId) {
       // TODO: complete implementation
