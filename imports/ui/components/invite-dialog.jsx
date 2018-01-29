@@ -191,7 +191,7 @@ class InviteDialog extends Component {
               </div>
             )} />
             <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? (
-              <div className='tc mt3 pt2'>
+              <div className='tc'>
                 <FontIcon className='material-icons' style={inviteSuccessIconStyle}>check_circle</FontIcon>
                 <p className='f4 mv0'>Awesome! Very soon we’ll send an invite to&nbsp;
                   <span className='fw5'>
