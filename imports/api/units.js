@@ -31,7 +31,10 @@ export let unitPublisher
 if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
   const publisher = factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
-    uriTemplate: unitName => `/rest/product/${unitName}`
+    uriTemplate: unitName => ({
+      url: '/rest/product',
+      params: {names: unitName}
+    })
   })
   unitPublisher = function (unitName) {
     const origAdded = this.added
