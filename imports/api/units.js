@@ -41,9 +41,9 @@ if (Meteor.isServer) {
       origAdded.call(this, name, id, item)
       if (name === collectionName) { // Should be obvious now, but just in case for future developments
         Meteor.users.find({
-          'emails.0.address': {$in: getUnitRoles(item).map(u => u.email)}
+          'bugzillaCreds.login': {$in: getUnitRoles(item).map(u => u.email)}
         }, {
-          fields: {profile: 1, 'emails.0.address': 1}
+          fields: {profile: 1, 'bugzillaCreds.login': 1}
         }).forEach(user => {
           origAdded.call(this, 'users', user._id, user)
         })

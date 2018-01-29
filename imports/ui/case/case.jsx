@@ -159,7 +159,7 @@ const CaseContainer = createContainer(function (props, ...rest) {
     unitError,
     unitItem: currUnit,
     unitUsers: currUnit && getUnitRoles(currUnit).map(rolePerson => {
-      const regUser = Meteor.users.findOne({'emails.0.address': rolePerson.email})
+      const regUser = Meteor.users.findOne({'bugzillaCreds.login': rolePerson.email})
       return regUser ? Object.assign({}, rolePerson, regUser.profile) : rolePerson
     })
   }
