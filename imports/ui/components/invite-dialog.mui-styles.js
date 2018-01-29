@@ -1,17 +1,3 @@
-export const inviteNewLabelStyle = {
-  color: 'var(--bondi-blue)',
-  fontSize: '0.875rem'
-}
-export const inviteNewFloatingLabelStyle = Object.assign({}, inviteNewLabelStyle, {
-  fontSize: '1.167rem'
-})
-export const inviteNewInputStyle = {
-  color: 'var(--mid-gray)'
-}
-export const inviteNewUnderlineFocusStyle = {
-  borderColor: 'var(--bondi-blue)'
-}
-
 export const closeDialogButtonStyle = {
   color: '#777',
   fontSize: 21

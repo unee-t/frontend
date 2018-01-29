@@ -17,13 +17,16 @@ import {
   modalTitleStyle,
   modalCustomContentStyle,
   modalBodyStyle,
-  inviteNewFloatingLabelStyle,
-  inviteNewLabelStyle,
-  inviteNewInputStyle,
-  inviteNewUnderlineFocusStyle,
   inviteSelectIconStyle,
   inviteSuccessIconStyle
 } from './invite-dialog.mui-styles'
+
+import {
+  textInputFloatingLabelStyle,
+  controlLabelStyle,
+  textInputStyle,
+  textInputUnderlineFocusStyle
+} from './form-controls.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
@@ -211,9 +214,9 @@ class InviteDialog extends Component {
                   errorText={emailError}
                   floatingLabelFixed
                   fullWidth
-                  floatingLabelStyle={inviteNewFloatingLabelStyle}
-                  inputStyle={inviteNewInputStyle}
-                  underlineFocusStyle={inviteNewUnderlineFocusStyle}
+                  floatingLabelStyle={textInputFloatingLabelStyle}
+                  inputStyle={textInputStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
                   type='email'
                   required
                   ref={input => { this.inputToFocus = input }}
@@ -224,11 +227,11 @@ class InviteDialog extends Component {
                   floatingLabelText='Relationship to this unit'
                   floatingLabelFixed
                   fullWidth
-                  floatingLabelStyle={inviteNewFloatingLabelStyle}
-                  labelStyle={inviteNewInputStyle}
-                  menuStyle={inviteNewInputStyle}
+                  floatingLabelStyle={textInputFloatingLabelStyle}
+                  labelStyle={textInputStyle}
+                  menuStyle={textInputStyle}
                   iconStyle={inviteSelectIconStyle}
-                  underlineFocusStyle={inviteNewUnderlineFocusStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
                   value={selectedRole}
                   onChange={(evt, idx, val) => {
                     this.setState({
@@ -245,7 +248,7 @@ class InviteDialog extends Component {
                 {selectedRole && selectedRole.canBeOccupant && (
                   <Checkbox
                     label={`The ${selectedRole.name} is also the occupant of this unit`}
-                    labelStyle={inviteNewLabelStyle}
+                    labelStyle={controlLabelStyle}
                     checked={isOccupant}
                     onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
                     disabled={invitationState.loading}
