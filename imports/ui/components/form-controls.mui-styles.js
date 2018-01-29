@@ -11,3 +11,6 @@ export const textInputStyle = {
 export const textInputUnderlineFocusStyle = {
   borderColor: 'var(--bondi-blue)'
 }
+export const selectInputIconStyle = {
+  fill: 'var(--mid-gray)'
+}

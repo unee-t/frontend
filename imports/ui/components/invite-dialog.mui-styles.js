@@ -27,10 +27,6 @@ export const modalBodyStyle = {
   flexDirection: 'column'
 }
 
-export const inviteSelectIconStyle = {
-  fill: 'var(--mid-gray)'
-}
-
 export const inviteSuccessIconStyle = {
   color: 'var(--success-green)',
   fontSize: '80px'

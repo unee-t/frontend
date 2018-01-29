@@ -17,7 +17,6 @@ import {
   modalTitleStyle,
   modalCustomContentStyle,
   modalBodyStyle,
-  inviteSelectIconStyle,
   inviteSuccessIconStyle
 } from './invite-dialog.mui-styles'
 
@@ -25,7 +24,8 @@ import {
   textInputFloatingLabelStyle,
   controlLabelStyle,
   textInputStyle,
-  textInputUnderlineFocusStyle
+  textInputUnderlineFocusStyle,
+  selectInputIconStyle
 } from './form-controls.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
@@ -230,7 +230,7 @@ class InviteDialog extends Component {
                   floatingLabelStyle={textInputFloatingLabelStyle}
                   labelStyle={textInputStyle}
                   menuStyle={textInputStyle}
-                  iconStyle={inviteSelectIconStyle}
+                  iconStyle={selectInputIconStyle}
                   underlineFocusStyle={textInputUnderlineFocusStyle}
                   value={selectedRole}
                   onChange={(evt, idx, val) => {
