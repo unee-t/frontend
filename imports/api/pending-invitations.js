@@ -4,13 +4,20 @@ import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 import { callAPI } from '../util/bugzilla-api'
 
-const collectionName = 'pendingInvitations'
+export const collectionName = 'pendingInvitations'
+
+export const TYPE_ASSIGNED = 'type_assigned'
+export const TYPE_CC = 'type_cc'
+
+const allowedTypes = [TYPE_ASSIGNED, TYPE_CC]
 
 Meteor.methods({
-  [`${collectionName}.inviteNewUser`] (email, role, isOccupant, caseId, unitId) {
+  [`${collectionName}.inviteNewUser`] (email, role, isOccupant, caseId, unitId, type) {
     // Making sure the user is logged in before inserting a comment
     if (!Meteor.userId()) throw new Meteor.Error('not-authorized')
-
+    if (!allowedTypes.includes(type)) {
+      throw new Meteor.Error('Invalid invitation type')
+    }
     if (Meteor.isServer) {
       const currUser = Meteor.users.findOne({_id: Meteor.userId()})
       const { token } = currUser.bugzillaCreds
@@ -72,6 +79,7 @@ Meteor.methods({
             isOccupant,
             caseId,
             unitId,
+            type,
             accessToken: randToken.generate(24)
           }
         }
@@ -85,7 +93,8 @@ Meteor.methods({
         role,
         isOccupant,
         caseId,
-        unitId
+        unitId,
+        type
       })
 
       console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
