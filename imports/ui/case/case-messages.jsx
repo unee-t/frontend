@@ -110,7 +110,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderTitle ({ id, priority, cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution }) {
+  renderTitle ({ id, status, cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution }) {
     const subheaderBoxClasses = 'flex-grow tc b--gray-93'
     const additionalSubheaders = []
     if (nextSteps) {
@@ -121,8 +121,8 @@ class CaseMessages extends Component {
     }
     return [
       (<Subheader style={subheaderStyle} className='flex' key='0'>
-        <div className={subheaderBoxClasses + ' br'}>Issue: #{id}</div>
-        <div className={subheaderBoxClasses + ' br'}>Priority: {priority}</div>
+        <div className={subheaderBoxClasses + ' br'}>Case #{id}</div>
+        <div className={subheaderBoxClasses + ' br'}>{status}</div>
         <div className={subheaderBoxClasses + ' flex items-center justify-center'} onClick={this.props.onMoreInfo}>
           <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
         </div>
