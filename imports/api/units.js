@@ -30,6 +30,8 @@ export const getUnitRoles = unit =>
 
 if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
+
+  // TODO: refactor this out so it could be used for others resources too
   const associationFactory = (publisher, associateFn) => function (unitName) {
     const origAdded = this.added
 
@@ -44,6 +46,7 @@ if (Meteor.isServer) {
     }
     return publisher.call(this, unitName)
   }
+
   Meteor.publish('unit', associationFactory(
     factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
       uriTemplate: unitName => ({
