@@ -4,6 +4,8 @@ import '../imports/api/cases'
 import '../imports/api/comments'
 import '../imports/api/units'
 import '../imports/api/pending-invitations'
+import '../imports/api/custom-users'
+import '../imports/api/case-field-values'
 import '../imports/api/hooks/on-create-user'
 import '../imports/api/rest/rest-routes'
 
