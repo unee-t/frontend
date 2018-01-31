@@ -6,7 +6,17 @@ import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { emailValidator } from '../util/validators'
 
-const collectionName = 'cases'
+export const collectionName = 'cases'
+export const caseFieldMapping = {
+  category: 'rep_platform',
+  subCategory: 'cf_ipi_clust_6_claim_type',
+  priority: 'priority',
+  severity: 'bug_severity',
+  selectedUnit: 'product',
+  assignedUnitRole: 'component',
+  title: 'summary',
+  details: 'description'
+}
 
 // Exported for testing purposes
 export const factoryOptions = {
@@ -16,6 +26,7 @@ export const factoryOptions = {
 
 const MAX_RESULTS = 20
 
+// TODO: refactor all publication names to be of form ${collectionName}.${type}
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
@@ -104,6 +115,41 @@ Meteor.methods({
       } catch (e) {
         console.error(e)
         throw new Meteor.Error('API error')
+      }
+    }
+  },
+  [`${collectionName}.insert`] (params) {
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('not-authorized')
+    }
+    if (Meteor.isServer) {
+      const { bugzillaCreds: { token } } = Meteor.users.findOne(Meteor.userId())
+      const { callAPI } = bugzillaApi
+      const normalizedParams = Object.keys(params).reduce((all, paramName) => {
+        all[caseFieldMapping[paramName]] = params[paramName]
+        return all
+      }, {})
+
+      // Hardcoded values to avoid issues with BZ API "required" checks
+      normalizedParams.version = '---'
+      normalizedParams.op_sys = 'Unspecified' // NOTE: This might an actual value at a later evolution step of the app
+      normalizedParams[caseFieldMapping.category] = normalizedParams[caseFieldMapping.category] || '---'
+      normalizedParams[caseFieldMapping.subCategory] = normalizedParams[caseFieldMapping.subCategory] || '---'
+
+      normalizedParams.token = token
+      try {
+        const { data: { id: newCaseId } } = callAPI('post', '/rest/bug', normalizedParams, false, true)
+        console.log(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
+        return {newCaseId}
+      } catch (e) {
+        // TODO: adapt this error format for other API errors too
+        console.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.insert`,
+          args: [params],
+          error: e
+        })
+        throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
     }
   }

@@ -9,10 +9,14 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import RaisedButton from 'material-ui/RaisedButton'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
+import CircularProgress from 'material-ui/CircularProgress'
 import CaseFieldValues from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
+import ErrorDialog from '../components/error-dialog'
 import Preloader from '../preloader/preloader'
 import Units from '../../api/units'
+import { caseFieldMapping } from '../../api/cases'
+import { createCase, clearError } from './case-wizard.actions'
 
 import {
   textInputFloatingLabelStyle,
@@ -20,13 +24,6 @@ import {
   textInputUnderlineFocusStyle,
   selectInputIconStyle
 } from '../components/form-controls.mui-styles'
-
-const fieldNames = [
-  'rep_platform',
-  'cf_ipi_clust_6_claim_type',
-  'priority',
-  'bug_severity'
-]
 
 class CaseWizard extends Component {
   constructor () {
@@ -41,13 +38,17 @@ class CaseWizard extends Component {
         },
         optional: {
           category: null,
-          subCategory: null
+          subCategory: null,
+          priority: null,
+          severity: null
         }
       }
     }
   }
   render () {
-    const { loadingUnits, loadingUserEmail, loadingFieldValues, fieldValues, units, userEmail } = this.props
+    const {
+      loadingUnits, loadingUserEmail, loadingFieldValues, fieldValues, units, userEmail, dispatch, error, inProgress
+    } = this.props
     if (loadingUnits || loadingUserEmail || loadingFieldValues) {
       return <Preloader />
     }
@@ -55,7 +56,6 @@ class CaseWizard extends Component {
     const { mandatory, optional } = inputValues
     const { selectedUnit, title, details, assignedUnitRole } = mandatory
     const { category, subCategory, priority, severity } = optional
-    // console.log('fieldValues', fieldValues)
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => this.props.dispatch(goBack())} />
@@ -69,6 +69,7 @@ class CaseWizard extends Component {
             iconStyle={selectInputIconStyle}
             underlineFocusStyle={textInputUnderlineFocusStyle}
             required
+            disabled={inProgress}
             value={selectedUnit}
             onChange={(evt, idx, val) => val !== selectedUnit && this.setState({
               inputValues: Object.assign({}, inputValues, {
@@ -90,6 +91,7 @@ class CaseWizard extends Component {
             inputStyle={textInputStyle}
             required
             fullWidth
+            disabled={inProgress}
             value={title}
             onChange={evt => this.setState({
               inputValues: Object.assign({}, inputValues, {
@@ -108,6 +110,7 @@ class CaseWizard extends Component {
             required
             rowsMax={3}
             fullWidth
+            disabled={inProgress}
             value={details}
             onChange={evt => this.setState({
               inputValues: Object.assign({}, inputValues, {
@@ -127,6 +130,7 @@ class CaseWizard extends Component {
                 menuStyle={textInputStyle}
                 iconStyle={selectInputIconStyle}
                 underlineFocusStyle={textInputUnderlineFocusStyle}
+                disabled={inProgress}
                 value={category}
                 onChange={(evt, idx, val) => val !== category && this.setState({
                   inputValues: Object.assign({}, inputValues, {
@@ -137,7 +141,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[fieldNames[0]].values.map(({name}) => (
+                {fieldValues[caseFieldMapping.category].values.map(({name}) => (
                   <MenuItem key={name} value={name} primaryText={name} />
                 ))}
               </SelectField>
@@ -151,7 +155,7 @@ class CaseWizard extends Component {
                 menuStyle={textInputStyle}
                 iconStyle={selectInputIconStyle}
                 underlineFocusStyle={textInputUnderlineFocusStyle}
-                disabled={!category}
+                disabled={!category || inProgress}
                 value={subCategory}
                 onChange={(evt, idx, val) => this.setState({
                   inputValues: Object.assign({}, inputValues, {
@@ -161,7 +165,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[fieldNames[1]].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
+                {fieldValues[caseFieldMapping.subCategory].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
                   if (relatedCategory === category) {
                     all.push(
                       <MenuItem key={name} value={name} primaryText={name} />
@@ -182,6 +186,7 @@ class CaseWizard extends Component {
                 menuStyle={textInputStyle}
                 iconStyle={selectInputIconStyle}
                 underlineFocusStyle={textInputUnderlineFocusStyle}
+                disabled={inProgress}
                 value={priority}
                 onChange={(evt, idx, val) => this.setState({
                   inputValues: Object.assign({}, inputValues, {
@@ -191,7 +196,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[fieldNames[2]].values.map(({name}) => (
+                {fieldValues[caseFieldMapping.priority].values.map(({name}) => (
                   <MenuItem key={name} value={name} primaryText={name} />
                 ))}
               </SelectField>
@@ -205,6 +210,7 @@ class CaseWizard extends Component {
                 menuStyle={textInputStyle}
                 iconStyle={selectInputIconStyle}
                 underlineFocusStyle={textInputUnderlineFocusStyle}
+                disabled={inProgress}
                 value={severity}
                 onChange={(evt, idx, val) => this.setState({
                   inputValues: Object.assign({}, inputValues, {
@@ -214,7 +220,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[fieldNames[3]].values.map(({name}) => (
+                {fieldValues[caseFieldMapping.severity].values.map(({name}) => (
                   <MenuItem key={name} value={name} primaryText={name} />
                 ))}
               </SelectField>
@@ -234,7 +240,9 @@ class CaseWizard extends Component {
               valueSelected={assignedUnitRole}
             >
               {selectedUnit.components.map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
-                <RadioButton key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} />
+                <RadioButton
+                  key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} disabled={inProgress}
+                />
               ))}
             </RadioButtonGroup>
           ) : (
@@ -244,14 +252,23 @@ class CaseWizard extends Component {
           )}
         </div>
         <div className='ph3 pb3'>
-          <RaisedButton fullWidth backgroundColor='var(--bondi-blue)' disabled={
-            Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0
-          }>
-            <span className='white f4 b'>
-              Add Case
-            </span>
+          <RaisedButton
+            fullWidth backgroundColor='var(--bondi-blue)'
+            disabled={(Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0) || inProgress}
+            onClick={() => dispatch(createCase(Object.assign({}, mandatory, optional)))}
+          >
+            {inProgress ? (
+              <div className='absolute top-0 right-0 bottom-0 left-0'>
+                <CircularProgress color='white' size={30} />
+              </div>
+            ) : (
+              <span className='white f4 b'>
+                Add Case
+              </span>
+            )}
           </RaisedButton>
         </div>
+        <ErrorDialog show={!!error} text={error || ''} onDismissed={() => dispatch(clearError())} />
       </div>
     )
   }
@@ -261,26 +278,36 @@ CaseWizard.propTypes = {
   loadingUnits: PropTypes.bool.isRequired,
   loadingUserEmail: PropTypes.bool.isRequired,
   loadingFieldValues: PropTypes.bool.isRequired,
+  inProgress: PropTypes.bool.isRequired,
+  error: PropTypes.string,
   units: PropTypes.array,
   userEmail: PropTypes.string,
   fieldValues: PropTypes.object
 }
 
 export default connect(
-  () => ({})
+  ({ caseCreationState: { inProgress, error } }) => ({
+    inProgress,
+    error
+  })
 )(createContainer(
-  () => ({
-    loadingUnits: !Meteor.subscribe('unitsForReporting').ready(),
-    loadingUserEmail: !Meteor.subscribe('myUserBzLogin').ready(),
-    loadingFieldValues: fieldNames
-      .map(name => Meteor.subscribe('caseFieldValues.fetchByName', name))
-      .filter(handle => !handle.ready()).length > 0,
-    units: Units.find().fetch(),
-    userEmail: Meteor.user() && Meteor.user().bugzillaCreds && Meteor.user().bugzillaCreds.login,
-    fieldValues: fieldNames.reduce((all, name) => {
-      all[name] = CaseFieldValues.findOne({name})
-      return all
-    }, {})
-  }),
+  () => {
+    const {category, subCategory, priority, severity} = caseFieldMapping
+    const enumFields = [category, subCategory, priority, severity]
+    return ({
+      loadingUnits: !Meteor.subscribe('unitsForReporting').ready(),
+      loadingUserEmail: !Meteor.subscribe('myUserBzLogin').ready(),
+      loadingFieldValues: enumFields
+        .map(name => Meteor.subscribe('caseFieldValues.fetchByName', name))
+        .filter(handle => !handle.ready()).length > 0,
+      units: Units.find().fetch(),
+      userEmail: Meteor.user() && Meteor.user().bugzillaCreds && Meteor.user().bugzillaCreds.login,
+      fieldValues: enumFields.reduce((all, name) => {
+        all[name] = CaseFieldValues.findOne({name})
+        return all
+      }, {})
+    })
+  },
   CaseWizard
+
 ))
