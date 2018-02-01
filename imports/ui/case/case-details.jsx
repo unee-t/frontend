@@ -114,9 +114,14 @@ class CaseDetails extends Component {
   }
   renderUnitDescription = unitItem => {
     return (
-      <IconDetailRowWrapper iconName='location_on' extraClasses='gray'>
-        {unitItem.description}
-      </IconDetailRowWrapper>
+      <div className='bb b--gray-93 ph3'>
+        <div className='flex pv2'>
+          <FontIcon className='material-icons mr4' color={detailLineIconColor}>location_on</FontIcon>
+          <div className='gray lh-dbl'>
+            {unitItem.description}{unitItem.description}{unitItem.description}
+          </div>
+        </div>
+      </div>
     )
   }
   render () {
