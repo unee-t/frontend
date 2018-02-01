@@ -16,9 +16,9 @@ import {
 } from './case.mui-styles'
 
 const IconDetailRowWrapper = props => (
-  <div className={'bb b--gray-93 ph3 h2-5 flex items-center' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
+  <div className={'bb b--gray-93 ph3 h2-5 flex items-center w-100' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
     <FontIcon className='material-icons mr4' color={detailLineIconColor}>{props.iconName}</FontIcon>
-    <div>{props.children}</div>
+    <div className='flex-grow ellipsis'>{props.children}</div>
   </div>
 )
 IconDetailRowWrapper.propTypes = {
@@ -105,10 +105,17 @@ class CaseDetails extends Component {
     )
   }
 
-  renderUnit = unitItem => {
+  renderUnitName = unitItem => {
     return (
       <IconDetailRowWrapper iconName='home' extraClasses='gray'>
         {unitItem.name}
+      </IconDetailRowWrapper>
+    )
+  }
+  renderUnitDescription = unitItem => {
+    return (
+      <IconDetailRowWrapper iconName='location_on' extraClasses='gray'>
+        {unitItem.description}
       </IconDetailRowWrapper>
     )
   }
@@ -118,7 +125,8 @@ class CaseDetails extends Component {
       <div className='flex-grow overflow-auto'>
         {renderSummaryLine(caseItem)}
         {renderCaseType(caseItem)}
-        {this.renderUnit(unitItem)}
+        {this.renderUnitName(unitItem)}
+        {this.renderUnitDescription(unitItem)}
         {this.renderParticipants(comments, unitUsers, caseItem)}
         {renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
