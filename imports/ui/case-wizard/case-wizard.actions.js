@@ -7,7 +7,7 @@ export const CREATE_CASE_CLEAR_ERROR = 'create_case_clear_error'
 export function createCase (params) {
   return {
     type: CREATE_CASE,
-    params: Object.assign({}, params, {selectedUnit: params.selectedUnit.name})
+    params
   }
 }
 

@@ -45,6 +45,12 @@ class CaseWizard extends Component {
       }
     }
   }
+  getSelectedUnitObj () {
+    const { selectedUnit } = this.state.inputValues.mandatory
+    if (selectedUnit) {
+      return this.props.units.filter(unit => unit.name === selectedUnit)[0]
+    }
+  }
   render () {
     const {
       loadingUnits, loadingUserEmail, loadingFieldValues, fieldValues, units, userEmail, dispatch, error, inProgress
@@ -81,7 +87,7 @@ class CaseWizard extends Component {
             })}
           >
             {units.map(unit => (
-              <MenuItem key={unit.name} value={unit} primaryText={unit.name} />
+              <MenuItem key={unit.name} value={unit.name} primaryText={unit.name} />
             ))}
           </SelectField>
           <TextField
@@ -239,11 +245,14 @@ class CaseWizard extends Component {
               })}
               valueSelected={assignedUnitRole}
             >
-              {selectedUnit.components.map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
-                <RadioButton
-                  key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} disabled={inProgress}
-                />
-              ))}
+              {
+                this.getSelectedUnitObj().components
+                  .map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
+                    <RadioButton
+                      key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} disabled={inProgress}
+                    />
+                  ))
+              }
             </RadioButtonGroup>
           ) : (
             <p className='pv0 silver i'>
