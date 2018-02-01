@@ -103,7 +103,8 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, onRoleUserAdded, potentialInvitees, invitedUserEmails, invitationState, onResetInvitation
+      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, potentialInvitees,
+      invitedUserEmails, invitationState, onResetInvitation
     } = this.props
     const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
@@ -160,10 +161,10 @@ class InviteDialog extends Component {
                         {filteredUsers.map(user => (
                           <li key={user.email}
                             className={
-                              themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 ' +
-                              (user.alreadyInvited ? '' : 'dim')
+                              themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }
-                            onClick={() => { !user.alreadyInvited && onRoleUserAdded(user) }}>
+                            onClick={() => { user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user) }}
+                          >
                             <div className='ml1'>
                               <UserAvatar creator={user.name || user.email} />
                             </div>
@@ -298,6 +299,7 @@ InviteDialog.propTypes = {
   relPath: PropTypes.string.isRequired,
   potentialInvitees: PropTypes.array.isRequired,
   onRoleUserAdded: PropTypes.func.isRequired,
+  onRoleUserRemoved: PropTypes.func.isRequired,
   invitedUserEmails: PropTypes.array.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,

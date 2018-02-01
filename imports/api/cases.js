@@ -74,12 +74,12 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  [`${collectionName}.addParticipant`] (email, caseId) {
+  [`${collectionName}.toggleParticipant`] (email, caseId, isAdd = true) {
     check(email, String)
     check(caseId, Number)
 
     if (!emailValidator(email)) {
-      throw new Meteor.Error('Email is no valid')
+      throw new Meteor.Error('Email is not valid')
     }
 
     // Making sure the user is logged in before inserting a comment
@@ -91,17 +91,19 @@ Meteor.methods({
     const currUser = Meteor.users.findOne({_id: Meteor.userId()})
 
     if (Meteor.isClient) {
+      const opType = isAdd ? '$push' : '$pull'
       Cases.update({id: caseId}, {
-        $push: {
+        [opType]: {
           cc: email
         }
       })
     } else {
       const { token } = currUser.bugzillaCreds
+      const opType = isAdd ? 'add' : 'remove'
       const payload = {
         token,
         cc: {
-          add: [email]
+          [opType]: [email]
         }
       }
 
@@ -110,10 +112,15 @@ Meteor.methods({
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
         const { cc } = caseData.data.bugs[0]
-        console.log(`${email} was subscribed to case ${caseId}`)
+        console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
         publicationObj.handleChanged(caseId, {cc})
       } catch (e) {
-        console.error(e)
+        console.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.toggleParticipant`,
+          args: [email, caseId, isAdd],
+          error: e
+        })
         throw new Meteor.Error('API error')
       }
     }
@@ -140,9 +147,10 @@ Meteor.methods({
       try {
         const { data: { id: newCaseId } } = callAPI('post', '/rest/bug', normalizedParams, false, true)
         console.log(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
+        // TODO: Add real time update handler usage
         return {newCaseId}
       } catch (e) {
-        // TODO: adapt this error format for other API errors too
+        // TODO: adopt this error format for other API errors too
         console.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,

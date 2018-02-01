@@ -79,7 +79,9 @@ class CaseDetails extends Component {
   renderParticipants = (comments, unitUsers, caseItem) => {
     // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
     const participants = _.chain(comments).map('creator').uniq().value()
-    const { match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation } = this.props
+    const {
+      match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
+    } = this.props
     return (
       <IconDetailRowWrapper iconName='person'>
         <div className='flex'>
@@ -97,7 +99,7 @@ class CaseDetails extends Component {
               basePath={match.url} relPath='invite'
               potentialInvitees={unitUsers}
               invitedUserEmails={caseItem.cc}
-              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation}}
+              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
             />
           </div>
         </div>
@@ -166,6 +168,7 @@ CaseDetails.propTypes = {
   comments: PropTypes.array.isRequired,
   onSelectAttachment: PropTypes.func.isRequired,
   onRoleUserAdded: PropTypes.func.isRequired,
+  onRoleUserRemoved: PropTypes.func.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,

@@ -42,7 +42,9 @@ export class Case extends Component {
     if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
     if (loadingCase || loadingComments || loadingUnit) return <Preloader />
     const { push } = routerRedux
-    const { createComment, createAttachment, retryAttachment, addRoleUser, inviteNewUser, clearInvitation } = actions
+    const {
+      createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation
+    } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
 
@@ -81,6 +83,7 @@ export class Case extends Component {
               <CaseDetails
                 {...{caseItem, comments, unitUsers, invitationState, unitItem}}
                 onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
+                onRoleUserRemoved={user => dispatch(removeRoleUser(user.email, caseId))}
                 onNewUserInvited={
                   (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
                 }
