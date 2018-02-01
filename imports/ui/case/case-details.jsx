@@ -118,7 +118,7 @@ class CaseDetails extends Component {
         <div className='flex pv2'>
           <FontIcon className='material-icons mr4' color={detailLineIconColor}>location_on</FontIcon>
           <div className='gray lh-dbl'>
-            {unitItem.description}{unitItem.description}{unitItem.description}
+            {unitItem.description}
           </div>
         </div>
       </div>
