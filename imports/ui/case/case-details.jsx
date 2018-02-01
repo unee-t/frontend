@@ -15,14 +15,26 @@ import {
   addPersonIconStyle
 } from './case.mui-styles'
 
+const IconDetailRowWrapper = props => (
+  <div className={'bb b--gray-93 ph3 h2-5 flex items-center' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
+    <FontIcon className='material-icons mr4' color={detailLineIconColor}>{props.iconName}</FontIcon>
+    <div>{props.children}</div>
+  </div>
+)
+IconDetailRowWrapper.propTypes = {
+  iconName: PropTypes.string.isRequired,
+  extraClasses: PropTypes.string
+}
+
 const renderSummaryLine = ({summary}) => (
-  <div className='pv1 ph3 mv2 mid-gray'>{summary}</div>
+  <div className='bb b--gray-93 ph3'>
+    <div className='pv1 mv2 mid-gray'>{summary}</div>
+  </div>
 )
 const renderCaseType = ({cf_ipi_clust_6_claim_type: caseType}) => (
-  <div className='bt bb b--gray-93 ph3 gray h2-5 flex items-center'>
-    <FontIcon className='material-icons mr4' color={detailLineIconColor}>local_offer</FontIcon>
-    <div>{caseType}</div>
-  </div>
+  <IconDetailRowWrapper iconName='local_offer' extraClasses='gray'>
+    {caseType}
+  </IconDetailRowWrapper>
 )
 
 const renderResolutions = ({cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution, deadline: dueDate}) => (
@@ -69,8 +81,7 @@ class CaseDetails extends Component {
     const participants = _.chain(comments).map('creator').uniq().value()
     const { match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation } = this.props
     return (
-      <div className='ph3 h2-5 flex items-center'>
-        <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
+      <IconDetailRowWrapper iconName='person'>
         <div className='flex'>
           {participants.map((creator, ind) => (
             <div key={ind} className={themes['theme' + ((ind % 10) + 1)] + ' mr2'}>
@@ -90,15 +101,24 @@ class CaseDetails extends Component {
             />
           </div>
         </div>
-      </div>
+      </IconDetailRowWrapper>
+    )
+  }
+
+  renderUnit = unitItem => {
+    return (
+      <IconDetailRowWrapper iconName='home' extraClasses='gray'>
+        {unitItem.name}
+      </IconDetailRowWrapper>
     )
   }
   render () {
-    const { caseItem, comments, unitUsers } = this.props
+    const { caseItem, comments, unitUsers, unitItem } = this.props
     return (
       <div className='flex-grow overflow-auto'>
         {renderSummaryLine(caseItem)}
         {renderCaseType(caseItem)}
+        {this.renderUnit(unitItem)}
         {this.renderParticipants(comments, unitUsers, caseItem)}
         {renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
@@ -129,6 +149,7 @@ class CaseDetails extends Component {
 
 CaseDetails.propTypes = {
   caseItem: PropTypes.object.isRequired,
+  unitItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
   onSelectAttachment: PropTypes.func.isRequired,
   onRoleUserAdded: PropTypes.func.isRequired,

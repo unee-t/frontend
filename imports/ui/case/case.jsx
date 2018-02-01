@@ -79,7 +79,7 @@ export class Case extends Component {
             )} />
             <Route path={detailsUrl} render={() => (
               <CaseDetails
-                {...{caseItem, comments, unitUsers, invitationState}}
+                {...{caseItem, comments, unitUsers, invitationState, unitItem}}
                 onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
                 onNewUserInvited={
                   (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
