@@ -74,7 +74,6 @@ class CaseWizard extends Component {
             menuStyle={textInputStyle}
             iconStyle={selectInputIconStyle}
             underlineFocusStyle={textInputUnderlineFocusStyle}
-            required
             disabled={inProgress}
             value={selectedUnit}
             onChange={(evt, idx, val) => val !== selectedUnit && this.setState({
@@ -95,7 +94,6 @@ class CaseWizard extends Component {
             floatingLabelShrinkStyle={textInputFloatingLabelStyle}
             underlineFocusStyle={textInputUnderlineFocusStyle}
             inputStyle={textInputStyle}
-            required
             fullWidth
             disabled={inProgress}
             value={title}
@@ -113,7 +111,6 @@ class CaseWizard extends Component {
             underlineFocusStyle={textInputUnderlineFocusStyle}
             textareaStyle={textInputStyle}
             multiLine
-            required
             rowsMax={3}
             fullWidth
             disabled={inProgress}
