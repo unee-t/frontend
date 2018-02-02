@@ -24,4 +24,4 @@ const createRoute = (method, url, handler) => {
 
 // createRoute('post', '/invitation', invitationCreateRoute)
 createRoute('get', '/pending-invitations', getPendingInvitations)
-createRoute('put', '/pending-invitations/ready', putPendingInvitations)
+createRoute('put', '/pending-invitations/done', putPendingInvitations)

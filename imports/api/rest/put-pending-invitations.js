@@ -5,8 +5,8 @@ export default (req, res) => {
 
     try {
       const results = PendingInvitations.update({ _id: { $in: req.body },
-        ready: { $ne: true } },
-        { $set: { ready: true } })
+        done: { $ne: true } },
+        { $set: { done: true } })
       res.send(200, results)
     } catch (e) {
       res.send(500, e)
