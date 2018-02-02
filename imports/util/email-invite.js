@@ -1,8 +1,8 @@
 import { Email } from 'meteor/email'
 
-const supportEmail = "Franck Boullier <support@unee-t.com>"
+const supportEmail = 'Franck Boullier <support@unee-t.com>'
 
-export const invite = (user, invitedBy, code) =>
+export const invite = (user, invitedBy) =>
   Email.send({
     to: user.emails[0].address,
     from: supportEmail,
@@ -12,7 +12,7 @@ export const invite = (user, invitedBy, code) =>
 You have been invited to contribute to a case.
 
 Please click the link below to get started:
-${process.env.ROOT_URL}/invitation?code=${code}
+${process.env.ROOT_URL}/invitation?code=${user.invitedToCases[0].accessToken}
 
 Kind regards,
 `})
