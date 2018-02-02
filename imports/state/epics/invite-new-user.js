@@ -6,9 +6,11 @@ import { INVITE_NEW_USER, INVITATION_SUCCESS, INVITATION_INITIATED, INVITATION_E
 import { TYPE_CC, collectionName } from '../../api/pending-invitations'
 
 import 'rxjs/add/operator/take'
+import 'rxjs/add/operator/mergeMap'
 
 export const inviteNewUser = action$ =>
   action$.ofType(INVITE_NEW_USER)
+    .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
     .mergeMap(({email, role, isOccupant, caseId, unitId}) => {
       const meteorResult$ = (new Subject())
         .take(1)

@@ -3,12 +3,16 @@ import { createAttachment } from './epics/create-attachment'
 import { createComment } from './epics/create-comment'
 import { retryAttachment } from './epics/retry-attachment'
 import { addRoleUser } from './epics/add-role-user'
+import { removeRoleUser } from './epics/remove-role-user'
 import { inviteNewUser } from './epics/invite-new-user'
+import { createCase } from './epics/create-case'
 
 export const rootEpic = combineEpics(
   createAttachment,
   retryAttachment,
   createComment,
   addRoleUser,
-  inviteNewUser
+  removeRoleUser,
+  inviteNewUser,
+  createCase
 )

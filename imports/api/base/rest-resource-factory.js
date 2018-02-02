@@ -104,6 +104,8 @@ export default ({collectionName, dataResolver}) => {
       return function (resourceId) {
         const resolvedRoute = uriTemplate(resourceId)
         let accepted
+
+        // TODO: Add tests for this enhancement
         if (typeof resolvedRoute === 'string') {
           accepted = basePublish(this, resolvedRoute, data => dataResolver(data, resourceId))
         } else {

@@ -6,22 +6,16 @@ import { Route, Redirect, Switch } from 'react-router-dom'
 import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
-import AppBar from 'material-ui/AppBar'
-import IconButton from 'material-ui/IconButton'
-import FontIcon from 'material-ui/FontIcon'
 import Cases from '../../api/cases'
 import Comments from '../../api/comments'
 import Units, { getUnitRoles } from '../../api/units'
 import Preloader from '../preloader/preloader'
+import InnerAppBar from '../components/inner-app-bar'
 import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
-
-import {
-  titleStyle
-} from '../components/app-bar.mui-styles'
 
 export class Case extends Component {
   navigateToAttachment (id) {
@@ -48,7 +42,9 @@ export class Case extends Component {
     if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
     if (loadingCase || loadingComments || loadingUnit) return <Preloader />
     const { push } = routerRedux
-    const { createComment, createAttachment, retryAttachment, addRoleUser, inviteNewUser, clearInvitation } = actions
+    const {
+      createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation
+    } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
 
@@ -70,13 +66,8 @@ export class Case extends Component {
         }} />
         <Route path={match.url} render={props => (
           <div className='flex flex-column full-height roboto overflow-hidden'>
-            <AppBar title={caseItem.summary}
-              titleStyle={titleStyle}
-              iconElementLeft={
-                <IconButton onClick={() => this.handleBack(props.match.isExact ? null : match.url)}>
-                  <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
-                </IconButton>
-              }
+            <InnerAppBar
+              title={caseItem.summary} onBack={() => this.handleBack(props.match.isExact ? null : match.url)}
             />
             <Route exact path={match.url} render={() => (
               <CaseMessages
@@ -90,8 +81,9 @@ export class Case extends Component {
             )} />
             <Route path={detailsUrl} render={() => (
               <CaseDetails
-                {...{caseItem, comments, unitUsers, invitationState}}
+                {...{caseItem, comments, unitUsers, invitationState, unitItem}}
                 onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
+                onRoleUserRemoved={user => dispatch(removeRoleUser(user.email, caseId))}
                 onNewUserInvited={
                   (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
                 }

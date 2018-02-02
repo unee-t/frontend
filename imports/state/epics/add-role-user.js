@@ -6,5 +6,5 @@ import 'rxjs/add/operator/ignoreElements'
 
 export const addRoleUser = action$ =>
   action$.ofType(ADD_ROLE_USER)
-    .do(({userEmail, caseId}) => Meteor.call('cases.addParticipant', userEmail, parseInt(caseId)))
+    .do(({userEmail, caseId}) => Meteor.call('cases.toggleParticipant', userEmail, parseInt(caseId)))
     .ignoreElements()
