@@ -31,7 +31,7 @@ export const createCase = action$ => action$
           of({
             type: CREATE_CASE_SUCCESS
           }),
-          of(push(`/case/${newCaseId}/details`))
+          of(push(`/case/${newCaseId}`))
         )
       })
     Meteor.call(
