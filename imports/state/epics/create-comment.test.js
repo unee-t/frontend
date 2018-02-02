@@ -11,14 +11,18 @@ if (Meteor.isClient) {
   describe('CreateComment epic', () => {
     beforeEach(() => {
       sinon.stub(Meteor, 'call')
+      sinon.stub(Meteor, 'userId')
     })
     afterEach(() => {
       Meteor.call.restore()
+      Meteor.userId.restore()
     })
 
     it('should call comments.insert on the server', (done) => {
       const input = new ReduxInput()
       const output = createComment(input)
+
+      Meteor.userId.returns(99)
 
       process.nextTick(() => {
         input.next({

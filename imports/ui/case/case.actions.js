@@ -6,6 +6,7 @@ export const RETRY_ATTACHMENT = 'retry_attachment'
 export const CREATE_ATTACHMENT = 'create_attachment'
 export const CREATE_COMMENT = 'create_comment'
 export const ADD_ROLE_USER = 'add_role_user'
+export const REMOVE_ROLE_USER = 'remove_role_user'
 export const INVITE_NEW_USER = 'invite_new_user'
 export const INVITATION_INITIATED = 'invitation_initiated'
 export const INVITATION_SUCCESS = 'invitation_success'
@@ -41,6 +42,14 @@ export function retryAttachment (process) {
 export function addRoleUser (userEmail, caseId) {
   return {
     type: ADD_ROLE_USER,
+    userEmail,
+    caseId
+  }
+}
+
+export function removeRoleUser (userEmail, caseId) {
+  return {
+    type: REMOVE_ROLE_USER,
     userEmail,
     caseId
   }

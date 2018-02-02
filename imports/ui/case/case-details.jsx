@@ -15,14 +15,26 @@ import {
   addPersonIconStyle
 } from './case.mui-styles'
 
+const IconDetailRowWrapper = props => (
+  <div className={'bb b--gray-93 ph3 h2-5 flex items-center w-100' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
+    <FontIcon className='material-icons mr4' color={detailLineIconColor}>{props.iconName}</FontIcon>
+    <div className='flex-grow ellipsis'>{props.children}</div>
+  </div>
+)
+IconDetailRowWrapper.propTypes = {
+  iconName: PropTypes.string.isRequired,
+  extraClasses: PropTypes.string
+}
+
 const renderSummaryLine = ({summary}) => (
-  <div className='pv1 ph3 mv2 mid-gray'>{summary}</div>
+  <div className='bb b--gray-93 ph3'>
+    <div className='pv1 mv2 mid-gray'>{summary}</div>
+  </div>
 )
 const renderCaseType = ({cf_ipi_clust_6_claim_type: caseType}) => (
-  <div className='bt bb b--gray-93 ph3 gray h2-5 flex items-center'>
-    <FontIcon className='material-icons mr4' color={detailLineIconColor}>local_offer</FontIcon>
-    <div>{caseType}</div>
-  </div>
+  <IconDetailRowWrapper iconName='local_offer' extraClasses='gray'>
+    {caseType}
+  </IconDetailRowWrapper>
 )
 
 const renderResolutions = ({cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution, deadline: dueDate}) => (
@@ -67,10 +79,11 @@ class CaseDetails extends Component {
   renderParticipants = (comments, unitUsers, caseItem) => {
     // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
     const participants = _.chain(comments).map('creator').uniq().value()
-    const { match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation } = this.props
+    const {
+      match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
+    } = this.props
     return (
-      <div className='ph3 h2-5 flex items-center'>
-        <FontIcon className='material-icons mr4' color={detailLineIconColor}>person</FontIcon>
+      <IconDetailRowWrapper iconName='person'>
         <div className='flex'>
           {participants.map((creator, ind) => (
             <div key={ind} className={themes['theme' + ((ind % 10) + 1)] + ' mr2'}>
@@ -86,19 +99,41 @@ class CaseDetails extends Component {
               basePath={match.url} relPath='invite'
               potentialInvitees={unitUsers}
               invitedUserEmails={caseItem.cc}
-              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation}}
+              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
             />
+          </div>
+        </div>
+      </IconDetailRowWrapper>
+    )
+  }
+
+  renderUnitName = unitItem => {
+    return (
+      <IconDetailRowWrapper iconName='home' extraClasses='gray'>
+        {unitItem.name}
+      </IconDetailRowWrapper>
+    )
+  }
+  renderUnitDescription = unitItem => {
+    return (
+      <div className='bb b--gray-93 ph3'>
+        <div className='flex pv2'>
+          <FontIcon className='material-icons mr4' color={detailLineIconColor}>location_on</FontIcon>
+          <div className='gray lh-dbl'>
+            {unitItem.description}
           </div>
         </div>
       </div>
     )
   }
   render () {
-    const { caseItem, comments, unitUsers } = this.props
+    const { caseItem, comments, unitUsers, unitItem } = this.props
     return (
       <div className='flex-grow overflow-auto'>
         {renderSummaryLine(caseItem)}
         {renderCaseType(caseItem)}
+        {this.renderUnitName(unitItem)}
+        {this.renderUnitDescription(unitItem)}
         {this.renderParticipants(comments, unitUsers, caseItem)}
         {renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
@@ -129,9 +164,11 @@ class CaseDetails extends Component {
 
 CaseDetails.propTypes = {
   caseItem: PropTypes.object.isRequired,
+  unitItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
   onSelectAttachment: PropTypes.func.isRequired,
   onRoleUserAdded: PropTypes.func.isRequired,
+  onRoleUserRemoved: PropTypes.func.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,

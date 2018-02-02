@@ -5,6 +5,7 @@ import Case from './case/case.jsx'
 import LoginPage from './login/login.jsx'
 import SignupPage from './signup/signup.jsx'
 import CaseExplorer from './case-explorer/case-explorer'
+import CaseWizard from './case-wizard/case-wizard'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -22,6 +23,7 @@ class App extends Component {
             <Route exact path='/unit/new' component={UnderConstruction} />
             <Route exact path='/dashboard' component={Dashboard} />
             <Route exact path='/case' component={CaseExplorer} />
+            <Route exact path='/case/new' component={CaseWizard} />
             <Route path='/case/:caseId' component={Case} />
             <Redirect to='/case' />
           </Switch>

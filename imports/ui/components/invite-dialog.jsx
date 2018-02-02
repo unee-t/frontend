@@ -9,21 +9,26 @@ import MenuItem from 'material-ui/MenuItem'
 import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
 import UserAvatar from './user-avatar'
+import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
 import themes from './user-themes.mss'
 
 import {
   closeDialogButtonStyle,
-  modalTitleStyle,
   modalCustomContentStyle,
   modalBodyStyle,
-  inviteNewFloatingLabelStyle,
-  inviteNewLabelStyle,
-  inviteNewInputStyle,
-  inviteNewUnderlineFocusStyle,
-  inviteSelectIconStyle,
   inviteSuccessIconStyle
 } from './invite-dialog.mui-styles'
+
+import {
+  textInputFloatingLabelStyle,
+  controlLabelStyle,
+  textInputStyle,
+  textInputUnderlineFocusStyle,
+  selectInputIconStyle
+} from './form-controls.mui-styles'
+
+import { modalTitleStyle } from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
@@ -98,7 +103,8 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, onRoleUserAdded, potentialInvitees, invitedUserEmails, invitationState, onResetInvitation
+      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, potentialInvitees,
+      invitedUserEmails, invitationState, onResetInvitation
     } = this.props
     const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
@@ -155,10 +161,10 @@ class InviteDialog extends Component {
                         {filteredUsers.map(user => (
                           <li key={user.email}
                             className={
-                              themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 ' +
-                              (user.alreadyInvited ? '' : 'dim')
+                              themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }
-                            onClick={() => { !user.alreadyInvited && onRoleUserAdded(user) }}>
+                            onClick={() => { user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user) }}
+                          >
                             <div className='ml1'>
                               <UserAvatar creator={user.name || user.email} />
                             </div>
@@ -211,9 +217,9 @@ class InviteDialog extends Component {
                   errorText={emailError}
                   floatingLabelFixed
                   fullWidth
-                  floatingLabelStyle={inviteNewFloatingLabelStyle}
-                  inputStyle={inviteNewInputStyle}
-                  underlineFocusStyle={inviteNewUnderlineFocusStyle}
+                  floatingLabelStyle={textInputFloatingLabelStyle}
+                  inputStyle={textInputStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
                   type='email'
                   required
                   ref={input => { this.inputToFocus = input }}
@@ -224,11 +230,11 @@ class InviteDialog extends Component {
                   floatingLabelText='Relationship to this unit'
                   floatingLabelFixed
                   fullWidth
-                  floatingLabelStyle={inviteNewFloatingLabelStyle}
-                  labelStyle={inviteNewInputStyle}
-                  menuStyle={inviteNewInputStyle}
-                  iconStyle={inviteSelectIconStyle}
-                  underlineFocusStyle={inviteNewUnderlineFocusStyle}
+                  floatingLabelStyle={textInputFloatingLabelStyle}
+                  labelStyle={textInputStyle}
+                  menuStyle={textInputStyle}
+                  iconStyle={selectInputIconStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
                   value={selectedRole}
                   onChange={(evt, idx, val) => {
                     this.setState({
@@ -245,7 +251,7 @@ class InviteDialog extends Component {
                 {selectedRole && selectedRole.canBeOccupant && (
                   <Checkbox
                     label={`The ${selectedRole.name} is also the occupant of this unit`}
-                    labelStyle={inviteNewLabelStyle}
+                    labelStyle={controlLabelStyle}
                     checked={isOccupant}
                     onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
                     disabled={invitationState.loading}
@@ -272,31 +278,13 @@ class InviteDialog extends Component {
                     Back
                   </Link>
                 </div>
-                <Dialog
-                  title='Please fill in all the details properly'
-                  titleStyle={modalTitleStyle}
-                  open={inputErrorModalOpen}
-                >
-                  <div className='tr'>
-                    <button
-                      className={simpleButtonClasses + ' mt3'}
-                      onClick={() => this.setState({inputErrorModalOpen: false})}
-                    >
-                      Ok
-                    </button>
-                  </div>
-                </Dialog>
-                <Dialog
-                  title={invitationState.errorText}
-                  titleStyle={modalTitleStyle}
-                  open={!!invitationState.errorText}
-                >
-                  <div className='tr'>
-                    <button className={simpleButtonClasses + ' mt3'} onClick={onResetInvitation}>
-                      Ok
-                    </button>
-                  </div>
-                </Dialog>
+                <ErrorDialog
+                  show={!!invitationState.errorText || inputErrorModalOpen}
+                  text={invitationState.errorText || 'Please fill in all the details properly' || ''}
+                  onDismissed={
+                    inputErrorModalOpen ? () => this.setState({inputErrorModalOpen: false}) : onResetInvitation
+                  }
+                />
               </div>
             )} />
           </Dialog>
@@ -311,6 +299,7 @@ InviteDialog.propTypes = {
   relPath: PropTypes.string.isRequired,
   potentialInvitees: PropTypes.array.isRequired,
   onRoleUserAdded: PropTypes.func.isRequired,
+  onRoleUserRemoved: PropTypes.func.isRequired,
   invitedUserEmails: PropTypes.array.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,

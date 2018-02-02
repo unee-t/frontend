@@ -7,8 +7,10 @@ import { Link } from 'react-router-dom'
 import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
+import RaisedButton from 'material-ui/RaisedButton'
 import UneeTIcon from '../components/unee-t-icon'
 import Cases from '../../api/cases'
+import { push } from 'react-router-redux'
 
 import {
   titleStyle,
@@ -45,7 +47,7 @@ class CaseExplorer extends Component {
     this.setState(stateMutation)
   }
   render () {
-    const { caseList, isLoading } = this.props
+    const { caseList, isLoading, dispatch } = this.props
     let unitsDict
     if (!isLoading) {
       unitsDict = caseList.reduce((dict, caseItem) => {
@@ -111,6 +113,13 @@ class CaseExplorer extends Component {
               )
             })}
           </div>
+        )}
+        {!isLoading && (
+          <RaisedButton fullWidth backgroundColor='var(--bondi-blue)' onClick={() => dispatch(push('/case/new'))}>
+            <span className='white f4 b'>
+              Create New Case
+            </span>
+          </RaisedButton>
         )}
       </div>
     )
