@@ -141,6 +141,7 @@ const CaseContainer = createContainer(props => {
     currUnit = Units.findOne({name: currCase.product})
   }
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
+  const unitRoles = currUnit && getUnitRoles(currUnit)
   const makeMatchingUser = bzUser => {
     const regUser = Meteor.users.findOne({'bugzillaCreds.login': bzUser.login})
     return regUser ? Object.assign({}, bzUser, regUser.profile) : bzUser
@@ -156,11 +157,16 @@ const CaseContainer = createContainer(props => {
     loadingUnit: !unitHandle || !unitHandle.ready(),
     unitError,
     unitItem: currUnit,
-    unitUsers: currUnit && getUnitRoles(currUnit).map(makeMatchingUser),
-    caseUserTypes: caseUserTypes && Object.keys(caseUserTypes).reduce((all, userType) => {
+    unitUsers: unitRoles && unitRoles.map(makeMatchingUser),
+    caseUserTypes: caseUserTypes && unitRoles && Object.keys(caseUserTypes).reduce((all, userType) => {
+      const mapUser = user => {
+        const role = _.find(unitRoles, {login: user.login})
+        const matchingUser = makeMatchingUser(user)
+        return role ? Object.assign(matchingUser, {role: role.role}) : matchingUser
+      }
       all[userType] = Array.isArray(caseUserTypes[userType])
-        ? caseUserTypes[userType].map(makeMatchingUser)
-        : makeMatchingUser(caseUserTypes[userType])
+        ? caseUserTypes[userType].map(mapUser)
+        : mapUser(caseUserTypes[userType])
       return all
     }, {})
   }

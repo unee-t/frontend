@@ -6,7 +6,9 @@ import styles from './user-themes.mss'
 const UserAvatar = ({user, isSmall}) => {
   const userDisplayText = user.name || user.login || user.email
   return (
-    <div className={styles.userAvatar + (isSmall ? ` ${styles.sizeSmall}` : '') + ' dib v-btm br-100 tc white'}>
+    <div className={
+      [styles.userAvatar, styles.sized, (isSmall ? styles.sizeSmall : ''), 'dib v-btm br-100 tc white'].join(' ')
+    }>
       {userDisplayText.slice(0, 1).toUpperCase()}
     </div>
   )
