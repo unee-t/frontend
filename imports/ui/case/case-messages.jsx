@@ -187,7 +187,7 @@ class CaseMessages extends Component {
     return (
       <div className={['mb3 ml2' + (isSelf ? ' tr' : ''), themeClass || ''].join(' ')} key={key}>
         { !isSelf ? (
-          <UserAvatar creator={creator} />
+          <UserAvatar user={{login: creator}} />
         ) : ''}
         { contentRenderer({isSelf, creator, text, creation_time, id, process}) }
       </div>

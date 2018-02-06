@@ -166,7 +166,7 @@ class InviteDialog extends Component {
                             onClick={() => { user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user) }}
                           >
                             <div className='ml1'>
-                              <UserAvatar creator={user.name || user.login} />
+                              <UserAvatar user={user} />
                             </div>
                             <div className='ml2 flex-grow overflow-hidden'>
                               <div className='f5 bondi-blue ellipsis'>{user.name || user.login}</div>
