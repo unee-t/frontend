@@ -1,3 +1,5 @@
+import { Meteor } from 'meteor/meteor'
+
 export const makeAssociationFactory = collectionName => (publisher, associateFn) => function (unitName) {
   const origAdded = this.added
 
@@ -12,3 +14,11 @@ export const makeAssociationFactory = collectionName => (publisher, associateFn)
   }
   return publisher.call(this, unitName)
 }
+
+export const withUsers = loginNamesGetter => (publishedItem, addingFn) => Meteor.users.find({
+  'bugzillaCreds.login': {$in: loginNamesGetter(publishedItem)}
+}, {
+  fields: {profile: 1, 'bugzillaCreds.login': 1}
+}).forEach(user => {
+  addingFn.call(this, 'users', user._id, user)
+})

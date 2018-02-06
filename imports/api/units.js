@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import publicationFactory from './base/rest-resource-factory'
-import { makeAssociationFactory } from './base/associations-helper'
+import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { callAPI } from '../util/bugzilla-api'
 
 export const collectionName = 'units'
@@ -40,15 +40,7 @@ if (Meteor.isServer) {
         params: {names: unitName}
       })
     }),
-    (unitItem, addingFn) => {
-      Meteor.users.find({
-        'bugzillaCreds.login': {$in: getUnitRoles(unitItem).map(u => u.login)}
-      }, {
-        fields: {profile: 1, 'bugzillaCreds.login': 1}
-      }).forEach(user => {
-        addingFn.call(this, 'users', user._id, user)
-      })
-    }
+    withUsers(unitItem => getUnitRoles(unitItem).map(u => u.login))
   ))
 
   Meteor.publish(`${collectionName}.forReporting`, function () {
