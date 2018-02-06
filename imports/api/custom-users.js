@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 if (Meteor.isServer) {
-  Meteor.publish('myUserBzLogin', function () {
+  Meteor.publish('users.myBzLogin', function () {
     if (!this.userId) {
       this.ready()
       this.error(new Meteor.Error({message: 'Authentication required'}))

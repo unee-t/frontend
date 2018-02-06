@@ -302,7 +302,7 @@ export default connect(
     const enumFields = [category, subCategory, priority, severity]
     return ({
       loadingUnits: !Meteor.subscribe(`${unitsCollName}.forReporting`).ready(),
-      loadingUserEmail: !Meteor.subscribe('myUserBzLogin').ready(),
+      loadingUserEmail: !Meteor.subscribe('users.myBzLogin').ready(),
       loadingFieldValues: enumFields
         .map(name => Meteor.subscribe('caseFieldValues.fetchByName', name))
         .filter(handle => !handle.ready()).length > 0,
