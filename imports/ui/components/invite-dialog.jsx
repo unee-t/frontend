@@ -109,7 +109,7 @@ class InviteDialog extends Component {
     const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
     const filteredUsers = potentialInvitees.length ? potentialInvitees.reduce((all, user, idx) => {
-      if (!matcher || (user.name && user.name.match(matcher)) || user.email.match(matcher)) {
+      if (!matcher || (user.name && user.name.match(matcher)) || user.login.match(matcher)) {
         all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.email)}, user))
       }
       return all
@@ -159,17 +159,17 @@ class InviteDialog extends Component {
                     {filteredUsers.length ? (
                       <ul className='list mv0 pa0 pt1'>
                         {filteredUsers.map(user => (
-                          <li key={user.email}
+                          <li key={user.login}
                             className={
                               themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }
                             onClick={() => { user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user) }}
                           >
                             <div className='ml1'>
-                              <UserAvatar creator={user.name || user.email} />
+                              <UserAvatar creator={user.name || user.login} />
                             </div>
                             <div className='ml2 flex-grow overflow-hidden'>
-                              <div className='f5 bondi-blue ellipsis'>{user.name || user.email}</div>
+                              <div className='f5 bondi-blue ellipsis'>{user.name || user.login}</div>
                               <div className='f7 gray ellipsis'>{user.role}</div>
                             </div>
                             {user.alreadyInvited ? (
