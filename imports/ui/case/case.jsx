@@ -6,7 +6,7 @@ import { Route, Redirect, Switch } from 'react-router-dom'
 import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
-import Cases, { collectionName as casesCollName } from '../../api/cases'
+import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/cases'
 import Comments from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import Preloader from '../preloader/preloader'
@@ -35,12 +35,13 @@ export class Case extends Component {
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
-      attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState
+      attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes
     } = this.props
     if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
     if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
     if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
     if (loadingCase || loadingComments || loadingUnit) return <Preloader />
+
     const { push } = routerRedux
     const {
       createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation
@@ -81,7 +82,7 @@ export class Case extends Component {
             )} />
             <Route path={detailsUrl} render={() => (
               <CaseDetails
-                {...{caseItem, comments, unitUsers, invitationState, unitItem}}
+                {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes}}
                 onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
                 onRoleUserRemoved={user => dispatch(removeRoleUser(user.email, caseId))}
                 onNewUserInvited={
@@ -112,6 +113,7 @@ Case.propTypes = {
   unitError: PropTypes.object,
   unitItem: PropTypes.object,
   unitUsers: PropTypes.array,
+  caseUserTypes: PropTypes.object,
   invitationState: PropTypes.object.isRequired
 }
 
@@ -138,7 +140,11 @@ const CaseContainer = createContainer(props => {
     })
     currUnit = Units.findOne({name: currCase.product})
   }
-
+  const caseUserTypes = currCase ? getCaseUsers(currCase) : null
+  const makeMatchingUser = bzUser => {
+    const regUser = Meteor.users.findOne({'bugzillaCreds.login': bzUser.login})
+    return regUser ? Object.assign({}, bzUser, regUser.profile) : bzUser
+  }
   return {
     loadingCase: !caseHandle.ready(),
     caseError,
@@ -150,10 +156,13 @@ const CaseContainer = createContainer(props => {
     loadingUnit: !unitHandle || !unitHandle.ready(),
     unitError,
     unitItem: currUnit,
-    unitUsers: currUnit && getUnitRoles(currUnit).map(rolePerson => {
-      const regUser = Meteor.users.findOne({'bugzillaCreds.login': rolePerson.login})
-      return regUser ? Object.assign({}, rolePerson, regUser.profile) : rolePerson
-    })
+    unitUsers: currUnit && getUnitRoles(currUnit).map(makeMatchingUser),
+    caseUserTypes: caseUserTypes && Object.keys(caseUserTypes).reduce((all, userType) => {
+      all[userType] = Array.isArray(caseUserTypes[userType])
+        ? caseUserTypes[userType].map(makeMatchingUser)
+        : makeMatchingUser(caseUserTypes[userType])
+      return all
+    }, {})
   }
 }, Case)
 

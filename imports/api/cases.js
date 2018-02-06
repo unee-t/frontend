@@ -2,8 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
+import _ from 'lodash'
 
 import publicationFactory from './base/rest-resource-factory'
+import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
 
 export const collectionName = 'cases'
@@ -18,6 +20,19 @@ export const caseFieldMapping = {
   details: 'description'
 }
 
+export const getCaseUsers = (() => {
+  const normalizeUser = ({real_name: realName, email, name}) => ({
+    login: name,
+    name: realName,
+    email
+  })
+  return caseItem => ({
+    creator: normalizeUser(caseItem.creator_detail),
+    assigned: normalizeUser(caseItem.assigned_to_detail),
+    subscribed: caseItem.cc_detail.map(normalizeUser)
+  })
+})()
+
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
@@ -29,9 +44,14 @@ const MAX_RESULTS = 20
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
-  Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
-    uriTemplate: caseId => `/rest/bug/${caseId}`
-  }))
+  const associationFactory = makeAssociationFactory(collectionName)
+
+  Meteor.publish(`${collectionName}.byId`, associationFactory(
+    publicationObj.publishById({
+      uriTemplate: caseId => `/rest/bug/${caseId}`
+    }),
+    withUsers(caseItem => _.flatten(Object.values(getCaseUsers(caseItem))).map(u => u.login))
+  ))
   // TODO: Add tests for this
   Meteor.publish(`${collectionName}.associatedWithMe`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
