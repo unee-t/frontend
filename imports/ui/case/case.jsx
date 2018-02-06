@@ -6,9 +6,9 @@ import { Route, Redirect, Switch } from 'react-router-dom'
 import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
-import Cases, { collectionName } from '../../api/cases'
+import Cases, { collectionName as casesCollName } from '../../api/cases'
 import Comments from '../../api/comments'
-import Units, { getUnitRoles } from '../../api/units'
+import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import Preloader from '../preloader/preloader'
 import InnerAppBar from '../components/inner-app-bar'
 import actions from './case.actions'
@@ -118,7 +118,7 @@ Case.propTypes = {
 let caseError, commentsError, unitError
 const CaseContainer = createContainer(props => {
   const { caseId } = props.match.params
-  const caseHandle = Meteor.subscribe(`${collectionName}.byId`, caseId, {
+  const caseHandle = Meteor.subscribe(`${casesCollName}.byId`, caseId, {
     onStop: error => {
       caseError = error
     }
@@ -131,7 +131,7 @@ const CaseContainer = createContainer(props => {
   const currCase = Cases.findOne(caseId)
   let currUnit, unitHandle
   if (currCase) {
-    unitHandle = Meteor.subscribe('unit', currCase.product, {
+    unitHandle = Meteor.subscribe(`${unitsCollName}.byId`, currCase.product, {
       onStop: error => {
         unitError = error
       }

@@ -4,7 +4,7 @@ import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory } from './base/associations-helper'
 import { callAPI } from '../util/bugzilla-api'
 
-const collectionName = 'units'
+export const collectionName = 'units'
 
 // TODO: TEST THIS STUFF!!! (but later)
 export const factoryOptions = {
@@ -33,7 +33,7 @@ if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
   const associationFactory = makeAssociationFactory(collectionName)
 
-  Meteor.publish('unit', associationFactory(
+  Meteor.publish(`${collectionName}.byId`, associationFactory(
     factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
       uriTemplate: unitName => ({
         url: '/rest/product',
@@ -51,7 +51,7 @@ if (Meteor.isServer) {
     }
   ))
 
-  Meteor.publish('unitsForReporting', function () {
+  Meteor.publish(`${collectionName}.forReporting`, function () {
     let ids
     if (this.userId) {
       const { bugzillaCreds: { token } } = Meteor.users.findOne(this.userId)
