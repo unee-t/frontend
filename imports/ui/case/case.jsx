@@ -6,7 +6,7 @@ import { Route, Redirect, Switch } from 'react-router-dom'
 import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
-import Cases from '../../api/cases'
+import Cases, { collectionName } from '../../api/cases'
 import Comments from '../../api/comments'
 import Units, { getUnitRoles } from '../../api/units'
 import Preloader from '../preloader/preloader'
@@ -116,9 +116,9 @@ Case.propTypes = {
 }
 
 let caseError, commentsError, unitError
-const CaseContainer = createContainer(function (props, ...rest) {
+const CaseContainer = createContainer(props => {
   const { caseId } = props.match.params
-  const caseHandle = Meteor.subscribe('case', caseId, {
+  const caseHandle = Meteor.subscribe(`${collectionName}.byId`, caseId, {
     onStop: error => {
       caseError = error
     }

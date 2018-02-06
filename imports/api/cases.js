@@ -26,15 +26,14 @@ export const factoryOptions = {
 
 const MAX_RESULTS = 20
 
-// TODO: refactor all publication names to be of form ${collectionName}.${type}
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
-  Meteor.publish('case', publicationObj.publishById({
+  Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
     uriTemplate: caseId => `/rest/bug/${caseId}`
   }))
   // TODO: Add tests for this
-  Meteor.publish('myCases', publicationObj.publishByCustomQuery({
+  Meteor.publish(`${collectionName}.associatedWithMe`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: subHandle => {
       if (!subHandle.userId) {

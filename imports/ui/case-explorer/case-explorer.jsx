@@ -9,7 +9,7 @@ import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import UneeTIcon from '../components/unee-t-icon'
-import Cases from '../../api/cases'
+import Cases, { collectionName } from '../../api/cases'
 import { push } from 'react-router-redux'
 
 import {
@@ -135,7 +135,7 @@ let casesError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
-  const casesHandle = Meteor.subscribe('myCases', {
+  const casesHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, {
     onStop: (error) => {
       casesError = error
     }
