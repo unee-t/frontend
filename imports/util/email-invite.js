@@ -1,6 +1,6 @@
 import { Email } from 'meteor/email'
 
-const supportEmail = 'Franck Boullier <support@unee-t.com>'
+const supportEmail = process.env.FROM_EMAIL
 
 export const invite = (user, invitedBy) =>
   Email.send({

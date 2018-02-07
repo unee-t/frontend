@@ -6,3 +6,4 @@ export MONGO_CONNECT="prod-shard-00-00-n2ose.mongodb.net:27017,prod-shard-00-01-
 export CLOUDINARY_PRESET=$(aws --profile uneet-prod ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
 export CLOUDINARY_URL=$(aws --profile uneet-prod ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
 export API_ACCESS_TOKEN=$(aws --profile uneet-prod ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
+export FROM_EMAIL=$(aws --profile uneet-prod ssm get-parameters --names FROM_EMAIL --query Parameters[0].Value --output text)

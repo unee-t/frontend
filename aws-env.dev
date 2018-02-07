@@ -1,3 +1,4 @@
+# TODO: Consider switching to https://github.com/remind101/ssm-env
 export ROOT_URL=https://dev.case.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-dev ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
 export BUGZILLA_URL=https://dev.dashboard.unee-t.com
@@ -6,3 +7,4 @@ export MONGO_CONNECT="dev-shard-00-00-qxxao.mongodb.net:27017,dev-shard-00-01-qx
 export CLOUDINARY_PRESET=$(aws --profile uneet-dev ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
 export CLOUDINARY_URL=$(aws --profile uneet-dev ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
 export API_ACCESS_TOKEN=$(aws --profile uneet-dev ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
+export FROM_EMAIL=$(aws --profile uneet-dev ssm get-parameters --names FROM_EMAIL --query Parameters[0].Value --output text)
