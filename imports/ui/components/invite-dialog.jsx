@@ -34,6 +34,8 @@ const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
 const simpleLinkClasses = 'link dib ' + simpleControlClasses
 
+const placeholderUsersMatcher = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
+
 class InviteDialog extends Component {
   constructor () {
     super(...arguments)
@@ -74,6 +76,22 @@ class InviteDialog extends Component {
     }, 300)
   }
 
+  componentWillMount () {
+    this.normalizeInvitees(this.props.potentialInvitees)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (this.props.potentialInvitees !== nextProps.potentialInvitees) {
+      this.normalizeInvitees(nextProps.potentialInvitees)
+    }
+  }
+
+  normalizeInvitees (invitees) {
+    this.normalizedInviteeList = invitees.filter(
+      user => !user.login.match(placeholderUsersMatcher)
+    )
+  }
+
   handleEmailChanged = evt => {
     const { value } = evt.target
     let emailError
@@ -103,12 +121,11 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, potentialInvitees,
-      invitedUserEmails, invitationState, onResetInvitation
+      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation
     } = this.props
     const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
-    const filteredUsers = potentialInvitees.length ? potentialInvitees.reduce((all, user, idx) => {
+    const filteredUsers = this.normalizedInviteeList.length ? this.normalizedInviteeList.reduce((all, user, idx) => {
       if (!matcher || (user.name && user.name.match(matcher)) || user.login.match(matcher)) {
         all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.email)}, user))
       }
