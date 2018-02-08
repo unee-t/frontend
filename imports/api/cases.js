@@ -114,6 +114,9 @@ Meteor.methods({
       Cases.update({id: caseId}, {
         [opType]: {
           cc: email
+        },
+        [opType]: {
+          cc_detail: {name: email}
         }
       })
     } else {
@@ -130,9 +133,9 @@ Meteor.methods({
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const { cc } = caseData.data.bugs[0]
+        const { cc, cc_detail } = caseData.data.bugs[0]
         console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
-        publicationObj.handleChanged(caseId, {cc})
+        publicationObj.handleChanged(caseId, {cc, cc_detail})
       } catch (e) {
         console.error({
           user: Meteor.userId(),

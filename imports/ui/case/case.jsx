@@ -83,8 +83,8 @@ export class Case extends Component {
             <Route path={detailsUrl} render={() => (
               <CaseDetails
                 {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes}}
-                onRoleUserAdded={user => dispatch(addRoleUser(user.email, caseId))}
-                onRoleUserRemoved={user => dispatch(removeRoleUser(user.email, caseId))}
+                onRoleUserAdded={user => dispatch(addRoleUser(user.login, caseId))}
+                onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
                 onNewUserInvited={
                   (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
                 }

@@ -127,7 +127,7 @@ class InviteDialog extends Component {
     const matcher = filterString ? new RegExp(filterString, 'i') : null
     const filteredUsers = this.normalizedInviteeList.length ? this.normalizedInviteeList.reduce((all, user, idx) => {
       if (!matcher || (user.name && user.name.match(matcher)) || user.login.match(matcher)) {
-        all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.email)}, user))
+        all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.login)}, user))
       }
       return all
       // TODO: to be used to resolve #80
