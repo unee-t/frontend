@@ -121,11 +121,13 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation
+      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation,
+      pendingInvitees
     } = this.props
     const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
-    const filteredUsers = this.normalizedInviteeList.length ? this.normalizedInviteeList.reduce((all, user, idx) => {
+    const allInvitees = this.normalizedInviteeList.concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
+    const filteredUsers = allInvitees.length ? allInvitees.reduce((all, user, idx) => {
       if (!matcher || (user.name && user.name.match(matcher)) || user.login.match(matcher)) {
         all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.login)}, user))
       }
@@ -180,16 +182,20 @@ class InviteDialog extends Component {
                             className={
                               themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }
-                            onClick={() => { user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user) }}
+                            onClick={() => { !user.pending && (user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user)) }}
                           >
                             <div className='ml1'>
                               <UserAvatar user={user} />
                             </div>
                             <div className='ml2 flex-grow overflow-hidden'>
-                              <div className='f5 bondi-blue ellipsis'>{user.name || user.login}</div>
+                              <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
+                                {user.name || user.login}
+                              </div>
                               <div className='f7 gray ellipsis'>{user.role}</div>
                             </div>
-                            {user.alreadyInvited ? (
+                            {user.pending ? (
+                              <span className='ml2 f6 silver i'>Pending</span>
+                            ) : user.alreadyInvited ? (
                               <div className='ml2 flex flex-column items-center justify-center'>
                                 <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
                               </div>
@@ -320,7 +326,8 @@ InviteDialog.propTypes = {
   invitedUserEmails: PropTypes.array.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
-  invitationState: PropTypes.object.isRequired
+  invitationState: PropTypes.object.isRequired,
+  pendingInvitees: PropTypes.array
 }
 
 export default InviteDialog

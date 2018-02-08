@@ -9,6 +9,7 @@ import _ from 'lodash'
 import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/cases'
 import Comments from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
+import PendingInvitations, { collectionName as inviteCollName } from '../../api/pending-invitations'
 import Preloader from '../preloader/preloader'
 import InnerAppBar from '../components/inner-app-bar'
 import actions from './case.actions'
@@ -35,12 +36,13 @@ export class Case extends Component {
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
-      attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes
+      attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes,
+      loadingPendingInvitations, pendingInvitations
     } = this.props
     if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
     if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
     if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
-    if (loadingCase || loadingComments || loadingUnit) return <Preloader />
+    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations) return <Preloader />
 
     const { push } = routerRedux
     const {
@@ -82,7 +84,7 @@ export class Case extends Component {
             )} />
             <Route path={detailsUrl} render={() => (
               <CaseDetails
-                {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes}}
+                {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes, pendingInvitations}}
                 onRoleUserAdded={user => dispatch(addRoleUser(user.login, caseId))}
                 onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
                 onNewUserInvited={
@@ -114,7 +116,9 @@ Case.propTypes = {
   unitItem: PropTypes.object,
   unitUsers: PropTypes.array,
   caseUserTypes: PropTypes.object,
-  invitationState: PropTypes.object.isRequired
+  invitationState: PropTypes.object.isRequired,
+  loadingPendingInvitations: PropTypes.bool.isRequired,
+  pendingInvitations: PropTypes.array
 }
 
 let caseError, commentsError, unitError
@@ -168,7 +172,9 @@ const CaseContainer = createContainer(props => {
         ? caseUserTypes[userType].map(mapUser)
         : mapUser(caseUserTypes[userType])
       return all
-    }, {})
+    }, {}),
+    loadingPendingInvitations: !Meteor.subscribe(`${inviteCollName}.byCaseId`, parseInt(caseId)).ready(),
+    pendingInvitations: PendingInvitations.find({caseId: parseInt(caseId)}).fetch()
   }
 }, Case)
 

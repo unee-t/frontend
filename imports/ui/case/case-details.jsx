@@ -107,14 +107,23 @@ class CaseDetails extends Component {
     </InfoItemContainer>
   )
 
-  renderPeopleInvolved = (users, unitUsers) => {
+  renderPeopleInvolved = (users, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
+    const pendingUsers = pendingInvitations.map(inv => {
+      const { bugzillaCreds: { login }, profile: { name } } = inv.inviteeUser()
+      return {
+        name,
+        login,
+        role: inv.role
+      }
+    })
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
-        {users.map((user, ind) => userInfoItem(user, themes['theme' + (ind % 10 + 3)]))}
+        {users.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)]))}
+        {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + users.length) % 10 + 1)]))}
         <Link to={`${match.url}/invite`}
           className='mt2 link flex items-center outline-0'>
           <div className={themes.sized + ' br-100 ba b--moon-gray bg-transparent tc'}>
@@ -125,6 +134,7 @@ class CaseDetails extends Component {
         <InviteDialog
           basePath={match.url} relPath='invite'
           potentialInvitees={unitUsers}
+          pendingInvitees={pendingUsers}
           invitedUserEmails={users.map(u => u.login)}
           {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
         />
@@ -165,7 +175,7 @@ class CaseDetails extends Component {
   )
 
   render () {
-    const { caseItem, comments, unitUsers, unitItem, caseUserTypes } = this.props
+    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
     return (
       <div className='flex-grow overflow-auto'>
         {this.renderSummaryLine(caseItem)}
@@ -175,7 +185,7 @@ class CaseDetails extends Component {
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(caseUserTypes.assigned)}
-        {this.renderPeopleInvolved(caseUserTypes.subscribed, unitUsers)}
+        {this.renderPeopleInvolved(caseUserTypes.subscribed, unitUsers, pendingInvitations)}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
       </div>
@@ -215,7 +225,8 @@ CaseDetails.propTypes = {
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,
   invitationState: PropTypes.object.isRequired,
-  caseUserTypes: PropTypes.object.isRequired
+  caseUserTypes: PropTypes.object.isRequired,
+  pendingInvitations: PropTypes.array
 }
 
 export default withRouter(CaseDetails)

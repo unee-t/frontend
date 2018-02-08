@@ -28,3 +28,4 @@ omega:dirty-chai
 hasse:tachyons
 simple:json-routes
 pauldowman:dotenv
+dburles:collection-helpers
