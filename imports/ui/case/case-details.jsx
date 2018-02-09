@@ -107,7 +107,7 @@ class CaseDetails extends Component {
     </InfoItemContainer>
   )
 
-  renderPeopleInvolved = (users, unitUsers, pendingInvitations) => {
+  renderPeopleInvolved = ({creator, assigned, subscribed}, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
@@ -122,8 +122,8 @@ class CaseDetails extends Component {
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
-        {users.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)]))}
-        {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + users.length) % 10 + 1)]))}
+        {subscribed.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)]))}
+        {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)]))}
         <Link to={`${match.url}/invite`}
           className='mt2 link flex items-center outline-0'>
           <div className={themes.sized + ' br-100 ba b--moon-gray bg-transparent tc'}>
@@ -133,9 +133,9 @@ class CaseDetails extends Component {
         </Link>
         <InviteDialog
           basePath={match.url} relPath='invite'
-          potentialInvitees={unitUsers}
+          potentialInvitees={unitUsers.filter(u => u.login !== creator.login && u.login !== assigned.login)}
           pendingInvitees={pendingUsers}
-          invitedUserEmails={users.map(u => u.login)}
+          invitedUserEmails={subscribed.map(u => u.login)}
           {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
         />
       </InfoItemContainer>
@@ -185,7 +185,7 @@ class CaseDetails extends Component {
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(caseUserTypes.assigned)}
-        {this.renderPeopleInvolved(caseUserTypes.subscribed, unitUsers, pendingInvitations)}
+        {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
       </div>
