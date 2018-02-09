@@ -26,38 +26,31 @@ IconDetailRowWrapper.propTypes = {
   extraClasses: PropTypes.string
 }
 
-const renderSummaryLine = ({summary}) => (
-  <div className='bb b--gray-93 ph3'>
-    <div className='pv1 mv2 mid-gray'>{summary}</div>
+const infoItemLabel = label => (<div key='label' className='mt1 f6 bondi-blue'>{label}</div>)
+const infoItemMembers = (label, value) => [
+  (infoItemLabel(label)),
+  (<div key='value' className='mt2 mid-gray lh-copy'>{value}</div>)
+]
+
+const InfoItemContainer = ({children}) => (
+  <div className='bb b--gray-93 ph3 pt2 pb3'>
+    {children}
   </div>
 )
-const renderCaseType = ({cf_ipi_clust_6_claim_type: caseType}) => (
-  <IconDetailRowWrapper iconName='local_offer' extraClasses='gray'>
-    {caseType}
-  </IconDetailRowWrapper>
+
+const infoItemRow = (label, value) => (
+  <InfoItemContainer>
+    {infoItemMembers(label, value)}
+  </InfoItemContainer>
 )
 
-const renderResolutions = ({cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution, deadline: dueDate}) => (
-  <div className='bb bt bw4 b--very-light-gray'>
-    {[
-      [solution, 'Solution', 'mid-gray'],
-      [nextSteps, 'Next steps', 'mid-gray'],
-      [dueDate, 'Due date', 'b gray', val => moment(val).format('D MMM YYYY')]
-    ].reduce((all, [value, label, classes, formatter = _.identity]) => {
-      if (value) {
-        all.push(
-          <div className='bb b--very-light-gray pa3' key={all.length}>
-            <div className='f6 bondi-blue mb2'>
-              {label}
-            </div>
-            <div className={classes + ' lh-copy'}>
-              {formatter(value)}
-            </div>
-          </div>
-        )
-      }
-      return all
-    }, [])}
+const userInfoItem = (user, theme) => (
+  <div key={user.login} className={theme + ' flex pt2'}>
+    <UserAvatar user={user} />
+    <div className='ml2 pl1 flex-grow overflow-hidden'>
+      <div className='mid-gray ellipsis'>{user.name || user.login}</div>
+      <div className='mt1 f7 gray ellipsis'>{user.role || 'Administrator'}</div>
+    </div>
   </div>
 )
 
@@ -76,66 +69,124 @@ class CaseDetails extends Component {
       computedMediaItemWidth: Math.round((this.refs.media.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
     })
   }
-  renderParticipants = (comments, unitUsers, caseItem) => {
-    // TODO: Refactor this to use case's CC, assigned_to and reporter fields (actual field names may differ)
-    const participants = _.chain(comments).map('creator').uniq().value()
+
+  renderSummaryLine = ({id, summary}) => infoItemRow(`Case: #${id}`, summary)
+
+  renderUnitName = unitItem => infoItemRow('Unit name:', unitItem.name)
+
+  renderUnitDescription = unitItem => infoItemRow('Unit description:', unitItem.description)
+
+  renderStatusLine = ({status}) => infoItemRow('Status:', status)
+
+  renderCategoriesLine = ({rep_platform: category, cf_ipi_clust_6_claim_type: subCategory}) => (
+    <InfoItemContainer>
+      <div className='flex'>
+        <div className='flex-grow'>
+          {infoItemMembers('Category:', category || '---')}
+        </div>
+        <div className='flex-grow'>
+          {infoItemMembers('Sub-Category:', subCategory || '---')}
+        </div>
+      </div>
+    </InfoItemContainer>
+  )
+
+  renderCreatedBy = user => (
+    <div className='bt bw3 b--very-light-gray'>
+      <InfoItemContainer>
+        {infoItemLabel('Created by:')}
+        {userInfoItem(user, themes.theme1)}
+      </InfoItemContainer>
+    </div>
+  )
+
+  renderAssignedTo = user => (
+    <InfoItemContainer>
+      {infoItemLabel('Assigned to:')}
+      {userInfoItem(user, themes.theme2)}
+    </InfoItemContainer>
+  )
+
+  renderPeopleInvolved = ({creator, assigned, subscribed}, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
+    const pendingUsers = pendingInvitations.map(inv => {
+      const { bugzillaCreds: { login }, profile: { name } } = inv.inviteeUser()
+      return {
+        name,
+        login,
+        role: inv.role
+      }
+    })
     return (
-      <IconDetailRowWrapper iconName='person'>
-        <div className='flex'>
-          {participants.map((creator, ind) => (
-            <div key={ind} className={themes['theme' + ((ind % 10) + 1)] + ' mr2'}>
-              <UserAvatar creator={creator} isSmall />
-            </div>
-          ))}
-          <div>
-            <Link to={`${match.url}/invite`}
-              className='link h2 w2 br-100 ba b--moon-gray bg-transparent outline-0 dim dib tc'>
-              <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
-            </Link>
-            <InviteDialog
-              basePath={match.url} relPath='invite'
-              potentialInvitees={unitUsers}
-              invitedUserEmails={caseItem.cc}
-              {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
-            />
+      <InfoItemContainer>
+        {infoItemLabel('People involved:')}
+        {subscribed.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)]))}
+        {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)]))}
+        <Link to={`${match.url}/invite`}
+          className='mt2 link flex items-center outline-0'>
+          <div className={themes.sized + ' br-100 ba b--moon-gray bg-transparent tc'}>
+            <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
           </div>
-        </div>
-      </IconDetailRowWrapper>
+          <div className='ml2 pl1 bondi-blue'>Invite or remove users</div>
+        </Link>
+        <InviteDialog
+          basePath={match.url} relPath='invite'
+          potentialInvitees={unitUsers.filter(u => u.login !== creator.login && u.login !== assigned.login)}
+          pendingInvitees={pendingUsers}
+          invitedUserEmails={subscribed.map(u => u.login)}
+          {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
+        />
+      </InfoItemContainer>
     )
   }
 
-  renderUnitName = unitItem => {
-    return (
-      <IconDetailRowWrapper iconName='home' extraClasses='gray'>
-        {unitItem.name}
-      </IconDetailRowWrapper>
-    )
-  }
-  renderUnitDescription = unitItem => {
-    return (
-      <div className='bb b--gray-93 ph3'>
-        <div className='flex pv2'>
-          <FontIcon className='material-icons mr4' color={detailLineIconColor}>location_on</FontIcon>
-          <div className='gray lh-dbl'>
-            {unitItem.description}
-          </div>
-        </div>
-      </div>
-    )
-  }
+  renderResolutions = (
+    {
+      cf_ipi_clust_1_next_step: nextSteps,
+      cf_ipi_clust_1_next_step_by: nextStepBy,
+      cf_ipi_clust_1_solution: solution,
+      deadline
+    }
+  ) => (
+    <div className='bt bw3 b--very-light-gray'>
+      {solution && (
+        <InfoItemContainer>
+          {infoItemMembers('Solution', solution)}
+          {deadline && (
+            <div className='mt2 f7 warn-crimson b'>
+              Deadline: {moment(deadline).format('D MMM YYYY, h:mm')} hrs
+            </div>
+          )}
+        </InfoItemContainer>
+      )}
+      {nextSteps && (
+        <InfoItemContainer>
+          {infoItemMembers('Next steps:', nextSteps)}
+          {deadline && (
+            <div className='mt2 f7 warn-crimson b'>
+              Deadline: {moment(nextStepBy).format('D MMM YYYY, h:mm')} hrs
+            </div>
+          )}
+        </InfoItemContainer>
+      )}
+    </div>
+  )
+
   render () {
-    const { caseItem, comments, unitUsers, unitItem } = this.props
+    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
     return (
       <div className='flex-grow overflow-auto'>
-        {renderSummaryLine(caseItem)}
-        {renderCaseType(caseItem)}
+        {this.renderSummaryLine(caseItem)}
         {this.renderUnitName(unitItem)}
         {this.renderUnitDescription(unitItem)}
-        {this.renderParticipants(comments, unitUsers, caseItem)}
-        {renderResolutions(caseItem)}
+        {this.renderStatusLine(caseItem)}
+        {this.renderCategoriesLine(caseItem)}
+        {this.renderCreatedBy(caseUserTypes.creator)}
+        {this.renderAssignedTo(caseUserTypes.assigned)}
+        {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
+        {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
       </div>
     )
@@ -147,16 +198,17 @@ class CaseDetails extends Component {
       .value()
     const size = this.state.computedMediaItemWidth
     return (
-      <div className='pa2'>
-        <div className='f6 bondi-blue ma2'>
-          Media
-        </div>
-        <div className='ma1 grid col3-1fr gap1 flow-row' ref='media'>
-          {attachments.map(([url, id], ind) => (
-            <img src={size && fitDimensions(url, size, size)} alt={url} key={ind}
-              onClick={() => this.props.onSelectAttachment(id)} />
-          ))}
-        </div>
+      <div className='bt bw3 b--light-gray'>
+        <InfoItemContainer>
+          {infoItemLabel('Attachments:')}
+          <div className='ma1 grid col3-1fr gap1 flow-row' ref='media'>
+            {attachments.map(([url, id], ind) => (
+              <img src={size && fitDimensions(url, size, size)} alt={url} key={ind}
+                onClick={() => this.props.onSelectAttachment(id)}
+              />
+            ))}
+          </div>
+        </InfoItemContainer>
       </div>
     )
   }
@@ -172,7 +224,9 @@ CaseDetails.propTypes = {
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,
-  invitationState: PropTypes.object.isRequired
+  invitationState: PropTypes.object.isRequired,
+  caseUserTypes: PropTypes.object.isRequired,
+  pendingInvitations: PropTypes.array
 }
 
 export default withRouter(CaseDetails)

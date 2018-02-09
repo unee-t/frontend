@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import publicationFactory from './base/rest-resource-factory'
+import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { callAPI } from '../util/bugzilla-api'
 
-const collectionName = 'units'
+export const collectionName = 'units'
 
 // TODO: TEST THIS STUFF!!! (but later)
 export const factoryOptions = {
@@ -15,13 +16,13 @@ export const getUnitRoles = unit =>
   unit.components.reduce((all, {default_assigned_to: assigned, default_qa_contact: qaContact, name}) => {
     if (assigned) {
       all.push({
-        email: assigned,
+        login: assigned,
         role: name
       })
     }
     if (qaContact) {
       all.push({
-        email: qaContact,
+        login: qaContact,
         role: name
       })
     }
@@ -30,42 +31,19 @@ export const getUnitRoles = unit =>
 
 if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
+  const associationFactory = makeAssociationFactory(collectionName)
 
-  // TODO: refactor this out so it could be used for others resources too
-  const associationFactory = (publisher, associateFn) => function (unitName) {
-    const origAdded = this.added
-
-    // Shadow overriding 'added' to add the 'join' logic
-    this.added = (name, id, item) => {
-      origAdded.call(this, name, id, item)
-      if (name === collectionName) { // Should be obvious now, but just in case for future developments
-        associateFn(item, (assocCollectionName, assocItemId, assocItem) => {
-          origAdded.call(this, assocCollectionName, assocItemId, assocItem)
-        })
-      }
-    }
-    return publisher.call(this, unitName)
-  }
-
-  Meteor.publish('unit', associationFactory(
+  Meteor.publish(`${collectionName}.byId`, associationFactory(
     factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
       uriTemplate: unitName => ({
         url: '/rest/product',
         params: {names: unitName}
       })
     }),
-    (unitItem, addingFn) => {
-      Meteor.users.find({
-        'bugzillaCreds.login': {$in: getUnitRoles(unitItem).map(u => u.email)}
-      }, {
-        fields: {profile: 1, 'bugzillaCreds.login': 1}
-      }).forEach(user => {
-        addingFn.call(this, 'users', user._id, user)
-      })
-    }
+    withUsers(unitItem => getUnitRoles(unitItem).map(u => u.login))
   ))
 
-  Meteor.publish('unitsForReporting', function () {
+  Meteor.publish(`${collectionName}.forReporting`, function () {
     let ids
     if (this.userId) {
       const { bugzillaCreds: { token } } = Meteor.users.findOne(this.userId)

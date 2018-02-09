@@ -43,7 +43,9 @@
 
 .userAvatar {
   background-color: var(--main-color);
+}
 
+.sized {
   &:not(.sizeSmall) {
     width: 2.5rem;
     height: 2.5rem;

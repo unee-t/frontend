@@ -14,7 +14,7 @@ import CaseFieldValues from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../components/error-dialog'
 import Preloader from '../preloader/preloader'
-import Units from '../../api/units'
+import Units, { collectionName as unitsCollName } from '../../api/units'
 import { caseFieldMapping } from '../../api/cases'
 import { createCase, clearError } from './case-wizard.actions'
 
@@ -301,8 +301,8 @@ export default connect(
     const {category, subCategory, priority, severity} = caseFieldMapping
     const enumFields = [category, subCategory, priority, severity]
     return ({
-      loadingUnits: !Meteor.subscribe('unitsForReporting').ready(),
-      loadingUserEmail: !Meteor.subscribe('myUserBzLogin').ready(),
+      loadingUnits: !Meteor.subscribe(`${unitsCollName}.forReporting`).ready(),
+      loadingUserEmail: !Meteor.subscribe('users.myBzLogin').ready(),
       loadingFieldValues: enumFields
         .map(name => Meteor.subscribe('caseFieldValues.fetchByName', name))
         .filter(handle => !handle.ready()).length > 0,

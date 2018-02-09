@@ -2,8 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
+import _ from 'lodash'
 
 import publicationFactory from './base/rest-resource-factory'
+import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
 
 export const collectionName = 'cases'
@@ -18,6 +20,19 @@ export const caseFieldMapping = {
   details: 'description'
 }
 
+export const getCaseUsers = (() => {
+  const normalizeUser = ({real_name: realName, email, name}) => ({
+    login: name,
+    name: realName,
+    email
+  })
+  return caseItem => ({
+    creator: normalizeUser(caseItem.creator_detail),
+    assigned: normalizeUser(caseItem.assigned_to_detail),
+    subscribed: caseItem.cc_detail.map(normalizeUser)
+  })
+})()
+
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
@@ -26,15 +41,19 @@ export const factoryOptions = {
 
 const MAX_RESULTS = 20
 
-// TODO: refactor all publication names to be of form ${collectionName}.${type}
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
-  Meteor.publish('case', publicationObj.publishById({
-    uriTemplate: caseId => `/rest/bug/${caseId}`
-  }))
+  const associationFactory = makeAssociationFactory(collectionName)
+
+  Meteor.publish(`${collectionName}.byId`, associationFactory(
+    publicationObj.publishById({
+      uriTemplate: caseId => `/rest/bug/${caseId}`
+    }),
+    withUsers(caseItem => _.flatten(Object.values(getCaseUsers(caseItem))).map(u => u.login))
+  ))
   // TODO: Add tests for this
-  Meteor.publish('myCases', publicationObj.publishByCustomQuery({
+  Meteor.publish(`${collectionName}.associatedWithMe`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: subHandle => {
       if (!subHandle.userId) {
@@ -95,6 +114,9 @@ Meteor.methods({
       Cases.update({id: caseId}, {
         [opType]: {
           cc: email
+        },
+        [opType]: {
+          cc_detail: {name: email}
         }
       })
     } else {
@@ -111,9 +133,9 @@ Meteor.methods({
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const { cc } = caseData.data.bugs[0]
+        const { cc, cc_detail } = caseData.data.bugs[0]
         console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
-        publicationObj.handleChanged(caseId, {cc})
+        publicationObj.handleChanged(caseId, {cc, cc_detail})
       } catch (e) {
         console.error({
           user: Meteor.userId(),

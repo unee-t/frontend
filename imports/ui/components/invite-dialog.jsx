@@ -34,6 +34,8 @@ const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
 const simpleLinkClasses = 'link dib ' + simpleControlClasses
 
+const placeholderUsersMatcher = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
+
 class InviteDialog extends Component {
   constructor () {
     super(...arguments)
@@ -74,6 +76,22 @@ class InviteDialog extends Component {
     }, 300)
   }
 
+  componentWillMount () {
+    this.normalizeInvitees(this.props.potentialInvitees)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (this.props.potentialInvitees !== nextProps.potentialInvitees) {
+      this.normalizeInvitees(nextProps.potentialInvitees)
+    }
+  }
+
+  normalizeInvitees (invitees) {
+    this.normalizedInviteeList = invitees.filter(
+      user => !user.login.match(placeholderUsersMatcher)
+    )
+  }
+
   handleEmailChanged = evt => {
     const { value } = evt.target
     let emailError
@@ -103,14 +121,15 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, potentialInvitees,
-      invitedUserEmails, invitationState, onResetInvitation
+      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation,
+      pendingInvitees
     } = this.props
     const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
-    const filteredUsers = potentialInvitees.length ? potentialInvitees.reduce((all, user, idx) => {
-      if (!matcher || (user.name && user.name.match(matcher)) || user.email.match(matcher)) {
-        all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.email)}, user))
+    const allInvitees = this.normalizedInviteeList.concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
+    const filteredUsers = allInvitees.length ? allInvitees.reduce((all, user, idx) => {
+      if (!matcher || (user.name && user.name.match(matcher)) || user.login.match(matcher)) {
+        all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.login)}, user))
       }
       return all
       // TODO: to be used to resolve #80
@@ -159,20 +178,24 @@ class InviteDialog extends Component {
                     {filteredUsers.length ? (
                       <ul className='list mv0 pa0 pt1'>
                         {filteredUsers.map(user => (
-                          <li key={user.email}
+                          <li key={user.login}
                             className={
                               themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }
-                            onClick={() => { user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user) }}
+                            onClick={() => { !user.pending && (user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user)) }}
                           >
                             <div className='ml1'>
-                              <UserAvatar creator={user.name || user.email} />
+                              <UserAvatar user={user} />
                             </div>
                             <div className='ml2 flex-grow overflow-hidden'>
-                              <div className='f5 bondi-blue ellipsis'>{user.name || user.email}</div>
+                              <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
+                                {user.name || user.login}
+                              </div>
                               <div className='f7 gray ellipsis'>{user.role}</div>
                             </div>
-                            {user.alreadyInvited ? (
+                            {user.pending ? (
+                              <span className='ml2 f6 silver i'>Pending</span>
+                            ) : user.alreadyInvited ? (
                               <div className='ml2 flex flex-column items-center justify-center'>
                                 <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
                               </div>
@@ -303,7 +326,8 @@ InviteDialog.propTypes = {
   invitedUserEmails: PropTypes.array.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
-  invitationState: PropTypes.object.isRequired
+  invitationState: PropTypes.object.isRequired,
+  pendingInvitees: PropTypes.array
 }
 
 export default InviteDialog

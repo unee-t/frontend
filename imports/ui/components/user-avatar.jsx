@@ -3,14 +3,19 @@ import PropTypes from 'prop-types'
 
 import styles from './user-themes.mss'
 
-const UserAvatar = ({creator, isSmall}) => (
-  <div className={styles.userAvatar + (isSmall ? ` ${styles.sizeSmall}` : '') + ' dib v-btm br-100 tc white'}>
-    {creator.slice(0, 1).toUpperCase()}
-  </div>
-)
+const UserAvatar = ({user, isSmall}) => {
+  const userDisplayText = user.name || user.login || user.email
+  return (
+    <div className={
+      [styles.userAvatar, styles.sized, (isSmall ? styles.sizeSmall : ''), 'dib v-btm br-100 tc white'].join(' ')
+    }>
+      {userDisplayText.slice(0, 1).toUpperCase()}
+    </div>
+  )
+}
 
 UserAvatar.propTypes = {
-  creator: PropTypes.string.isRequired,
+  user: PropTypes.object.isRequired,
   isSmall: PropTypes.bool
 }
 

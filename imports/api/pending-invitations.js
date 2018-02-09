@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
+import { check } from 'meteor/check'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 import { callAPI } from '../util/bugzilla-api'
@@ -10,6 +11,41 @@ export const TYPE_ASSIGNED = 'type_assigned'
 export const TYPE_CC = 'type_cc'
 
 const allowedTypes = [TYPE_ASSIGNED, TYPE_CC]
+
+const PendingInvitations = new Mongo.Collection(collectionName)
+
+PendingInvitations.helpers({
+  inviteeUser () {
+    return Meteor.users.findOne({'bugzillaCreds.id': this.invitee})
+  }
+})
+
+if (Meteor.isServer) {
+  Meteor.publish(`${collectionName}.byCaseId`, function (caseId) {
+    check(caseId, Number)
+
+    if (!this.userId) {
+      this.ready()
+      this.error('Unauthorized')
+      return
+    }
+
+    return [
+      PendingInvitations.find({caseId}),
+      Meteor.users.find({ // TODO: filter out users whose invitation was already finalized
+        invitedToCases: {
+          $elemMatch: {caseId}
+        }
+      }, {
+        fields: {
+          'bugzillaCreds.id': 1,
+          'bugzillaCreds.login': 1,
+          profile: 1
+        }
+      })
+    ]
+  })
+}
 
 Meteor.methods({
   [`${collectionName}.inviteNewUser`] (email, role, isOccupant, caseId, unitId, type) {
@@ -104,4 +140,4 @@ Meteor.methods({
   }
 })
 
-export const PendingInvitations = new Mongo.Collection(collectionName)
+export default PendingInvitations
