@@ -79,6 +79,8 @@ Meteor.methods({
             isOccupant,
             caseId,
             unitId,
+            invitedBy: currUser._id,
+            timestamp: Date.now(),
             type,
             accessToken: randToken.generate(24)
           }

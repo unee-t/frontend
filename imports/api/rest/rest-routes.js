@@ -2,6 +2,7 @@
 import bodyParser from 'body-parser'
 // import invitationCreateRoute from './invitation-create'
 import getPendingInvitations from './get-pending-invitations'
+import putPendingInvitations from './put-pending-invitations'
 
 JsonRoutes.Middleware.use(bodyParser())
 JsonRoutes.Middleware.use((req, res, next) => {
@@ -23,3 +24,4 @@ const createRoute = (method, url, handler) => {
 
 // createRoute('post', '/invitation', invitationCreateRoute)
 createRoute('get', '/pending-invitations', getPendingInvitations)
+createRoute('put', '/pending-invitations/done', putPendingInvitations)

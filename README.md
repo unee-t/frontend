@@ -51,3 +51,12 @@ npm install
 ```shell
 npm start
 ```
+
+## Local development .env
+
+	BUGZILLA_ADMIN_KEY=CREATE_THIS_MANUALLY_FROM_BUGZILLA
+	MAIL_URL=$(aws --profile uneet-dev ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)
+	CLOUDINARY_URL=https://api.cloudinary.com/v1_1/unee-t-dev/image/upload
+	CLOUDINARY_PRESET=ASK_SOMEONE
+	API_ACCESS_TOKEN=blablabla
+	FROM_EMAIL="LOCAL DEV Unee-T Case <dev.case@unee-t.com>"
