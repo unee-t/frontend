@@ -1,12 +1,10 @@
 import { Email } from 'meteor/email'
 import url from 'url'
 
-const supportEmail = process.env.FROM_EMAIL
-
 export const invite = (user, invitedBy) =>
   Email.send({
     to: user.emails[0].address,
-    from: supportEmail,
+    from: process.env.FROM_EMAIL,
     subject: `Invite by ${invitedBy.profile.name || invitedBy.emails[0].address}`,
     text: `Hi there,
 

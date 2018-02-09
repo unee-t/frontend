@@ -10,6 +10,7 @@ export default (req, res) => {
 
   console.log('Marking done:', req.body)
   try {
+    // How to rollback: db.pendingInvitations.update({},{ $unset: {done:1}})
     const results = PendingInvitations.update({
       _id: { $in: req.body },
       done: { $ne: true }
@@ -33,8 +34,14 @@ export default (req, res) => {
           }
         }
       })
-      console.log(`Inviting`, invitee, 'by', inviteby)
       invite(invitee, inviteby)
+      console.log(inviteby, 'has invited', invitee)
+
+      // Also store back reference to who invited that user?
+
+      // Update invitee user that he/she has been invited to a particular case
+      Meteor.users.update({ 'bugzillaCreds.id': inviteInfo.invitee, 'invitedToCases': { $elemMatch: { caseId: inviteInfo.caseId } } },
+        { $set: { 'invitedToCases.$.done': true } })
     })
     res.send(200, results)
   } catch (e) {
