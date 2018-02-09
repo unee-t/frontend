@@ -15,6 +15,7 @@ services:
        - COMMIT=${COMMIT}
        - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
        - FROM_EMAIL=${FROM_EMAIL}
+       - MAIL_URL=${MAIL_URL}
       logging:
             driver: awslogs
             options:

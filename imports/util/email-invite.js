@@ -1,4 +1,5 @@
 import { Email } from 'meteor/email'
+import url from 'url'
 
 const supportEmail = process.env.FROM_EMAIL
 
@@ -12,7 +13,7 @@ export const invite = (user, invitedBy) =>
 You have been invited to contribute to a case.
 
 Please click the link below to get started:
-${process.env.ROOT_URL}/invitation?code=${user.invitedToCases[0].accessToken}
+${url.resolve(process.env.ROOT_URL, `/invitation?code=${user.invitedToCases[0].accessToken}`)}
 
 Kind regards,
 `})
