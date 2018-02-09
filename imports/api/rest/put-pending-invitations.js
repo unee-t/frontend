@@ -1,4 +1,4 @@
-import { PendingInvitations } from '../pending-invitations'
+import PendingInvitations from '../pending-invitations'
 import { invite } from '../../util/email-invite'
 import { Meteor } from 'meteor/meteor'
 
