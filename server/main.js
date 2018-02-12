@@ -7,6 +7,7 @@ import '../imports/api/pending-invitations'
 import '../imports/api/custom-users'
 import '../imports/api/case-field-values'
 import '../imports/api/hooks/on-create-user'
+import '../imports/api/hooks/on-login'
 import '../imports/api/rest/rest-routes'
 
 const publicClientEnvVars = ['CLOUDINARY_URL', 'CLOUDINARY_PRESET']
