@@ -31,10 +31,16 @@ if (Meteor.isServer) {
     }
 
     return [
-      PendingInvitations.find({caseId}),
-      Meteor.users.find({ // TODO: filter out users whose invitation was already finalized
+      PendingInvitations.find({
+        caseId,
+        done: {$ne: true}
+      }),
+      Meteor.users.find({
         invitedToCases: {
-          $elemMatch: {caseId}
+          $elemMatch: {
+            caseId,
+            done: {$ne: true}
+          }
         }
       }, {
         fields: {

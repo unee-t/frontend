@@ -177,8 +177,8 @@ class InviteDialog extends Component {
                   <div className='pb2'>
                     {filteredUsers.length ? (
                       <ul className='list mv0 pa0 pt1'>
-                        {filteredUsers.map(user => (
-                          <li key={user.login}
+                        {filteredUsers.map((user, idx) => (
+                          <li key={idx}
                             className={
                               themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }
