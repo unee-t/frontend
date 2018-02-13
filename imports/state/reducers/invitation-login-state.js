@@ -6,6 +6,10 @@ import {
   CLEAR_ERROR_MESSAGE
 } from '../../ui/invitation-login/invitation-login.actions'
 
+import {
+  CLEAR_WELCOME_MESSAGE
+} from '../../ui/case/case.actions'
+
 export default function invitationLoginState (state = {}, action) {
   switch (action.type) {
     case LOADING_INVITATION_CREDENTIALS:
@@ -22,16 +26,19 @@ export default function invitationLoginState (state = {}, action) {
       }
     case SUCCESS_INVITATION_CREDENTIALS:
       return {
-        showWelcomeMessage: true
+        showWelcomeMessage: action.showWelcomeMessage,
+        invitedByDetails: action.invitedByDetails
       }
     case CLEAR_ERROR_MESSAGE:
       if (state.error) {
         return {}
-      } else {
-        return state
       }
-    // case CLEAR_WELCOME_MESSAGE:
-    //   return {}
+      break
+    case CLEAR_WELCOME_MESSAGE:
+      if (state.showWelcomeMessage) {
+        return {}
+      }
+      break
   }
   return state
 }

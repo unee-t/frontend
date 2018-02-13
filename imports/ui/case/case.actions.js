@@ -12,6 +12,8 @@ export const INVITATION_INITIATED = 'invitation_initiated'
 export const INVITATION_SUCCESS = 'invitation_success'
 export const INVITATION_ERROR = 'invitation_error'
 export const INVITATION_CLEARED = 'invitation_cleared'
+export const CLEAR_WELCOME_MESSAGE = 'clear_welcome_message'
+export const UPDATE_INVITED_USER_NAME = 'update_invited_user_name'
 
 export function createComment (text, caseId) {
   return {
@@ -69,5 +71,18 @@ export function inviteNewUser (email, role, isOccupant, caseId, unitId) {
 export function clearInvitation () {
   return {
     type: INVITATION_CLEARED
+  }
+}
+
+export function clearWelcomeMessage () {
+  return {
+    type: CLEAR_WELCOME_MESSAGE
+  }
+}
+
+export function updateInvitedUserName (name) {
+  return {
+    type: UPDATE_INVITED_USER_NAME,
+    name
   }
 }
