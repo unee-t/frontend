@@ -17,6 +17,7 @@ import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
+import WelcomeDialog from '../components/welcome-dialog'
 
 export class Case extends Component {
   navigateToAttachment (id) {
@@ -37,7 +38,7 @@ export class Case extends Component {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
       attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes,
-      loadingPendingInvitations, pendingInvitations
+      loadingPendingInvitations, pendingInvitations, showWelcomeDialog, invitedByDetails
     } = this.props
     if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
     if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
@@ -46,7 +47,8 @@ export class Case extends Component {
 
     const { push } = routerRedux
     const {
-      createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation
+      createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation,
+      clearWelcomeMessage, updateInvitedUserName
     } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
@@ -94,6 +96,12 @@ export class Case extends Component {
                 onSelectAttachment={this.navigateToAttachment.bind(this)}
               />
             )} />
+            <WelcomeDialog
+              show={showWelcomeDialog}
+              onDismissed={() => dispatch(clearWelcomeMessage())}
+              onNameSubmitted={name => dispatch(updateInvitedUserName(name))}
+              {...{unitItem, caseItem, invitedByDetails}}
+            />
           </div>
         )} />
         <Redirect to={match.url} />
@@ -118,7 +126,9 @@ Case.propTypes = {
   caseUserTypes: PropTypes.object,
   invitationState: PropTypes.object.isRequired,
   loadingPendingInvitations: PropTypes.bool.isRequired,
-  pendingInvitations: PropTypes.array
+  pendingInvitations: PropTypes.array,
+  showWelcomeDialog: PropTypes.bool,
+  invitedByDetails: PropTypes.object
 }
 
 let caseError, commentsError, unitError
@@ -179,8 +189,17 @@ const CaseContainer = createContainer(props => {
 }, Case)
 
 export default connect(
-  ({caseAttachmentUploads, invitationState}, props) => ({
+  (
+    {
+      caseAttachmentUploads,
+      invitationState,
+      invitationLoginState: { showWelcomeMessage, invitedByDetails }
+    },
+    props
+  ) => ({
     attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || [],
-    invitationState
+    invitationState,
+    invitedByDetails,
+    showWelcomeDialog: !!showWelcomeMessage
   })
 )(CaseContainer)
