@@ -19,7 +19,7 @@ if (Meteor.isServer) {
 
 Meteor.methods({
   'users.invitationLogin': function (code) {
-    if (Meteor.user()) throw new Meteor.Error('Not allowed for current user')
+    if (Meteor.user()) throw new Meteor.Error('Not allowed for an existing user')
 
     // Reusable matcher object for the next mongo queries
     const codeMatcher = {
@@ -54,10 +54,28 @@ Meteor.methods({
     // Resetting the password to something new the client-side could use for an automated login
     const randPass = randToken.generate(12)
     Accounts.setPassword(invitedUser._id, randPass, {logout: true})
+
+    const invitedByDetails = (() => {
+      const { emails: [{ address: email }], profile: { name } } =
+        Meteor.users.findOne(invitedUser.invitedToCases[0].invitedBy)
+      return {
+        email,
+        name
+      }
+    })()
     return {
       email: invitedUser.emails[0].address,
       pw: randPass,
-      caseId: invitedUser.invitedToCases[0].caseId
+      caseId: invitedUser.invitedToCases[0].caseId,
+      invitedByDetails
     }
+  },
+  'users.updateMyName': function (name) {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    if (!name || name.length < 2) return new Meteor.Error('Name should be of minimum 2 characters')
+
+    Meteor.users.update(Meteor.userId(), {
+      $set: {'profile.name': name}
+    })
   }
 })
