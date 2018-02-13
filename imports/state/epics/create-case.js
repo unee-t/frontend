@@ -13,6 +13,7 @@ import { collectionName } from '../../api/cases'
 
 import 'rxjs/add/operator/take'
 import 'rxjs/add/operator/mergeMap'
+import 'rxjs/add/operator/filter'
 
 export const createCase = action$ => action$
   .ofType(CREATE_CASE)

@@ -1,50 +1,60 @@
-import React from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Meteor } from 'meteor/meteor'
-import { createContainer } from 'meteor/react-meteor-data'
 import { push } from 'react-router-redux'
+import { createContainer } from 'meteor/react-meteor-data'
 import Preloader from '../preloader/preloader'
+import { fetchInvitationCredentials, clearErrorMessage } from './invitation-login.actions'
+import ErrorDialog from '../components/error-dialog'
 
-const InvitationLogin = ({codeExists, loginCompleted}) => {
-  if (!codeExists) return <h1>code is missing</h1>
-  if (!loginCompleted) return <Preloader />
-  return <span>You shouldn't be seeing this</span>
+class InvitationLogin extends Component {
+  constructor () {
+    super(...arguments)
+    this.state = {
+      codeMissing: false
+    }
+  }
+  componentDidMount () {
+    const { location, dispatch } = this.props
+    const paramMatch = location.search.match(/[?&]code=([^&]+).*$/)
+    if (!paramMatch) {
+      this.setState({
+        codeMissing: true
+      })
+    } else {
+      dispatch(fetchInvitationCredentials(paramMatch[1]))
+    }
+  }
+  handleErrorDismissed = () => {
+    const { dispatch } = this.props
+    if (!this.state.codeMissing) {
+      dispatch(clearErrorMessage())
+    }
+    dispatch(push('/'))
+  }
+  render () {
+    const { codeMissing } = this.state
+    const { error } = this.props
+    return (
+      <div>
+        <Preloader />
+        <ErrorDialog
+          show={!!error || codeMissing}
+          text={error ? error.error : 'Code is missing'}
+          onDismissed={this.handleErrorDismissed}
+        />
+      </div>
+    )
+  }
 }
 
 InvitationLogin.propTypes = {
-  codeExists: PropTypes.bool.isRequired,
-  loginCompleted: PropTypes.bool.isRequired
-  // targetCaseId: PropTypes.number
+  error: PropTypes.object
 }
 
-let loginCompleted = false
-const loadInvitationDetails = (() => {
-  let isLoading = false
-  return (code, dispatch) => {
-    if (!isLoading) {
-      isLoading = true
-      Meteor.call('users.invitationLogin', code, (err, res) => {
-        if (err) console.log('err', err)
-        Meteor.loginWithPassword(res.email, res.pw, err => {
-          if (err) return console.log('invitation login err', err)
-          dispatch(push(`/case/${res.caseId}`))
-        })
-        loginCompleted = true
-      })
-    }
-  }
-})()
-
 export default connect(
-  (state) => ({}) // map redux state to props
-)(createContainer(({location, dispatch}) => { // map meteor state to props
-  const paramMatch = location.search.match(/[?&]code=([^&]+).*$/)
-  if (paramMatch) {
-    loadInvitationDetails(paramMatch[1], dispatch)
-  }
-  return {
-    codeExists: !!paramMatch,
-    loginCompleted
-  }
-}, InvitationLogin))
+  ({ invitationLoginState: { error } }) => ({
+    error
+  }) // map redux state to props
+)(createContainer(() => ({ // map meteor state to props
+}), InvitationLogin))
