@@ -38,6 +38,7 @@ export default ({collectionName, dataResolver}) => {
           if (matchersDict[identifier].handles.length === 0) { // No more handles left for this descriptor
             const descInd = addedMatcherDescriptors.indexOf(matchersDict[identifier])
             addedMatcherDescriptors.splice(descInd, 1)
+            delete matchersDict[identifier]
           }
         })
       }
@@ -132,6 +133,7 @@ export default ({collectionName, dataResolver}) => {
     },
     // TODO: Add tests for all the changes observation sequences
     handleAdded (item) {
+      console.log('matchers for comment', addedMatcherDescriptors.filter(desc => desc.matcher(item)).length)
       addedMatcherDescriptors
         .filter(desc => desc.matcher(item))
         .reduce((flatList, desc) => flatList.concat(desc.handles), [])
