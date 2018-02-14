@@ -51,7 +51,7 @@ if (Meteor.isServer) {
         const listResponse = callAPI('get', '/rest/product_enterable', {token}, false, true)
         ids = listResponse.data.ids
       } catch (e) {
-        console.error('API error encountered', 'unitsForReporting', this.userId)
+        console.error('API error encountered', `${collectionName}.forReporting`, this.userId)
         this.ready()
         this.error(new Meteor.Error({message: 'REST API error', origError: e}))
       }
