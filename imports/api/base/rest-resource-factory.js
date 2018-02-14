@@ -133,7 +133,6 @@ export default ({collectionName, dataResolver}) => {
     },
     // TODO: Add tests for all the changes observation sequences
     handleAdded (item) {
-      console.log('matchers for comment', addedMatcherDescriptors.filter(desc => desc.matcher(item)).length)
       addedMatcherDescriptors
         .filter(desc => desc.matcher(item))
         .reduce((flatList, desc) => flatList.concat(desc.handles), [])
