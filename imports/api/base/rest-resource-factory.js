@@ -38,6 +38,7 @@ export default ({collectionName, dataResolver}) => {
           if (matchersDict[identifier].handles.length === 0) { // No more handles left for this descriptor
             const descInd = addedMatcherDescriptors.indexOf(matchersDict[identifier])
             addedMatcherDescriptors.splice(descInd, 1)
+            delete matchersDict[identifier]
           }
         })
       }
