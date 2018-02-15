@@ -74,9 +74,24 @@ Meteor.methods({
       }
 
       // Checking only the default_assigned_to field (Should default_qa_contact be added too in the future?)
-      const isUserAlreadyInvolved = unitItem.components.filter(
+      const userAssignedToComponent = unitItem.components.filter(
         ({default_assigned_to: assignedTo}) => assignedTo === email
       ).length > 0
+      const userWasInvitedToRole = (() => {
+        const existingInvolvedUser = Meteor.users.findOne({
+          'emails.address': email,
+          invitedToCases: {
+            $elemMatch: {
+              unitId,
+              // This is only for if the invitation was already 'done' so the user can be added to the case directly,
+              //   and not via email
+              done: true
+            }
+          }
+        })
+        return !!existingInvolvedUser
+      })()
+      const isUserAlreadyInvolved = userAssignedToComponent || userWasInvitedToRole
       if (isUserAlreadyInvolved) {
         throw new Meteor.Error('This email belongs to a user already assigned to a role in this unit')
       }
