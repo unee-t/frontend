@@ -53,9 +53,11 @@ Meteor.methods({
         // Creating the comment
         const createData = callAPI('post', `/rest/bug/${caseId}/comment`, payload, false, true)
         const { token } = currUser.bugzillaCreds
+        console.log('createData.data', createData.data)
 
         // Fetching the full comment object by the returned id from the creation operation
         const commentData = callAPI('get', `/rest/bug/comment/${createData.data.id}`, {token}, false, true)
+        console.log('commentData.data', commentData.data)
 
         // Digging the new comment object out of the response
         const newComment = commentData.data.comments[createData.data.id.toString()]

@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import _ from 'lodash'
 
 export const makeAssociationFactory = collectionName => (publisher, associateFn) => function (unitName) {
   const origAdded = this.added
@@ -15,10 +16,11 @@ export const makeAssociationFactory = collectionName => (publisher, associateFn)
   return publisher.call(this, unitName)
 }
 
-export const withUsers = loginNamesGetter => (publishedItem, addingFn) => Meteor.users.find({
-  'bugzillaCreds.login': {$in: loginNamesGetter(publishedItem)}
-}, {
-  fields: {profile: 1, 'bugzillaCreds.login': 1}
-}).forEach(user => {
-  addingFn.call(this, 'users', user._id, user)
-})
+export const withUsers = (loginNamesGetter, customQuery = _.identity, customProj = _.identity) =>
+  (publishedItem, addingFn) => Meteor.users.find(customQuery({
+    'bugzillaCreds.login': {$in: loginNamesGetter(publishedItem)}
+  }, publishedItem), {
+    fields: customProj({profile: 1, 'bugzillaCreds.login': 1}, publishedItem)
+  }).forEach(user => {
+    addingFn.call(this, 'users', user._id, user)
+  })

@@ -6,6 +6,7 @@ import LoginPage from './login/login.jsx'
 import SignupPage from './signup/signup.jsx'
 import CaseExplorer from './case-explorer/case-explorer'
 import CaseWizard from './case-wizard/case-wizard'
+import InvitationLogin from './invitation-login/invitation-login'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -31,6 +32,7 @@ class App extends Component {
           <Switch>
             <Route exact path='/' component={LoginPage} />
             <Route exact path='/signup' component={SignupPage} />
+            <Route exact path='/invitation' component={InvitationLogin} />
             <Redirect to='/' />
           </Switch>
         )}

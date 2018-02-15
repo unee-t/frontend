@@ -34,14 +34,27 @@ export default (req, res) => {
           }
         }
       })
-      invite(invitee, inviteby)
-      console.log(inviteby, 'has invited', invitee)
+      try {
+        invite(invitee, inviteby)
+      } catch (e) {
+        console.log(`Sending invitation email to ${invitee.emails[0].address} has failed due to`, e)
+      }
+      console.log(inviteby.emails[0].address, 'has invited', invitee.emails[0].address)
 
       // Also store back reference to who invited that user?
 
       // Update invitee user that he/she has been invited to a particular case
-      Meteor.users.update({ 'bugzillaCreds.id': inviteInfo.invitee, 'invitedToCases': { $elemMatch: { caseId: inviteInfo.caseId } } },
-        { $set: { 'invitedToCases.$.done': true } })
+      Meteor.users.update(
+        {
+          'bugzillaCreds.id': inviteInfo.invitee,
+          'invitedToCases': { $elemMatch: { caseId: inviteInfo.caseId } }
+        },
+        {
+          $set: {
+            'invitedToCases.$.done': true
+          }
+        }
+      )
     })
     res.send(200, results)
   } catch (e) {

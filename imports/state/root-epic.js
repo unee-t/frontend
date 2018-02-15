@@ -6,6 +6,8 @@ import { addRoleUser } from './epics/add-role-user'
 import { removeRoleUser } from './epics/remove-role-user'
 import { inviteNewUser } from './epics/invite-new-user'
 import { createCase } from './epics/create-case'
+import { fetchInvitationCredentials } from './epics/fetch-invitation-credentials'
+import { updateUserName } from './epics/update-invited-user-name'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -14,5 +16,7 @@ export const rootEpic = combineEpics(
   addRoleUser,
   removeRoleUser,
   inviteNewUser,
-  createCase
+  createCase,
+  fetchInvitationCredentials,
+  updateUserName
 )

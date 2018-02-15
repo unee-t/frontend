@@ -14,7 +14,6 @@ import { emailValidator } from '../../util/validators'
 import themes from './user-themes.mss'
 
 import {
-  closeDialogButtonStyle,
   modalCustomContentStyle,
   modalBodyStyle,
   inviteSuccessIconStyle
@@ -28,7 +27,10 @@ import {
   selectInputIconStyle
 } from './form-controls.mui-styles'
 
-import { modalTitleStyle } from './generic-dialog.mui-styles'
+import {
+  modalTitleStyle,
+  closeDialogButtonStyle
+} from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
@@ -177,8 +179,8 @@ class InviteDialog extends Component {
                   <div className='pb2'>
                     {filteredUsers.length ? (
                       <ul className='list mv0 pa0 pt1'>
-                        {filteredUsers.map(user => (
-                          <li key={user.login}
+                        {filteredUsers.map((user, idx) => (
+                          <li key={idx}
                             className={
                               themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
                             }

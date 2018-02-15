@@ -5,6 +5,7 @@ import showLoginError from './reducers/show-login-error'
 import caseAttachmentUploads from './reducers/case-attachment-uploads'
 import invitationState from './reducers/invitation-state'
 import caseCreationState from './reducers/case-creation-state'
+import invitationLoginState from './reducers/invitation-login-state'
 
 const rootReducer = combineReducers({
   hideCompleted,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   caseAttachmentUploads,
   invitationState,
   caseCreationState,
+  invitationLoginState,
   router
 })
 

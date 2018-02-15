@@ -5,3 +5,8 @@ export const modalTitleStyle = {
   fontSize: 21,
   fontWeight: 500
 }
+
+export const closeDialogButtonStyle = {
+  color: '#777',
+  fontSize: 21
+}
