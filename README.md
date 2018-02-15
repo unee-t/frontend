@@ -14,7 +14,7 @@ with AWS_PROFILE `uneet-dev`. Travis CI deployments made via pull request will f
 not have access to `AWS_SECRET_ACCESS_KEY`.
 
 Production deployment on AWS account 1924-5899-3663 is done manually via
-`./deploy.sh -p` via the AWS_PROFILE `aws-prod`.
+`./deploy.sh -p` via the AWS_PROFILE `aws-prod` only once the **build is tagged**.
 
 # Logs
 

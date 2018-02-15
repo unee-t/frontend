@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
 
+echo "START $0 $(date)"
 STAGE=dev
 
 # Usage info
@@ -30,11 +31,20 @@ done
 AWS_PROFILE=uneet-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
-test "$COMMIT" || export COMMIT=$(git describe --always)
+export COMMIT=$(git describe --always)
 
-PKGURL=https://unee-t-media.s3-accelerate.amazonaws.com/frontend/commit/${COMMIT}.tar.gz
-echo Checking $PKGURL exists
-curl -I -f $PKGURL || exit
+# Run deploy hooks
+for hook in deploy-hooks/*
+do
+	[[ -x $hook ]] || continue
+	if "$hook"
+	then
+		echo OK: "$hook"
+	else
+		echo FAIL: "$hook"
+		exit 1
+	fi
+done
 
 if ! aws configure --profile $AWS_PROFILE list
 then
@@ -59,12 +69,6 @@ then
 
 fi
 
-if ! aws configure --profile $AWS_PROFILE list
-then
-	echo Profile $AWS_PROFILE does not exist >&2
-	exit 1
-fi
-
 if ! hash ecs-cli
 then
 	echo Please install https://github.com/aws/amazon-ecs-cli and ensure it is in your \$PATH
@@ -84,13 +88,6 @@ envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up --timeout 7
 
-
-if test "$STAGE" == "prod"
-then
-	TAG=$(date "+$STAGE-%Y%m%d%H%M%S")
-	git tag $TAG $COMMIT
-	git push upstream $TAG
-fi
-
-
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service ps
+
+echo "END $0 $(date)"
