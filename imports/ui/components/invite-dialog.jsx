@@ -8,10 +8,9 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
-import UserAvatar from './user-avatar'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
-import themes from './user-themes.mss'
+import UsersSearchList from './users-search-list'
 
 import {
   modalCustomContentStyle,
@@ -42,7 +41,6 @@ class InviteDialog extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      filterString: '',
       selectedRole: null,
       isOccupant: false,
       inputErrorModalOpen: false
@@ -126,24 +124,10 @@ class InviteDialog extends Component {
       basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation,
       pendingInvitees
     } = this.props
-    const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
-    const matcher = filterString ? new RegExp(filterString, 'i') : null
-    const allInvitees = this.normalizedInviteeList.concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
-    const filteredUsers = allInvitees.length ? allInvitees.reduce((all, user, idx) => {
-      if (!matcher || (user.name && user.name.match(matcher)) || user.login.match(matcher)) {
-        all.push(Object.assign({origIdx: idx, alreadyInvited: invitedUserEmails.includes(user.login)}, user))
-      }
-      return all
-      // TODO: to be used to resolve #80
-    }, [])/* .sort((a, b) => {
-     if (a.alreadyInvited && !b.alreadyInvited) {
-     return 1
-     } else if (b.alreadyInvited && !a.alreadyInvited) {
-     return -1
-     } else {
-     return 0
-     }
-     }) */ : []
+    const { selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
+    const allInvitees = this.normalizedInviteeList
+      .map(u => Object.assign({alreadyInvited: invitedUserEmails.includes(u.login)}, u))
+      .concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
     return (
       <Route path={`${basePath}/${relPath}`} children={({match}) => {
         return (
@@ -168,50 +152,25 @@ class InviteDialog extends Component {
             </Link>
             <Route exact path={`${basePath}/${relPath}`} render={() => (
               <div className='mt2 flex flex-column flex-grow'>
-                <div className='flex no-shrink'>
-                  <input placeholder='Enter the name or email'
-                    className='input-reset ba b--moon-gray outline-0 lh-dbl mb2 ti3 flex-grow'
-                    value={filterString} onChange={evt => this.setState({filterString: evt.target.value})}
-                    ref={input => { this.inputToFocus = input }}
-                  />
-                </div>
-                <div className='ba b--moon-gray flex-grow h5 overflow-auto'>
-                  <div className='pb2'>
-                    {filteredUsers.length ? (
-                      <ul className='list mv0 pa0 pt1'>
-                        {filteredUsers.map((user, idx) => (
-                          <li key={idx}
-                            className={
-                              themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
-                            }
-                            onClick={() => { !user.pending && (user.alreadyInvited ? onRoleUserRemoved(user) : onRoleUserAdded(user)) }}
-                          >
-                            <div className='ml1'>
-                              <UserAvatar user={user} />
-                            </div>
-                            <div className='ml2 flex-grow overflow-hidden'>
-                              <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
-                                {user.name || user.login}
-                              </div>
-                              <div className='f7 gray ellipsis'>{user.role}</div>
-                            </div>
-                            {user.pending ? (
-                              <span className='ml2 f6 silver i'>Pending</span>
-                            ) : user.alreadyInvited ? (
-                              <div className='ml2 flex flex-column items-center justify-center'>
-                                <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
-                              </div>
-                            ) : (
-                              <span className='ml2 f6 silver'>Invite</span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                <UsersSearchList
+                  users={allInvitees}
+                  onUserClick={user => !user.pending && (user.alreadyInvited
+                    ? onRoleUserRemoved(user)
+                    : onRoleUserAdded(user))
+                  }
+                  searchInputRef={el => { this.inputToFocus = el }}
+                  userStatusRenderer={user =>
+                    user.pending ? (
+                      <span className='f6 silver i'>Pending</span>
+                    ) : user.alreadyInvited ? (
+                      <div className='flex flex-column items-center justify-center'>
+                        <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
+                      </div>
                     ) : (
-                      <p className='tc i warn-crimson'>We couldn't find any users with the name entered.</p>
-                    )}
-                  </div>
-                </div>
+                      <span className='f6 silver'>Invite</span>
+                    )
+                  }
+                />
                 <div className='no-shrink'>
                   <p className='tc i mid-gray'>Can't find who you're looking for?</p>
                   <Link to={`${basePath}/${relPath}/new`}
