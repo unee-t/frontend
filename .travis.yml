@@ -26,11 +26,17 @@ script:
 
 # https://docs.travis-ci.com/user/deployment/script/
 deploy:
-  provider: script
-  script: bash deploy.sh
-  skip_cleanup: true
-  on:
-      branch: master
+ - provider: script
+   script: bash deploy.sh
+   skip_cleanup: true
+   on:
+     branch: master
+ - provider: script
+   # deploy to production, given that it's a tagged commit
+   script: bash deploy.sh -p
+   skip_cleanup: true
+   on:
+     tags: true
 
 env:
   global:
