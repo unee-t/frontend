@@ -17,7 +17,7 @@ import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
-import WelcomeDialog from '../components/welcome-dialog'
+import WelcomeDialog from '../dialogs/welcome-dialog'
 
 export class Case extends Component {
   navigateToAttachment (id) {

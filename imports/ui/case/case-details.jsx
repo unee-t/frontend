@@ -8,7 +8,7 @@ import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
-import InviteDialog from '../components/invite-dialog'
+import InviteDialog from '../dialogs/invite-dialog'
 
 import {
   detailLineIconColor,

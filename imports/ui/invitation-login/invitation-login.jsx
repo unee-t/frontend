@@ -5,7 +5,7 @@ import { push } from 'react-router-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import Preloader from '../preloader/preloader'
 import { fetchInvitationCredentials, clearErrorMessage } from './invitation-login.actions'
-import ErrorDialog from '../components/error-dialog'
+import ErrorDialog from '../dialogs/error-dialog'
 
 class InvitationLogin extends Component {
   constructor () {

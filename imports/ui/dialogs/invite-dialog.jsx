@@ -10,7 +10,7 @@ import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
-import UsersSearchList from './users-search-list'
+import UsersSearchList from '../components/users-search-list'
 
 import {
   modalCustomContentStyle,
@@ -24,7 +24,7 @@ import {
   textInputStyle,
   textInputUnderlineFocusStyle,
   selectInputIconStyle
-} from './form-controls.mui-styles'
+} from '../components/form-controls.mui-styles'
 
 import {
   modalTitleStyle,
