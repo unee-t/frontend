@@ -39,7 +39,7 @@ export const factoryOptions = {
   dataResolver: data => data.bugs
 }
 
-const MAX_RESULTS = 20
+const MAX_RESULTS = 50
 
 let publicationObj
 if (Meteor.isServer) {
