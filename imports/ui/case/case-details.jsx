@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link, withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
+import IconButton from 'material-ui/IconButton'
 import _ from 'lodash'
 import moment from 'moment'
 import themes from '../components/user-themes.mss'
@@ -44,13 +45,14 @@ const infoItemRow = (label, value) => (
   </InfoItemContainer>
 )
 
-const userInfoItem = (user, theme) => (
+const userInfoItem = (user, theme, rightRenderer) => (
   <div key={user.login} className={theme + ' flex pt2'}>
     <UserAvatar user={user} />
     <div className='ml2 pl1 flex-grow overflow-hidden'>
       <div className='mid-gray ellipsis'>{user.name || user.login}</div>
       <div className='mt1 f7 gray ellipsis'>{user.role || 'Administrator'}</div>
     </div>
+    {rightRenderer && rightRenderer(user)}
   </div>
 )
 
@@ -103,7 +105,11 @@ class CaseDetails extends Component {
   renderAssignedTo = user => (
     <InfoItemContainer>
       {infoItemLabel('Assigned to:')}
-      {userInfoItem(user, themes.theme2)}
+      {userInfoItem(user, themes.theme2, user => (
+        <IconButton>
+          <FontIcon className='material-icons' color='#999'>edit</FontIcon>
+        </IconButton>
+      ))}
     </InfoItemContainer>
   )
 
