@@ -7,7 +7,6 @@ import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
 import moment from 'moment'
-import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/cases'
@@ -23,18 +22,14 @@ import { attachmentTextMatcher } from '../../util/matchers'
 import { formatDayText } from '../../util/formatters'
 import WelcomeDialog from '../components/welcome-dialog'
 
-import {
-  titleStyle
-} from '../components/app-bar.mui-styles'
-
 export class Case extends Component {
   componentWillReceiveProps ({caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch, userEmail}) {
     if (!loadingCase && !loadingComments && !loadingUnit && !loadingPendingInvitations && !caseError &&
       (
-        loadingCase !== this.props.loadingCase
-        || loadingComments !== this.props.loadingComments
-        || loadingUnit !== this.props.loadingUnit
-        || loadingPendingInvitations !== this.props.loadingPendingInvitations
+        loadingCase !== this.props.loadingCase ||
+        loadingComments !== this.props.loadingComments ||
+        loadingUnit !== this.props.loadingUnit ||
+        loadingPendingInvitations !== this.props.loadingPendingInvitations
       )
     ) {
       this.props.dispatchLoadingResult({caseItem, comments, dispatch, userEmail})
@@ -78,7 +73,7 @@ export class Case extends Component {
           }
         }} />
         <Route path={match.url} render={props => (
-          <div className='flex-grow roboto overflow-hidden'>
+          <div className='flex-grow roboto overflow-hidden h-100'>
             <Switch>
               <Route exact path={match.url} render={() => (
                 <CaseMessages

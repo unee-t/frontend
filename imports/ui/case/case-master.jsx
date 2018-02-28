@@ -113,7 +113,13 @@ class CaseMaster extends Component {
                   <FontIcon className='material-icons' color='white'>notifications</FontIcon>
                 </IconButton>
                 <div className='white'>Welcome, {user.profile.name}</div>
-                <UserAvatar additionalClasses='ba b--moon-gray' creator={user.profile.name} />
+                <div className='ml2'>
+                  <UserAvatar additionalClasses='ba b--moon-gray' user={{
+                    name: user.profile.name,
+                    login: user.bugzillaCreds && user.bugzillaCreds.login,
+                    email: user.emails && user.emails[0].address
+                  }} />
+                </div>
               </div>
             }
           />
