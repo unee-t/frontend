@@ -177,7 +177,7 @@ class CaseDetails extends Component {
   render () {
     const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
     return (
-      <div className='flex-grow overflow-auto'>
+      <div className='flex-grow overflow-auto h-100'>
         {this.renderSummaryLine(caseItem)}
         {this.renderUnitName(unitItem)}
         {this.renderUnitDescription(unitItem)}

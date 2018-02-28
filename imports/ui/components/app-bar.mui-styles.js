@@ -11,7 +11,7 @@ export const logoIconStyle = {
 }
 
 export const logoButtonStyle = {
-  width: 46,
-  height: 46,
+  width: 44,
+  height: 44,
   padding: 0
 }

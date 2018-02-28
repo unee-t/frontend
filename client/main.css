@@ -83,6 +83,10 @@
   background-color: var(--bondi-blue);
 }
 
+.bg-very-light-gray {
+  background-color: var(--very-light-gray);
+}
+
 .outline-0 {
   outline: 0;
 }
@@ -151,8 +155,41 @@
   display: inline-flex;
 }
 
-.flex-grow {
+.flex-grow, flex-1 {
   flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+.flex-3 {
+  flex: 3;
+}
+.flex-4 {
+  flex: 4;
+}
+.flex-5 {
+  flex: 5;
+}
+.flex-6 {
+  flex: 6;
+}
+.flex-7 {
+  flex: 7;
+}
+.flex-8 {
+  flex: 8;
+}
+.flex-9 {
+  flex: 9;
+}
+.flex-10 {
+  flex: 10;
+}
+.flex-11 {
+  flex: 11;
+}
+.flex-12 {
+  flex: 12;
 }
 
 .no-shrink {
@@ -165,6 +202,10 @@
 
 .items-center {
   align-items: center;
+}
+
+.items-end {
+  align-items: flex-end;
 }
 
 .justify-center {

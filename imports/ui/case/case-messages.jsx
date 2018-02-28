@@ -102,7 +102,7 @@ class CaseMessages extends Component {
   render () {
     const { caseItem, comments, attachmentUploads } = this.props
     return (
-      <div className='flex flex-column flex-grow roboto overflow-hidden'>
+      <div className='flex flex-column flex-grow roboto overflow-hidden h-100'>
         {this.renderTitle(caseItem)}
         {this.renderMessages(comments, attachmentUploads)}
         {this.renderInputControls(caseItem)}
