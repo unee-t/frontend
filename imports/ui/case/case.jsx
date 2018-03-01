@@ -21,6 +21,7 @@ import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { formatDayText } from '../../util/formatters'
 import WelcomeDialog from '../components/welcome-dialog'
+import Preloader from '../preloader/preloader'
 
 export class Case extends Component {
   componentWillReceiveProps ({caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch, userEmail}) {
@@ -49,7 +50,7 @@ export class Case extends Component {
     if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
     if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
     if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
-    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations) return <span>Loading...</span>
+    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations) return <Preloader />
 
     const { push } = routerRedux
     const {
