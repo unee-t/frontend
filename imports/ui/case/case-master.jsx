@@ -15,6 +15,7 @@ import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
 import UserAvatar from '../components/user-avatar'
+import { logoutUser } from '../general-actions'
 
 import {
   titleStyle,
@@ -95,16 +96,19 @@ class CaseMaster extends Component {
       </IconButton>
     </div>
   )
-  renderCurrUserAvatar = (isBig) => (
-    <UserAvatar additionalClasses='ba b--moon-gray' isBig={isBig} user={{
-      name: this.props.user.profile.name,
-      login: this.props.user.bugzillaCreds && this.props.user.bugzillaCreds.login,
-      email: this.props.user.emails && this.props.user.emails[0].address
-    }} />
-  )
+  renderCurrUserAvatar = (isBig) => {
+    const { user } = this.props
+    return (
+      <UserAvatar additionalClasses='ba b--moon-gray' isBig={isBig} user={{
+        name: user.profile && user.profile.name,
+        login: user.bugzillaCreds && user.bugzillaCreds.login,
+        email: user.emails && user.emails[0].address
+      }} />
+    )
+  }
   render () {
     const { isLoading, componentsProps } = this.state
-    const { user } = this.props
+    const { user, dispatch } = this.props
     return (
       <div className='flex flex-column full-height roboto overflow-hidden'>
         {isLoading ? (
@@ -128,7 +132,7 @@ class CaseMaster extends Component {
                 <IconButton>
                   <FontIcon className='material-icons' color='white'>notifications</FontIcon>
                 </IconButton>
-                <div className='white'>Welcome, {user.profile.name}</div>
+                <div className='white'>Welcome, {user.profile && user.profile.name}</div>
                 <div className='ml2'>
                   {this.renderCurrUserAvatar()}
                 </div>
@@ -200,7 +204,7 @@ class CaseMaster extends Component {
               <div className='flex items-center mt4'>
                 {this.renderCurrUserAvatar(true)}
                 <div className='ml3 white ellipsis'>
-                  {this.props.user.profile.name || this.props.user.emails[0].address}
+                  {user.profile && (user.profile.name || user.emails[0].address)}
                 </div>
               </div>
             </div>
@@ -220,7 +224,7 @@ class CaseMaster extends Component {
                 <div className='ml4 mid-gray'>FAQ</div>
               </div>
             </MenuItem>
-            <MenuItem>
+            <MenuItem onClick={() => dispatch(logoutUser())}>
               <div className='flex items-center pv2 mv1'>
                 <div className='w1-5 lh-title tc'>
                   <FontIcon className='icon-logout' color='var(--mid-gray)' />
