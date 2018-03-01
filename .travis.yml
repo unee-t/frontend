@@ -20,6 +20,7 @@ before_script:
 
 script:
   - npm t
+  - 'sed -i "s/<\!-- COMMIT: -->/<\!-- COMMIT: $COMMIT -->/g" client/main.html'
   - meteor build $HOME
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/commit/${COMMIT}.tar.gz; fi'
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${TRAVIS_BRANCH}.tar.gz; fi'
