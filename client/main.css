@@ -121,6 +121,18 @@
 .h2-5 { height: 3rem; }
 /* Tachyons Height Scale - end */
 
+/* Tachyons Width Scale - start */
+.w1 { width: 1rem; }
+.w2 { width: 2rem; }
+.w3 { width: 4rem; }
+.w4 { width: 8rem; }
+.w5 { width: 16rem; }
+
+/* custom addition */
+.w1-5 { width: 1.5rem; }
+/* Tachyons Width Scale - end */
+
+
 /* Tachyons Opacity scale - start */
 .o-100 { opacity: 1;    }
 .o-90  { opacity: .9;   }

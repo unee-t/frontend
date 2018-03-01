@@ -8,6 +8,8 @@ import _ from 'lodash'
 import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
+import Drawer from 'material-ui/Drawer'
+import MenuItem from 'material-ui/MenuItem'
 import { UneeTIcon, UneeTLogoText } from '../components/unee-t-icons'
 import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
@@ -31,7 +33,8 @@ class CaseMaster extends Component {
     this.state = {
       componentsProps: {},
       isLoading: true,
-      isSubLoading: false
+      isSubLoading: false,
+      drawerOpen: false
     }
     this.routes = [
       {
@@ -79,6 +82,26 @@ class CaseMaster extends Component {
       }
     }
   }
+  handleIconClick = () => {
+    this.setState({
+      drawerOpen: true
+    })
+  }
+  renderAppBarLeft = () => (
+    <div className='flex items-center pl2'>
+      <UneeTLogoText />
+      <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} onClick={this.handleIconClick}>
+        <UneeTIcon />
+      </IconButton>
+    </div>
+  )
+  renderCurrUserAvatar = (isBig) => (
+    <UserAvatar additionalClasses='ba b--moon-gray' isBig={isBig} user={{
+      name: this.props.user.profile.name,
+      login: this.props.user.bugzillaCreds && this.props.user.bugzillaCreds.login,
+      email: this.props.user.emails && this.props.user.emails[0].address
+    }} />
+  )
   render () {
     const { isLoading, componentsProps } = this.state
     const { user } = this.props
@@ -90,20 +113,13 @@ class CaseMaster extends Component {
           <Switch>
             {this.routes.map(({path, RouteComp, exact = false}) => (
               <Route key={path} exact={exact} path={path} render={() => (
-                <RouteComp.MobileHeader contentProps={componentsProps[path]} />
+                <RouteComp.MobileHeader contentProps={componentsProps[path]} onIconClick={this.handleIconClick} />
               )} />
             ))}
           </Switch>
         ) : (
           <AppBar titleStyle={titleStyle}
-            iconElementLeft={
-              <div className='flex items-center pl2'>
-                <UneeTLogoText />
-                <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
-                  <UneeTIcon />
-                </IconButton>
-              </div>
-            }
+            iconElementLeft={this.renderAppBarLeft()}
             iconElementRight={
               <div className='flex items-center'>
                 <IconButton>
@@ -114,11 +130,7 @@ class CaseMaster extends Component {
                 </IconButton>
                 <div className='white'>Welcome, {user.profile.name}</div>
                 <div className='ml2'>
-                  <UserAvatar additionalClasses='ba b--moon-gray' user={{
-                    name: user.profile.name,
-                    login: user.bugzillaCreds && user.bugzillaCreds.login,
-                    email: user.emails && user.emails[0].address
-                  }} />
+                  {this.renderCurrUserAvatar()}
                 </div>
               </div>
             }
@@ -175,6 +187,48 @@ class CaseMaster extends Component {
               }} />
             </div>
           </div>
+        )}
+        {!isLoading && (
+          <Drawer
+            docked={false}
+            width={300}
+            open={this.state.drawerOpen}
+            onRequestChange={(open) => this.setState({drawerOpen: open})}
+          >
+            <div className='bg-bondi-blue pa3'>
+              {this.renderAppBarLeft()}
+              <div className='flex items-center mt4'>
+                {this.renderCurrUserAvatar(true)}
+                <div className='ml3 white ellipsis'>
+                  {this.props.user.profile.name || this.props.user.emails[0].address}
+                </div>
+              </div>
+            </div>
+            <MenuItem>
+              <div className='flex items-center pv2 mv1'>
+                <div className='w1-5 lh-title tc'>
+                  <FontIcon className='material-icons' color='var(--mid-gray)'>forum</FontIcon>
+                </div>
+                <div className='ml4 mid-gray'>Forum / Support</div>
+              </div>
+            </MenuItem>
+            <MenuItem>
+              <div className='flex items-center pv2 mv1'>
+                <div className='w1-5 lh-title tc'>
+                  <FontIcon className='material-icons' color='var(--mid-gray)'>help</FontIcon>
+                </div>
+                <div className='ml4 mid-gray'>FAQ</div>
+              </div>
+            </MenuItem>
+            <MenuItem>
+              <div className='flex items-center pv2 mv1'>
+                <div className='w1-5 lh-title tc'>
+                  <FontIcon className='icon-logout' color='var(--mid-gray)' />
+                </div>
+                <div className='ml4 mid-gray'>Logout</div>
+              </div>
+            </MenuItem>
+          </Drawer>
         )}
       </div>
     )

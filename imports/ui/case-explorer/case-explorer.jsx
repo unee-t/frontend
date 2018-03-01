@@ -135,10 +135,10 @@ const connectedWrapper = connect(
   }
 }, CaseExplorer))
 
-connectedWrapper.MobileHeader = props => (
+connectedWrapper.MobileHeader = ({onIconClick}) => (
   <AppBar title='Cases' titleStyle={titleStyle}
     iconElementLeft={
-      <IconButton iconStyle={logoIconStyle} style={logoButtonStyle}>
+      <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} onClick={onIconClick}>
         <UneeTIcon />
       </IconButton>
     }
@@ -154,5 +154,9 @@ connectedWrapper.MobileHeader = props => (
     }
   />
 )
+
+connectedWrapper.MobileHeader.propTypes = {
+  onIconClick: PropTypes.func.isRequired
+}
 
 export default connectedWrapper
