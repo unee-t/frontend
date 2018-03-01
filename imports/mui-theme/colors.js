@@ -1,3 +1,3 @@
 export default {
-  main: '#0094BA'
+  main: 'var(--bondi-blue)'
 }
