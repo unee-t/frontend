@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Route, Switch, matchPath } from 'react-router-dom'
+import { Route, Switch, matchPath, Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
@@ -208,22 +208,26 @@ class CaseMaster extends Component {
                 </div>
               </div>
             </div>
-            <MenuItem>
-              <div className='flex items-center pv2 mv1'>
-                <div className='w1-5 lh-title tc'>
-                  <FontIcon className='material-icons' color='var(--mid-gray)'>forum</FontIcon>
+            <Link className='link' to='https://forum.unee-t.com/' target='_blank'>
+              <MenuItem>
+                <div className='flex items-center pv2 mv1'>
+                  <div className='w1-5 lh-title tc'>
+                    <FontIcon className='material-icons' color='var(--mid-gray)'>forum</FontIcon>
+                  </div>
+                  <div className='ml4 mid-gray'>Forum / Support</div>
                 </div>
-                <div className='ml4 mid-gray'>Forum / Support</div>
-              </div>
-            </MenuItem>
-            <MenuItem>
-              <div className='flex items-center pv2 mv1'>
-                <div className='w1-5 lh-title tc'>
-                  <FontIcon className='material-icons' color='var(--mid-gray)'>help</FontIcon>
+              </MenuItem>
+            </Link>
+            <Link className='link' to='https://documentation.unee-t.com' target='_blank'>
+              <MenuItem>
+                <div className='flex items-center pv2 mv1'>
+                  <div className='w1-5 lh-title tc'>
+                    <FontIcon className='material-icons' color='var(--mid-gray)'>help</FontIcon>
+                  </div>
+                  <div className='ml4 mid-gray'>FAQ</div>
                 </div>
-                <div className='ml4 mid-gray'>FAQ</div>
-              </div>
-            </MenuItem>
+              </MenuItem>
+            </Link>
             <MenuItem onClick={() => dispatch(logoutUser())}>
               <div className='flex items-center pv2 mv1'>
                 <div className='w1-5 lh-title tc'>
