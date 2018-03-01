@@ -17,7 +17,7 @@ class App extends Component {
   render () {
     const { userLoggedIn } = this.props
     return (
-      <div className='sans-serif'>
+      <div className='roboto'>
         {userLoggedIn ? (
           <Switch>
             <Route exact path='/unit/new' component={UnderConstruction} />
