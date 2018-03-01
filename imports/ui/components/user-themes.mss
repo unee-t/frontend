@@ -46,15 +46,20 @@
 }
 
 .sized {
-  &:not(.sizeSmall) {
+  &.size1 {
     width: 2.5rem;
     height: 2.5rem;
     line-height: 2.5rem;
   }
-  &.sizeSmall {
+  &.size2 {
     width: 2rem;
     height: 2rem;
     line-height: 2rem;
+  }
+  &.size3 {
+    width: 4rem;
+    height: 4rem;
+    line-height: 4rem;
   }
 }
 

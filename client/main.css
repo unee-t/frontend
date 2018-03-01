@@ -83,6 +83,10 @@
   background-color: var(--bondi-blue);
 }
 
+.bg-very-light-gray {
+  background-color: var(--very-light-gray);
+}
+
 .outline-0 {
   outline: 0;
 }
@@ -116,6 +120,18 @@
 /* custom addition */
 .h2-5 { height: 3rem; }
 /* Tachyons Height Scale - end */
+
+/* Tachyons Width Scale - start */
+.w1 { width: 1rem; }
+.w2 { width: 2rem; }
+.w3 { width: 4rem; }
+.w4 { width: 8rem; }
+.w5 { width: 16rem; }
+
+/* custom addition */
+.w1-5 { width: 1.5rem; }
+/* Tachyons Width Scale - end */
+
 
 /* Tachyons Opacity scale - start */
 .o-100 { opacity: 1;    }
@@ -151,8 +167,41 @@
   display: inline-flex;
 }
 
-.flex-grow {
+.flex-grow, flex-1 {
   flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+.flex-3 {
+  flex: 3;
+}
+.flex-4 {
+  flex: 4;
+}
+.flex-5 {
+  flex: 5;
+}
+.flex-6 {
+  flex: 6;
+}
+.flex-7 {
+  flex: 7;
+}
+.flex-8 {
+  flex: 8;
+}
+.flex-9 {
+  flex: 9;
+}
+.flex-10 {
+  flex: 10;
+}
+.flex-11 {
+  flex: 11;
+}
+.flex-12 {
+  flex: 12;
 }
 
 .no-shrink {
@@ -165,6 +214,10 @@
 
 .items-center {
   align-items: center;
+}
+
+.items-end {
+  align-items: flex-end;
 }
 
 .justify-center {

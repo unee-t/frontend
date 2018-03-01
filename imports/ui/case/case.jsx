@@ -2,36 +2,43 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { Route, Redirect, Switch } from 'react-router-dom'
+import { Route, Redirect, Switch, withRouter } from 'react-router-dom'
 import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
+import moment from 'moment'
+import IconButton from 'material-ui/IconButton'
+import FontIcon from 'material-ui/FontIcon'
 import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/cases'
 import Comments from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import PendingInvitations, { collectionName as inviteCollName } from '../../api/pending-invitations'
-import Preloader from '../preloader/preloader'
 import InnerAppBar from '../components/inner-app-bar'
 import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
+import { formatDayText } from '../../util/formatters'
 import WelcomeDialog from '../components/welcome-dialog'
+import Preloader from '../preloader/preloader'
 
 export class Case extends Component {
+  componentWillReceiveProps ({caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch, userEmail}) {
+    if (!loadingCase && !loadingComments && !loadingUnit && !loadingPendingInvitations && !caseError &&
+      (
+        loadingCase !== this.props.loadingCase ||
+        loadingComments !== this.props.loadingComments ||
+        loadingUnit !== this.props.loadingUnit ||
+        loadingPendingInvitations !== this.props.loadingPendingInvitations
+      )
+    ) {
+      this.props.dispatchLoadingResult({caseItem, comments, dispatch, userEmail})
+    }
+  }
   navigateToAttachment (id) {
     const { push } = routerRedux
     this.props.dispatch(push(`${this.props.match.url}/attachment/${id}`))
-  }
-
-  handleBack (defaultPath) {
-    const { push, goBack } = routerRedux
-    if (this.props.location.action === 'PUSH') {
-      this.props.dispatch(goBack())
-    } else {
-      this.props.dispatch(push(defaultPath || this.props.location.pathname.split('/').slice(0, -1).join('/')))
-    }
   }
 
   render () {
@@ -61,41 +68,37 @@ export class Case extends Component {
           if (!selectedComment || !attachmentTextMatcher(selectedComment.text)) {
             return <Redirect to={match.url} />
           } else {
-            const { text, creator } = selectedComment
+            const { text } = selectedComment
             const attachmentUrl = text.split('\n')[1]
-            const creatorText = userEmail === creator ? 'You' : creator
-            return <MaximizedAttachment
-              creatorText={creatorText} attachmentUrl={attachmentUrl} creationTime={selectedComment.creation_time}
-              onBack={() => this.handleBack(match.url)} />
+            return <MaximizedAttachment attachmentUrl={attachmentUrl} />
           }
         }} />
         <Route path={match.url} render={props => (
-          <div className='flex flex-column full-height roboto overflow-hidden'>
-            <InnerAppBar
-              title={caseItem.summary} onBack={() => this.handleBack(props.match.isExact ? null : match.url)}
-            />
-            <Route exact path={match.url} render={() => (
-              <CaseMessages
-                {...{caseItem, comments, attachmentUploads, userEmail}}
-                onCreateComment={text => dispatch(createComment(text, caseId))}
-                onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
-                onRetryAttachment={process => dispatch(retryAttachment(process))}
-                onThumbClicked={this.navigateToAttachment.bind(this)}
-                onMoreInfo={() => dispatch(push(detailsUrl))}
-              />
-            )} />
-            <Route path={detailsUrl} render={() => (
-              <CaseDetails
-                {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes, pendingInvitations}}
-                onRoleUserAdded={user => dispatch(addRoleUser(user.login, caseId))}
-                onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
-                onNewUserInvited={
-                  (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
-                }
-                onResetInvitation={() => dispatch(clearInvitation())}
-                onSelectAttachment={this.navigateToAttachment.bind(this)}
-              />
-            )} />
+          <div className='flex-grow roboto overflow-hidden h-100'>
+            <Switch>
+              <Route exact path={match.url} render={() => (
+                <CaseMessages
+                  {...{caseItem, comments, attachmentUploads, userEmail}}
+                  onCreateComment={text => dispatch(createComment(text, caseId))}
+                  onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
+                  onRetryAttachment={process => dispatch(retryAttachment(process))}
+                  onThumbClicked={this.navigateToAttachment.bind(this)}
+                  onMoreInfo={() => dispatch(push(detailsUrl))}
+                />
+              )} />
+              <Route path={detailsUrl} render={() => (
+                <CaseDetails
+                  {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes, pendingInvitations}}
+                  onRoleUserAdded={user => dispatch(addRoleUser(user.login, caseId))}
+                  onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
+                  onNewUserInvited={
+                    (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
+                  }
+                  onResetInvitation={() => dispatch(clearInvitation())}
+                  onSelectAttachment={this.navigateToAttachment.bind(this)}
+                />
+              )} />
+            </Switch>
             <WelcomeDialog
               show={showWelcomeDialog}
               onDismissed={() => dispatch(clearWelcomeMessage())}
@@ -118,6 +121,7 @@ Case.propTypes = {
   commentsError: PropTypes.object,
   comments: PropTypes.array,
   userEmail: PropTypes.string,
+  dispatchLoadingResult: PropTypes.func.isRequired,
   attachmentUploads: PropTypes.array,
   loadingUnit: PropTypes.bool,
   unitError: PropTypes.object,
@@ -188,7 +192,7 @@ const CaseContainer = createContainer(props => {
   }
 }, Case)
 
-export default connect(
+const connectedWrapper = withRouter(connect(
   (
     {
       caseAttachmentUploads,
@@ -202,4 +206,52 @@ export default connect(
     invitedByDetails,
     showWelcomeDialog: !!showWelcomeMessage
   })
-)(CaseContainer)
+)(CaseContainer))
+
+const MobileHeader = props => {
+  const { caseItem, comments, dispatch, userEmail } = props.contentProps
+  const { match } = props
+  const handleBack = defaultPath => {
+    const { push, goBack } = routerRedux
+    if (props.location.action === 'PUSH') {
+      dispatch(goBack())
+    } else {
+      dispatch(push(defaultPath || props.location.pathname.split('/').slice(0, -1).join('/')))
+    }
+  }
+  return (
+    <Switch>
+      <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
+        const { attachId } = subProps.match.params
+        const selectedComment = _.find(comments, {id: parseInt(attachId)})
+        const { creationTime, creator } = selectedComment
+        const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
+        const creatorText = userEmail === creator ? 'You' : creator
+        return (
+          <div className='fixed top-0 w-100 bg-black-20 flex items-center'>
+            <IconButton onClick={() => handleBack(match.url)}>
+              <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
+            </IconButton>
+            <div className='white'>
+              <h4 className='mv1'>{creatorText}</h4>
+              <h5 className='mv1'>{timeText}</h5>
+            </div>
+          </div>
+        )
+      }} />
+      <Route path={match.url} render={routeProps => (
+        <InnerAppBar
+          title={caseItem.summary} onBack={() => handleBack(props.match.isExact ? null : match.url)}
+        />
+      )} />
+    </Switch>
+  )
+}
+
+MobileHeader.propTypes = {
+  contentProps: PropTypes.object
+}
+
+connectedWrapper.MobileHeader = withRouter(MobileHeader)
+
+export default connectedWrapper
