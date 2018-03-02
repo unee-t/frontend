@@ -20,6 +20,7 @@ before_script:
 
 script:
   - npm t
+  - 'sed -i "s/<\!-- COMMIT: -->/<\!-- COMMIT: $COMMIT -->/g" client/main.html'
   - meteor build $HOME
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/commit/${COMMIT}.tar.gz; fi'
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${TRAVIS_BRANCH}.tar.gz; fi'
@@ -27,13 +28,13 @@ script:
 # https://docs.travis-ci.com/user/deployment/script/
 deploy:
  - provider: script
-   script: bash deploy.sh
+   script: AWS_ACCESS_KEY_ID=$AWS_812644853088_ID AWS_SECRET_ACCESS_KEY=$AWS_812644853088_SECRET bash deploy.sh
    skip_cleanup: true
    on:
      branch: master
  - provider: script
    # deploy to production, given that it's a tagged commit
-   script: bash deploy.sh -p
+   script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET bash deploy.sh -p
    skip_cleanup: true
    on:
      tags: true

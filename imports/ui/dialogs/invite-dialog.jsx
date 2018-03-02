@@ -37,14 +37,19 @@ const simpleLinkClasses = 'link dib ' + simpleControlClasses
 
 const placeholderUsersMatcher = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
 
+const DIALOG_PADDING = 40
+
 class InviteDialog extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       selectedRole: null,
       isOccupant: false,
-      inputErrorModalOpen: false
+      inputErrorModalOpen: false,
+      currMaxHeight: window.innerHeight - DIALOG_PADDING
     }
+
+    window.addEventListener('resize', this.handleWindowResize)
 
     this.roleTypes = [
       {
@@ -80,6 +85,10 @@ class InviteDialog extends Component {
     this.normalizeInvitees(this.props.potentialInvitees)
   }
 
+  componentWillUnmount () {
+    window.removeEventListener('resize', this.handleWindowResize)
+  }
+
   componentWillReceiveProps (nextProps) {
     if (this.props.potentialInvitees !== nextProps.potentialInvitees) {
       this.normalizeInvitees(nextProps.potentialInvitees)
@@ -90,6 +99,12 @@ class InviteDialog extends Component {
     this.normalizedInviteeList = invitees.filter(
       user => !user.login.match(placeholderUsersMatcher)
     )
+  }
+
+  handleWindowResize = () => {
+    this.setState({
+      currMaxHeight: window.innerHeight - DIALOG_PADDING
+    })
   }
 
   handleEmailChanged = evt => {
@@ -124,7 +139,7 @@ class InviteDialog extends Component {
       basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation,
       pendingInvitees
     } = this.props
-    const { selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
+    const { selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
     const allInvitees = this.normalizedInviteeList
       .map(u => Object.assign({alreadyInvited: invitedUserEmails.includes(u.login)}, u))
       .concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
@@ -133,14 +148,15 @@ class InviteDialog extends Component {
         return (
           <Dialog
             title={invitationState.loading ? 'Please wait... '
-              : !invitationState.completed ? 'Who would you like to invite?'
+              : !invitationState.completed ? 'Who should be invited?'
               : null
             }
             titleStyle={modalTitleStyle}
             modal
             open={!!match}
             contentStyle={modalCustomContentStyle}
-            bodyStyle={modalBodyStyle}
+            bodyStyle={Object.assign({maxHeight: currMaxHeight}, modalBodyStyle)}
+            autoDetectWindowHeight={false}
           >
             <Link to={basePath} onClick={onResetInvitation}
               className={
