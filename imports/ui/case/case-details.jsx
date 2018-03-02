@@ -126,7 +126,7 @@ class CaseDetails extends Component {
         {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)]))}
         <Link to={`${match.url}/invite`}
           className='mt2 link flex items-center outline-0'>
-          <div className={themes.sized + ' br-100 ba b--moon-gray bg-transparent tc'}>
+          <div className={[themes.sized, themes.size1, 'br-100 ba b--moon-gray bg-transparent tc'].join(' ')}>
             <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
           </div>
           <div className='ml2 pl1 bondi-blue'>Invite or remove users</div>
