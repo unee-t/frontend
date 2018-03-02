@@ -21,7 +21,6 @@ import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
 import WelcomeDialog from '../dialogs/welcome-dialog'
 import { formatDayText } from '../../util/formatters'
-import WelcomeDialog from '../components/welcome-dialog'
 import Preloader from '../preloader/preloader'
 
 export class Case extends Component {

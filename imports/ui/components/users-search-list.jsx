@@ -39,7 +39,7 @@ class UsersSearchList extends Component {
         <div className='ba b--moon-gray flex-grow h5 overflow-auto'>
           <div className='pb2'>
             {filteredUsers.length ? (
-              <ul className='list mv0 pa0 pt1'>
+              <ul className='list mv0 pa0 pt1 min-h-3'>
                 {filteredUsers.map((user, idx) => {
                   const userStatusComp = userStatusRenderer && userStatusRenderer(user)
                   return (
