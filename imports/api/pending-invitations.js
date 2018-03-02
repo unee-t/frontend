@@ -97,7 +97,7 @@ Meteor.methods({
       }
 
       let inviteeUser = Accounts.findUserByEmail(email)
-      if (inviteeUser) {
+      if (inviteeUser && inviteeUser.invitedToCases) {
         const conflictingCaseInvitations = inviteeUser.invitedToCases.filter(({caseId: caseIdB}) => caseIdB === caseId)
         if (conflictingCaseInvitations.length) {
           throw new Meteor.Error(
