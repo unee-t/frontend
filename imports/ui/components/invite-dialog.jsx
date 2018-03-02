@@ -38,6 +38,8 @@ const simpleLinkClasses = 'link dib ' + simpleControlClasses
 
 const placeholderUsersMatcher = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
 
+const DIALOG_PADDING = 40
+
 class InviteDialog extends Component {
   constructor () {
     super(...arguments)
@@ -45,8 +47,11 @@ class InviteDialog extends Component {
       filterString: '',
       selectedRole: null,
       isOccupant: false,
-      inputErrorModalOpen: false
+      inputErrorModalOpen: false,
+      currMaxHeight: window.innerHeight - DIALOG_PADDING
     }
+
+    window.addEventListener('resize', this.handleWindowResize)
 
     this.roleTypes = [
       {
@@ -82,6 +87,10 @@ class InviteDialog extends Component {
     this.normalizeInvitees(this.props.potentialInvitees)
   }
 
+  componentWillUnmount () {
+    window.removeEventListener('resize', this.handleWindowResize)
+  }
+
   componentWillReceiveProps (nextProps) {
     if (this.props.potentialInvitees !== nextProps.potentialInvitees) {
       this.normalizeInvitees(nextProps.potentialInvitees)
@@ -92,6 +101,12 @@ class InviteDialog extends Component {
     this.normalizedInviteeList = invitees.filter(
       user => !user.login.match(placeholderUsersMatcher)
     )
+  }
+
+  handleWindowResize = () => {
+    this.setState({
+      currMaxHeight: window.innerHeight - DIALOG_PADDING
+    })
   }
 
   handleEmailChanged = evt => {
@@ -126,7 +141,7 @@ class InviteDialog extends Component {
       basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation,
       pendingInvitees
     } = this.props
-    const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError } = this.state
+    const { filterString, selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
     const allInvitees = this.normalizedInviteeList.concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
     const filteredUsers = allInvitees.length ? allInvitees.reduce((all, user, idx) => {
@@ -149,14 +164,15 @@ class InviteDialog extends Component {
         return (
           <Dialog
             title={invitationState.loading ? 'Please wait... '
-              : !invitationState.completed ? 'Who would you like to invite?'
+              : !invitationState.completed ? 'Who should be invited?'
               : null
             }
             titleStyle={modalTitleStyle}
             modal
             open={!!match}
             contentStyle={modalCustomContentStyle}
-            bodyStyle={modalBodyStyle}
+            bodyStyle={Object.assign({maxHeight: currMaxHeight}, modalBodyStyle)}
+            autoDetectWindowHeight={false}
           >
             <Link to={basePath} onClick={onResetInvitation}
               className={
@@ -175,7 +191,7 @@ class InviteDialog extends Component {
                     ref={input => { this.inputToFocus = input }}
                   />
                 </div>
-                <div className='ba b--moon-gray flex-grow h5 overflow-auto'>
+                <div className='ba b--moon-gray flex-grow h5 overflow-auto min-h-3'>
                   <div className='pb2'>
                     {filteredUsers.length ? (
                       <ul className='list mv0 pa0 pt1'>
