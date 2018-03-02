@@ -153,6 +153,22 @@
   max-width: 60%;
 }
 
+.min-h-1 {
+  min-height: 1rem;
+}
+.min-h-2 {
+  min-height: 2rem;
+}
+.min-h-3 {
+  min-height: 4rem;
+}
+.min-h-4 {
+  min-height: 8rem;
+}
+.min-h-5 {
+  min-height: 16rem;
+}
+
 .ml-auto {
   margin-left: auto;
 }
