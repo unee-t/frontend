@@ -9,12 +9,78 @@ import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
+import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
+import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
 
 import {
   detailLineIconColor,
   addPersonIconStyle
 } from './case.mui-styles'
+
+// import React, { Component } from 'react'
+import FlatButton from 'material-ui/FlatButton'
+// import FontIcon from 'material-ui/FontIcon'
+import Popover from 'material-ui/Popover'
+
+class PopoverButton extends Component {
+  constructor () {
+    super(...arguments)
+    this.state = {
+      popoverOpen: false,
+      popoverWidth: 100,
+      popoverMaxHeight: 1000
+    }
+    window.addEventListener('resize', this.handleWindowResize)
+  }
+  componentWillUnmount () {
+    window.removeEventListener('resize', this.handleWindowResize)
+  }
+  handleWindowResize = () => {
+    this.setState({
+      popoverMaxHeight: this.containerEl.offsetHeight - 38
+    })
+  }
+  handleOpen = evt => {
+    evt.preventDefault()
+    this.setState({
+      popoverOpen: true,
+      buttonEl: evt.currentTarget,
+      popoverWidth: evt.currentTarget.offsetWidth
+    })
+  }
+  render () {
+    const { popoverOpen, buttonEl, popoverWidth, popoverMaxHeight } = this.state
+    return (
+      <div className='w-100 overflow-hidden' ref={el => { this.containerEl = el }}>
+        <FlatButton style={{height: 'auto', width: '100%'}} onClick={this.handleOpen}>
+          <div className='flex ph2 ba b--moon-gray br2 items-center'>
+            <div className='mid-gray flex-grow ellipsis tl'>{this.props.buttonText}</div>
+            <FontIcon className='material-icons' color='var(--mid-gray)'>
+              {popoverOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+            </FontIcon>
+          </div>
+        </FlatButton>
+        <div className='h5' />
+        <div className='h2-5' />
+        <Popover open={popoverOpen} anchorEl={buttonEl}
+          anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
+          targetOrigin={{horizontal: 'left', vertical: 'top'}}
+          onRequestClose={() => this.setState({popoverOpen: false})}
+          style={{width: popoverWidth, marginTop: -1}}
+        >
+          <div className='w-100 flex flex-column' style={{maxHeight: popoverMaxHeight}}>
+            {this.props.children}
+          </div>
+        </Popover>
+      </div>
+    )
+  }
+}
+
+PopoverButton.propTypes = {
+  buttonText: PropTypes.string.isRequired
+}
 
 const IconDetailRowWrapper = props => (
   <div className={'bb b--gray-93 ph3 h2-5 flex items-center w-100' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
@@ -102,22 +168,58 @@ class CaseDetails extends Component {
     </div>
   )
 
-  renderAssignedTo = user => (
-    <InfoItemContainer>
-      {infoItemLabel('Assigned to:')}
-      {userInfoItem(user, themes.theme2, user => (
-        <IconButton>
-          <FontIcon className='material-icons' color='#999'>edit</FontIcon>
-        </IconButton>
-      ))}
-    </InfoItemContainer>
-  )
+  renderAssignedTo = (assignedUser, unitUsers, pendingInvitations) => {
+    const {
+      match, invitationState, onResetInvitation
+    } = this.props
+    const relevantInvitation = pendingInvitations.find(inv => inv.type === TYPE_ASSIGNED)
+    const pendingUser = relevantInvitation && relevantInvitation.inviteeUser()
+    return (
+      <InfoItemContainer>
+        {infoItemLabel('Assigned to:')}
+        {userInfoItem(assignedUser, themes.theme2, user => (
+          <Link to={`${match.url}/assign`} className='link outline-0'>
+            <IconButton>
+              <FontIcon className='material-icons' color='#999'>edit</FontIcon>
+            </IconButton>
+          </Link>
+        ))}
+        <InviteDialog
+          {...{invitationState, onResetInvitation}}
+          onNewUserInvited={() => {}}
+          basePath={match.url} relPath='assign'
+          title='Who should be assigned?'
+          potentialInvitees={unitUsers
+            .filter(u => u.login !== assignedUser.login)
+          }
+          pendingInvitees={pendingUser ? [pendingUser] : []}
+          selectControlsRenderer={({allInvitees, inputRefFn}) => (
+            <div className='flex flex-column flex-grow'>
+              <PopoverButton buttonText={assignedUser.name || assignedUser.email || assignedUser.login}>
+                <div className='pa1 ba b--moon-gray br2 flex-grow flex flex-column'>
+                  <UsersSearchList
+                    users={allInvitees}
+                    onUserClick={user => {}}
+                    searchInputRef={inputRefFn}
+                    userClassNames={user => user === assignedUser ? 'bg-very-light-gray' : ''}
+                    userStatusRenderer={user => user.pending && (
+                      <span className='f6 silver i'>Pending</span>
+                    )}
+                  />
+                </div>
+              </PopoverButton>
+            </div>
+          )}
+        />
+      </InfoItemContainer>
+    )
+  }
 
   renderPeopleInvolved = ({creator, assigned, subscribed}, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
-    const pendingUsers = pendingInvitations.map(inv => {
+    const pendingUsers = pendingInvitations.filter(inv => inv.type === TYPE_CC).map(inv => {
       const { bugzillaCreds: { login }, profile: { name } } = inv.inviteeUser()
       return {
         name,
@@ -125,6 +227,7 @@ class CaseDetails extends Component {
         role: inv.role
       }
     })
+    const invitedUsersEmails = subscribed.map(u => u.login)
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
@@ -138,11 +241,35 @@ class CaseDetails extends Component {
           <div className='ml2 pl1 bondi-blue'>Invite or remove users</div>
         </Link>
         <InviteDialog
+          {...{onNewUserInvited, invitationState, onResetInvitation}}
           basePath={match.url} relPath='invite'
-          potentialInvitees={unitUsers.filter(u => u.login !== creator.login && u.login !== assigned.login)}
+          title='Who should be invited?'
+          potentialInvitees={unitUsers
+            .filter(u => u.login !== creator.login && u.login !== assigned.login)
+            .map(u => Object.assign({alreadyInvited: invitedUsersEmails.includes(u.login)}, u))
+          }
           pendingInvitees={pendingUsers}
-          invitedUserEmails={subscribed.map(u => u.login)}
-          {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
+          selectControlsRenderer={({allInvitees, inputRefFn}) => (
+            <UsersSearchList
+              users={allInvitees}
+              onUserClick={user => !user.pending && (user.alreadyInvited
+                ? onRoleUserRemoved(user)
+                : onRoleUserAdded(user))
+              }
+              searchInputRef={inputRefFn}
+              userStatusRenderer={user =>
+                user.pending ? (
+                  <span className='f6 silver i'>Pending</span>
+                ) : user.alreadyInvited ? (
+                  <div className='flex flex-column items-center justify-center'>
+                    <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
+                  </div>
+                ) : (
+                  <span className='f6 silver'>Invite</span>
+                )
+              }
+            />
+          )}
         />
       </InfoItemContainer>
     )
@@ -190,7 +317,7 @@ class CaseDetails extends Component {
         {this.renderStatusLine(caseItem)}
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
-        {this.renderAssignedTo(caseUserTypes.assigned)}
+        {this.renderAssignedTo(caseUserTypes.assigned, unitUsers, pendingInvitations)}
         {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
