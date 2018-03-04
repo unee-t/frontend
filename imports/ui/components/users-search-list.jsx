@@ -11,7 +11,7 @@ class UsersSearchList extends Component {
     }
   }
   render () {
-    const { users, onUserClick, userStatusRenderer, searchInputRef } = this.props
+    const { users, onUserClick, userStatusRenderer, searchInputRef, userClassNames } = this.props
     const { filterString } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
     const filteredUsers = users
@@ -42,10 +42,11 @@ class UsersSearchList extends Component {
               <ul className='list mv0 pa0 pt1 min-h-3'>
                 {filteredUsers.map((user, idx) => {
                   const userStatusComp = userStatusRenderer && userStatusRenderer(user)
+                  const extraClasses = userClassNames ? userClassNames(user) : ''
                   return (
                     <li key={idx}
                       className={
-                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2'
+                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 ' + extraClasses
                       }
                       onClick={() => onUserClick(user)}
                     >
@@ -81,6 +82,7 @@ UsersSearchList.propTypes = {
   users: PropTypes.array.isRequired,
   onUserClick: PropTypes.func.isRequired,
   userStatusRenderer: PropTypes.func,
+  userClassNames: PropTypes.func,
   searchInputRef: PropTypes.func
 }
 
