@@ -10,7 +10,6 @@ import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
-import UsersSearchList from '../components/users-search-list'
 
 import {
   modalCustomContentStyle,
@@ -136,19 +135,18 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, onRoleUserAdded, onRoleUserRemoved, invitedUserEmails, invitationState, onResetInvitation,
-      pendingInvitees
+      basePath, relPath, invitationState, onResetInvitation, pendingInvitees, selectControlsRenderer,
+      title
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
     const allInvitees = this.normalizedInviteeList
-      .map(u => Object.assign({alreadyInvited: invitedUserEmails.includes(u.login)}, u))
       .concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
     return (
       <Route path={`${basePath}/${relPath}`} children={({match}) => {
         return (
           <Dialog
             title={invitationState.loading ? 'Please wait... '
-              : !invitationState.completed ? 'Who should be invited?'
+              : !invitationState.completed ? title
               : null
             }
             titleStyle={modalTitleStyle}
@@ -168,25 +166,10 @@ class InviteDialog extends Component {
             </Link>
             <Route exact path={`${basePath}/${relPath}`} render={() => (
               <div className='mt2 flex flex-column flex-grow'>
-                <UsersSearchList
-                  users={allInvitees}
-                  onUserClick={user => !user.pending && (user.alreadyInvited
-                    ? onRoleUserRemoved(user)
-                    : onRoleUserAdded(user))
-                  }
-                  searchInputRef={el => { this.inputToFocus = el }}
-                  userStatusRenderer={user =>
-                    user.pending ? (
-                      <span className='f6 silver i'>Pending</span>
-                    ) : user.alreadyInvited ? (
-                      <div className='flex flex-column items-center justify-center'>
-                        <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
-                      </div>
-                    ) : (
-                      <span className='f6 silver'>Invite</span>
-                    )
-                  }
-                />
+                {selectControlsRenderer({
+                  allInvitees,
+                  inputRefFn: el => { this.inputToFocus = el }
+                })}
                 <div className='no-shrink'>
                   <p className='tc i mid-gray'>Can't find who you're looking for?</p>
                   <Link to={`${basePath}/${relPath}/new`}
@@ -297,13 +280,12 @@ class InviteDialog extends Component {
 InviteDialog.propTypes = {
   basePath: PropTypes.string.isRequired,
   relPath: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
   potentialInvitees: PropTypes.array.isRequired,
-  onRoleUserAdded: PropTypes.func.isRequired,
-  onRoleUserRemoved: PropTypes.func.isRequired,
-  invitedUserEmails: PropTypes.array.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   invitationState: PropTypes.object.isRequired,
+  selectControlsRenderer: PropTypes.func.isRequired,
   pendingInvitees: PropTypes.array
 }
 
