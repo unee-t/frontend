@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import MenuItem from 'material-ui/MenuItem'
 import UserAvatar from './user-avatar'
 import themes from './user-themes.mss'
 
@@ -44,27 +45,26 @@ class UsersSearchList extends Component {
                   const userStatusComp = userStatusRenderer && userStatusRenderer(user)
                   const extraClasses = userClassNames ? userClassNames(user) : ''
                   return (
-                    <li key={idx}
-                      className={
-                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 ' + extraClasses
-                      }
-                      onClick={() => onUserClick(user)}
-                    >
-                      <div className='ml1'>
-                        <UserAvatar user={user} />
-                      </div>
-                      <div className='ml2 flex-grow overflow-hidden'>
-                        <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
-                          {user.name || user.login}
+                    <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={{padding: 0}}>
+                      <div className={
+                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 lh-title' + extraClasses
+                      }>
+                        <div className='ml1'>
+                          <UserAvatar user={user} />
                         </div>
-                        <div className='f7 gray ellipsis'>{user.role}</div>
-                      </div>
-                      {userStatusComp && (
-                        <div className='ml2'>
-                          {userStatusComp}
+                        <div className='ml2 flex-grow overflow-hidden'>
+                          <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
+                            {user.name || user.login}
+                          </div>
+                          <div className='f7 gray ellipsis'>{user.role}</div>
                         </div>
-                      )}
-                    </li>
+                        {userStatusComp && (
+                          <div className='ml2'>
+                            {userStatusComp}
+                          </div>
+                        )}
+                      </div>
+                    </MenuItem>
                   )
                 })}
               </ul>
