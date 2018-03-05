@@ -12,75 +12,12 @@ import { fitDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
+import PopoverButton from '../components/popover-button'
 
 import {
   detailLineIconColor,
   addPersonIconStyle
 } from './case.mui-styles'
-
-// import React, { Component } from 'react'
-import FlatButton from 'material-ui/FlatButton'
-// import FontIcon from 'material-ui/FontIcon'
-import Popover from 'material-ui/Popover'
-
-class PopoverButton extends Component {
-  constructor () {
-    super(...arguments)
-    this.state = {
-      popoverOpen: false,
-      popoverWidth: 100,
-      popoverMaxHeight: 1000
-    }
-    window.addEventListener('resize', this.handleWindowResize)
-  }
-  componentWillUnmount () {
-    window.removeEventListener('resize', this.handleWindowResize)
-  }
-  handleWindowResize = () => {
-    this.setState({
-      popoverMaxHeight: this.containerEl.offsetHeight - 38
-    })
-  }
-  handleOpen = evt => {
-    evt.preventDefault()
-    this.setState({
-      popoverOpen: true,
-      buttonEl: evt.currentTarget,
-      popoverWidth: evt.currentTarget.offsetWidth
-    })
-  }
-  render () {
-    const { popoverOpen, buttonEl, popoverWidth, popoverMaxHeight } = this.state
-    return (
-      <div className='w-100 overflow-hidden' ref={el => { this.containerEl = el }}>
-        <FlatButton style={{height: 'auto', width: '100%'}} onClick={this.handleOpen}>
-          <div className='flex ph2 ba b--moon-gray br2 items-center'>
-            <div className='mid-gray flex-grow ellipsis tl'>{this.props.buttonText}</div>
-            <FontIcon className='material-icons' color='var(--mid-gray)'>
-              {popoverOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
-            </FontIcon>
-          </div>
-        </FlatButton>
-        <div className='h5' />
-        <div className='h2-5' />
-        <Popover open={popoverOpen} anchorEl={buttonEl}
-          anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-          targetOrigin={{horizontal: 'left', vertical: 'top'}}
-          onRequestClose={() => this.setState({popoverOpen: false})}
-          style={{width: popoverWidth, marginTop: -1}}
-        >
-          <div className='w-100 flex flex-column' style={{maxHeight: popoverMaxHeight}}>
-            {this.props.children}
-          </div>
-        </Popover>
-      </div>
-    )
-  }
-}
-
-PopoverButton.propTypes = {
-  buttonText: PropTypes.string.isRequired
-}
 
 const IconDetailRowWrapper = props => (
   <div className={'bb b--gray-93 ph3 h2-5 flex items-center w-100' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
