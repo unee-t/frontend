@@ -14,6 +14,31 @@ const allowedTypes = [TYPE_ASSIGNED, TYPE_CC]
 
 const PendingInvitations = new Mongo.Collection(collectionName)
 
+export const unassignPending = caseId => {
+  Meteor.users.update({
+    invitedToCases: {
+      $elemMatch: {
+        caseId,
+        type: TYPE_ASSIGNED,
+        done: {$ne: true}
+      }
+    }
+  }, {
+    $set: {
+      'invitedToCases.$.type': TYPE_CC
+    }
+  })
+  PendingInvitations.update({
+    caseId,
+    type: TYPE_ASSIGNED,
+    done: {$ne: true}
+  }, {
+    $set: {
+      type: TYPE_CC
+    }
+  })
+}
+
 PendingInvitations.helpers({
   inviteeUser () {
     return Meteor.users.findOne({'bugzillaCreds.id': this.invitee})
@@ -131,28 +156,7 @@ Meteor.methods({
 
       // Checking if there's another user invited to be the assignee, changing it to be CC instead
       if (type === TYPE_ASSIGNED) {
-        Meteor.users.update({
-          invitedToCases: {
-            $elemMatch: {
-              caseId,
-              type,
-              done: {$ne: true}
-            }
-          }
-        }, {
-          $set: {
-            'invitedToCases.$.type': TYPE_CC
-          }
-        })
-        PendingInvitations.update({
-          caseId,
-          type,
-          done: {$ne: true}
-        }, {
-          $set: {
-            type: TYPE_CC
-          }
-        })
+        unassignPending(caseId)
       }
 
       // Updating the invitee user with the details of the invitation

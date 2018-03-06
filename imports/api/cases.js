@@ -7,6 +7,7 @@ import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
+import PendingInvitations, { unassignPending, TYPE_ASSIGNED } from './pending-invitations'
 
 export const collectionName = 'cases'
 export const caseFieldMapping = {
@@ -180,6 +181,80 @@ Meteor.methods({
           error: e
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+      }
+    }
+  },
+  [`${collectionName}.changeAssignee`] (email, caseId) {
+    check(email, String)
+    check(caseId, Number)
+
+    if (!emailValidator(email)) {
+      throw new Meteor.Error('Email is not valid')
+    }
+
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    const assigneeUser = Meteor.users.findOne({'emails.address': email})
+    if (!assigneeUser) {
+      throw new Meteor.Error('No such user to assign')
+    }
+    const {profile: {name}, bugzillaCreds: {login: userName, id}, _id} = assigneeUser
+
+    unassignPending(caseId)
+
+    const invitationMatcher = {
+      caseId,
+      invitee: id,
+      done: { $ne: true }
+    }
+    const isPending = !!PendingInvitations.findOne(invitationMatcher)
+    if (isPending) {
+      Meteor.users.update({
+        _id,
+        'invitedToCases.caseId': caseId
+      }, {
+        $set: {
+          'invitedToCases.$.type': TYPE_ASSIGNED
+        }
+      })
+      PendingInvitations.update(invitationMatcher, {
+        $set: {
+          type: TYPE_ASSIGNED
+        }
+      })
+    } else {
+      if (Meteor.isClient) {
+        Cases.update({id: caseId}, {
+          $set: {
+            assigned_to_detail: {
+              real_name: name,
+              name: userName,
+              email
+            },
+            assigned_to: userName
+          }
+        })
+      } else { // is server
+        const { callAPI } = bugzillaApi
+        const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
+        try {
+          callAPI('put', `/rest/bug/${caseId}`, {assigned_to: userName, token}, false, true)
+
+          const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
+          const { assigned_to, assigned_to_detail } = caseData.data.bugs[0]
+          console.log(`${email} was assigned to case ${caseId}`)
+          publicationObj.handleChanged(caseId, {assigned_to, assigned_to_detail})
+        } catch (e) {
+          console.error({
+            user: Meteor.userId(),
+            method: `${collectionName}.changeAssignee`,
+            args: [email, caseId],
+            error: e
+          })
+          throw new Meteor.Error('API error')
+        }
       }
     }
   }

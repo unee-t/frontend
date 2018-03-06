@@ -134,7 +134,7 @@ class CaseDetails extends Component {
           basePath={match.url} relPath='assign'
           title='Who should be assigned?'
           additionalOperationText='Assign to someone else'
-          potentialInvitees={unitUsers.filter(u => u.login !== resolvedAssignedUser.login)}
+          potentialInvitees={unitUsers}
           pendingInvitees={pendingUsers}
           selectControlsRenderer={({allInvitees, inputRefFn}) => (
             <div className='flex flex-column flex-grow'>
