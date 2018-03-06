@@ -44,6 +44,7 @@ if (Meteor.isServer) {
         }
       }, {
         fields: {
+          'emails.address': 1,
           'bugzillaCreds.id': 1,
           'bugzillaCreds.login': 1,
           profile: 1
@@ -126,6 +127,32 @@ Meteor.methods({
         console.log(`new user created for ${email}`)
 
         inviteeUser = Accounts.findUserByEmail(email)
+      }
+
+      // Checking if there's another user invited to be the assignee, changing it to be CC instead
+      if (type === TYPE_ASSIGNED) {
+        Meteor.users.update({
+          invitedToCases: {
+            $elemMatch: {
+              caseId,
+              type,
+              done: {$ne: true}
+            }
+          }
+        }, {
+          $set: {
+            'invitedToCases.$.type': TYPE_CC
+          }
+        })
+        PendingInvitations.update({
+          caseId,
+          type,
+          done: {$ne: true}
+        }, {
+          $set: {
+            type: TYPE_CC
+          }
+        })
       }
 
       // Updating the invitee user with the details of the invitation

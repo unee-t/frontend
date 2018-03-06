@@ -47,7 +47,7 @@ class UsersSearchList extends Component {
                   return (
                     <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={{padding: 0}}>
                       <div className={
-                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 lh-title' + extraClasses
+                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 lh-title ' + extraClasses
                       }>
                         <div className='ml1'>
                           <UserAvatar user={user} />

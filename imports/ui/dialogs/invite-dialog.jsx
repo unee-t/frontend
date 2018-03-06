@@ -136,7 +136,7 @@ class InviteDialog extends Component {
   render () {
     const {
       basePath, relPath, invitationState, onResetInvitation, pendingInvitees, selectControlsRenderer,
-      title
+      title, additionalOperationText
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
     const allInvitees = this.normalizedInviteeList
@@ -189,7 +189,7 @@ class InviteDialog extends Component {
                   &nbsp;so you could collaborate on this case.
                 </p>
                 <button className={simpleButtonClasses + ' mt4'} onClick={onResetInvitation}>
-                  Invite another user
+                  {additionalOperationText}
                 </button>
               </div>
             ) : (
@@ -286,6 +286,7 @@ InviteDialog.propTypes = {
   onResetInvitation: PropTypes.func.isRequired,
   invitationState: PropTypes.object.isRequired,
   selectControlsRenderer: PropTypes.func.isRequired,
+  additionalOperationText: PropTypes.string.isRequired,
   pendingInvitees: PropTypes.array
 }
 

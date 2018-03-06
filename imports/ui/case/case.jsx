@@ -55,7 +55,7 @@ export class Case extends Component {
     const { push } = routerRedux
     const {
       createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation,
-      clearWelcomeMessage, updateInvitedUserName
+      clearWelcomeMessage, updateInvitedUserName, assignNewUser, assignExistingUser
     } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
@@ -94,6 +94,10 @@ export class Case extends Component {
                   onNewUserInvited={
                     (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
                   }
+                  onNewUserAssigned={
+                    (email, role, isOccupant) => dispatch(assignNewUser(email, role, isOccupant, caseId, unitItem.id))
+                  }
+                  onExistingUserAssigned={user => dispatch(assignExistingUser(user.login, caseId))}
                   onResetInvitation={() => dispatch(clearInvitation())}
                   onSelectAttachment={this.navigateToAttachment.bind(this)}
                 />

@@ -106,15 +106,22 @@ class CaseDetails extends Component {
   )
 
   renderAssignedTo = (assignedUser, unitUsers, pendingInvitations) => {
-    const {
-      match, invitationState, onResetInvitation
-    } = this.props
-    const relevantInvitation = pendingInvitations.find(inv => inv.type === TYPE_ASSIGNED)
-    const pendingUser = relevantInvitation && relevantInvitation.inviteeUser()
+    const { match, invitationState, onResetInvitation, onNewUserAssigned, onExistingUserAssigned } = this.props
+    const pendingUsers = pendingInvitations.map(inv => {
+      const { bugzillaCreds: { login }, profile: { name }, emails: [{address: email}] } = inv.inviteeUser()
+      return {
+        name,
+        login,
+        email,
+        role: inv.role,
+        type: inv.type
+      }
+    })
+    const resolvedAssignedUser = pendingUsers.find(u => u.type === TYPE_ASSIGNED) || assignedUser
     return (
       <InfoItemContainer>
         {infoItemLabel('Assigned to:')}
-        {userInfoItem(assignedUser, themes.theme2, user => (
+        {userInfoItem(resolvedAssignedUser, themes.theme2, user => (
           <Link to={`${match.url}/assign`} className='link outline-0'>
             <IconButton>
               <FontIcon className='material-icons' color='#999'>edit</FontIcon>
@@ -123,22 +130,21 @@ class CaseDetails extends Component {
         ))}
         <InviteDialog
           {...{invitationState, onResetInvitation}}
-          onNewUserInvited={() => {}}
+          onNewUserInvited={onNewUserAssigned}
           basePath={match.url} relPath='assign'
           title='Who should be assigned?'
-          potentialInvitees={unitUsers
-            .filter(u => u.login !== assignedUser.login)
-          }
-          pendingInvitees={pendingUser ? [pendingUser] : []}
+          additionalOperationText='Assign to someone else'
+          potentialInvitees={unitUsers.filter(u => u.login !== resolvedAssignedUser.login)}
+          pendingInvitees={pendingUsers}
           selectControlsRenderer={({allInvitees, inputRefFn}) => (
             <div className='flex flex-column flex-grow'>
-              <PopoverButton buttonText={assignedUser.name || assignedUser.email || assignedUser.login}>
+              <PopoverButton buttonText={resolvedAssignedUser.name || resolvedAssignedUser.email}>
                 <div className='pa1 ba b--moon-gray br2 flex-grow flex flex-column'>
                   <UsersSearchList
                     users={allInvitees}
-                    onUserClick={user => {}}
+                    onUserClick={onExistingUserAssigned}
                     searchInputRef={inputRefFn}
-                    userClassNames={user => user === assignedUser ? 'bg-very-light-gray' : ''}
+                    userClassNames={user => user.login === resolvedAssignedUser.login ? 'bg-very-light-gray' : ''}
                     userStatusRenderer={user => user.pending && (
                       <span className='f6 silver i'>Pending</span>
                     )}
@@ -181,6 +187,7 @@ class CaseDetails extends Component {
           {...{onNewUserInvited, invitationState, onResetInvitation}}
           basePath={match.url} relPath='invite'
           title='Who should be invited?'
+          additionalOperationText='Invite another user'
           potentialInvitees={unitUsers
             .filter(u => u.login !== creator.login && u.login !== assigned.login)
             .map(u => Object.assign({alreadyInvited: invitedUsersEmails.includes(u.login)}, u))
@@ -292,6 +299,8 @@ CaseDetails.propTypes = {
   onRoleUserAdded: PropTypes.func.isRequired,
   onRoleUserRemoved: PropTypes.func.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
+  onNewUserAssigned: PropTypes.func.isRequired,
+  onExistingUserAssigned: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,
   invitationState: PropTypes.object.isRequired,
