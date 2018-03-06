@@ -81,10 +81,10 @@ export function assignNewUser (email, role, isOccupant, caseId, unitId) {
   }
 }
 
-export function assignExistingUser (email, caseId) {
+export function assignExistingUser (user, caseId) {
   return {
     type: ASSIGN_EXISTING_USER,
-    email,
+    user,
     caseId
   }
 }

@@ -138,7 +138,9 @@ class CaseDetails extends Component {
           pendingInvitees={pendingUsers}
           selectControlsRenderer={({allInvitees, inputRefFn}) => (
             <div className='flex flex-column flex-grow'>
-              <PopoverButton buttonText={resolvedAssignedUser.name || resolvedAssignedUser.email}>
+              <PopoverButton buttonText={
+                resolvedAssignedUser.name || resolvedAssignedUser.email || resolvedAssignedUser.login
+              }>
                 <div className='pa1 ba b--moon-gray br2 flex-grow flex flex-column'>
                   <UsersSearchList
                     users={allInvitees}

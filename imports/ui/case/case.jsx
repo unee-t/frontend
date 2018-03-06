@@ -97,7 +97,7 @@ export class Case extends Component {
                   onNewUserAssigned={
                     (email, role, isOccupant) => dispatch(assignNewUser(email, role, isOccupant, caseId, unitItem.id))
                   }
-                  onExistingUserAssigned={user => dispatch(assignExistingUser(user.login, caseId))}
+                  onExistingUserAssigned={user => dispatch(assignExistingUser(user, caseId))}
                   onResetInvitation={() => dispatch(clearInvitation())}
                   onSelectAttachment={this.navigateToAttachment.bind(this)}
                 />

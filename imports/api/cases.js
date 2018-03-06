@@ -34,6 +34,12 @@ export const getCaseUsers = (() => {
   })
 })()
 
+const denormalizeUser = ({login, name, email}) => ({
+  name: login,
+  real_name: name,
+  email
+})
+
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
@@ -184,35 +190,32 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.changeAssignee`] (email, caseId) {
-    check(email, String)
+  [`${collectionName}.changeAssignee`] (user, caseId) {
+    check(user, Object)
+    check(user.login, String)
     check(caseId, Number)
-
-    if (!emailValidator(email)) {
-      throw new Meteor.Error('Email is not valid')
-    }
 
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
 
-    const assigneeUser = Meteor.users.findOne({'emails.address': email})
-    if (!assigneeUser) {
-      throw new Meteor.Error('No such user to assign')
-    }
-    const {profile: {name}, bugzillaCreds: {login: userName, id}, _id} = assigneeUser
+    const assigneeUser = Meteor.users.findOne({'bugzillaCreds.login': user.login})
 
     unassignPending(caseId)
 
-    const invitationMatcher = {
-      caseId,
-      invitee: id,
-      done: { $ne: true }
+    let isPending, invitationMatcher
+    if (assigneeUser) {
+      invitationMatcher = {
+        caseId,
+        invitee: assigneeUser.bugzillaCreds.id,
+        done: { $ne: true }
+      }
+      isPending = !!PendingInvitations.findOne(invitationMatcher)
     }
-    const isPending = !!PendingInvitations.findOne(invitationMatcher)
+
     if (isPending) {
       Meteor.users.update({
-        _id,
+        'bugzillaCreds.login': user.login,
         'invitedToCases.caseId': caseId
       }, {
         $set: {
@@ -228,29 +231,25 @@ Meteor.methods({
       if (Meteor.isClient) {
         Cases.update({id: caseId}, {
           $set: {
-            assigned_to_detail: {
-              real_name: name,
-              name: userName,
-              email
-            },
-            assigned_to: userName
+            assigned_to_detail: denormalizeUser(user),
+            assigned_to: user.login
           }
         })
       } else { // is server
         const { callAPI } = bugzillaApi
         const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
         try {
-          callAPI('put', `/rest/bug/${caseId}`, {assigned_to: userName, token}, false, true)
+          callAPI('put', `/rest/bug/${caseId}`, {assigned_to: user.login, token}, false, true)
 
           const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
           const { assigned_to, assigned_to_detail } = caseData.data.bugs[0]
-          console.log(`${email} was assigned to case ${caseId}`)
+          console.log(`${user.login} was assigned to case ${caseId}`)
           publicationObj.handleChanged(caseId, {assigned_to, assigned_to_detail})
         } catch (e) {
           console.error({
             user: Meteor.userId(),
             method: `${collectionName}.changeAssignee`,
-            args: [email, caseId],
+            args: [user, caseId],
             error: e
           })
           throw new Meteor.Error('API error')
