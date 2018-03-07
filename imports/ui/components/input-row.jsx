@@ -1,24 +1,38 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import TextField from 'material-ui/TextField'
+import {
+  textInputFloatingLabelStyle,
+  textInputStyle,
+  textInputUnderlineFocusStyle
+} from '../components/form-controls.mui-styles'
 
 export default class InputRow extends Component {
   render () {
-    const type = this.props.inpType || 'text'
-    const inputClasses = 'pa2 input-reset ba bg-transparent w-100' + (this.props.inpAdditionalClass ? ' ' + this.props.inpAdditionalClass : '')
+    const { inpType, inpRef, label, placeholder, errorText, disabled, value, onChange } = this.props
+    const type = inpType || 'text'
     return (
-      <div className='mv3'>
-        <label className='db fw6 lh-copy f6' htmlFor={this.props.identifier}>{this.props.label}</label>
-        <input className={inputClasses} ref={this.props.inpRef} type={type} name={this.props.identifier} id={this.props.identifier} placeholder={this.props.placeholder} />
-      </div>
+      <TextField
+        floatingLabelText={label}
+        floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+        underlineFocusStyle={textInputUnderlineFocusStyle}
+        inputStyle={textInputStyle}
+        fullWidth
+        hintText={placeholder}
+        ref={inpRef}
+        {...{type, errorText, disabled, value, onChange}}
+      />
     )
   }
 }
 
 InputRow.propTypes = {
   label: PropTypes.string.isRequired,
-  identifier: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  value: PropTypes.any,
+  errorText: PropTypes.string,
   inpRef: PropTypes.func,
   inpType: PropTypes.string,
-  inpAdditionalClass: PropTypes.string,
+  disabled: PropTypes.bool,
   placeholder: PropTypes.string
 }
