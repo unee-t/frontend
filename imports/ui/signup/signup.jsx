@@ -2,42 +2,28 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { createContainer } from 'meteor/react-meteor-data'
 import { connect } from 'react-redux'
+import RaisedButton from 'material-ui/RaisedButton'
 
 import InputRow from '../components/input-row'
 import PasswordInput from '../components/password-input'
 import actions from './signup.actions'
+import LoginLayout from '../layouts/login-layout'
+import { emailValidator } from '../../util/validators'
 
 export class SignupPage extends Component {
   constructor () {
     super(...arguments)
-    this.info = {}
     this.state = {
-      existingBz: false
+      existingBz: false,
+      info: {
+        password: '',
+        bzLogin: '',
+        bzPass: ''
+      },
+      errorTexts: {}
     }
-  }
-  setMember (memName, el) {
-    this.info[memName] = el
-  }
-  handleSubmit (event) {
-    // Stopping default form behavior
-    event.preventDefault()
-    // Copying all the input values and trimming them
-    const signupInfo = Object.keys(this.info).reduce((all, curr) => {
-      if (this.info[curr]) {
-        all[curr] = this.info[curr].value.trim()
-      }
-      return all
-    }, {})
-    const { submitSignupInfo } = actions
-    this.props.dispatch(submitSignupInfo(signupInfo))
-  }
-  toggleExistingBz () {
-    this.setState({
-      existingBz: !this.state.existingBz
-    })
-  }
-  render () {
-    const inputs = [
+
+    this.inputs = [
       {
         label: 'Name',
         identifier: 'fullName',
@@ -57,40 +43,99 @@ export class SignupPage extends Component {
         label: 'Email',
         identifier: 'emailAddress',
         placeholder: 'Your email address',
-        type: 'email'
+        type: 'email',
+        onChange: evt => {
+          const { value } = evt.target
+          const { info, errorTexts } = this.state
+          this.setState({
+            info: Object.assign({}, info, {emailAddress: value}),
+            errorTexts: Object.assign({}, errorTexts, {
+              emailAddress: emailValidator(value) ? null : 'Email address is invalid'
+            })
+          })
+        }
       }
     ]
+
+    this.inputs.forEach(({identifier}) => { this.state.info[identifier] = '' })
+  }
+
+  makeInfoChange = infoMod => this.setState({
+    info: Object.assign({}, this.state.info, infoMod)
+  })
+
+  handleSubmit = (event) => {
+    // Stopping default form behavior
+    event.preventDefault()
+    if (!this.isFormValid()) return
+
+    const { info } = this.state
+
+    // Copying all the input values and trimming them
+    const signupInfo = Object.keys(info).reduce((all, curr) => {
+      if (info[curr]) {
+        all[curr] = info[curr].trim()
+      }
+      return all
+    }, {})
+    const { submitSignupInfo } = actions
+    this.props.dispatch(submitSignupInfo(signupInfo))
+  }
+  toggleExistingBz = () => {
+    this.setState({
+      existingBz: !this.state.existingBz
+    })
+  }
+  isFormValid = () => {
+    const { info, errorTexts, existingBz } = this.state
     return (
-      <div className='w-100'>
-        <main className='pa4 black-80'>
-          <h2 className='f3 fw6 ph0 mh0 tc'>Unee-T</h2>
-          <h3 className='f4 fw3 ph0 mh0 tc'>Sign up</h3>
-          <form className='measure center' onSubmit={this.handleSubmit.bind(this)}>
-            <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
-              <label className='pa0 ma0 lh-copy f6 pointer'>
-                <input type='checkbox' checked={this.state.existingBz} onChange={this.toggleExistingBz.bind(this)} ref='showBZ' /> Existing BZ user?
-              </label>
-              {this.state.existingBz ? (
-                <div className='ph3 b--black b--solid'>
-                  <h4>Bugzilla credentials</h4>
-                  <InputRow label='BZ login name' identifier='bzLogin' inpRef={el => this.setMember('bzLogin', el)} />
-                  <InputRow label='BZ password' identifier='bzPass' inptype='password' inpRef={el => this.setMember('bzPass', el)} />
-                </div>
-              ) : ''}
-              {inputs.map(({label, identifier, placeholder, type}, i) => (
-                <InputRow key={i} label={label} identifier={identifier} placeholder={placeholder} inpType={type} inpRef={el => this.setMember(identifier, el)} />
-                ))}
-              <PasswordInput inpRef={el => this.setMember('password', el)} />
-            </fieldset>
-            <div className='tc'>
-              <input className='b ph3 pv2 input-reset ba b--black bg-transparent grow pointer f6 dib' type='submit' value='Submit' />
-            </div>
-            <div className='lh-copy mt3'>
-              <Link className='f6 link dim black db' to='/'>Already registered? Log in!</Link>
-            </div>
-          </form>
-        </main>
-      </div>
+      this.inputs.filter(({identifier}) => !!info[identifier]).length === this.inputs.length && // All have a value
+      Object.keys(errorTexts).filter(key => !!errorTexts[key]).length === 0 && // No error messages
+      !!info.password && // Password has a value
+      (!existingBz || (!!info.bzLogin && !!info.bzPass)) // Not a BZ user, or is but creds are filled
+    )
+  }
+  render () {
+    const { info, existingBz, errorTexts } = this.state
+    return (
+      <LoginLayout subHeading='Sign up'
+        footerContent={
+          <div>
+            Already registered?
+            <Link className='f6 link dim b white' to='/'> Log in!</Link>
+          </div>
+        }
+      >
+        <form className='measure center' onSubmit={this.handleSubmit}>
+          <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
+            <label className='pa0 ma0 lh-copy f6 pointer mid-gray'>
+              <input type='checkbox' checked={existingBz} onChange={this.toggleExistingBz} /> Existing Bugzilla user?
+            </label>
+            {existingBz && (
+              <div className='ph3 b--black b--solid'>
+                <h4>Bugzilla credentials</h4>
+                <InputRow label='BZ login name' value={info.bzLogin} onChange={evt => this.makeInfoChange({
+                  bzLogin: evt.target.value
+                })} />
+                <InputRow label='BZ password' inpType='password' value={info.bzPass}
+                  onChange={evt => this.makeInfoChange({bzPass: evt.target.value})} />
+              </div>
+            )}
+            {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
+              <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
+                onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
+                errorText={errorTexts[identifier]}
+              />
+            ))}
+            <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
+          </fieldset>
+          <div className='mt3 tr'>
+            <RaisedButton label='Submit' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
+              disabled={!this.isFormValid()}
+            />
+          </div>
+        </form>
+      </LoginLayout>
     )
   }
 }

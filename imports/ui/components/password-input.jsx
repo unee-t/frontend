@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import Checkbox from 'material-ui/Checkbox'
+import FontIcon from 'material-ui/FontIcon'
+import InputRow from './input-row'
 
 export default class PasswordInput extends Component {
   constructor () {
@@ -9,27 +12,30 @@ export default class PasswordInput extends Component {
     }
   }
 
-  toggleShowPass () {
-    this.setState({
-      showPass: !this.state.showPass
-    })
-  }
-
   render () {
+    const { label, inpRef, onChange, value } = this.props
     return (
-      <div>
-        <div className='mv3'>
-          <label className='db fw6 lh-copy f6' htmlFor='password'>Password</label>
-          <input className='pa2 input-reset ba bg-transparent w-100 b' ref={this.props.inpRef} type={this.state.showPass ? 'text' : 'password'} name='password' />
+      <div className='relative'>
+        <InputRow
+          label={label || 'Password'} {...{inpRef, onChange, value}}
+          inpType={this.state.showPass ? 'text' : 'password'}
+        />
+        <div className='absolute bottom-1 right-0 tl'>
+          <Checkbox
+            checked={this.state.showPass}
+            onCheck={(evt, isChecked) => this.setState({showPass: isChecked})}
+            checkedIcon={<FontIcon color='var(--bondi-blue)' className='material-icons'>visibility</FontIcon>}
+            uncheckedIcon={<FontIcon className='material-icons'>visibility_off</FontIcon>}
+          />
         </div>
-        <label className='pa0 ma0 lh-copy f6 pointer'>
-          <input type='checkbox' checked={this.state.showPass} onChange={this.toggleShowPass.bind(this)} /> Show password
-        </label>
       </div>
     )
   }
 }
 
 PasswordInput.propTypes = {
-  inpRef: PropTypes.func.isRequired
+  inpRef: PropTypes.func,
+  label: PropTypes.string,
+  value: PropTypes.string,
+  onChange: PropTypes.func.isRequired
 }

@@ -7,7 +7,7 @@ import InputRow from './input-row.jsx'
 import { Meteor } from 'meteor/meteor'
 
 if (Meteor.isClient) {
-  describe('InputRow', () => {
+  xdescribe('InputRow', () => {
     it('should render appropriately for the required props', () => {
       const row = shallow(<InputRow label='test' identifier='test-ident' />)
       // Checking the label fits
