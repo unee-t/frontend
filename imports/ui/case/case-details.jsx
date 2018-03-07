@@ -2,13 +2,17 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link, withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
+import IconButton from 'material-ui/IconButton'
 import _ from 'lodash'
 import moment from 'moment'
 import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
-import InviteDialog from '../components/invite-dialog'
+import UsersSearchList from '../components/users-search-list'
+import InviteDialog from '../dialogs/invite-dialog'
+import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
+import PopoverButton from '../components/popover-button'
 
 import {
   detailLineIconColor,
@@ -44,13 +48,14 @@ const infoItemRow = (label, value) => (
   </InfoItemContainer>
 )
 
-const userInfoItem = (user, theme) => (
+const userInfoItem = (user, theme, rightRenderer) => (
   <div key={user.login} className={theme + ' flex pt2'}>
     <UserAvatar user={user} />
     <div className='ml2 pl1 flex-grow overflow-hidden'>
       <div className='mid-gray ellipsis'>{user.name || user.login}</div>
       <div className='mt1 f7 gray ellipsis'>{user.role || 'Administrator'}</div>
     </div>
+    {rightRenderer && rightRenderer(user)}
   </div>
 )
 
@@ -100,18 +105,66 @@ class CaseDetails extends Component {
     </div>
   )
 
-  renderAssignedTo = user => (
-    <InfoItemContainer>
-      {infoItemLabel('Assigned to:')}
-      {userInfoItem(user, themes.theme2)}
-    </InfoItemContainer>
-  )
+  renderAssignedTo = (assignedUser, unitUsers, pendingInvitations) => {
+    const { match, invitationState, onResetInvitation, onNewUserAssigned, onExistingUserAssigned } = this.props
+    const pendingUsers = pendingInvitations.map(inv => {
+      const { bugzillaCreds: { login }, profile: { name }, emails: [{address: email}] } = inv.inviteeUser()
+      return {
+        name,
+        login,
+        email,
+        role: inv.role,
+        type: inv.type
+      }
+    })
+    const resolvedAssignedUser = pendingUsers.find(u => u.type === TYPE_ASSIGNED) || assignedUser
+    return (
+      <InfoItemContainer>
+        {infoItemLabel('Assigned to:')}
+        {userInfoItem(resolvedAssignedUser, themes.theme2, user => (
+          <Link to={`${match.url}/assign`} className='link outline-0'>
+            <IconButton>
+              <FontIcon className='material-icons' color='#999'>edit</FontIcon>
+            </IconButton>
+          </Link>
+        ))}
+        <InviteDialog
+          {...{invitationState, onResetInvitation}}
+          onNewUserInvited={onNewUserAssigned}
+          basePath={match.url} relPath='assign'
+          title='Who should be assigned?'
+          additionalOperationText='Assign to someone else'
+          potentialInvitees={unitUsers}
+          pendingInvitees={pendingUsers}
+          selectControlsRenderer={({allInvitees, inputRefFn}) => (
+            <div className='flex flex-column flex-grow'>
+              <PopoverButton buttonText={
+                resolvedAssignedUser.name || resolvedAssignedUser.email || resolvedAssignedUser.login
+              }>
+                <div className='pa1 ba b--moon-gray br2 flex-grow flex flex-column'>
+                  <UsersSearchList
+                    users={allInvitees}
+                    onUserClick={onExistingUserAssigned}
+                    searchInputRef={inputRefFn}
+                    userClassNames={user => user.login === resolvedAssignedUser.login ? 'bg-very-light-gray' : ''}
+                    userStatusRenderer={user => user.pending && (
+                      <span className='f6 silver i'>Pending</span>
+                    )}
+                  />
+                </div>
+              </PopoverButton>
+            </div>
+          )}
+        />
+      </InfoItemContainer>
+    )
+  }
 
   renderPeopleInvolved = ({creator, assigned, subscribed}, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
-    const pendingUsers = pendingInvitations.map(inv => {
+    const pendingUsers = pendingInvitations.filter(inv => inv.type === TYPE_CC).map(inv => {
       const { bugzillaCreds: { login }, profile: { name } } = inv.inviteeUser()
       return {
         name,
@@ -119,6 +172,7 @@ class CaseDetails extends Component {
         role: inv.role
       }
     })
+    const invitedUsersEmails = subscribed.map(u => u.login)
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
@@ -132,11 +186,36 @@ class CaseDetails extends Component {
           <div className='ml2 pl1 bondi-blue'>Invite or remove users</div>
         </Link>
         <InviteDialog
+          {...{onNewUserInvited, invitationState, onResetInvitation}}
           basePath={match.url} relPath='invite'
-          potentialInvitees={unitUsers.filter(u => u.login !== creator.login && u.login !== assigned.login)}
+          title='Who should be invited?'
+          additionalOperationText='Invite another user'
+          potentialInvitees={unitUsers
+            .filter(u => u.login !== creator.login && u.login !== assigned.login)
+            .map(u => Object.assign({alreadyInvited: invitedUsersEmails.includes(u.login)}, u))
+          }
           pendingInvitees={pendingUsers}
-          invitedUserEmails={subscribed.map(u => u.login)}
-          {...{onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved}}
+          selectControlsRenderer={({allInvitees, inputRefFn}) => (
+            <UsersSearchList
+              users={allInvitees}
+              onUserClick={user => !user.pending && (user.alreadyInvited
+                ? onRoleUserRemoved(user)
+                : onRoleUserAdded(user))
+              }
+              searchInputRef={inputRefFn}
+              userStatusRenderer={user =>
+                user.pending ? (
+                  <span className='f6 silver i'>Pending</span>
+                ) : user.alreadyInvited ? (
+                  <div className='flex flex-column items-center justify-center'>
+                    <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
+                  </div>
+                ) : (
+                  <span className='f6 silver'>Invite</span>
+                )
+              }
+            />
+          )}
         />
       </InfoItemContainer>
     )
@@ -184,7 +263,7 @@ class CaseDetails extends Component {
         {this.renderStatusLine(caseItem)}
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
-        {this.renderAssignedTo(caseUserTypes.assigned)}
+        {this.renderAssignedTo(caseUserTypes.assigned, unitUsers, pendingInvitations)}
         {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
@@ -222,6 +301,8 @@ CaseDetails.propTypes = {
   onRoleUserAdded: PropTypes.func.isRequired,
   onRoleUserRemoved: PropTypes.func.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
+  onNewUserAssigned: PropTypes.func.isRequired,
+  onExistingUserAssigned: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,
   invitationState: PropTypes.object.isRequired,

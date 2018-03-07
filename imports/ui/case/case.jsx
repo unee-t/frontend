@@ -19,8 +19,8 @@ import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
+import WelcomeDialog from '../dialogs/welcome-dialog'
 import { formatDayText } from '../../util/formatters'
-import WelcomeDialog from '../components/welcome-dialog'
 import Preloader from '../preloader/preloader'
 
 export class Case extends Component {
@@ -55,7 +55,7 @@ export class Case extends Component {
     const { push } = routerRedux
     const {
       createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation,
-      clearWelcomeMessage, updateInvitedUserName
+      clearWelcomeMessage, updateInvitedUserName, assignNewUser, assignExistingUser
     } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
@@ -94,6 +94,10 @@ export class Case extends Component {
                   onNewUserInvited={
                     (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
                   }
+                  onNewUserAssigned={
+                    (email, role, isOccupant) => dispatch(assignNewUser(email, role, isOccupant, caseId, unitItem.id))
+                  }
+                  onExistingUserAssigned={user => dispatch(assignExistingUser(user, caseId))}
                   onResetInvitation={() => dispatch(clearInvitation())}
                   onSelectAttachment={this.navigateToAttachment.bind(this)}
                 />

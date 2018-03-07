@@ -20,7 +20,7 @@ export const withUsers = (loginNamesGetter, customQuery = _.identity, customProj
   (publishedItem, addingFn) => Meteor.users.find(customQuery({
     'bugzillaCreds.login': {$in: loginNamesGetter(publishedItem)}
   }, publishedItem), {
-    fields: customProj({profile: 1, 'bugzillaCreds.login': 1}, publishedItem)
+    fields: customProj({profile: 1, 'bugzillaCreds.login': 1, 'emails.address': 1}, publishedItem)
   }).forEach(user => {
     addingFn.call(this, 'users', user._id, user)
   })

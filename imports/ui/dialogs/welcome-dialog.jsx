@@ -4,14 +4,14 @@ import Dialog from 'material-ui/Dialog'
 import FontIcon from 'material-ui/FontIcon'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
-import UneeTIcon from './unee-t-icon'
+import UneeTIcon from '../components/unee-t-icon'
 
 import { closeDialogButtonStyle } from './generic-dialog.mui-styles'
 import {
   textInputFloatingLabelStyle,
   textInputStyle,
   textInputUnderlineFocusStyle
-} from './form-controls.mui-styles'
+} from '../components/form-controls.mui-styles'
 
 class WelcomeDialog extends Component {
   constructor () {
