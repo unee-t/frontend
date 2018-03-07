@@ -169,6 +169,10 @@
   min-height: 16rem;
 }
 
+.min-h-100vh {
+  min-height: 100vh;
+}
+
 .ml-auto {
   margin-left: auto;
 }
