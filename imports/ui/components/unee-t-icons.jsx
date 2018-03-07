@@ -12,12 +12,21 @@ UneeTIcon.propTypes = {
   isDarkType: PropTypes.bool
 }
 
-const UneeTLogoTextStyle = {
+const LogoTextStyle = {
   width: 106,
   height: 27
 }
-export const UneeTLogoText = props => (
-  <SvgIcon viewBox='0 0 106 27' style={UneeTLogoTextStyle} {...props}>
-    <use xlinkHref='/unee-t_wordmark.svg#logo-text' />
-  </SvgIcon>
-)
+export const UneeTLogoText = ({sizeMultiplier, textColor, ...moreProps}) => {
+  const mult = sizeMultiplier || 1
+  const { width, height } = LogoTextStyle
+  return (
+    <SvgIcon viewBox='0 0 106 27' {...moreProps}
+      style={{color: textColor || '#FFFFFF', width: width * mult, height: height * mult}}>
+      <use xlinkHref='/unee-t_wordmark.svg#logo-text' />
+    </SvgIcon>
+  )
+}
+UneeTLogoText.propTypes = {
+  textColor: PropTypes.string,
+  sizeMultiplier: PropTypes.number
+}
