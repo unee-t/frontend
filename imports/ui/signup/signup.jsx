@@ -15,7 +15,11 @@ export class SignupPage extends Component {
     super(...arguments)
     this.state = {
       existingBz: false,
-      info: {},
+      info: {
+        password: '',
+        bzLogin: '',
+        bzPass: ''
+      },
       errorTexts: {}
     }
 
@@ -52,6 +56,8 @@ export class SignupPage extends Component {
         }
       }
     ]
+
+    this.inputs.forEach(({identifier}) => { this.state.info[identifier] = '' })
   }
 
   makeInfoChange = infoMod => this.setState({
@@ -61,6 +67,8 @@ export class SignupPage extends Component {
   handleSubmit = (event) => {
     // Stopping default form behavior
     event.preventDefault()
+    if (!this.isFormValid()) return
+
     const { info } = this.state
 
     // Copying all the input values and trimming them
