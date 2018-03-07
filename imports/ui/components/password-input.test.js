@@ -7,7 +7,7 @@ import PasswordInput from './password-input.jsx'
 import { Meteor } from 'meteor/meteor'
 
 if (Meteor.isClient) {
-  describe('PasswordInput', () => {
+  xdescribe('PasswordInput', () => {
     let passInp
     beforeEach(() => {
       passInp = mount(<PasswordInput inpRef={() => {}} />)

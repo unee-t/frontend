@@ -9,7 +9,7 @@ import actions from './signup.actions'
 import { sinon } from 'meteor/practicalmeteor:sinon'
 
 if (Meteor.isClient) {
-  describe('Signup page', () => {
+  xdescribe('Signup page', () => {
     it('should render successfully', () => {
       const signup = shallow(<SignupPage />)
       expect(signup.find('form')).to.have.lengthOf(1)

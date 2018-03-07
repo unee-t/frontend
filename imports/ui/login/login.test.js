@@ -9,7 +9,7 @@ import actions from './login.actions'
 import { sinon } from 'meteor/practicalmeteor:sinon'
 
 if (Meteor.isClient) {
-  describe('Login page', () => {
+  xdescribe('Login page', () => {
     it('should render successfully', () => {
       const login = shallow(<LoginPage />)
       expect(login.find('form')).to.have.lengthOf(1)
