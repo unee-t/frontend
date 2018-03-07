@@ -1,0 +1,11 @@
+export ROOT_URL=https://demo.case.unee-t.com
+export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-demo ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
+export BUGZILLA_URL=https://demo.dashboard.unee-t.com
+export MONGO_PASSWORD=$(aws --profile uneet-demo ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
+export MONGO_CONNECT="cluster0-shard-00-00-fsa6w.mongodb.net:27017,cluster0-shard-00-01-fsa6w.mongodb.net:27017,cluster0-shard-00-02-fsa6w.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin"
+# couldinary.demo@unee-t.com
+export CLOUDINARY_PRESET=$(aws --profile uneet-demo ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
+export CLOUDINARY_URL=$(aws --profile uneet-demo ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
+export API_ACCESS_TOKEN=$(aws --profile uneet-demo ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
+export FROM_EMAIL="DEMO Unee-T Case <demo.case@unee-t.com>"
+export MAIL_URL=$(aws --profile uneet-demo ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)

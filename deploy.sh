@@ -8,19 +8,24 @@ show_help() {
 cat << EOF
 Usage: ${0##*/} [-p]
 
-By default, deploy to dev environment on AWS account 8126-4485-3088
+By default, deploy to dev environment on AWS account 812644853088
 
-	-p          PRODUCTION (1924-5899-3663)
+	-p          PRODUCTION 192458993663
+	-d          DEMO 915001051872
 
 EOF
 }
 
-while getopts "p" opt
+while getopts "pd" opt
 do
 	case $opt in
 		p)
 			echo "PRODUCTION" >&2
 			STAGE=prod
+			;;
+		d)
+			echo "DEMO" >&2
+			STAGE=demo
 			;;
 		*)
 			show_help >&2
