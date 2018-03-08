@@ -38,6 +38,12 @@ deploy:
    skip_cleanup: true
    on:
      tags: true
+ - provider: script
+   # deploy to demo, given that it's a tagged commit
+   script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET bash deploy.sh -d
+   skip_cleanup: true
+   on:
+     tags: true
 
 env:
   global:
