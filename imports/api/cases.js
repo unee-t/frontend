@@ -256,6 +256,46 @@ Meteor.methods({
         }
       }
     }
+  },
+  [`${collectionName}.editCaseField`] (caseId, fieldName, newValue) {
+    check(caseId, Number)
+    check(newValue, String)
+    const editableFields = [
+      'summary',
+      'cf_ipi_clust_1_solution',
+      'cf_ipi_clust_1_next_step'
+    ]
+    if (!editableFields.includes(fieldName)) {
+      throw new Meteor.Error('illegal fieldName')
+    }
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('not-authorized')
+    }
+
+    if (Meteor.isClient) {
+      Cases.update({id: caseId}, {
+        $set: {
+          [fieldName]: newValue
+        }
+      })
+    } else { // is server
+      const { callAPI } = bugzillaApi
+      const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
+      try {
+        callAPI('put', `/rest/bug/${caseId}`, {[fieldName]: newValue, token}, false, true)
+        const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
+        const updatedVal = caseData.data.bugs[0][fieldName]
+        publicationObj.handleChanged(caseId, {[fieldName]: updatedVal})
+      } catch (e) {
+        console.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.editCaseField`,
+          args: [caseId, fieldName, newValue],
+          error: e
+        })
+        throw new Meteor.Error('API error')
+      }
+    }
   }
 })
 

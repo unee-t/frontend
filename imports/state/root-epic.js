@@ -10,6 +10,7 @@ import { createCase } from './epics/create-case'
 import { fetchInvitationCredentials } from './epics/fetch-invitation-credentials'
 import { updateUserName } from './epics/update-invited-user-name'
 import { logoutUser } from './epics/logout-user'
+import { editCaseField } from './epics/edit-case-field'
 import { forgotPass } from './epics/forgot-pass'
 import { checkPassReset } from './epics/check-pass-reset'
 import { resetPass } from './epics/reset-pass'
@@ -26,6 +27,7 @@ export const rootEpic = combineEpics(
   fetchInvitationCredentials,
   updateUserName,
   logoutUser,
+  editCaseField,
   forgotPass,
   checkPassReset,
   resetPass
