@@ -67,11 +67,6 @@ ResetPass.propTypes = {
 }
 
 export default connect(
-  ({ passResetState: { isRequested, error } }) => {
-    console.log('isRequested', isRequested)
-    console.log('error', error)
-
-    return ({isRequested, asyncError: error})
-  } // map redux state to props
+  ({ passResetState: { isRequested, error } }) => ({isRequested, asyncError: error}) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
 }), ResetPass))

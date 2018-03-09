@@ -22,7 +22,6 @@ Accounts.onResetPasswordLink((token, done) => {
 export const checkPassReset = action$ => action$
   .ofType(CHECK_PASS_RESET)
   .switchMap(() => {
-    // const meteorSubject$ = new Subject()
     if (params) {
       return merge(
         of(Object.assign({type: PASS_RESET_REQUESTED}, params)),
