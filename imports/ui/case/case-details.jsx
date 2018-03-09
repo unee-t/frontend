@@ -13,6 +13,7 @@ import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
 import PopoverButton from '../components/popover-button'
+import EditableItem from '../components/editable-item'
 
 import {
   detailLineIconColor,
@@ -66,7 +67,8 @@ class CaseDetails extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      filterString: ''
+      filterString: '',
+      fieldValues: {}
     }
   }
   componentDidMount () {
@@ -75,7 +77,16 @@ class CaseDetails extends Component {
     })
   }
 
-  renderSummaryLine = ({id, summary}) => infoItemRow(`Case: #${id}`, summary)
+  // renderSummaryLine = ({id, summary}) => infoItemRow(`Case: #${id}`, summary)
+  renderSummaryLine = ({id, summary}) => (
+    <InfoItemContainer>
+      <EditableItem
+        label={`Case: #${id}`}
+        initialValue={summary}
+        onEdit={val => this.props.onFieldEdit('summary', val)}
+      />
+    </InfoItemContainer>
+  )
 
   renderUnitName = unitItem => infoItemRow('Unit name:', unitItem.name)
 
@@ -228,30 +239,39 @@ class CaseDetails extends Component {
       cf_ipi_clust_1_solution: solution,
       deadline
     }
-  ) => (
-    <div className='bt bw3 b--very-light-gray'>
-      {solution && (
+  ) => {
+    const { onFieldEdit } = this.props
+    return (
+      <div className='bt bw3 b--very-light-gray'>
         <InfoItemContainer>
-          {infoItemMembers('Solution', solution)}
+          <EditableItem
+            label='Solution'
+            initialValue={solution}
+            onEdit={val => onFieldEdit('cf_ipi_clust_1_solution', val)}
+            isMultiLine
+          />
           {deadline && (
             <div className='mt2 f7 warn-crimson b'>
               Deadline: {moment(deadline).format('D MMM YYYY, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
-      )}
-      {nextSteps && (
         <InfoItemContainer>
-          {infoItemMembers('Next steps:', nextSteps)}
+          <EditableItem
+            label='Next steps'
+            initialValue={nextSteps}
+            onEdit={val => onFieldEdit('cf_ipi_clust_1_next_step', val)}
+            isMultiLine
+          />
           {deadline && (
             <div className='mt2 f7 warn-crimson b'>
               Deadline: {moment(nextStepBy).format('D MMM YYYY, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
-      )}
-    </div>
-  )
+      </div>
+    )
+  }
 
   render () {
     const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
@@ -307,6 +327,7 @@ CaseDetails.propTypes = {
   unitUsers: PropTypes.array.isRequired,
   invitationState: PropTypes.object.isRequired,
   caseUserTypes: PropTypes.object.isRequired,
+  onFieldEdit: PropTypes.func.isRequired,
   pendingInvitations: PropTypes.array
 }
 

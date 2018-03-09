@@ -16,6 +16,7 @@ export const INVITATION_ERROR = 'invitation_error'
 export const INVITATION_CLEARED = 'invitation_cleared'
 export const CLEAR_WELCOME_MESSAGE = 'clear_welcome_message'
 export const UPDATE_INVITED_USER_NAME = 'update_invited_user_name'
+export const EDIT_CASE_FIELD = 'edit_case_field'
 
 export function createComment (text, caseId) {
   return {
@@ -105,5 +106,14 @@ export function updateInvitedUserName (name) {
   return {
     type: UPDATE_INVITED_USER_NAME,
     name
+  }
+}
+
+export function editCaseField (fieldName, newValue, caseId) {
+  return {
+    type: EDIT_CASE_FIELD,
+    fieldName,
+    newValue,
+    caseId
   }
 }
