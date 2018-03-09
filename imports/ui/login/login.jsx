@@ -63,7 +63,7 @@ export class LoginPage extends Component {
           )}
           <div className='flex mt3 items-center'>
             <div className='flex-grow lh-copy tl'>
-              <a href='#0' className='f6 link dim bondi-blue db'>Forgot password?</a>
+              <Link to='/forgot-pass' className='f6 link dim bondi-blue'>Forgot password?</Link>
             </div>
             <RaisedButton label='Login' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
               disabled={!password || !email || emailError}

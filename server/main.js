@@ -9,6 +9,7 @@ import '../imports/api/case-field-values'
 import '../imports/api/hooks/on-create-user'
 import '../imports/api/hooks/on-login'
 import '../imports/api/rest/rest-routes'
+import '../imports/config/email'
 
 const publicClientEnvVars = ['CLOUDINARY_URL', 'CLOUDINARY_PRESET']
 Object.assign(Meteor.settings.public, publicClientEnvVars.reduce((obj, key) => {
