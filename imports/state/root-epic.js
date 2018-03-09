@@ -10,6 +10,7 @@ import { createCase } from './epics/create-case'
 import { fetchInvitationCredentials } from './epics/fetch-invitation-credentials'
 import { updateUserName } from './epics/update-invited-user-name'
 import { logoutUser } from './epics/logout-user'
+import { editCaseField } from './epics/edit-case-field'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -22,5 +23,6 @@ export const rootEpic = combineEpics(
   createCase,
   fetchInvitationCredentials,
   updateUserName,
-  logoutUser
+  logoutUser,
+  editCaseField
 )
