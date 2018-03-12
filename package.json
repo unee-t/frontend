@@ -20,7 +20,7 @@
     "lodash": "^4.17.4",
     "material-ui": "^0.19.4",
     "meteor-node-stubs": "~0.2.4",
-    "moment": "^2.18.1",
+    "moment": "^2.19.3",
     "prop-types": "^15.5.10",
     "rand-token": "^0.4.0",
     "react": "^15.6.1",
