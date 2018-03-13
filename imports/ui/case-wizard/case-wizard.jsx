@@ -15,7 +15,7 @@ import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
 import Units, { collectionName as unitsCollName } from '../../api/units'
-import { caseFieldMapping } from '../../api/cases'
+import { caseServerFieldMapping } from '../../api/cases'
 import { createCase, clearError } from './case-wizard.actions'
 
 import {
@@ -144,7 +144,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[caseFieldMapping.category].values.map(({name}) => (
+                {fieldValues[caseServerFieldMapping.category].values.map(({name}) => (
                   <MenuItem key={name} value={name} primaryText={name} />
                 ))}
               </SelectField>
@@ -168,7 +168,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[caseFieldMapping.subCategory].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
+                {fieldValues[caseServerFieldMapping.subCategory].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
                   if (relatedCategory === category) {
                     all.push(
                       <MenuItem key={name} value={name} primaryText={name} />
@@ -199,7 +199,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[caseFieldMapping.priority].values.map(({name}) => (
+                {fieldValues[caseServerFieldMapping.priority].values.map(({name}) => (
                   <MenuItem key={name} value={name} primaryText={name} />
                 ))}
               </SelectField>
@@ -223,7 +223,7 @@ class CaseWizard extends Component {
                   })
                 })}
               >
-                {fieldValues[caseFieldMapping.severity].values.map(({name}) => (
+                {fieldValues[caseServerFieldMapping.severity].values.map(({name}) => (
                   <MenuItem key={name} value={name} primaryText={name} />
                 ))}
               </SelectField>
@@ -298,7 +298,7 @@ export default connect(
   })
 )(createContainer(
   () => {
-    const {category, subCategory, priority, severity} = caseFieldMapping
+    const {category, subCategory, priority, severity} = caseServerFieldMapping
     const enumFields = [category, subCategory, priority, severity]
     return ({
       loadingUnits: !Meteor.subscribe(`${unitsCollName}.forReporting`).ready(),

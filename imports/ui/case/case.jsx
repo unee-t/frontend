@@ -143,6 +143,7 @@ Case.propTypes = {
 let caseError, commentsError, unitError
 const CaseContainer = createContainer(props => {
   const { caseId } = props.match.params
+
   const caseHandle = Meteor.subscribe(`${casesCollName}.byId`, caseId, {
     onStop: error => {
       caseError = error
@@ -156,12 +157,12 @@ const CaseContainer = createContainer(props => {
   const currCase = Cases.findOne(caseId)
   let currUnit, unitHandle
   if (currCase) {
-    unitHandle = Meteor.subscribe(`${unitsCollName}.byId`, currCase.product, {
+    unitHandle = Meteor.subscribe(`${unitsCollName}.byId`, currCase.selectedUnit, {
       onStop: error => {
         unitError = error
       }
     })
-    currUnit = Units.findOne({name: currCase.product})
+    currUnit = Units.findOne({name: currCase.selectedUnit})
   }
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
   const unitRoles = currUnit && getUnitRoles(currUnit)
@@ -246,7 +247,7 @@ const MobileHeader = props => {
       }} />
       <Route path={match.url} render={routeProps => (
         <InnerAppBar
-          title={caseItem.summary} onBack={() => handleBack(props.match.isExact ? null : match.url)}
+          title={caseItem.title} onBack={() => handleBack(props.match.isExact ? null : match.url)}
         />
       )} />
     </Switch>

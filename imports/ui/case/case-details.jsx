@@ -77,13 +77,12 @@ class CaseDetails extends Component {
     })
   }
 
-  // renderSummaryLine = ({id, summary}) => infoItemRow(`Case: #${id}`, summary)
-  renderSummaryLine = ({id, summary}) => (
+  renderTitle = ({id, title}) => (
     <InfoItemContainer>
       <EditableItem
         label={`Case: #${id}`}
-        initialValue={summary}
-        onEdit={val => this.props.onFieldEdit('summary', val)}
+        initialValue={title}
+        onEdit={val => this.props.onFieldEdit('title', val)}
       />
     </InfoItemContainer>
   )
@@ -94,7 +93,7 @@ class CaseDetails extends Component {
 
   renderStatusLine = ({status}) => infoItemRow('Status:', status)
 
-  renderCategoriesLine = ({rep_platform: category, cf_ipi_clust_6_claim_type: subCategory}) => (
+  renderCategoriesLine = ({category, subCategory}) => (
     <InfoItemContainer>
       <div className='flex'>
         <div className='flex-grow'>
@@ -171,7 +170,7 @@ class CaseDetails extends Component {
     )
   }
 
-  renderPeopleInvolved = ({creator, assigned, subscribed}, unitUsers, pendingInvitations) => {
+  renderPeopleInvolved = ({creator, assignee, subscribed}, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
@@ -202,7 +201,7 @@ class CaseDetails extends Component {
           title='Who should be invited?'
           additionalOperationText='Invite another user'
           potentialInvitees={unitUsers
-            .filter(u => u.login !== creator.login && u.login !== assigned.login)
+            .filter(u => u.login !== creator.login && u.login !== assignee.login)
             .map(u => Object.assign({alreadyInvited: invitedUsersEmails.includes(u.login)}, u))
           }
           pendingInvitees={pendingUsers}
@@ -234,10 +233,10 @@ class CaseDetails extends Component {
 
   renderResolutions = (
     {
-      cf_ipi_clust_1_next_step: nextSteps,
-      cf_ipi_clust_1_next_step_by: nextStepBy,
-      cf_ipi_clust_1_solution: solution,
-      deadline
+      nextSteps,
+      nextStepsBy,
+      solution,
+      solutionDeadline
     }
   ) => {
     const { onFieldEdit } = this.props
@@ -247,12 +246,12 @@ class CaseDetails extends Component {
           <EditableItem
             label='Solution'
             initialValue={solution}
-            onEdit={val => onFieldEdit('cf_ipi_clust_1_solution', val)}
+            onEdit={val => onFieldEdit('solution', val)}
             isMultiLine
           />
-          {deadline && (
+          {solutionDeadline && (
             <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(deadline).format('D MMM YYYY, h:mm')} hrs
+              Deadline: {moment(solutionDeadline).format('D MMM YYYY, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
@@ -260,12 +259,12 @@ class CaseDetails extends Component {
           <EditableItem
             label='Next steps'
             initialValue={nextSteps}
-            onEdit={val => onFieldEdit('cf_ipi_clust_1_next_step', val)}
+            onEdit={val => onFieldEdit('nextSteps', val)}
             isMultiLine
           />
-          {deadline && (
+          {solutionDeadline && (
             <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(nextStepBy).format('D MMM YYYY, h:mm')} hrs
+              Deadline: {moment(nextStepsBy).format('D MMM YYYY, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
@@ -277,13 +276,13 @@ class CaseDetails extends Component {
     const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
     return (
       <div className='flex-grow overflow-auto h-100'>
-        {this.renderSummaryLine(caseItem)}
+        {this.renderTitle(caseItem)}
         {this.renderUnitName(unitItem)}
         {this.renderUnitDescription(unitItem)}
         {this.renderStatusLine(caseItem)}
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
-        {this.renderAssignedTo(caseUserTypes.assigned, unitUsers, pendingInvitations)}
+        {this.renderAssignedTo(caseUserTypes.assignee, unitUsers, pendingInvitations)}
         {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
