@@ -44,15 +44,14 @@ Meteor.methods({
 
     // Track accesses
     AccessInvitations.upsert({
-      userId: invitedUser._id,
-      caseId: invitedUser.invitedToCases[0].caseId
+      userId: invitedUser._id
     }, {
       $set: {
-        userId: invitedUser._id,
-        caseId: invitedUser.invitedToCases[0].caseId,
+        userId: invitedUser._id
       },
       $push: {
-        dates: new Date()
+        dates: new Date(),
+        cases: invitedUser.invitedToCases[0].caseId
       }
     })
 
