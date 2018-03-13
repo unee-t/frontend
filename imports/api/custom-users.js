@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 
-import AccessInvitations from './access-invitation'
+import AccessInvitations from './access-invitations'
 
 if (Meteor.isServer) {
   Meteor.publish('users.myBzLogin', function () {

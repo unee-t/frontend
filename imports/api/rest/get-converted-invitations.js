@@ -1,4 +1,4 @@
-import AccessInvitations from '../access-invitation'
+import AccessInvitations from '../access-invitations'
 // How many non-users have completed sign up via an invite?
 // We only count the first time, the user accessed any invite to any case
 // https://github.com/unee-t/frontend/issues/116
