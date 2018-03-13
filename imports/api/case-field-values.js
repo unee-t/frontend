@@ -2,7 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { callAPI } from '../util/bugzilla-api'
 
-const collectionName = 'caseFieldValues'
+import { caseServerFieldMapping, caseClientFieldMapping } from './cases'
+
+export const collectionName = 'caseFieldValues'
+
 if (Meteor.isServer) {
   Meteor.publish(`${collectionName}.fetchByName`, function (name) {
     if (!this.userId) {
@@ -11,9 +14,10 @@ if (Meteor.isServer) {
       return false
     }
     const {bugzillaCreds: { token }} = Meteor.users.findOne(this.userId)
+    const serverName = caseServerFieldMapping[name]
     try {
-      const {data: {fields: [fieldMeta]}} = callAPI('get', `/rest/field/bug/${name}`, {token}, false, true)
-      this.added(collectionName, fieldMeta.id.toString(), fieldMeta)
+      const {data: {fields: [fieldMeta]}} = callAPI('get', `/rest/field/bug/${serverName}`, {token}, false, true)
+      this.added(collectionName, fieldMeta.id.toString(), {...fieldMeta, name: caseClientFieldMapping[fieldMeta.name]})
       this.ready()
     } catch (e) {
       console.error('API error encountered', e, `${collectionName}.fetchByName`, this.userId)

@@ -32,10 +32,15 @@ export const caseServerFieldMapping = {
   creatorDetail: 'creator_detail'
 }
 
-const caseClientFieldMapping = Object.keys(caseServerFieldMapping).reduce((all, key) => ({
-  ...all,
-  [caseServerFieldMapping[key]]: key
-}), {})
+export const caseClientFieldMapping = Object.assign(
+  Object.keys(caseServerFieldMapping).reduce((all, key) => ({
+    ...all,
+    [caseServerFieldMapping[key]]: key
+  }), {}),
+  {
+    platform: 'category'
+  }
+)
 
 export const getCaseUsers = (() => {
   const normalizeUser = ({real_name: realName, email, name}) => ({
@@ -182,8 +187,9 @@ Meteor.methods({
     if (Meteor.isServer) {
       const { bugzillaCreds: { token } } = Meteor.users.findOne(Meteor.userId())
       const { callAPI } = bugzillaApi
+      console.log('Creating case', params)
       const normalizedParams = Object.keys(params).reduce((all, paramName) => {
-        all[caseServerFieldMapping[paramName]] = params[paramName]
+        all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
         return all
       }, {})
 
