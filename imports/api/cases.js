@@ -19,7 +19,6 @@ export const caseServerFieldMapping = {
   assignedUnitRole: 'component',
   title: 'summary',
   details: 'description',
-  status: 'status',
   nextSteps: 'cf_ipi_clust_1_next_step',
   nextStepsBy: 'cf_ipi_clust_1_next_step_by',
   solution: 'cf_ipi_clust_1_solution',
@@ -29,7 +28,8 @@ export const caseServerFieldMapping = {
   assignee: 'assigned_to',
   assigneeDetail: 'assigned_to_detail',
   creator: 'creator',
-  creatorDetail: 'creator_detail'
+  creatorDetail: 'creator_detail',
+  status: 'status'
 }
 
 export const caseClientFieldMapping = Object.assign(
@@ -293,7 +293,8 @@ Meteor.methods({
     const editableFields = [
       'title',
       'solution',
-      'nextSteps'
+      'nextSteps',
+      'status'
     ]
     if (!editableFields.includes(fieldName)) {
       throw new Meteor.Error('illegal fieldName')
