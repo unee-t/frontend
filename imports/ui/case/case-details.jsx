@@ -64,17 +64,26 @@ const mediaItemsPadding = 4 // Corresponds with the classNames set to the media 
 const mediaItemRowCount = 3
 
 class CaseDetails extends Component {
-  constructor () {
-    super(...arguments)
+  constructor (props) {
+    super(props)
     this.state = {
       filterString: '',
-      fieldValues: {}
+      fieldValues: {},
+      immediateStatusVal: props.caseItem.status
     }
   }
   componentDidMount () {
     this.setState({
       computedMediaItemWidth: Math.round((this.refs.media.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
     })
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.caseItem.status !== this.props.caseItem.status) {
+      this.setState({
+        immediateStatusVal: nextProps.caseItem.status
+      })
+    }
   }
 
   renderTitle = ({id, title}) => (
@@ -91,7 +100,30 @@ class CaseDetails extends Component {
 
   renderUnitDescription = unitItem => infoItemRow('Unit description:', unitItem.description)
 
-  renderStatusLine = ({status}) => infoItemRow('Status:', status)
+  renderStatusLine = ({status}, {status: statusDef}) => {
+    const { immediateStatusVal } = this.state
+
+    return (
+      <InfoItemContainer>
+        <EditableItem
+          label='Status:'
+          initialValue={status}
+          selectionList={
+            statusDef.values
+              .find(({name}) => name === immediateStatusVal)['can_change_to']
+              .map(({name}) => name)
+              .concat([immediateStatusVal])
+          }
+          onEdit={val => {
+            this.setState({
+              immediateStatusVal: val
+            })
+            this.props.onFieldEdit('status', val)
+          }}
+        />
+      </InfoItemContainer>
+    )
+  }
 
   renderCategoriesLine = ({category, subCategory}) => (
     <InfoItemContainer>
@@ -273,13 +305,13 @@ class CaseDetails extends Component {
   }
 
   render () {
-    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
+    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations, cfvDictionary } = this.props
     return (
       <div className='flex-grow overflow-auto h-100'>
         {this.renderTitle(caseItem)}
         {this.renderUnitName(unitItem)}
         {this.renderUnitDescription(unitItem)}
-        {this.renderStatusLine(caseItem)}
+        {this.renderStatusLine(caseItem, cfvDictionary)}
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(caseUserTypes.assignee, unitUsers, pendingInvitations)}
@@ -327,6 +359,7 @@ CaseDetails.propTypes = {
   invitationState: PropTypes.object.isRequired,
   caseUserTypes: PropTypes.object.isRequired,
   onFieldEdit: PropTypes.func.isRequired,
+  cfvDictionary: PropTypes.object.isRequired,
   pendingInvitations: PropTypes.array
 }
 

@@ -13,6 +13,7 @@ import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/
 import Comments from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import PendingInvitations, { collectionName as inviteCollName } from '../../api/pending-invitations'
+import CaseFieldValues, { collectionName as cfvCollName } from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
 import actions from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
@@ -45,12 +46,14 @@ export class Case extends Component {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
       attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes,
-      loadingPendingInvitations, pendingInvitations, showWelcomeDialog, invitedByDetails
+      loadingPendingInvitations, pendingInvitations, showWelcomeDialog, invitedByDetails,
+      cfvDictionary, loadingCfv, cfvError
     } = this.props
     if (caseError) return <h1>Error loading the case: {caseError.error.message}</h1>
     if (commentsError) return <h1>Error loading the comments: {commentsError.error.message}</h1>
     if (unitError) return <h1>Error loading the unit: {unitError.error.message}</h1>
-    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations) return <Preloader />
+    if (cfvError) return <h1>Error loading potential field values: {cfvError.error.message}</h1>
+    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations || loadingCfv) return <Preloader />
 
     const { push } = routerRedux
     const {
@@ -88,7 +91,16 @@ export class Case extends Component {
               )} />
               <Route path={detailsUrl} render={() => (
                 <CaseDetails
-                  {...{caseItem, comments, unitUsers, invitationState, unitItem, caseUserTypes, pendingInvitations}}
+                  {...{
+                    caseItem,
+                    comments,
+                    unitUsers,
+                    invitationState,
+                    unitItem,
+                    caseUserTypes,
+                    pendingInvitations,
+                    cfvDictionary
+                  }}
                   onRoleUserAdded={user => dispatch(addRoleUser(user.login, caseId))}
                   onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
                   onNewUserInvited={
@@ -131,6 +143,9 @@ Case.propTypes = {
   loadingUnit: PropTypes.bool,
   unitError: PropTypes.object,
   unitItem: PropTypes.object,
+  loadingCfv: PropTypes.bool,
+  cfvDictionary: PropTypes.object,
+  cfvError: PropTypes.object,
   unitUsers: PropTypes.array,
   caseUserTypes: PropTypes.object,
   invitationState: PropTypes.object.isRequired,
@@ -140,7 +155,7 @@ Case.propTypes = {
   invitedByDetails: PropTypes.object
 }
 
-let caseError, commentsError, unitError
+let caseError, commentsError, unitError, cfvError
 const CaseContainer = createContainer(props => {
   const { caseId } = props.match.params
 
@@ -164,6 +179,12 @@ const CaseContainer = createContainer(props => {
     })
     currUnit = Units.findOne({name: currCase.selectedUnit})
   }
+  const cfvHandle = Meteor.subscribe(`${cfvCollName}.fetchByName`, 'status', {
+    onStop: error => {
+      cfvError = error
+    }
+  })
+
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
   const unitRoles = currUnit && getUnitRoles(currUnit)
   const makeMatchingUser = bzUser => {
@@ -193,6 +214,9 @@ const CaseContainer = createContainer(props => {
         : mapUser(caseUserTypes[userType])
       return all
     }, {}),
+    loadingCfv: !cfvHandle.ready(),
+    cfvDictionary: cfvHandle.ready() ? {status: CaseFieldValues.findOne({name: 'status'})} : null,
+    cfvError,
     loadingPendingInvitations: !Meteor.subscribe(`${inviteCollName}.byCaseId`, parseInt(caseId)).ready(),
     pendingInvitations: PendingInvitations.find({caseId: parseInt(caseId)}).fetch()
   }
