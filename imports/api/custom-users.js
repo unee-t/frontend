@@ -2,6 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 
+import AccessInvitations from './access-invitations'
+
 if (Meteor.isServer) {
   Meteor.publish('users.myBzLogin', function () {
     if (!this.userId) {
@@ -39,6 +41,20 @@ Meteor.methods({
       }, codeMatcher)
     })
     if (!invitedUser) throw new Meteor.Error('The code is invalid or login is required first')
+
+    // Track accesses
+    AccessInvitations.upsert({
+      userId: invitedUser._id,
+      unitId: invitedUser.invitedToCases[0].unitId
+    }, {
+      $set: {
+        userId: invitedUser._id,
+        unitId: invitedUser.invitedToCases[0].unitId
+      },
+      $push: {
+        dates: new Date()
+      }
+    })
 
     // Keeping track of how many times the user used this invitation to access the system
     Meteor.users.update({
