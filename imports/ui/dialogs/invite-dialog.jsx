@@ -8,8 +8,10 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
+import { negate, flow } from 'lodash'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
+import { placeholderEmailMatcher } from '../../util/matchers'
 
 import {
   modalCustomContentStyle,
@@ -33,8 +35,6 @@ import {
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
 const simpleLinkClasses = 'link dib ' + simpleControlClasses
-
-const placeholderUsersMatcher = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
 
 const DIALOG_PADDING = 40
 
@@ -95,9 +95,10 @@ class InviteDialog extends Component {
   }
 
   normalizeInvitees (invitees) {
-    this.normalizedInviteeList = invitees.filter(
-      user => !user.login.match(placeholderUsersMatcher)
-    )
+    this.normalizedInviteeList = invitees.filter(flow([
+      u => u.login,
+      negate(placeholderEmailMatcher)
+    ]))
   }
 
   handleWindowResize = () => {
