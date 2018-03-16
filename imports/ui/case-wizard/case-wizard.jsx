@@ -17,6 +17,9 @@ import Preloader from '../preloader/preloader'
 import Units, { collectionName as unitsCollName } from '../../api/units'
 import { caseFieldMapping } from '../../api/cases'
 import { createCase, clearError } from './case-wizard.actions'
+import { placeholderEmailMatcher } from '../../util/matchers'
+import { emailValidator } from '../../util/validators'
+import InputRow from '../components/input-row'
 
 import {
   textInputFloatingLabelStyle,
@@ -42,15 +45,40 @@ class CaseWizard extends Component {
           priority: null,
           severity: null
         }
-      }
+      },
+      needsNewUser: false,
+      newUserEmail: ''
     }
   }
-  getSelectedUnitObj () {
+
+  componentDidUpdate (prevProps, prevState) {
+    if (prevState.needsNewUser !== this.state.needsNewUser && this.state.needsNewUser) {
+      this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
+      this.emailInputEl.focus()
+    }
+  }
+
+  getSelectedUnitObj = () => {
     const { selectedUnit } = this.state.inputValues.mandatory
     if (selectedUnit) {
       return this.props.units.filter(unit => unit.name === selectedUnit)[0]
     }
   }
+
+  handleRoleChanged = (evt, val) => {
+    const { inputValues } = this.state
+    const { default_assigned_to: assignedTo } = this.getSelectedUnitObj().components.find(({name}) => name === val)
+
+    this.setState({
+      inputValues: Object.assign({}, inputValues, {
+        mandatory: Object.assign({}, inputValues.mandatory, {
+          assignedUnitRole: val
+        })
+      }),
+      needsNewUser: placeholderEmailMatcher(assignedTo)
+    })
+  }
+
   render () {
     const {
       loadingUnits, loadingUserEmail, loadingFieldValues, fieldValues, units, userEmail, dispatch, error, inProgress
@@ -58,14 +86,14 @@ class CaseWizard extends Component {
     if (loadingUnits || loadingUserEmail || loadingFieldValues) {
       return <Preloader />
     }
-    const { inputValues } = this.state
+    const { inputValues, needsNewUser, newUserEmail } = this.state
     const { mandatory, optional } = inputValues
     const { selectedUnit, title, details, assignedUnitRole } = mandatory
     const { category, subCategory, priority, severity } = optional
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => this.props.dispatch(goBack())} />
-        <div className='overflow-auto flex-grow pa3'>
+        <div className='overflow-auto flex-grow pa3' ref='scrollPane'>
           <SelectField
             floatingLabelText='Relevant Unit *'
             fullWidth
@@ -82,7 +110,8 @@ class CaseWizard extends Component {
                   selectedUnit: val,
                   assignedUnitRole: null
                 })
-              })
+              }),
+              needsNewUser: false
             })}
           >
             {units.map(unit => (
@@ -233,13 +262,7 @@ class CaseWizard extends Component {
           {selectedUnit ? (
             <RadioButtonGroup
               name='assignedUnitRole'
-              onChange={(evt, val) => this.setState({
-                inputValues: Object.assign({}, inputValues, {
-                  mandatory: Object.assign({}, mandatory, {
-                    assignedUnitRole: val
-                  })
-                })
-              })}
+              onChange={this.handleRoleChanged}
               valueSelected={assignedUnitRole}
             >
               {
@@ -256,11 +279,28 @@ class CaseWizard extends Component {
               Select a unit first to see the relevant roles
             </p>
           )}
+          {needsNewUser && (
+            <div className='mt3'>
+              <p className='mv0 pv0 f7 warn-crimson lh-copy'>
+                There is no one in the role of {assignedUnitRole} for this unit it. Invite a new user to fill
+                the {assignedUnitRole} role or select a different role.
+              </p>
+              <InputRow label={`Email of the ${assignedUnitRole} to invite *`} value={newUserEmail} inpType='email'
+                onChange={(evt, val) => this.setState({newUserEmail: val})}
+                errorText={(newUserEmail && !emailValidator(newUserEmail)) ? 'Email address is invalid' : ''}
+                inpRef={el => { this.emailInputEl = el }}
+              />
+            </div>
+          )}
         </div>
         <div className='ph3 pb3'>
           <RaisedButton
             fullWidth backgroundColor='var(--bondi-blue)'
-            disabled={(Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0) || inProgress}
+            disabled={
+              (Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0) ||
+              inProgress ||
+              (needsNewUser && !emailValidator(newUserEmail))
+            }
             onClick={() => dispatch(createCase(Object.assign({}, mandatory, optional)))}
           >
             {inProgress ? (
