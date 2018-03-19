@@ -282,7 +282,7 @@ class CaseWizard extends Component {
           {needsNewUser && (
             <div className='mt3'>
               <p className='mv0 pv0 f7 warn-crimson lh-copy'>
-                There is no one in the role of {assignedUnitRole} for this unit it. Invite a new user to fill
+                There is no one in the role of {assignedUnitRole} for this unit yet. Invite a new user to fill
                 the {assignedUnitRole} role or select a different role.
               </p>
               <InputRow label={`Email of the ${assignedUnitRole} to invite *`} value={newUserEmail} inpType='email'
