@@ -7,7 +7,14 @@ import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
-import PendingInvitations, { unassignPending, TYPE_ASSIGNED } from './pending-invitations'
+import
+  PendingInvitations,
+  {
+    unassignPending,
+    createPendingInvitation,
+    findUnitRoleConflictErrors,
+    TYPE_ASSIGNED
+  } from './pending-invitations'
 
 export const collectionName = 'cases'
 export const caseServerFieldMapping = {
@@ -180,13 +187,40 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.insert`] (params) {
+  [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant }) {
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
     if (Meteor.isServer) {
       const { bugzillaCreds: { token } } = Meteor.users.findOne(Meteor.userId())
       const { callAPI } = bugzillaApi
+
+      let unitItem
+      try {
+        const unitResult = callAPI('get', `/rest/product/${params.selectedUnit}`, {token}, false, true)
+        unitItem = unitResult.data.products[0]
+      } catch (e) {
+        console.error(e)
+        throw new Meteor.Error('API error')
+      }
+
+      // Checking the role is valid
+      const relevantRole = unitItem.components.find(({ name }) => name === params.assignedUnitRole)
+      if (!relevantRole) {
+        throw new Meteor.Error(
+          `The designated role "${params.assignedUnitRole}" does not exist on the unit "${params.selectedUnit}"`
+        )
+      }
+      if (newUserEmail) {
+        const conflictError = findUnitRoleConflictErrors(
+          params.selectedUnit,
+          newUserEmail,
+          params.assignedUnitRole,
+          newUserIsOccupant
+        )
+        if (conflictError) throw new Meteor.Error('Could not create case for new assignee: ' + conflictError)
+      }
+
       console.log('Creating case', params)
       const normalizedParams = Object.keys(params).reduce((all, paramName) => {
         all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
@@ -200,11 +234,12 @@ Meteor.methods({
       normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
 
       normalizedParams.token = token
+      let newCaseId
       try {
-        const { data: { id: newCaseId } } = callAPI('post', '/rest/bug', normalizedParams, false, true)
+        const { data } = callAPI('post', '/rest/bug', normalizedParams, false, true)
+        newCaseId = data.id
         console.log(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
         // TODO: Add real time update handler usage
-        return {newCaseId}
       } catch (e) {
         // TODO: adopt this error format for other API errors too
         console.error({
@@ -215,6 +250,12 @@ Meteor.methods({
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
+      if (newUserEmail) {
+        createPendingInvitation(
+          newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED
+        )
+      }
+      return {newCaseId}
     }
   },
   [`${collectionName}.changeAssignee`] (user, caseId) {

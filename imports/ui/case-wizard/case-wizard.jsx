@@ -84,7 +84,23 @@ class CaseWizard extends Component {
     })
   }
 
-  checkFormValid = () => {
+  handleSubmit = evt => {
+    evt.preventDefault()
+    if (!this.checkFormInvalid()) {
+      const { inputValues: { mandatory, optional }, newUserEmail, newUserIsOccupant } = this.state
+      this.props.dispatch(createCase(
+        Object.assign(
+          {},
+          mandatory,
+          optional
+        ),
+        newUserEmail,
+        newUserIsOccupant
+      ))
+    }
+  }
+
+  checkFormInvalid = () => {
     const { inputValues: { mandatory }, needsNewUser, newUserEmail } = this.state
     return (
       (Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0) ||
@@ -106,16 +122,8 @@ class CaseWizard extends Component {
     const { category, subCategory, priority, severity } = optional
     return (
       <div className='full-height flex flex-column'>
-        <InnerAppBar title='New Case' onBack={() => this.props.dispatch(goBack())} />
-        <form onSubmit={() => {
-          this.checkFormValid() && dispatch(createCase(Object.assign(
-            {},
-            mandatory,
-            optional,
-            needsNewUser ? {newUserEmail, newUserIsOccupant} : {},
-            {unitId: units.find(({ name }) => selectedUnit).id}
-          )))
-        }}>
+        <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
+        <form onSubmit={this.handleSubmit}>
           <div className='overflow-auto flex-grow pa3' ref='scrollPane'>
             <SelectField
               floatingLabelText='Relevant Unit *'
@@ -196,7 +204,7 @@ class CaseWizard extends Component {
                     })
                   })}
                 >
-                  {fieldValues[caseFieldMapping.category].values.map(({name}) => (
+                  {fieldValues.category.values.map(({name}) => (
                     <MenuItem key={name} value={name} primaryText={name} />
                   ))}
                 </SelectField>
@@ -220,7 +228,7 @@ class CaseWizard extends Component {
                     })
                   })}
                 >
-                  {fieldValues[caseFieldMapping.subCategory].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
+                  {fieldValues.subCategory.values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
                     if (relatedCategory === category) {
                       all.push(
                         <MenuItem key={name} value={name} primaryText={name} />
@@ -251,7 +259,7 @@ class CaseWizard extends Component {
                     })
                   })}
                 >
-                  {fieldValues[caseFieldMapping.priority].values.map(({name}) => (
+                  {fieldValues.priority.values.map(({name}) => (
                     <MenuItem key={name} value={name} primaryText={name} />
                   ))}
                 </SelectField>
@@ -275,7 +283,7 @@ class CaseWizard extends Component {
                     })
                   })}
                 >
-                  {fieldValues[caseFieldMapping.severity].values.map(({name}) => (
+                  {fieldValues.severity.values.map(({name}) => (
                     <MenuItem key={name} value={name} primaryText={name} />
                   ))}
                 </SelectField>
@@ -329,7 +337,7 @@ class CaseWizard extends Component {
           <div className='ph3 pb3'>
             <RaisedButton
               fullWidth backgroundColor='var(--bondi-blue)'
-              disabled={this.checkFormValid()}
+              disabled={this.checkFormInvalid()}
               type='submit'
             >
               {inProgress ? (
