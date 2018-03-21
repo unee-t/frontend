@@ -10,6 +10,7 @@ import MenuItem from 'material-ui/MenuItem'
 import RaisedButton from 'material-ui/RaisedButton'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CircularProgress from 'material-ui/CircularProgress'
+import Checkbox from 'material-ui/Checkbox'
 import CaseFieldValues from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../dialogs/error-dialog'
@@ -17,7 +18,7 @@ import Preloader from '../preloader/preloader'
 import Units, { collectionName as unitsCollName } from '../../api/units'
 import { caseFieldMapping } from '../../api/cases'
 import { createCase, clearError } from './case-wizard.actions'
-import { placeholderEmailMatcher } from '../../util/matchers'
+import { placeholderEmailMatcher, roleCanBeOccupantMatcher } from '../../util/matchers'
 import { emailValidator } from '../../util/validators'
 import InputRow from '../components/input-row'
 
@@ -25,7 +26,8 @@ import {
   textInputFloatingLabelStyle,
   textInputStyle,
   textInputUnderlineFocusStyle,
-  selectInputIconStyle
+  selectInputIconStyle,
+  controlLabelStyle
 } from '../components/form-controls.mui-styles'
 
 class CaseWizard extends Component {
@@ -47,7 +49,9 @@ class CaseWizard extends Component {
         }
       },
       needsNewUser: false,
-      newUserEmail: ''
+      newUserEmail: '',
+      newUserCanBeOccupant: false,
+      newUserIsOccupant: false
     }
   }
 
@@ -75,8 +79,19 @@ class CaseWizard extends Component {
           assignedUnitRole: val
         })
       }),
-      needsNewUser: placeholderEmailMatcher(assignedTo)
+      needsNewUser: placeholderEmailMatcher(assignedTo),
+      newUserCanBeOccupant: roleCanBeOccupantMatcher(val),
+      newUserIsOccupant: false
     })
+  }
+
+  checkFormValid = () => {
+    const { inputValues: { mandatory }, needsNewUser, newUserEmail } = this.state
+    return (
+      (Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0) ||
+      this.props.inProgress ||
+      (needsNewUser && !emailValidator(newUserEmail))
+    )
   }
 
   render () {
@@ -86,234 +101,250 @@ class CaseWizard extends Component {
     if (loadingUnits || loadingUserEmail || loadingFieldValues) {
       return <Preloader />
     }
-    const { inputValues, needsNewUser, newUserEmail } = this.state
+    const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant } = this.state
     const { mandatory, optional } = inputValues
     const { selectedUnit, title, details, assignedUnitRole } = mandatory
     const { category, subCategory, priority, severity } = optional
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => this.props.dispatch(goBack())} />
-        <div className='overflow-auto flex-grow pa3' ref='scrollPane'>
-          <SelectField
-            floatingLabelText='Relevant Unit *'
-            fullWidth
-            floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-            labelStyle={textInputStyle}
-            menuStyle={textInputStyle}
-            iconStyle={selectInputIconStyle}
-            underlineFocusStyle={textInputUnderlineFocusStyle}
-            disabled={inProgress}
-            value={selectedUnit}
-            onChange={(evt, idx, val) => val !== selectedUnit && this.setState({
-              inputValues: Object.assign({}, inputValues, {
-                mandatory: Object.assign({}, mandatory, {
-                  selectedUnit: val,
-                  assignedUnitRole: null
-                })
-              }),
-              needsNewUser: false
-            })}
-          >
-            {units.map(unit => (
-              <MenuItem key={unit.name} value={unit.name} primaryText={unit.name} />
-            ))}
-          </SelectField>
-          <TextField
-            floatingLabelText='Case title *'
-            floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-            underlineFocusStyle={textInputUnderlineFocusStyle}
-            inputStyle={textInputStyle}
-            fullWidth
-            disabled={inProgress}
-            value={title}
-            onChange={evt => this.setState({
-              inputValues: Object.assign({}, inputValues, {
-                mandatory: Object.assign({}, mandatory, {
-                  title: evt.target.value
-                })
-              })
-            })}
-          />
-          <TextField
-            floatingLabelText='Details *'
-            floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-            underlineFocusStyle={textInputUnderlineFocusStyle}
-            textareaStyle={textInputStyle}
-            multiLine
-            rowsMax={3}
-            fullWidth
-            disabled={inProgress}
-            value={details}
-            onChange={evt => this.setState({
-              inputValues: Object.assign({}, inputValues, {
-                mandatory: Object.assign({}, mandatory, {
-                  details: evt.target.value
-                })
-              })
-            })}
-          />
-          <div className='flex'>
-            <div className='flex-grow mr2'>
-              <SelectField
-                floatingLabelText='Category'
-                fullWidth
-                floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                labelStyle={textInputStyle}
-                menuStyle={textInputStyle}
-                iconStyle={selectInputIconStyle}
-                underlineFocusStyle={textInputUnderlineFocusStyle}
-                disabled={inProgress}
-                value={category}
-                onChange={(evt, idx, val) => val !== category && this.setState({
-                  inputValues: Object.assign({}, inputValues, {
-                    optional: Object.assign({}, optional, {
-                      category: val,
-                      subCategory: null
-                    })
+        <form onSubmit={() => {
+          this.checkFormValid() && dispatch(createCase(Object.assign(
+            {},
+            mandatory,
+            optional,
+            needsNewUser ? {newUserEmail, newUserIsOccupant} : {},
+            {unitId: units.find(({ name }) => selectedUnit).id}
+          )))
+        }}>
+          <div className='overflow-auto flex-grow pa3' ref='scrollPane'>
+            <SelectField
+              floatingLabelText='Relevant Unit *'
+              fullWidth
+              floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+              labelStyle={textInputStyle}
+              menuStyle={textInputStyle}
+              iconStyle={selectInputIconStyle}
+              underlineFocusStyle={textInputUnderlineFocusStyle}
+              disabled={inProgress}
+              value={selectedUnit}
+              onChange={(evt, idx, val) => val !== selectedUnit && this.setState({
+                inputValues: Object.assign({}, inputValues, {
+                  mandatory: Object.assign({}, mandatory, {
+                    selectedUnit: val,
+                    assignedUnitRole: null
                   })
-                })}
-              >
-                {fieldValues[caseFieldMapping.category].values.map(({name}) => (
-                  <MenuItem key={name} value={name} primaryText={name} />
-                ))}
-              </SelectField>
-            </div>
-            <div className='flex-grow ml2'>
-              <SelectField
-                floatingLabelText='Sub-category'
-                fullWidth
-                floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                labelStyle={textInputStyle}
-                menuStyle={textInputStyle}
-                iconStyle={selectInputIconStyle}
-                underlineFocusStyle={textInputUnderlineFocusStyle}
-                disabled={!category || inProgress}
-                value={subCategory}
-                onChange={(evt, idx, val) => this.setState({
-                  inputValues: Object.assign({}, inputValues, {
-                    optional: Object.assign({}, optional, {
-                      subCategory: val
-                    })
-                  })
-                })}
-              >
-                {fieldValues[caseFieldMapping.subCategory].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
-                  if (relatedCategory === category) {
-                    all.push(
-                      <MenuItem key={name} value={name} primaryText={name} />
-                    )
-                  }
-                  return all
-                }, [])}
-              </SelectField>
-            </div>
-          </div>
-          <div className='flex'>
-            <div className='flex-grow mr2'>
-              <SelectField
-                floatingLabelText='Priority'
-                fullWidth
-                floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                labelStyle={textInputStyle}
-                menuStyle={textInputStyle}
-                iconStyle={selectInputIconStyle}
-                underlineFocusStyle={textInputUnderlineFocusStyle}
-                disabled={inProgress}
-                value={priority}
-                onChange={(evt, idx, val) => this.setState({
-                  inputValues: Object.assign({}, inputValues, {
-                    optional: Object.assign({}, optional, {
-                      priority: val
-                    })
-                  })
-                })}
-              >
-                {fieldValues[caseFieldMapping.priority].values.map(({name}) => (
-                  <MenuItem key={name} value={name} primaryText={name} />
-                ))}
-              </SelectField>
-            </div>
-            <div className='flex-grow ml2'>
-              <SelectField
-                floatingLabelText='Severity'
-                fullWidth
-                floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                labelStyle={textInputStyle}
-                menuStyle={textInputStyle}
-                iconStyle={selectInputIconStyle}
-                underlineFocusStyle={textInputUnderlineFocusStyle}
-                disabled={inProgress}
-                value={severity}
-                onChange={(evt, idx, val) => this.setState({
-                  inputValues: Object.assign({}, inputValues, {
-                    optional: Object.assign({}, optional, {
-                      severity: val
-                    })
-                  })
-                })}
-              >
-                {fieldValues[caseFieldMapping.severity].values.map(({name}) => (
-                  <MenuItem key={name} value={name} primaryText={name} />
-                ))}
-              </SelectField>
-            </div>
-          </div>
-          <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
-          {selectedUnit ? (
-            <RadioButtonGroup
-              name='assignedUnitRole'
-              onChange={this.handleRoleChanged}
-              valueSelected={assignedUnitRole}
+                }),
+                needsNewUser: false
+              })}
             >
-              {
-                this.getSelectedUnitObj().components
-                  .map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
-                    <RadioButton
-                      key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} disabled={inProgress}
-                    />
-                  ))
-              }
-            </RadioButtonGroup>
-          ) : (
-            <p className='pv0 silver i'>
-              Select a unit first to see the relevant roles
-            </p>
-          )}
-          {needsNewUser && (
-            <div className='mt3'>
-              <p className='mv0 pv0 f7 warn-crimson lh-copy'>
-                There is no one in the role of {assignedUnitRole} for this unit yet. Invite a new user to fill
-                the {assignedUnitRole} role or select a different role.
-              </p>
-              <InputRow label={`Email of the ${assignedUnitRole} to invite *`} value={newUserEmail} inpType='email'
-                onChange={(evt, val) => this.setState({newUserEmail: val})}
-                errorText={(newUserEmail && !emailValidator(newUserEmail)) ? 'Email address is invalid' : ''}
-                inpRef={el => { this.emailInputEl = el }}
-              />
-            </div>
-          )}
-        </div>
-        <div className='ph3 pb3'>
-          <RaisedButton
-            fullWidth backgroundColor='var(--bondi-blue)'
-            disabled={
-              (Object.keys(mandatory).filter(fieldName => !mandatory[fieldName]).length > 0) ||
-              inProgress ||
-              (needsNewUser && !emailValidator(newUserEmail))
-            }
-            onClick={() => dispatch(createCase(Object.assign({}, mandatory, optional)))}
-          >
-            {inProgress ? (
-              <div className='absolute top-0 right-0 bottom-0 left-0'>
-                <CircularProgress color='white' size={30} />
+              {units.map(unit => (
+                <MenuItem key={unit.name} value={unit.name} primaryText={unit.name} />
+              ))}
+            </SelectField>
+            <TextField
+              floatingLabelText='Case title *'
+              floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+              underlineFocusStyle={textInputUnderlineFocusStyle}
+              inputStyle={textInputStyle}
+              fullWidth
+              disabled={inProgress}
+              value={title}
+              onChange={evt => this.setState({
+                inputValues: Object.assign({}, inputValues, {
+                  mandatory: Object.assign({}, mandatory, {
+                    title: evt.target.value
+                  })
+                })
+              })}
+            />
+            <TextField
+              floatingLabelText='Details *'
+              floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+              underlineFocusStyle={textInputUnderlineFocusStyle}
+              textareaStyle={textInputStyle}
+              multiLine
+              rowsMax={3}
+              fullWidth
+              disabled={inProgress}
+              value={details}
+              onChange={evt => this.setState({
+                inputValues: Object.assign({}, inputValues, {
+                  mandatory: Object.assign({}, mandatory, {
+                    details: evt.target.value
+                  })
+                })
+              })}
+            />
+            <div className='flex'>
+              <div className='flex-grow mr2'>
+                <SelectField
+                  floatingLabelText='Category'
+                  fullWidth
+                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+                  labelStyle={textInputStyle}
+                  menuStyle={textInputStyle}
+                  iconStyle={selectInputIconStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
+                  disabled={inProgress}
+                  value={category}
+                  onChange={(evt, idx, val) => val !== category && this.setState({
+                    inputValues: Object.assign({}, inputValues, {
+                      optional: Object.assign({}, optional, {
+                        category: val,
+                        subCategory: null
+                      })
+                    })
+                  })}
+                >
+                  {fieldValues[caseFieldMapping.category].values.map(({name}) => (
+                    <MenuItem key={name} value={name} primaryText={name} />
+                  ))}
+                </SelectField>
               </div>
+              <div className='flex-grow ml2'>
+                <SelectField
+                  floatingLabelText='Sub-category'
+                  fullWidth
+                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+                  labelStyle={textInputStyle}
+                  menuStyle={textInputStyle}
+                  iconStyle={selectInputIconStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
+                  disabled={!category || inProgress}
+                  value={subCategory}
+                  onChange={(evt, idx, val) => this.setState({
+                    inputValues: Object.assign({}, inputValues, {
+                      optional: Object.assign({}, optional, {
+                        subCategory: val
+                      })
+                    })
+                  })}
+                >
+                  {fieldValues[caseFieldMapping.subCategory].values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
+                    if (relatedCategory === category) {
+                      all.push(
+                        <MenuItem key={name} value={name} primaryText={name} />
+                      )
+                    }
+                    return all
+                  }, [])}
+                </SelectField>
+              </div>
+            </div>
+            <div className='flex'>
+              <div className='flex-grow mr2'>
+                <SelectField
+                  floatingLabelText='Priority'
+                  fullWidth
+                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+                  labelStyle={textInputStyle}
+                  menuStyle={textInputStyle}
+                  iconStyle={selectInputIconStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
+                  disabled={inProgress}
+                  value={priority}
+                  onChange={(evt, idx, val) => this.setState({
+                    inputValues: Object.assign({}, inputValues, {
+                      optional: Object.assign({}, optional, {
+                        priority: val
+                      })
+                    })
+                  })}
+                >
+                  {fieldValues[caseFieldMapping.priority].values.map(({name}) => (
+                    <MenuItem key={name} value={name} primaryText={name} />
+                  ))}
+                </SelectField>
+              </div>
+              <div className='flex-grow ml2'>
+                <SelectField
+                  floatingLabelText='Severity'
+                  fullWidth
+                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+                  labelStyle={textInputStyle}
+                  menuStyle={textInputStyle}
+                  iconStyle={selectInputIconStyle}
+                  underlineFocusStyle={textInputUnderlineFocusStyle}
+                  disabled={inProgress}
+                  value={severity}
+                  onChange={(evt, idx, val) => this.setState({
+                    inputValues: Object.assign({}, inputValues, {
+                      optional: Object.assign({}, optional, {
+                        severity: val
+                      })
+                    })
+                  })}
+                >
+                  {fieldValues[caseFieldMapping.severity].values.map(({name}) => (
+                    <MenuItem key={name} value={name} primaryText={name} />
+                  ))}
+                </SelectField>
+              </div>
+            </div>
+            <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
+            {selectedUnit ? (
+              <RadioButtonGroup
+                name='assignedUnitRole'
+                onChange={this.handleRoleChanged}
+                valueSelected={assignedUnitRole}
+              >
+                {
+                  this.getSelectedUnitObj().components
+                    .map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
+                      <RadioButton
+                        key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} disabled={inProgress}
+                      />
+                    ))
+                }
+              </RadioButtonGroup>
             ) : (
-              <span className='white f4 b'>
+              <p className='pv0 silver i'>
+                Select a unit first to see the relevant roles
+              </p>
+            )}
+            {needsNewUser && (
+              <div className='mt3'>
+                <p className='mv0 pv0 f7 warn-crimson lh-copy'>
+                  There is no one in the role of {assignedUnitRole} for this unit yet. Invite a new user to fill
+                  the {assignedUnitRole} role or select a different role.
+                </p>
+                <InputRow label={`Email of the ${assignedUnitRole} to invite *`} value={newUserEmail} inpType='email'
+                  onChange={(evt, val) => this.setState({newUserEmail: val})}
+                  errorText={(newUserEmail && !emailValidator(newUserEmail)) ? 'Email address is invalid' : ''}
+                  inpRef={el => { this.emailInputEl = el }}
+                  disabled={inProgress}
+                />
+                {newUserCanBeOccupant && (
+                  <Checkbox
+                    label={`This ${assignedUnitRole} is also the occupant of this unit`}
+                    labelStyle={controlLabelStyle}
+                    checked={newUserIsOccupant}
+                    onCheck={(evt, isChecked) => { this.setState({newUserIsOccupant: isChecked}) }}
+                    disabled={inProgress}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+          <div className='ph3 pb3'>
+            <RaisedButton
+              fullWidth backgroundColor='var(--bondi-blue)'
+              disabled={this.checkFormValid()}
+              type='submit'
+            >
+              {inProgress ? (
+                <div className='absolute top-0 right-0 bottom-0 left-0'>
+                  <CircularProgress color='white' size={30} />
+                </div>
+              ) : (
+                <span className='white f4 b'>
                 Add Case
               </span>
-            )}
-          </RaisedButton>
-        </div>
+              )}
+            </RaisedButton>
+          </div>
+        </form>
         <ErrorDialog show={!!error} text={error || ''} onDismissed={() => dispatch(clearError())} />
       </div>
     )
