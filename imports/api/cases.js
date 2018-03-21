@@ -10,7 +10,7 @@ import { emailValidator } from '../util/validators'
 import PendingInvitations, { unassignPending, TYPE_ASSIGNED } from './pending-invitations'
 
 export const collectionName = 'cases'
-export const caseFieldMapping = {
+export const caseServerFieldMapping = {
   category: 'rep_platform',
   subCategory: 'cf_ipi_clust_6_claim_type',
   priority: 'priority',
@@ -18,8 +18,29 @@ export const caseFieldMapping = {
   selectedUnit: 'product',
   assignedUnitRole: 'component',
   title: 'summary',
-  details: 'description'
+  details: 'description',
+  nextSteps: 'cf_ipi_clust_1_next_step',
+  nextStepsBy: 'cf_ipi_clust_1_next_step_by',
+  solution: 'cf_ipi_clust_1_solution',
+  solutionDeadline: 'deadline',
+  involvedList: 'cc',
+  involvedListDetail: 'cc_detail',
+  assignee: 'assigned_to',
+  assigneeDetail: 'assigned_to_detail',
+  creator: 'creator',
+  creatorDetail: 'creator_detail',
+  status: 'status'
 }
+
+export const caseClientFieldMapping = Object.assign(
+  Object.keys(caseServerFieldMapping).reduce((all, key) => ({
+    ...all,
+    [caseServerFieldMapping[key]]: key
+  }), {}),
+  {
+    platform: 'category'
+  }
+)
 
 export const getCaseUsers = (() => {
   const normalizeUser = ({real_name: realName, email, name}) => ({
@@ -28,9 +49,9 @@ export const getCaseUsers = (() => {
     email
   })
   return caseItem => ({
-    creator: normalizeUser(caseItem.creator_detail),
-    assigned: normalizeUser(caseItem.assigned_to_detail),
-    subscribed: caseItem.cc_detail.map(normalizeUser)
+    creator: normalizeUser(caseItem.creatorDetail),
+    assignee: normalizeUser(caseItem.assigneeDetail),
+    subscribed: caseItem.involvedListDetail.map(normalizeUser)
   })
 })()
 
@@ -40,10 +61,15 @@ const denormalizeUser = ({login, name, email}) => ({
   email
 })
 
+const transformCaseForClient = bug => Object.keys(bug).reduce((all, key) => ({
+  ...all,
+  [caseClientFieldMapping[key] || key]: bug[key]
+}), {})
+
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
-  dataResolver: data => data.bugs
+  dataResolver: data => data.bugs.map(transformCaseForClient)
 }
 
 const MAX_RESULTS = 50
@@ -88,11 +114,11 @@ if (Meteor.isServer) {
     addedMatcherFactory: strQuery => {
       const { v1: userIdentifier } = JSON.parse(strQuery)
       return caseItem => {
-        const { assigned_to: assignedTo, creator, cc } = caseItem
+        const { assignee, creator, involvedList } = transformCaseForClient(caseItem)
         return (
-          userIdentifier === assignedTo ||
+          userIdentifier === assignee ||
           userIdentifier === creator ||
-          cc.includes(userIdentifier)
+          involvedList.includes(userIdentifier)
         )
       }
     }
@@ -120,10 +146,10 @@ Meteor.methods({
       const opType = isAdd ? '$push' : '$pull'
       Cases.update({id: caseId}, {
         [opType]: {
-          cc: email
+          involvedList: email
         },
         [opType]: {
-          cc_detail: {name: email}
+          involvedListDetail: {name: email}
         }
       })
     } else {
@@ -140,9 +166,9 @@ Meteor.methods({
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const { cc, cc_detail } = caseData.data.bugs[0]
+        const { involvedList, involvedListDetail } = transformCaseForClient(caseData.data.bugs[0])
         console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
-        publicationObj.handleChanged(caseId, {cc, cc_detail})
+        publicationObj.handleChanged(caseId, {involvedList, involvedListDetail})
       } catch (e) {
         console.error({
           user: Meteor.userId(),
@@ -161,16 +187,17 @@ Meteor.methods({
     if (Meteor.isServer) {
       const { bugzillaCreds: { token } } = Meteor.users.findOne(Meteor.userId())
       const { callAPI } = bugzillaApi
+      console.log('Creating case', params)
       const normalizedParams = Object.keys(params).reduce((all, paramName) => {
-        all[caseFieldMapping[paramName]] = params[paramName]
+        all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
         return all
       }, {})
 
       // Hardcoded values to avoid issues with BZ API "required" checks
       normalizedParams.version = '---'
       normalizedParams.op_sys = 'Unspecified' // NOTE: This might an actual value at a later evolution step of the app
-      normalizedParams[caseFieldMapping.category] = normalizedParams[caseFieldMapping.category] || '---'
-      normalizedParams[caseFieldMapping.subCategory] = normalizedParams[caseFieldMapping.subCategory] || '---'
+      normalizedParams[caseServerFieldMapping.category] = normalizedParams[caseServerFieldMapping.category] || '---'
+      normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
 
       normalizedParams.token = token
       try {
@@ -231,20 +258,23 @@ Meteor.methods({
       if (Meteor.isClient) {
         Cases.update({id: caseId}, {
           $set: {
-            assigned_to_detail: denormalizeUser(user),
-            assigned_to: user.login
+            assigneeDetail: denormalizeUser(user),
+            assignee: user.login
           }
         })
       } else { // is server
         const { callAPI } = bugzillaApi
         const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
         try {
-          callAPI('put', `/rest/bug/${caseId}`, {assigned_to: user.login, token}, false, true)
+          callAPI('put', `/rest/bug/${caseId}`, {
+            [caseServerFieldMapping.assignee]: user.login,
+            token
+          }, false, true)
 
           const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-          const { assigned_to, assigned_to_detail } = caseData.data.bugs[0]
+          const { assignee, assigneeDetail } = transformCaseForClient(caseData.data.bugs[0])
           console.log(`${user.login} was assigned to case ${caseId}`)
-          publicationObj.handleChanged(caseId, {assigned_to, assigned_to_detail})
+          publicationObj.handleChanged(caseId, {assignee, assigneeDetail})
         } catch (e) {
           console.error({
             user: Meteor.userId(),
@@ -261,9 +291,10 @@ Meteor.methods({
     check(caseId, Number)
     check(newValue, String)
     const editableFields = [
-      'summary',
-      'cf_ipi_clust_1_solution',
-      'cf_ipi_clust_1_next_step'
+      'title',
+      'solution',
+      'nextSteps',
+      'status'
     ]
     if (!editableFields.includes(fieldName)) {
       throw new Meteor.Error('illegal fieldName')
@@ -282,9 +313,9 @@ Meteor.methods({
       const { callAPI } = bugzillaApi
       const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
       try {
-        callAPI('put', `/rest/bug/${caseId}`, {[fieldName]: newValue, token}, false, true)
+        callAPI('put', `/rest/bug/${caseId}`, {[caseServerFieldMapping[fieldName]]: newValue, token}, false, true)
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const updatedVal = caseData.data.bugs[0][fieldName]
+        const updatedVal = caseData.data.bugs[0][caseServerFieldMapping[fieldName]]
         publicationObj.handleChanged(caseId, {[fieldName]: updatedVal})
       } catch (e) {
         console.error({

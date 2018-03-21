@@ -105,12 +105,12 @@ class CaseMessages extends Component {
       <div className='flex flex-column flex-grow roboto overflow-hidden h-100'>
         {this.renderTitle(caseItem)}
         {this.renderMessages(comments, attachmentUploads)}
-        {this.renderInputControls(caseItem)}
+        {this.renderInputControls()}
       </div>
     )
   }
 
-  renderTitle ({ id, status, cf_ipi_clust_1_next_step: nextSteps, cf_ipi_clust_1_solution: solution }) {
+  renderTitle ({ id, status, nextSteps, solution }) {
     const subheaderBoxClasses = 'flex-grow tc b--gray-93'
     const additionalSubheaders = []
     if (nextSteps) {
@@ -253,6 +253,7 @@ class CaseMessages extends Component {
   }
 
   renderInputControls () {
+    const { message } = this.state
     return (
       <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
         <IconButton style={attachmentButtonStyle}>
@@ -263,13 +264,13 @@ class CaseMessages extends Component {
         </IconButton>
         <div className='flex-grow relative'>
           <input type='text' placeholder='Type your response' ref='messageInput'
-            onChange={this.handleMessageInput.bind(this)} value={this.state.message}
+            onChange={this.handleMessageInput.bind(this)} value={message}
             className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib outline-0 w-100' />
         </div>
         <div className='mh2'>
           <FloatingActionButton mini zDepth={0} iconStyle={sendIconStyle}
             onClick={this.handleCreateMessage.bind(this)}
-            disabled={this.state.message === ''}>
+            disabled={message === ''}>
             <FontIcon className='material-icons'>send</FontIcon>
           </FloatingActionButton>
         </div>

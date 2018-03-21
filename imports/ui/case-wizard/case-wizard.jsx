@@ -10,13 +10,12 @@ import MenuItem from 'material-ui/MenuItem'
 import RaisedButton from 'material-ui/RaisedButton'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CircularProgress from 'material-ui/CircularProgress'
+import CaseFieldValues, { collectionName as fieldValsCollName } from '../../api/case-field-values'
 import Checkbox from 'material-ui/Checkbox'
-import CaseFieldValues from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
 import Units, { collectionName as unitsCollName } from '../../api/units'
-import { caseFieldMapping } from '../../api/cases'
 import { createCase, clearError } from './case-wizard.actions'
 import { placeholderEmailMatcher, roleCanBeOccupantMatcher } from '../../util/matchers'
 import { emailValidator } from '../../util/validators'
@@ -369,13 +368,12 @@ export default connect(
   })
 )(createContainer(
   () => {
-    const {category, subCategory, priority, severity} = caseFieldMapping
-    const enumFields = [category, subCategory, priority, severity]
+    const enumFields = ['category', 'subCategory', 'priority', 'severity']
     return ({
       loadingUnits: !Meteor.subscribe(`${unitsCollName}.forReporting`).ready(),
       loadingUserEmail: !Meteor.subscribe('users.myBzLogin').ready(),
       loadingFieldValues: enumFields
-        .map(name => Meteor.subscribe('caseFieldValues.fetchByName', name))
+        .map(name => Meteor.subscribe(`${fieldValsCollName}.fetchByName`, name))
         .filter(handle => !handle.ready()).length > 0,
       units: Units.find().fetch(),
       userEmail: Meteor.user() && Meteor.user().bugzillaCreds && Meteor.user().bugzillaCreds.login,
