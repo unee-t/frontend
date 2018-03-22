@@ -86,12 +86,24 @@ class CaseDetails extends Component {
     }
   }
 
+  handleStatusEdit = val => {
+    const matchingValDef = this.props.cfvDictionary.status.values.find(({name}) => name === val)
+    this.setState({
+      immediateStatusVal: val
+    })
+    const changeSet = {status: val}
+    if (!matchingValDef.is_open) { // Means it needs a resolution
+      changeSet.resolution = 'FIXED' // hardcoded for now
+    }
+    this.props.onFieldEdit(changeSet)
+  }
+
   renderTitle = ({id, title}) => (
     <InfoItemContainer>
       <EditableItem
         label={`Case: #${id}`}
         initialValue={title}
-        onEdit={val => this.props.onFieldEdit('title', val)}
+        onEdit={val => this.props.onFieldEdit({title: val})}
       />
     </InfoItemContainer>
   )
@@ -102,7 +114,6 @@ class CaseDetails extends Component {
 
   renderStatusLine = ({status}, {status: statusDef}) => {
     const { immediateStatusVal } = this.state
-
     return (
       <InfoItemContainer>
         <EditableItem
@@ -114,12 +125,7 @@ class CaseDetails extends Component {
               .map(({name}) => name)
               .concat([immediateStatusVal])
           }
-          onEdit={val => {
-            this.setState({
-              immediateStatusVal: val
-            })
-            this.props.onFieldEdit('status', val)
-          }}
+          onEdit={this.handleStatusEdit}
         />
       </InfoItemContainer>
     )
@@ -278,7 +284,7 @@ class CaseDetails extends Component {
           <EditableItem
             label='Solution'
             initialValue={solution}
-            onEdit={val => onFieldEdit('solution', val)}
+            onEdit={val => onFieldEdit({solution: val})}
             isMultiLine
           />
           {solutionDeadline && (
@@ -291,7 +297,7 @@ class CaseDetails extends Component {
           <EditableItem
             label='Next steps'
             initialValue={nextSteps}
-            onEdit={val => onFieldEdit('nextSteps', val)}
+            onEdit={val => onFieldEdit({nextSteps: val})}
             isMultiLine
           />
           {solutionDeadline && (

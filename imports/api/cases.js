@@ -36,7 +36,8 @@ export const caseServerFieldMapping = {
   assigneeDetail: 'assigned_to_detail',
   creator: 'creator',
   creatorDetail: 'creator_detail',
-  status: 'status'
+  status: 'status',
+  resolution: 'resolution'
 }
 
 export const caseClientFieldMapping = Object.assign(
@@ -328,41 +329,52 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.editCaseField`] (caseId, fieldName, newValue) {
+  [`${collectionName}.editCaseField`] (caseId, changeSet) {
     check(caseId, Number)
-    check(newValue, String)
     const editableFields = [
       'title',
       'solution',
       'nextSteps',
-      'status'
+      'status',
+      'resolution'
     ]
-    if (!editableFields.includes(fieldName)) {
-      throw new Meteor.Error('illegal fieldName')
-    }
+    Object.keys(changeSet).forEach(fieldName => {
+      if (!editableFields.includes(fieldName)) {
+        throw new Meteor.Error(`illegal field name ${fieldName}`)
+      }
+      const valType = typeof changeSet[fieldName]
+      if (!['number', 'string', 'boolean'].includes(valType)) {
+        throw new Meteor.Error(`illegal value type of ${valType} set to field ${fieldName}`)
+      }
+    })
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
 
     if (Meteor.isClient) {
       Cases.update({id: caseId}, {
-        $set: {
-          [fieldName]: newValue
-        }
+        $set: changeSet
       })
     } else { // is server
       const { callAPI } = bugzillaApi
       const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
       try {
-        callAPI('put', `/rest/bug/${caseId}`, {[caseServerFieldMapping[fieldName]]: newValue, token}, false, true)
-        const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const updatedVal = caseData.data.bugs[0][caseServerFieldMapping[fieldName]]
-        publicationObj.handleChanged(caseId, {[fieldName]: updatedVal})
+        const normalizedSet = Object.keys(changeSet).reduce((all, key) => {
+          all[caseServerFieldMapping[key]] = changeSet[key]
+          return all
+        }, {})
+        callAPI('put', `/rest/bug/${caseId}`, Object.assign({token}, normalizedSet), false, true)
+        const { data: { bugs: [caseItem] } } = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
+        const updatedSet = Object.keys(changeSet).reduce((all, key) => {
+          all[key] = caseItem[caseServerFieldMapping[key]]
+          return all
+        }, {})
+        publicationObj.handleChanged(caseId, updatedSet)
       } catch (e) {
         console.error({
           user: Meteor.userId(),
           method: `${collectionName}.editCaseField`,
-          args: [caseId, fieldName, newValue],
+          args: [caseId, changeSet],
           error: e
         })
         throw new Meteor.Error('API error')

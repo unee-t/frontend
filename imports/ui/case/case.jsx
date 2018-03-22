@@ -112,7 +112,7 @@ export class Case extends Component {
                   onExistingUserAssigned={user => dispatch(assignExistingUser(user, caseId))}
                   onResetInvitation={() => dispatch(clearInvitation())}
                   onSelectAttachment={this.navigateToAttachment.bind(this)}
-                  onFieldEdit={(field, val) => dispatch(editCaseField(field, val, caseId))}
+                  onFieldEdit={changeSet => dispatch(editCaseField(changeSet, caseId))}
                 />
               )} />
             </Switch>

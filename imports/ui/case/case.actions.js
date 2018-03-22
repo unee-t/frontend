@@ -109,11 +109,10 @@ export function updateInvitedUserName (name) {
   }
 }
 
-export function editCaseField (fieldName, newValue, caseId) {
+export function editCaseField (changeSet, caseId) {
   return {
     type: EDIT_CASE_FIELD,
-    fieldName,
-    newValue,
+    changeSet,
     caseId
   }
 }
