@@ -23,6 +23,8 @@ import {
   moreIconColor
 } from './case-explorer.mui-styles'
 
+const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
+
 class CaseExplorer extends Component {
   constructor () {
     super(...arguments)
@@ -50,18 +52,26 @@ class CaseExplorer extends Component {
     if (!isLoading && !casesError && isLoading !== this.props.isLoading) {
       this.props.dispatchLoadingResult({caseList})
     }
-  }
-  render () {
-    const { caseList, isLoading, dispatch } = this.props
-    let unitsDict
-    if (!isLoading) {
-      unitsDict = caseList.reduce((dict, caseItem) => {
+    if (!isLoading && (!this.props.caseList || this.props.caseList.length !== caseList.length)) {
+      const unitsDict = caseList.sort((caseA, caseB) => {
+        const aVal = isClosed(caseA) ? 1 : 0
+        const bVal = isClosed(caseB) ? 1 : 0
+        return aVal - bVal
+      }).reduce((dict, caseItem) => {
         const { selectedUnit: unitTitle } = caseItem
         const unitCases = dict[unitTitle] = dict[unitTitle] || []
         unitCases.push(caseItem)
         return dict
       }, {})
+      this.setState({
+        unitsDict
+      })
     }
+  }
+  render () {
+    const { isLoading, dispatch } = this.props
+    const { unitsDict } = this.state
+
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100'>
         <div className='bb b--black-10 overflow-auto flex-grow'>
@@ -85,7 +95,13 @@ class CaseExplorer extends Component {
                     {unitsDict[unitTitle].map(caseItem => (
                       <li key={caseItem.id} className='h2-5 bt b--black-10'>
                         <div className='flex items-center'>
-                          <Link className='link flex-grow ellipsis bondi-blue ml3 pl1' to={`/case/${caseItem.id}`}>
+                          <Link
+                            className={
+                              'link flex-grow ellipsis ml3 pl1 ' +
+                                (isClosed(caseItem) ? 'silver strike' : 'bondi-blue')
+                            }
+                            to={`/case/${caseItem.id}`}
+                          >
                             {caseItem.title}
                           </Link>
                           <IconButton>
