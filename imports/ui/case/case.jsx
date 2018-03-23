@@ -53,14 +53,18 @@ export class Case extends Component {
       [caseError, 'case'], [commentsError, 'comments'], [unitError, 'unit'], [cfvError, 'potential field values']
     ].filter(pair => !!pair[0])
     if (errors.length) {
-      return errors.reduce((all, pair, i) => {
-        const [e, name] = pair
-        console.log('API error occurrued', e.error.origError)
+      return (
+        <div>
+          {errors.reduce((all, pair, i) => {
+            const [e, name] = pair
+            console.log('API error occurrued', e.error.origError)
 
-        return all.concat([
-          <h1>Error loading the {name}: {e.error.message}</h1>
-        ])
-      }, [])
+            return all.concat([
+              <h1 key={i}>Error loading the {name}: {e.error.message}</h1>
+            ])
+          }, [])}
+        </div>
+      )
     }
     if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations || loadingCfv) return <Preloader />
 
