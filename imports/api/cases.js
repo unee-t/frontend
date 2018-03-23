@@ -198,7 +198,7 @@ Meteor.methods({
 
       let unitItem
       try {
-        const unitResult = callAPI('get', `/rest/product/${params.selectedUnit}`, {token}, false, true)
+        const unitResult = callAPI('get', `/rest/product/${encodeURIComponent(params.selectedUnit)}`, {token}, false, true)
         unitItem = unitResult.data.products[0]
       } catch (e) {
         console.error(e)
