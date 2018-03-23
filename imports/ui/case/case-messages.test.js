@@ -59,7 +59,7 @@ if (Meteor.isClient) {
 
       expect(findLabel(comp, 'Today')).to.have.lengthOf(1)
       expect(findLabel(comp, comment.text)).to.have.lengthOf(1)
-      expect(findLabel(comp, comment.creator)).to.have.lengthOf(1)
+      expect(findLabel(comp, comment.creator.split('@')[0])).to.have.lengthOf(1)
 
       // Checking the message appears as someone else's (left-aligned)
       expect(comp.find(`.${styles.messagesContainer}`).childAt(1).not('.tr')).to.have.lengthOf(1)

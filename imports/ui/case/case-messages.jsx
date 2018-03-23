@@ -170,7 +170,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderSingleMessage ({creator, text, creation_time, process, id}, key) {
+  renderSingleMessage ({creator, creatorUser, text, creation_time, process, id}, key) {
     const isSelf = this.props.userEmail === creator
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
@@ -189,16 +189,20 @@ class CaseMessages extends Component {
         { !isSelf ? (
           <UserAvatar user={{login: creator}} />
         ) : ''}
-        { contentRenderer({isSelf, creator, text, creation_time, id, process}) }
+        { contentRenderer({isSelf, creator, creatorUser, text, creation_time, id, process}) }
       </div>
     )
   }
 
-  renderMessageTextContent ({isSelf, creator, text, creationTime}) {
+  renderMessageTextContent ({isSelf, creatorUser, creator, text, creationTime}) {
+    // If createUser is unset, i.e. it only has a Bugzilla user and not Meteor user,
+    // truncate the email address to show only the local part
+    const creatorText = creatorUser ? creatorUser.profile.name : creator.split('@')[0]
+
     return (
       <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl ' + (isSelf ? 'bg-rad-green' : 'bg-white')}>
         { !isSelf ? (
-          <div className={themes.creatorText + ' f6 ellipsis'}>{creator}</div>
+          <div className={themes.creatorText + ' f6 ellipsis'}>{creatorText}</div>
         ) : ''}
         <span className='f5 mr3'>{text}</span>
         <div className={styles.messageTime + ' fr f7'}>
