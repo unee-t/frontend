@@ -210,7 +210,10 @@ const CaseContainer = createContainer(props => {
     caseItem: currCase,
     loadingComments: !commentsHandle.ready(),
     commentsError,
-    comments: Comments.find({bug_id: parseInt(caseId)}).fetch(),
+    comments: Comments.find({bug_id: parseInt(caseId)}).fetch().map(comment => {
+      const creatorUser = Meteor.users.findOne({ 'bugzillaCreds.login': comment.creator })
+      return { ...comment, creatorUser }
+    }),
     userEmail: Meteor.user() ? Meteor.user().emails[0].address : null,
     loadingUnit: !unitHandle || !unitHandle.ready(),
     unitError,

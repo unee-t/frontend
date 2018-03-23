@@ -3,22 +3,28 @@ import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
+import { makeAssociationFactory, withUsers } from './base/associations-helper'
 
 const collectionName = 'comments'
 
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
-  dataResolver: (data, claimId) => data.bugs[claimId.toString()].comments
+  dataResolver: (data, claimId) => {
+    return data.bugs[claimId.toString()].comments
+  }
 }
 
 export let publicationObj // Exported for testing purposes
 if (Meteor.isServer) {
+  const associationFactory = makeAssociationFactory(collectionName)
   publicationObj = publicationFactory(factoryOptions)
-  Meteor.publish('caseComments', publicationObj.publishById({
+  Meteor.publish('caseComments', associationFactory(publicationObj.publishById({
     uriTemplate: caseId => `/rest/bug/${caseId}/comment`,
     addedMatcherFactory: caseId => comment => comment.bug_id.toString() === caseId.toString()
-  }))
+  }),
+   withUsers(commentItem => [commentItem.creator])
+  ))
 }
 
 Meteor.methods({
