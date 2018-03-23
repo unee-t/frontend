@@ -64,11 +64,12 @@ const mediaItemsPadding = 4 // Corresponds with the classNames set to the media 
 const mediaItemRowCount = 3
 
 class CaseDetails extends Component {
-  constructor () {
-    super(...arguments)
+  constructor (props) {
+    super(props)
     this.state = {
       filterString: '',
-      fieldValues: {}
+      fieldValues: {},
+      immediateStatusVal: props.caseItem.status
     }
   }
   componentDidMount () {
@@ -77,13 +78,32 @@ class CaseDetails extends Component {
     })
   }
 
-  // renderSummaryLine = ({id, summary}) => infoItemRow(`Case: #${id}`, summary)
-  renderSummaryLine = ({id, summary}) => (
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.caseItem.status !== this.props.caseItem.status) {
+      this.setState({
+        immediateStatusVal: nextProps.caseItem.status
+      })
+    }
+  }
+
+  handleStatusEdit = val => {
+    const matchingValDef = this.props.cfvDictionary.status.values.find(({name}) => name === val)
+    this.setState({
+      immediateStatusVal: val
+    })
+    const changeSet = {status: val}
+    if (!matchingValDef.is_open) { // Means it needs a resolution
+      changeSet.resolution = 'FIXED' // hardcoded for now
+    }
+    this.props.onFieldEdit(changeSet)
+  }
+
+  renderTitle = ({id, title}) => (
     <InfoItemContainer>
       <EditableItem
         label={`Case: #${id}`}
-        initialValue={summary}
-        onEdit={val => this.props.onFieldEdit('summary', val)}
+        initialValue={title}
+        onEdit={val => this.props.onFieldEdit({title: val})}
       />
     </InfoItemContainer>
   )
@@ -92,9 +112,26 @@ class CaseDetails extends Component {
 
   renderUnitDescription = unitItem => infoItemRow('Unit description:', unitItem.description)
 
-  renderStatusLine = ({status}) => infoItemRow('Status:', status)
+  renderStatusLine = ({status}, {status: statusDef}) => {
+    const { immediateStatusVal } = this.state
+    return (
+      <InfoItemContainer>
+        <EditableItem
+          label='Status:'
+          initialValue={status}
+          selectionList={
+            statusDef.values
+              .find(({name}) => name === immediateStatusVal)['can_change_to']
+              .map(({name}) => name)
+              .concat([immediateStatusVal])
+          }
+          onEdit={this.handleStatusEdit}
+        />
+      </InfoItemContainer>
+    )
+  }
 
-  renderCategoriesLine = ({rep_platform: category, cf_ipi_clust_6_claim_type: subCategory}) => (
+  renderCategoriesLine = ({category, subCategory}) => (
     <InfoItemContainer>
       <div className='flex'>
         <div className='flex-grow'>
@@ -171,7 +208,7 @@ class CaseDetails extends Component {
     )
   }
 
-  renderPeopleInvolved = ({creator, assigned, subscribed}, unitUsers, pendingInvitations) => {
+  renderPeopleInvolved = ({creator, assignee, subscribed}, unitUsers, pendingInvitations) => {
     const {
       match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
     } = this.props
@@ -202,7 +239,7 @@ class CaseDetails extends Component {
           title='Who should be invited?'
           additionalOperationText='Invite another user'
           potentialInvitees={unitUsers
-            .filter(u => u.login !== creator.login && u.login !== assigned.login)
+            .filter(u => u.login !== creator.login && u.login !== assignee.login)
             .map(u => Object.assign({alreadyInvited: invitedUsersEmails.includes(u.login)}, u))
           }
           pendingInvitees={pendingUsers}
@@ -234,10 +271,10 @@ class CaseDetails extends Component {
 
   renderResolutions = (
     {
-      cf_ipi_clust_1_next_step: nextSteps,
-      cf_ipi_clust_1_next_step_by: nextStepBy,
-      cf_ipi_clust_1_solution: solution,
-      deadline
+      nextSteps,
+      nextStepsBy,
+      solution,
+      solutionDeadline
     }
   ) => {
     const { onFieldEdit } = this.props
@@ -247,12 +284,12 @@ class CaseDetails extends Component {
           <EditableItem
             label='Solution'
             initialValue={solution}
-            onEdit={val => onFieldEdit('cf_ipi_clust_1_solution', val)}
+            onEdit={val => onFieldEdit({solution: val})}
             isMultiLine
           />
-          {deadline && (
+          {solutionDeadline && (
             <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(deadline).format('D MMM YYYY, h:mm')} hrs
+              Deadline: {moment(solutionDeadline).format('D MMM YYYY, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
@@ -260,12 +297,12 @@ class CaseDetails extends Component {
           <EditableItem
             label='Next steps'
             initialValue={nextSteps}
-            onEdit={val => onFieldEdit('cf_ipi_clust_1_next_step', val)}
+            onEdit={val => onFieldEdit({nextSteps: val})}
             isMultiLine
           />
-          {deadline && (
+          {solutionDeadline && (
             <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(nextStepBy).format('D MMM YYYY, h:mm')} hrs
+              Deadline: {moment(nextStepsBy).format('D MMM YYYY, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
@@ -274,16 +311,16 @@ class CaseDetails extends Component {
   }
 
   render () {
-    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations } = this.props
+    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations, cfvDictionary } = this.props
     return (
       <div className='flex-grow overflow-auto h-100'>
-        {this.renderSummaryLine(caseItem)}
+        {this.renderTitle(caseItem)}
         {this.renderUnitName(unitItem)}
         {this.renderUnitDescription(unitItem)}
-        {this.renderStatusLine(caseItem)}
+        {this.renderStatusLine(caseItem, cfvDictionary)}
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
-        {this.renderAssignedTo(caseUserTypes.assigned, unitUsers, pendingInvitations)}
+        {this.renderAssignedTo(caseUserTypes.assignee, unitUsers, pendingInvitations)}
         {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
@@ -328,6 +365,7 @@ CaseDetails.propTypes = {
   invitationState: PropTypes.object.isRequired,
   caseUserTypes: PropTypes.object.isRequired,
   onFieldEdit: PropTypes.func.isRequired,
+  cfvDictionary: PropTypes.object.isRequired,
   pendingInvitations: PropTypes.array
 }
 

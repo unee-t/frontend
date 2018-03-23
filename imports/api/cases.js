@@ -7,10 +7,17 @@ import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
-import PendingInvitations, { unassignPending, TYPE_ASSIGNED } from './pending-invitations'
+import
+  PendingInvitations,
+  {
+    unassignPending,
+    createPendingInvitation,
+    findUnitRoleConflictErrors,
+    TYPE_ASSIGNED
+  } from './pending-invitations'
 
 export const collectionName = 'cases'
-export const caseFieldMapping = {
+export const caseServerFieldMapping = {
   category: 'rep_platform',
   subCategory: 'cf_ipi_clust_6_claim_type',
   priority: 'priority',
@@ -18,8 +25,30 @@ export const caseFieldMapping = {
   selectedUnit: 'product',
   assignedUnitRole: 'component',
   title: 'summary',
-  details: 'description'
+  details: 'description',
+  nextSteps: 'cf_ipi_clust_1_next_step',
+  nextStepsBy: 'cf_ipi_clust_1_next_step_by',
+  solution: 'cf_ipi_clust_1_solution',
+  solutionDeadline: 'deadline',
+  involvedList: 'cc',
+  involvedListDetail: 'cc_detail',
+  assignee: 'assigned_to',
+  assigneeDetail: 'assigned_to_detail',
+  creator: 'creator',
+  creatorDetail: 'creator_detail',
+  status: 'status',
+  resolution: 'resolution'
 }
+
+export const caseClientFieldMapping = Object.assign(
+  Object.keys(caseServerFieldMapping).reduce((all, key) => ({
+    ...all,
+    [caseServerFieldMapping[key]]: key
+  }), {}),
+  {
+    platform: 'category'
+  }
+)
 
 export const getCaseUsers = (() => {
   const normalizeUser = ({real_name: realName, email, name}) => ({
@@ -28,9 +57,9 @@ export const getCaseUsers = (() => {
     email
   })
   return caseItem => ({
-    creator: normalizeUser(caseItem.creator_detail),
-    assigned: normalizeUser(caseItem.assigned_to_detail),
-    subscribed: caseItem.cc_detail.map(normalizeUser)
+    creator: normalizeUser(caseItem.creatorDetail),
+    assignee: normalizeUser(caseItem.assigneeDetail),
+    subscribed: caseItem.involvedListDetail.map(normalizeUser)
   })
 })()
 
@@ -40,10 +69,15 @@ const denormalizeUser = ({login, name, email}) => ({
   email
 })
 
+const transformCaseForClient = bug => Object.keys(bug).reduce((all, key) => ({
+  ...all,
+  [caseClientFieldMapping[key] || key]: bug[key]
+}), {})
+
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
-  dataResolver: data => data.bugs
+  dataResolver: data => data.bugs.map(transformCaseForClient)
 }
 
 const MAX_RESULTS = 50
@@ -88,11 +122,11 @@ if (Meteor.isServer) {
     addedMatcherFactory: strQuery => {
       const { v1: userIdentifier } = JSON.parse(strQuery)
       return caseItem => {
-        const { assigned_to: assignedTo, creator, cc } = caseItem
+        const { assignee, creator, involvedList } = transformCaseForClient(caseItem)
         return (
-          userIdentifier === assignedTo ||
+          userIdentifier === assignee ||
           userIdentifier === creator ||
-          cc.includes(userIdentifier)
+          involvedList.includes(userIdentifier)
         )
       }
     }
@@ -120,10 +154,10 @@ Meteor.methods({
       const opType = isAdd ? '$push' : '$pull'
       Cases.update({id: caseId}, {
         [opType]: {
-          cc: email
+          involvedList: email
         },
         [opType]: {
-          cc_detail: {name: email}
+          involvedListDetail: {name: email}
         }
       })
     } else {
@@ -140,9 +174,9 @@ Meteor.methods({
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const { cc, cc_detail } = caseData.data.bugs[0]
+        const { involvedList, involvedListDetail } = transformCaseForClient(caseData.data.bugs[0])
         console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
-        publicationObj.handleChanged(caseId, {cc, cc_detail})
+        publicationObj.handleChanged(caseId, {involvedList, involvedListDetail})
       } catch (e) {
         console.error({
           user: Meteor.userId(),
@@ -154,30 +188,59 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.insert`] (params) {
+  [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant }) {
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
     if (Meteor.isServer) {
       const { bugzillaCreds: { token } } = Meteor.users.findOne(Meteor.userId())
       const { callAPI } = bugzillaApi
+
+      let unitItem
+      try {
+        const unitResult = callAPI('get', `/rest/product/${encodeURIComponent(params.selectedUnit)}`, {token}, false, true)
+        unitItem = unitResult.data.products[0]
+      } catch (e) {
+        console.error(e)
+        throw new Meteor.Error('API error')
+      }
+
+      // Checking the role is valid
+      const relevantRole = unitItem.components.find(({ name }) => name === params.assignedUnitRole)
+      if (!relevantRole) {
+        throw new Meteor.Error(
+          `The designated role "${params.assignedUnitRole}" does not exist on the unit "${params.selectedUnit}"`
+        )
+      }
+      if (newUserEmail) {
+        const conflictError = findUnitRoleConflictErrors(
+          params.selectedUnit,
+          newUserEmail,
+          params.assignedUnitRole,
+          newUserIsOccupant
+        )
+        if (conflictError) throw new Meteor.Error('Could not create case for new assignee: ' + conflictError)
+      }
+
+      console.log('Creating case', params)
       const normalizedParams = Object.keys(params).reduce((all, paramName) => {
-        all[caseFieldMapping[paramName]] = params[paramName]
+        all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
         return all
       }, {})
 
       // Hardcoded values to avoid issues with BZ API "required" checks
       normalizedParams.version = '---'
       normalizedParams.op_sys = 'Unspecified' // NOTE: This might an actual value at a later evolution step of the app
-      normalizedParams[caseFieldMapping.category] = normalizedParams[caseFieldMapping.category] || '---'
-      normalizedParams[caseFieldMapping.subCategory] = normalizedParams[caseFieldMapping.subCategory] || '---'
+      normalizedParams[caseServerFieldMapping.category] = normalizedParams[caseServerFieldMapping.category] || '---'
+      normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
 
       normalizedParams.token = token
+      let newCaseId
       try {
-        const { data: { id: newCaseId } } = callAPI('post', '/rest/bug', normalizedParams, false, true)
+        const { data } = callAPI('post', '/rest/bug', normalizedParams, false, true)
+        newCaseId = data.id
         console.log(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
         // TODO: Add real time update handler usage
-        return {newCaseId}
       } catch (e) {
         // TODO: adopt this error format for other API errors too
         console.error({
@@ -188,6 +251,12 @@ Meteor.methods({
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
+      if (newUserEmail) {
+        createPendingInvitation(
+          newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED
+        )
+      }
+      return {newCaseId}
     }
   },
   [`${collectionName}.changeAssignee`] (user, caseId) {
@@ -231,20 +300,23 @@ Meteor.methods({
       if (Meteor.isClient) {
         Cases.update({id: caseId}, {
           $set: {
-            assigned_to_detail: denormalizeUser(user),
-            assigned_to: user.login
+            assigneeDetail: denormalizeUser(user),
+            assignee: user.login
           }
         })
       } else { // is server
         const { callAPI } = bugzillaApi
         const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
         try {
-          callAPI('put', `/rest/bug/${caseId}`, {assigned_to: user.login, token}, false, true)
+          callAPI('put', `/rest/bug/${caseId}`, {
+            [caseServerFieldMapping.assignee]: user.login,
+            token
+          }, false, true)
 
           const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-          const { assigned_to, assigned_to_detail } = caseData.data.bugs[0]
+          const { assignee, assigneeDetail } = transformCaseForClient(caseData.data.bugs[0])
           console.log(`${user.login} was assigned to case ${caseId}`)
-          publicationObj.handleChanged(caseId, {assigned_to, assigned_to_detail})
+          publicationObj.handleChanged(caseId, {assignee, assigneeDetail})
         } catch (e) {
           console.error({
             user: Meteor.userId(),
@@ -257,40 +329,52 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.editCaseField`] (caseId, fieldName, newValue) {
+  [`${collectionName}.editCaseField`] (caseId, changeSet) {
     check(caseId, Number)
-    check(newValue, String)
     const editableFields = [
-      'summary',
-      'cf_ipi_clust_1_solution',
-      'cf_ipi_clust_1_next_step'
+      'title',
+      'solution',
+      'nextSteps',
+      'status',
+      'resolution'
     ]
-    if (!editableFields.includes(fieldName)) {
-      throw new Meteor.Error('illegal fieldName')
-    }
+    Object.keys(changeSet).forEach(fieldName => {
+      if (!editableFields.includes(fieldName)) {
+        throw new Meteor.Error(`illegal field name ${fieldName}`)
+      }
+      const valType = typeof changeSet[fieldName]
+      if (!['number', 'string', 'boolean'].includes(valType)) {
+        throw new Meteor.Error(`illegal value type of ${valType} set to field ${fieldName}`)
+      }
+    })
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
 
     if (Meteor.isClient) {
       Cases.update({id: caseId}, {
-        $set: {
-          [fieldName]: newValue
-        }
+        $set: changeSet
       })
     } else { // is server
       const { callAPI } = bugzillaApi
       const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
       try {
-        callAPI('put', `/rest/bug/${caseId}`, {[fieldName]: newValue, token}, false, true)
-        const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const updatedVal = caseData.data.bugs[0][fieldName]
-        publicationObj.handleChanged(caseId, {[fieldName]: updatedVal})
+        const normalizedSet = Object.keys(changeSet).reduce((all, key) => {
+          all[caseServerFieldMapping[key]] = changeSet[key]
+          return all
+        }, {})
+        callAPI('put', `/rest/bug/${caseId}`, Object.assign({token}, normalizedSet), false, true)
+        const { data: { bugs: [caseItem] } } = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
+        const updatedSet = Object.keys(changeSet).reduce((all, key) => {
+          all[key] = caseItem[caseServerFieldMapping[key]]
+          return all
+        }, {})
+        publicationObj.handleChanged(caseId, updatedSet)
       } catch (e) {
         console.error({
           user: Meteor.userId(),
           method: `${collectionName}.editCaseField`,
-          args: [caseId, fieldName, newValue],
+          args: [caseId, changeSet],
           error: e
         })
         throw new Meteor.Error('API error')

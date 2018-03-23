@@ -18,7 +18,7 @@ import 'rxjs/add/operator/filter'
 export const createCase = action$ => action$
   .ofType(CREATE_CASE)
   .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-  .mergeMap(({params}) => {
+  .mergeMap(({ params, newUserEmail, newUserIsOccupant }) => {
     const meteorResult$ = (new Subject())
       .take(1)
       .mergeMap(({error, result: {newCaseId}}) => {
@@ -36,7 +36,7 @@ export const createCase = action$ => action$
         )
       })
     Meteor.call(
-      `${collectionName}.insert`, params, (error, result) => {
+      `${collectionName}.insert`, params, {newUserEmail, newUserIsOccupant}, (error, result) => {
         if (error) {
           console.error('Case creation error', error)
         }

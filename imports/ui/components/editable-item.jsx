@@ -1,11 +1,14 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
+import SelectField from 'material-ui/SelectField'
+import MenuItem from 'material-ui/MenuItem'
 
 import {
   textInputStyle,
   textInputFloatingLabelStyle,
-  textInputUnderlineFocusStyle
+  textInputUnderlineFocusStyle,
+  selectInputIconStyle
 } from '../components/form-controls.mui-styles'
 
 export default class EditableItem extends Component {
@@ -21,32 +24,54 @@ export default class EditableItem extends Component {
       this.setState({value: nextProps.initialValue})
     }
   }
-  handleEdit = ({ target: { value } }) => {
+  handleEdit = (value) => {
     this.setState({value})
     this.lastEditTime = Date.now()
     this.props.onEdit(value)
   }
   render () {
-    const { label, isMultiLine } = this.props
+    const { label, isMultiLine, selectionList } = this.props
     const { value } = this.state
-    return (
-      <TextField
-        floatingLabelText={label}
-        floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-        floatingLabelFixed
-        underlineFocusStyle={textInputUnderlineFocusStyle}
-        inputStyle={textInputStyle}
-        fullWidth
-        multiLine={isMultiLine}
-        value={value}
-        onChange={this.handleEdit}
-      />
-    )
+
+    if (!selectionList) {
+      return (
+        <TextField
+          floatingLabelText={label}
+          floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+          floatingLabelFixed
+          underlineFocusStyle={textInputUnderlineFocusStyle}
+          inputStyle={textInputStyle}
+          fullWidth
+          multiLine={isMultiLine}
+          value={value}
+          onChange={({ target: { value } }) => this.handleEdit(value)}
+        />
+      )
+    } else {
+      return (
+        <SelectField
+          floatingLabelText={label}
+          fullWidth
+          floatingLabelShrinkStyle={textInputFloatingLabelStyle}
+          labelStyle={textInputStyle}
+          menuStyle={textInputStyle}
+          iconStyle={selectInputIconStyle}
+          underlineFocusStyle={textInputUnderlineFocusStyle}
+          value={value}
+          onChange={(evt, idx, val) => this.handleEdit(val)}
+        >
+          {selectionList.map(item => (
+            <MenuItem key={item} value={item} primaryText={item} />
+          ))}
+        </SelectField>
+      )
+    }
   }
 }
 EditableItem.propTypes = {
   label: PropTypes.string.isRequired,
   onEdit: PropTypes.func.isRequired,
   isMultiLine: PropTypes.bool,
-  initialValue: PropTypes.string
+  initialValue: PropTypes.string,
+  selectionList: PropTypes.array
 }

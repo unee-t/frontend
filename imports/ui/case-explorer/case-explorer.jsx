@@ -56,7 +56,7 @@ class CaseExplorer extends Component {
     let unitsDict
     if (!isLoading) {
       unitsDict = caseList.reduce((dict, caseItem) => {
-        const { product: unitTitle } = caseItem
+        const { selectedUnit: unitTitle } = caseItem
         const unitCases = dict[unitTitle] = dict[unitTitle] || []
         unitCases.push(caseItem)
         return dict
@@ -86,7 +86,7 @@ class CaseExplorer extends Component {
                       <li key={caseItem.id} className='h2-5 bt b--black-10'>
                         <div className='flex items-center'>
                           <Link className='link flex-grow ellipsis bondi-blue ml3 pl1' to={`/case/${caseItem.id}`}>
-                            {caseItem.summary}
+                            {caseItem.title}
                           </Link>
                           <IconButton>
                             <FontIcon className='material-icons' color={moreIconColor}>more_horiz</FontIcon>

@@ -13,9 +13,9 @@ if (Meteor.isServer) {
       //   expect(resourceUri).to.equal('/rest/bug/3')
       // })
       it('should contain a proper dataResolver', () => {
-        const data = factoryOptions.dataResolver({ bugs: 'jackpot' })
+        const data = factoryOptions.dataResolver({ bugs: [{name: 'jackpot'}] })
 
-        expect(data).to.equal('jackpot')
+        expect(data).to.deep.equal([{name: 'jackpot'}])
       })
     })
   })

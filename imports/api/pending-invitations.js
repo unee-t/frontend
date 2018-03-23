@@ -39,6 +39,109 @@ export const unassignPending = caseId => {
   })
 }
 
+export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
+  const currUser = Meteor.users.findOne({_id: Meteor.userId()})
+  const { token } = currUser.bugzillaCreds
+
+  let unitItem
+  try {
+    const unitRequest = callAPI('get', `/rest/product/${unitId}`, {token}, false, true)
+    unitItem = unitRequest.data.products[0]
+  } catch (e) {
+    console.error(e)
+    return 'API Error'
+  }
+
+  // Checking only the default_assigned_to field (Should default_qa_contact be added too in the future?)
+  const userAssignedToComponent = unitItem.components.filter(
+      ({default_assigned_to: assignedTo}) => assignedTo === email
+    ).length > 0
+  const userWasInvitedToRole = (() => {
+    const existingInvolvedUser = Meteor.users.findOne({
+      'emails.address': email,
+      invitedToCases: {
+        $elemMatch: {
+          unitId,
+          // This is only for if the invitation was already 'done' so the user can be added to the case directly,
+          //   and not via email
+          done: true
+        }
+      }
+    })
+    return !!existingInvolvedUser
+  })()
+  const isUserAlreadyInvolved = userAssignedToComponent || userWasInvitedToRole
+  if (isUserAlreadyInvolved) {
+    return 'This email belongs to a user already assigned to a role in this unit'
+  }
+
+  const inviteeUser = Accounts.findUserByEmail(email)
+  if (inviteeUser && inviteeUser.invitedToCases) {
+    const conflictingUnitInvitations = inviteeUser.invitedToCases.filter(
+      ({role: roleB, isOccupant: isOccupantB, unitId: unitIdB}) => (
+        unitIdB === unitId && (isOccupantB !== isOccupant || roleB !== role)
+      )
+    )
+    if (conflictingUnitInvitations.length) {
+      return 'This user was already invited to another case for this unit, but in a different role'
+    }
+  }
+  return false
+}
+
+export const createPendingInvitation = (email, role, isOccupant, caseId, unitId, type) => {
+  const currUser = Meteor.users.findOne({_id: Meteor.userId()})
+  let inviteeUser = Accounts.findUserByEmail(email)
+  if (!inviteeUser) {
+    // Using Meteor accounts package to create the user with no signup
+    Accounts.createUser({
+      email,
+      profile: {
+        isLimited: true
+      }
+    })
+
+    console.log(`new user created for ${email}`)
+
+    inviteeUser = Accounts.findUserByEmail(email)
+  }
+
+  // Checking if there's another user invited to be the assignee, changing it to be CC instead
+  if (type === TYPE_ASSIGNED) {
+    unassignPending(caseId)
+  }
+
+  // Updating the invitee user with the details of the invitation
+  Meteor.users.update(inviteeUser._id, {
+    $push: {
+      invitedToCases: {
+        role,
+        isOccupant,
+        caseId,
+        unitId,
+        invitedBy: currUser._id,
+        timestamp: Date.now(),
+        type,
+        accessToken: randToken.generate(24)
+      }
+    }
+  })
+
+  console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).invitedToCases)
+
+  const invitationId = PendingInvitations.insert({
+    invitedBy: currUser.bugzillaCreds.id,
+    invitee: inviteeUser.bugzillaCreds.id,
+    role,
+    isOccupant,
+    caseId,
+    unitId,
+    type
+  })
+
+  console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
+}
+
 PendingInvitations.helpers({
   inviteeUser () {
     return Meteor.users.findOne({'bugzillaCreds.id': this.invitee})
@@ -87,42 +190,12 @@ Meteor.methods({
       throw new Meteor.Error('Invalid invitation type')
     }
     if (Meteor.isServer) {
-      const currUser = Meteor.users.findOne({_id: Meteor.userId()})
-      const { token } = currUser.bugzillaCreds
-
-      let unitItem
-      try {
-        const unitRequest = callAPI('get', `/rest/product/${unitId}`, {token}, false, true)
-        unitItem = unitRequest.data.products[0]
-      } catch (e) {
-        console.error(e)
-        throw new Meteor.Error('API Error')
+      const conflictMessage = findUnitRoleConflictErrors(unitId, email, role, isOccupant)
+      if (conflictMessage) {
+        throw new Meteor.Error(conflictMessage)
       }
 
-      // Checking only the default_assigned_to field (Should default_qa_contact be added too in the future?)
-      const userAssignedToComponent = unitItem.components.filter(
-        ({default_assigned_to: assignedTo}) => assignedTo === email
-      ).length > 0
-      const userWasInvitedToRole = (() => {
-        const existingInvolvedUser = Meteor.users.findOne({
-          'emails.address': email,
-          invitedToCases: {
-            $elemMatch: {
-              unitId,
-              // This is only for if the invitation was already 'done' so the user can be added to the case directly,
-              //   and not via email
-              done: true
-            }
-          }
-        })
-        return !!existingInvolvedUser
-      })()
-      const isUserAlreadyInvolved = userAssignedToComponent || userWasInvitedToRole
-      if (isUserAlreadyInvolved) {
-        throw new Meteor.Error('This email belongs to a user already assigned to a role in this unit')
-      }
-
-      let inviteeUser = Accounts.findUserByEmail(email)
+      const inviteeUser = Accounts.findUserByEmail(email)
       if (inviteeUser && inviteeUser.invitedToCases) {
         const conflictingCaseInvitations = inviteeUser.invitedToCases.filter(({caseId: caseIdB}) => caseIdB === caseId)
         if (conflictingCaseInvitations.length) {
@@ -130,64 +203,8 @@ Meteor.methods({
             'This user has been invited before to this case, please wait until the invitation is finalized'
           )
         }
-        const conflictingUnitInvitations = inviteeUser.invitedToCases.filter(
-          ({role: roleB, isOccupant: isOccupantB, unitId: unitIdB}) => (
-            unitIdB === unitId && (isOccupantB !== isOccupant || roleB !== role)
-          )
-        )
-        if (conflictingUnitInvitations.length) {
-          throw new Meteor.Error('This user was already invited to another case for this unit, but in a different role')
-        }
       }
-
-      if (!inviteeUser) {
-        // Using Meteor accounts package to create the user with no signup
-        Accounts.createUser({
-          email,
-          profile: {
-            isLimited: true
-          }
-        })
-
-        console.log(`new user created for ${email}`)
-
-        inviteeUser = Accounts.findUserByEmail(email)
-      }
-
-      // Checking if there's another user invited to be the assignee, changing it to be CC instead
-      if (type === TYPE_ASSIGNED) {
-        unassignPending(caseId)
-      }
-
-      // Updating the invitee user with the details of the invitation
-      Meteor.users.update(inviteeUser._id, {
-        $push: {
-          invitedToCases: {
-            role,
-            isOccupant,
-            caseId,
-            unitId,
-            invitedBy: currUser._id,
-            timestamp: Date.now(),
-            type,
-            accessToken: randToken.generate(24)
-          }
-        }
-      })
-
-      console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).invitedToCases)
-
-      const invitationId = PendingInvitations.insert({
-        invitedBy: currUser.bugzillaCreds.id,
-        invitee: inviteeUser.bugzillaCreds.id,
-        role,
-        isOccupant,
-        caseId,
-        unitId,
-        type
-      })
-
-      console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
+      createPendingInvitation(email, role, isOccupant, caseId, unitId, type)
     }
   }
 })

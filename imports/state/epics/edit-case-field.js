@@ -11,7 +11,7 @@ export const editCaseField = action$ => action$
     debounceTime(750),
     distinctUntilChanged(),
     tap(
-      ({fieldName, newValue, caseId}) => Meteor.call(`${collectionName}.editCaseField`, parseInt(caseId), fieldName, newValue)
+      ({changeSet, caseId}) => Meteor.call(`${collectionName}.editCaseField`, parseInt(caseId), changeSet)
     ),
     ignoreElements()
   )
