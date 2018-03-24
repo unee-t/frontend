@@ -182,7 +182,7 @@ const CaseContainer = createContainer(props => {
       commentsError = error
     }
   })
-  const currCase = Cases.findOne(caseId)
+  const currCase = caseHandle.ready() ? Cases.findOne(caseId) : null
   let currUnit, unitHandle
   if (currCase) {
     unitHandle = Meteor.subscribe(`${unitsCollName}.byId`, currCase.selectedUnit, {
@@ -190,7 +190,7 @@ const CaseContainer = createContainer(props => {
         unitError = error
       }
     })
-    currUnit = Units.findOne({name: currCase.selectedUnit})
+    currUnit = unitHandle.ready() ? Units.findOne({name: currCase.selectedUnit}) : null
   }
   const cfvHandle = Meteor.subscribe(`${cfvCollName}.fetchByName`, 'status', {
     onStop: error => {
