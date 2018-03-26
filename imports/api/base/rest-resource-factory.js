@@ -91,6 +91,11 @@ export default ({collectionName, dataResolver}) => {
         subHandle.ready()
       })
       .catch(err => {
+        console.log(
+          `client request from user ${subHandle.userId} to ${url} with ${JSON.stringify(payload)} resulted
+           in an error:`,
+          err
+        )
         subHandle.ready()
         subHandle.error(new Meteor.Error({message: 'REST API error', origError: err}))
       })

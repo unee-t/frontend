@@ -30,7 +30,8 @@ class CaseExplorer extends Component {
     super(...arguments)
     this.state = {
       caseId: '',
-      expandedUnits: []
+      expandedUnits: [],
+      unitsDict: {}
     }
   }
   handleExpandUnit (evt, unitTitle) {
