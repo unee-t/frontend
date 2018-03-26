@@ -13,35 +13,43 @@ export const factoryOptions = {
   dataResolver: data => data.products
 }
 
-export const getUnitRoles = unit => _.uniqBy(
-  unit.components.reduce((all, {default_assigned_to: assigned, name}) => { // Getting names from the unit's components
-    if (assigned) {
-      all.push({
-        login: assigned,
-        role: name
-      })
+const makeInvitationMatcher = unitItem => ({
+  invitedToCases: {
+    $elemMatch: {
+      unitId: unitItem.id
     }
-    return all
-  }, []).concat(Meteor.users.find({ // Getting more names of users with a finalized invitation to the unit
-    invitedToCases: {
-      $elemMatch: {
-        unitId: unit.id,
-        done: true
+  }
+})
+
+export const getUnitRoles = unit => {
+  const invMatcher = makeInvitationMatcher(unit)
+  invMatcher.invitedToCases.$elemMatch.done = true
+  return _.uniqBy(
+    unit.components.reduce((all, {default_assigned_to: assigned, name}) => { // Getting names from the unit's components
+      if (assigned) {
+        all.push({
+          login: assigned,
+          role: name
+        })
       }
-    }
-  }, Meteor.isServer ? { // Projection is only done on the server, as some features are not supported in Minimongo
-    fields: {
-      'invitedToCases.$': 1,
-      'bugzillaCreds.login': 1
-    }
-  } : {}).fetch()
-  // Mapping the users to the same interface as the first half of the array
-    .map(({ invitedToCases: [{ role }], bugzillaCreds: { login } }) => ({
-      login,
-      role
-    }))),
-  ({login}) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation
-)
+      return all
+    }, []).concat(Meteor.users.find(
+      invMatcher, // Getting more names of users with a finalized invitation to the unit
+      Meteor.isServer ? { // Projection is only done on the server, as some features are not supported in Minimongo
+        fields: Object.assign({
+          'bugzillaCreds.login': 1
+        }, invMatcher)
+      } : {}
+    ).fetch()
+    // Mapping the users to the same interface as the first half of the array
+      .map(({ invitedToCases: [{ role }], bugzillaCreds: { login } }) => ({
+        login,
+        role
+      }))
+    ),
+    ({login}) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation
+  )
+}
 
 if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
@@ -56,16 +64,8 @@ if (Meteor.isServer) {
     }),
     withUsers(
       unitItem => getUnitRoles(unitItem).map(u => u.login),
-      (query, unitItem) => Object.assign({
-        invitedToCases: {
-          $elemMatch: {
-            unitId: unitItem.id
-          }
-        }
-      }, query),
-      (projection, unitItem) => Object.assign({
-        'invitedToCases.$': 1
-      }, projection)
+      (query, unitItem) => Object.assign(makeInvitationMatcher(unitItem), query),
+      (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
     )
   ))
 
