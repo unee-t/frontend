@@ -23,14 +23,49 @@ export const invite = (user, invitedBy) => {
       from: process.env.FROM_EMAIL,
       replyTo: `${invitorUsername} <${invitorEmailAddress}>`,
       subject: `New Case: ${caseTitle}`,
-      text: `Hi there,
+      text: `Hi,
 
-${invitorUsername || invitorEmailAddress}, the ${roleStr} for the Unit ${unitName} (${unitDesc}) has invited you to collaborate on the case ${caseTitle} as the ${inviteeRole} for that unit.
+${invitorUsername || invitorEmailAddress},
+the ${roleStr} for the unit ${unitName}
+${unitDesc}
+has invited you to collaborate on the case [${caseTitle}]
+as the ${inviteeRole} for that unit.
 
-Please click the link below to get more information about the case and reply to ${invitorUsername || 'him'}:
+Please click on the link to get more information about the case and reply to ${invitorUsername || 'him'}:
 ${url.resolve(process.env.ROOT_URL, `/invitation?code=${accessToken}`)}
 
-Kind regards,
-`})
-  } catch (e) { console.log(e) }
+Unee-t: Managing and sharing 'To Do's for your properties has never been easier.
+https://unee-t.com
+
+`,
+      html: `<img src="cid:logo@unee-t.com"/>
+
+<p>Hi,</p>
+
+<p>
+<br>${invitorUsername || invitorEmailAddress},
+<br>the ${roleStr} for the unit
+<br><b>${unitName}</b>
+<br>${unitDesc}
+<br>has invited you to collaborate on the case <b>${caseTitle}</b>
+<br>as the <b>${inviteeRole}</b> for that unit.
+</p>
+<p>
+<br>Please click on <a href=${url.resolve(process.env.ROOT_URL, `/invitation?code=${accessToken}`)}>this link</a> to get more information about the case and reply to ${invitorUsername || 'him'}.
+<br>If the above link does not work, copy paste this in your browser: ${url.resolve(process.env.ROOT_URL, `/invitation?code=${accessToken}`)}
+</p>
+<p><a href=https://unee-t.com>Unee-T</a>, managing and sharing 'To Do's for your properties has never been easier.</p>
+
+`,
+      attachments: [{
+        filename: 'unee-t_logo_email.png',
+        path: `${process.env.PWD}/public/unee-t_logo_email.png`,
+        cid: 'logo@unee-t.com'
+      }]
+    })
+  } catch (e) {
+    console.log(`${process.env.PWD}/public/unee-t_logo_email.png`)
+    console.log(process.cwd())
+    console.log(e)
+  }
 }
