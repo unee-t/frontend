@@ -59,7 +59,7 @@ https://unee-t.com
 `,
       attachments: [{
         filename: 'unee-t_logo_email.png',
-        path: `/home/meteor/www/bundle/programs/web.browser/app/unee-t_logo_email.png`,
+        path: Assets.absoluteFilePath('unee-t_logo_email.png'),
         cid: 'logo@unee-t.com'
       }]
     })
