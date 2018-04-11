@@ -31,6 +31,7 @@ class App extends Component {
           <Switch>
             <Route exact path='/unit/new' component={UnderConstruction} />
             <Route exact path='/dashboard' component={Dashboard} />
+            <Route exact path='/invitation' component={InvitationLogin} />
             <Route exact path='/case/new' component={CaseWizard} />
             <Route path='/case' component={CaseMaster} />
             <Redirect to='/case' />

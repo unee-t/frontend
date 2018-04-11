@@ -21,8 +21,6 @@ if (Meteor.isServer) {
 
 Meteor.methods({
   'users.invitationLogin': function (code) {
-    if (Meteor.user()) throw new Meteor.Error('Not allowed for an existing user')
-
     // Reusable matcher object for the next mongo queries
     const codeMatcher = {
       invitedToCases: {
@@ -40,7 +38,10 @@ Meteor.methods({
         emails: 1
       }, codeMatcher)
     })
-    if (!invitedUser) throw new Meteor.Error('The code is invalid or login is required first')
+    if (!invitedUser) {
+      console.log('The code is invalid or login is required first')
+      throw new Meteor.Error('The code is invalid or login is required first')
+    }
 
     // Track accesses
     AccessInvitations.upsert({

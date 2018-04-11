@@ -16,7 +16,6 @@ import 'rxjs/add/operator/switchMap'
 
 export const fetchInvitationCredentials = action$ => action$
   .ofType(FETCH_INVITATION_CREDENTIALS)
-  .filter(() => !Meteor.userId()) // fail safe, but shouldn't happen
   .switchMap(({code}) => {
     const meteorResult$ = new Subject()
     Meteor.call('users.invitationLogin', code, (error, {email, pw, caseId, invitedByDetails}) => {
