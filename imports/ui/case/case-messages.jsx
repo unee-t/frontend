@@ -269,6 +269,7 @@ class CaseMessages extends Component {
         <div className='flex-grow relative'>
           <input type='text' placeholder='Type your response' ref='messageInput'
             onChange={this.handleMessageInput.bind(this)} value={message}
+            onKeyPress={event => { if (event.key === 'Enter' && message.replace(/\s/g, '').length > 0) { this.handleCreateMessage(event) } }}
             className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib outline-0 w-100' />
         </div>
         <div className='mh2'>
