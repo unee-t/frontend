@@ -13,7 +13,6 @@ import { fitDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
-import PopoverButton from '../components/popover-button'
 import EditableItem from '../components/editable-item'
 
 import {
@@ -59,7 +58,8 @@ class CaseDetails extends Component {
     this.state = {
       filterString: '',
       fieldValues: {},
-      immediateStatusVal: props.caseItem.status
+      immediateStatusVal: props.caseItem.status,
+      chosenAssigned: null
     }
   }
   componentDidMount () {
@@ -145,6 +145,7 @@ class CaseDetails extends Component {
 
   renderAssignedTo = (assignedUser, unitUsers, pendingInvitations) => {
     const { match, invitationState, onResetInvitation, onNewUserAssigned, onExistingUserAssigned } = this.props
+    const { chosenAssigned } = this.state
     const pendingUsers = pendingInvitations.map(inv => {
       const { bugzillaCreds: { login }, profile: { name }, emails: [{address: email}] } = inv.inviteeUser()
       return {
@@ -156,6 +157,7 @@ class CaseDetails extends Component {
       }
     })
     const resolvedAssignedUser = pendingUsers.find(u => u.type === TYPE_ASSIGNED) || assignedUser
+    const resolvedChosenAssigned = chosenAssigned || resolvedAssignedUser
     return (
       <InfoItemContainer>
         {infoItemLabel('Assigned to:')}
@@ -171,27 +173,32 @@ class CaseDetails extends Component {
           onNewUserInvited={onNewUserAssigned}
           basePath={match.url} relPath='assign'
           title='Who should be assigned?'
+          linkLabelForNewUser='Invite a new assignee'
+          mainOperationText='Assign case'
+          disableMainOperation={!chosenAssigned || chosenAssigned.login === resolvedAssignedUser.login}
+          onMainOperation={() => onExistingUserAssigned(chosenAssigned)}
           additionalOperationText='Assign to someone else'
           potentialInvitees={unitUsers}
           pendingInvitees={pendingUsers}
           selectControlsRenderer={({allInvitees, inputRefFn}) => (
-            <div className='flex flex-column flex-grow'>
-              <PopoverButton buttonText={
-                resolvedAssignedUser.name || resolvedAssignedUser.email || resolvedAssignedUser.login
-              }>
-                <div className='pa1 ba b--moon-gray br2 flex-grow flex flex-column'>
-                  <UsersSearchList
-                    users={allInvitees}
-                    onUserClick={onExistingUserAssigned}
-                    searchInputRef={inputRefFn}
-                    userClassNames={user => user.login === resolvedAssignedUser.login ? 'bg-very-light-gray' : ''}
-                    userStatusRenderer={user => user.pending && (
-                      <span className='f6 silver i'>Pending</span>
-                    )}
-                  />
-                </div>
-              </PopoverButton>
-            </div>
+            <UsersSearchList
+              users={allInvitees}
+              onUserClick={user => this.setState({chosenAssigned: user})}
+              searchInputRef={inputRefFn}
+              userClassNames={user => user.login === resolvedChosenAssigned.login ? 'bg-very-light-gray' : ''}
+              userStatusRenderer={user => {
+                if (user.pending) {
+                  return (
+                    <span className='f7 silver i'>Pending</span>
+                  )
+                }
+                if (user.login === resolvedAssignedUser.login) {
+                  return (
+                    <span className='f7 gray b'>Assigned</span>
+                  )
+                }
+              }}
+            />
           )}
         />
       </InfoItemContainer>
@@ -227,6 +234,9 @@ class CaseDetails extends Component {
           {...{onNewUserInvited, invitationState, onResetInvitation}}
           basePath={match.url} relPath='invite'
           title='Who should be invited?'
+          onMainOperation={() => {}}
+          linkLabelForNewUser='Invite a new user'
+          mainOperationText='Invite user'
           additionalOperationText='Invite another user'
           potentialInvitees={unitUsers
             .filter(u => u.login !== creator.login && u.login !== assignee.login)

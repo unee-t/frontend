@@ -8,6 +8,7 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
+import RaisedButton from 'material-ui/RaisedButton'
 import { negate, flow } from 'lodash'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
@@ -137,7 +138,7 @@ class InviteDialog extends Component {
   render () {
     const {
       basePath, relPath, invitationState, onResetInvitation, pendingInvitees, selectControlsRenderer,
-      title, additionalOperationText
+      title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
     const allInvitees = this.normalizedInviteeList
@@ -171,12 +172,21 @@ class InviteDialog extends Component {
                   allInvitees,
                   inputRefFn: el => { this.inputToFocus = el }
                 })}
-                <div className='no-shrink'>
-                  <p className='tc i mid-gray'>Can't find who you're looking for?</p>
-                  <Link to={`${basePath}/${relPath}/new`}
-                    className={simpleLinkClasses + ' w-100 tc'}>
-                    Invite a new user
-                  </Link>
+                <div className='no-shrink pt2'>
+                  <RaisedButton className='mt1' fullWidth backgroundColor='var(--bondi-blue)'
+                    onClick={onMainOperation} disabled={disableMainOperation}
+                  >
+                    <span className={'b ' + (disableMainOperation ? 'gray' : 'white')}>
+                      {mainOperationText}
+                    </span>
+                  </RaisedButton>
+                  <p className='tc i mid-gray lh-title mt3 mb0'>
+                    Can't find who you're looking for?&nbsp;
+                    <Link to={`${basePath}/${relPath}/new`}
+                      className='link b bondi-blue'>
+                      {linkLabelForNewUser}
+                    </Link>
+                  </p>
                 </div>
               </div>
             )} />
@@ -288,6 +298,10 @@ InviteDialog.propTypes = {
   invitationState: PropTypes.object.isRequired,
   selectControlsRenderer: PropTypes.func.isRequired,
   additionalOperationText: PropTypes.string.isRequired,
+  mainOperationText: PropTypes.string.isRequired,
+  onMainOperation: PropTypes.func.isRequired,
+  linkLabelForNewUser: PropTypes.string.isRequired,
+  disableMainOperation: PropTypes.bool,
   pendingInvitees: PropTypes.array
 }
 
