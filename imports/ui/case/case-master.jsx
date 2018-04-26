@@ -16,6 +16,7 @@ import Preloader from '../preloader/preloader'
 import Case from './case'
 import UserAvatar from '../components/user-avatar'
 import { logoutUser } from '../general-actions'
+import { getColorForUser } from '/imports/util/user.js'
 
 import {
   titleStyle,
@@ -112,8 +113,10 @@ class CaseMaster extends Component {
   )
   renderCurrUserAvatar = (isBig) => {
     const { user } = this.props
+    const userColor = getColorForUser(user)
+
     return (
-      <UserAvatar additionalClasses='ba b--moon-gray' isBig={isBig} user={{
+      <UserAvatar additionalClasses={`ba ${userColor}`} isBig={isBig} user={{
         name: user.profile && user.profile.name,
         login: user.bugzillaCreds && user.bugzillaCreds.login,
         email: user.emails && user.emails[0].address

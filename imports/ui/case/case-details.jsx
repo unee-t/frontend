@@ -6,7 +6,8 @@ import IconButton from 'material-ui/IconButton'
 import _ from 'lodash'
 import moment from 'moment'
 import themes from '../components/user-themes.mss'
-import UserAvatar from '../components/user-avatar'
+
+import { userInfoItem } from '/imports/util/user.js'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
@@ -47,17 +48,6 @@ const infoItemRow = (label, value) => (
   <InfoItemContainer>
     {infoItemMembers(label, value)}
   </InfoItemContainer>
-)
-
-const userInfoItem = (user, theme, rightRenderer) => (
-  <div key={user.login} className={theme + ' flex pt2'}>
-    <UserAvatar user={user} />
-    <div className='ml2 pl1 flex-grow overflow-hidden'>
-      <div className='mid-gray ellipsis'>{user.name || user.login}</div>
-      <div className='mt1 f7 gray ellipsis'>{user.role || 'Administrator'}</div>
-    </div>
-    {rightRenderer && rightRenderer(user)}
-  </div>
 )
 
 const mediaItemsPadding = 4 // Corresponds with the classNames set to the media items
@@ -148,7 +138,7 @@ class CaseDetails extends Component {
     <div className='bt bw3 b--very-light-gray'>
       <InfoItemContainer>
         {infoItemLabel('Created by:')}
-        {userInfoItem(user, themes.theme1)}
+        {userInfoItem(user)}
       </InfoItemContainer>
     </div>
   )
@@ -169,7 +159,7 @@ class CaseDetails extends Component {
     return (
       <InfoItemContainer>
         {infoItemLabel('Assigned to:')}
-        {userInfoItem(resolvedAssignedUser, themes.theme2, user => (
+        {userInfoItem(resolvedAssignedUser, user => (
           <Link to={`${match.url}/assign`} className='link outline-0'>
             <IconButton>
               <FontIcon className='material-icons' color='#999'>edit</FontIcon>
@@ -224,8 +214,8 @@ class CaseDetails extends Component {
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
-        {subscribed.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)]))}
-        {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)]))}
+        {subscribed.map((user) => userInfoItem(user))}
+        {pendingUsers.map((user) => userInfoItem(user))}
         <Link to={`${match.url}/invite`}
           className='mt2 link flex items-center outline-0'>
           <div className={[themes.sized, themes.size1, 'br-100 ba b--moon-gray bg-transparent tc'].join(' ')}>

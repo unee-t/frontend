@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import MenuItem from 'material-ui/MenuItem'
 import UserAvatar from './user-avatar'
-import themes from './user-themes.mss'
+
+import { getColorForUser } from '/imports/util/user.js'
 
 class UsersSearchList extends Component {
   constructor () {
@@ -47,7 +48,7 @@ class UsersSearchList extends Component {
                   return (
                     <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={{padding: 0}}>
                       <div className={
-                        themes['theme' + ((user.origIdx % 10) + 1)] + ' flex pv2 ph2 lh-title ' + extraClasses
+                        getColorForUser(user) + ' flex pv2 ph2 lh-title ' + extraClasses
                       }>
                         <div className='ml1'>
                           <UserAvatar user={user} />
