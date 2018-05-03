@@ -269,7 +269,7 @@ class CaseDetails extends Component {
           <div className={[themes.sized, themes.size1, 'br-100 ba b--moon-gray bg-transparent tc'].join(' ')}>
             <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon>
           </div>
-          <div className='ml2 pl1 bondi-blue'>Invite or remove users</div>
+          <div className='ml2 pl1 bondi-blue'>Invite users to case</div>
         </Link>
         <InviteDialog
           {...{onNewUserInvited, invitationState, onResetInvitation}}
