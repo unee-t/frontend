@@ -2,12 +2,13 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Link, withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
+import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
-import _ from 'lodash'
+import _, { negate, flow } from 'lodash'
 import moment from 'moment'
 import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
-import { attachmentTextMatcher } from '../../util/matchers'
+import { attachmentTextMatcher, placeholderEmailMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
@@ -69,9 +70,18 @@ class CaseDetails extends Component {
       filterString: '',
       fieldValues: {},
       immediateStatusVal: props.caseItem.status,
-      chosenAssigned: null
+      chosenAssigned: null,
+      usersToBeInvited: [],
+      normalizedUnitUsers: null
     }
   }
+
+  componentWillMount () {
+    this.setState({
+      normalizedUnitUsers: this.normalizeUnitUsers()
+    })
+  }
+
   componentDidMount () {
     this.setState({
       computedMediaItemWidth: Math.round((this.refs.media.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
@@ -84,7 +94,17 @@ class CaseDetails extends Component {
         immediateStatusVal: nextProps.caseItem.status
       })
     }
+    if (nextProps.unitUsers !== this.props.unitUsers) {
+      this.setState({
+        normalizedUnitUsers: this.normalizeUnitUsers()
+      })
+    }
   }
+
+  normalizeUnitUsers = () => this.props.unitUsers.filter(flow([
+    u => u.login,
+    negate(placeholderEmailMatcher)
+  ]))
 
   handleStatusEdit = val => {
     const matchingValDef = this.props.cfvDictionary.status.values.find(({name}) => name === val)
@@ -153,7 +173,7 @@ class CaseDetails extends Component {
     </div>
   )
 
-  renderAssignedTo = (assignedUser, unitUsers, pendingInvitations) => {
+  renderAssignedTo = (assignedUser, normalizedUnitUsers, pendingInvitations) => {
     const { match, invitationState, onResetInvitation, onNewUserAssigned, onExistingUserAssigned } = this.props
     const { chosenAssigned } = this.state
     const pendingUsers = pendingInvitations.map(inv => {
@@ -188,11 +208,10 @@ class CaseDetails extends Component {
           disableMainOperation={!chosenAssigned || chosenAssigned.login === resolvedAssignedUser.login}
           onMainOperation={() => onExistingUserAssigned(chosenAssigned)}
           additionalOperationText='Assign to someone else'
-          potentialInvitees={unitUsers}
-          pendingInvitees={pendingUsers}
-          selectControlsRenderer={({allInvitees, inputRefFn}) => (
+          potentialInvitees={normalizedUnitUsers.concat(pendingUsers.map(u => Object.assign({pending: true}, u)))}
+          selectControlsRenderer={({users, inputRefFn}) => (
             <UsersSearchList
-              users={allInvitees}
+              users={users}
               onUserClick={user => this.setState({chosenAssigned: user})}
               searchInputRef={inputRefFn}
               userClassNames={user => user.login === resolvedChosenAssigned.login ? 'bg-very-light-gray' : ''}
@@ -215,10 +234,14 @@ class CaseDetails extends Component {
     )
   }
 
-  renderPeopleInvolved = ({creator, assignee, subscribed}, unitUsers, pendingInvitations) => {
+  renderPeopleInvolved = (
+    caseItem, unitItem, {creator, assignee, subscribed}, normalizedUnitUsers, pendingInvitations, successAdded
+  ) => {
     const {
-      match, onRoleUserAdded, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved
+      match, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved, onRoleUsersInvited,
+      onClearRoleUsersState
     } = this.props
+    const { usersToBeInvited } = this.state
     const pendingUsers = pendingInvitations.filter(inv => inv.type === TYPE_CC).map(inv => {
       const { bugzillaCreds: { login }, profile: { name } } = inv.inviteeUser()
       return {
@@ -231,8 +254,16 @@ class CaseDetails extends Component {
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
-        {subscribed.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)]))}
-        {pendingUsers.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)]))}
+        {subscribed.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)], user => (
+          <IconButton onClick={() => onRoleUserRemoved(user)}>
+            <FontIcon className='material-icons' color='#999'>close</FontIcon>
+          </IconButton>
+        )))}
+        {pendingUsers.map((user, ind) => userInfoItem(
+          user,
+          themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)],
+          () => <span className='f7 warn-crimson b'>Pending</span>
+        ))}
         <Link to={`${match.url}/invite`}
           className='mt2 link flex items-center outline-0'>
           <div className={[themes.sized, themes.size1, 'br-100 ba b--moon-gray bg-transparent tc'].join(' ')}>
@@ -244,34 +275,59 @@ class CaseDetails extends Component {
           {...{onNewUserInvited, invitationState, onResetInvitation}}
           basePath={match.url} relPath='invite'
           title='Who should be invited?'
-          onMainOperation={() => {}}
+          onMainOperation={() => onRoleUsersInvited(usersToBeInvited)}
           linkLabelForNewUser='Invite a new user'
-          mainOperationText='Invite user'
-          additionalOperationText='Invite another user'
-          potentialInvitees={unitUsers
-            .filter(u => u.login !== creator.login && u.login !== assignee.login)
-            .map(u => Object.assign({alreadyInvited: invitedUsersEmails.includes(u.login)}, u))
-          }
-          pendingInvitees={pendingUsers}
-          selectControlsRenderer={({allInvitees, inputRefFn}) => (
+          mainOperationText='Send invitation'
+          additionalOperationText='Invite more users'
+          potentialInvitees={normalizedUnitUsers.filter(u =>
+            u.login !== creator.login && u.login !== assignee.login && !invitedUsersEmails.includes(u.login)
+          )}
+          mainOperationSuccessContent={!successAdded ? null : (
+            <div>
+              <p className='f4 mv0'>
+                Awesome! We've sent an invite to&nbsp;
+                {successAdded
+                  .map(loginName => normalizedUnitUsers.find(u => u.login === loginName))
+                  .reduce((all, user, idx, arr) => { // Creating a comma/"and" delimited list of users
+                    if (all.length > 0) {
+                      if (idx < arr.length - 1) {
+                        all.push(<span key={all.length}>, </span>)
+                      } else {
+                        all.push(<span key={all.length}> and </span>)
+                      }
+                    }
+                    all.push(<span className='bondi-blue' key={all.length}>{user.name || user.login}</span>)
+                    return all
+                  }, [])
+                }
+                &nbsp;to collaborate on the case&nbsp;
+                <span className='b'>"{caseItem.title}"</span>
+                &nbsp;for the unit&nbsp;
+                <span className='b'>{unitItem.name}</span>
+              </p>
+              <RaisedButton className='mt4' label='Invite another person' labelColor='white' backgroundColor='var(--bondi-blue)'
+                onClick={onClearRoleUsersState}
+              />
+            </div>
+          )}
+          selectControlsRenderer={({users, inputRefFn}) => (
             <UsersSearchList
-              users={allInvitees}
-              onUserClick={user => !user.pending && (user.alreadyInvited
-                ? onRoleUserRemoved(user)
-                : onRoleUserAdded(user))
-              }
+              users={users}
+              onUserClick={user => this.setState({
+                usersToBeInvited: usersToBeInvited.includes(user.login)
+                  ? usersToBeInvited.filter(u => u !== user.login)
+                  : usersToBeInvited.concat([user.login])
+              })}
               searchInputRef={inputRefFn}
-              userStatusRenderer={user =>
-                user.pending ? (
-                  <span className='f6 silver i'>Pending</span>
-                ) : user.alreadyInvited ? (
-                  <div className='flex flex-column items-center justify-center'>
+              userStatusRenderer={user => (
+                <div className='flex flex-column items-center justify-center'>
+                  {usersToBeInvited.includes(user.login) ? (
                     <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
-                  </div>
-                ) : (
-                  <span className='f6 silver'>Invite</span>
-                )
-              }
+                  ) : (
+                    <FontIcon className='material-icons' color='var(--silver)'>panorama_fish_eye</FontIcon>
+                  )}
+                </div>
+              )}
             />
           )}
         />
@@ -321,7 +377,12 @@ class CaseDetails extends Component {
   }
 
   render () {
-    const { caseItem, comments, unitUsers, unitItem, caseUserTypes, pendingInvitations, cfvDictionary } = this.props
+    const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, cfvDictionary, caseUsersState } = this.props
+    const { normalizedUnitUsers } = this.state
+    let successfullyAddedUsers
+    if (parseInt(caseUsersState.caseId) === parseInt(caseItem.id)) {
+      successfullyAddedUsers = caseUsersState.added
+    }
     return (
       <div className='flex-grow overflow-auto h-100'>
         {this.renderTitle(caseItem)}
@@ -330,8 +391,10 @@ class CaseDetails extends Component {
         {this.renderStatusLine(caseItem, cfvDictionary)}
         {this.renderCategoriesLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
-        {this.renderAssignedTo(caseUserTypes.assignee, unitUsers, pendingInvitations)}
-        {this.renderPeopleInvolved(caseUserTypes, unitUsers, pendingInvitations)}
+        {this.renderAssignedTo(caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations)}
+        {this.renderPeopleInvolved(
+          caseItem, unitItem, caseUserTypes, normalizedUnitUsers, pendingInvitations, successfullyAddedUsers
+        )}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
       </div>
@@ -365,10 +428,11 @@ CaseDetails.propTypes = {
   unitItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
   onSelectAttachment: PropTypes.func.isRequired,
-  onRoleUserAdded: PropTypes.func.isRequired,
+  onRoleUsersInvited: PropTypes.func.isRequired,
   onRoleUserRemoved: PropTypes.func.isRequired,
   onNewUserInvited: PropTypes.func.isRequired,
   onNewUserAssigned: PropTypes.func.isRequired,
+  onClearRoleUsersState: PropTypes.func.isRequired,
   onExistingUserAssigned: PropTypes.func.isRequired,
   onResetInvitation: PropTypes.func.isRequired,
   unitUsers: PropTypes.array.isRequired,
@@ -376,6 +440,7 @@ CaseDetails.propTypes = {
   caseUserTypes: PropTypes.object.isRequired,
   onFieldEdit: PropTypes.func.isRequired,
   cfvDictionary: PropTypes.object.isRequired,
+  caseUsersState: PropTypes.object.isRequired,
   pendingInvitations: PropTypes.array
 }
 

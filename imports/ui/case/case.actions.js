@@ -5,8 +5,12 @@ export const ATTACHMENT_UPLOAD_COMPLETED = 'attachment_upload_completed'
 export const RETRY_ATTACHMENT = 'retry_attachment'
 export const CREATE_ATTACHMENT = 'create_attachment'
 export const CREATE_COMMENT = 'create_comment'
-export const ADD_ROLE_USER = 'add_role_user'
+export const ADD_ROLE_USERS = 'add_role_users'
 export const REMOVE_ROLE_USER = 'remove_role_user'
+export const ROLE_USERS_ADDED = 'role_users_added_to_case'
+export const ROLE_USERS_REMOVED = 'role_users_added_to_case'
+export const ROLE_USERS_STATE_ERROR = 'role_users_state_error_on_case'
+export const CLEAR_ROLE_USERS_STATE = 'role_users_state_cleared_from_case'
 export const INVITE_NEW_USER = 'invite_new_user'
 export const ASSIGN_NEW_USER = 'assign_new_user'
 export const ASSIGN_EXISTING_USER = 'assign_existing_user'
@@ -44,10 +48,10 @@ export function retryAttachment (process) {
   }
 }
 
-export function addRoleUser (userEmail, caseId) {
+export function addRoleUsers (userLogins, caseId) {
   return {
-    type: ADD_ROLE_USER,
-    userEmail,
+    type: ADD_ROLE_USERS,
+    userLogins,
     caseId
   }
 }
@@ -114,5 +118,11 @@ export function editCaseField (changeSet, caseId) {
     type: EDIT_CASE_FIELD,
     changeSet,
     caseId
+  }
+}
+
+export function clearRoleUsersState () {
+  return {
+    type: CLEAR_ROLE_USERS_STATE
   }
 }

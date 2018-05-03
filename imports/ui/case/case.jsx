@@ -47,7 +47,7 @@ export class Case extends Component {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
       attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes,
       loadingPendingInvitations, pendingInvitations, showWelcomeDialog, invitedByDetails,
-      cfvDictionary, loadingCfv, cfvError
+      cfvDictionary, loadingCfv, cfvError, caseUsersState
     } = this.props
     const errors = [
       [caseError, 'case'], [commentsError, 'comments'], [unitError, 'unit'], [cfvError, 'potential field values']
@@ -70,8 +70,8 @@ export class Case extends Component {
 
     const { push } = routerRedux
     const {
-      createComment, createAttachment, retryAttachment, addRoleUser, removeRoleUser, inviteNewUser, clearInvitation,
-      clearWelcomeMessage, updateInvitedUserName, assignNewUser, assignExistingUser, editCaseField
+      createComment, createAttachment, retryAttachment, addRoleUsers, removeRoleUser, inviteNewUser, clearInvitation,
+      clearWelcomeMessage, updateInvitedUserName, assignNewUser, assignExistingUser, editCaseField, clearRoleUsersState
     } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
@@ -112,9 +112,10 @@ export class Case extends Component {
                     unitItem,
                     caseUserTypes,
                     pendingInvitations,
-                    cfvDictionary
+                    cfvDictionary,
+                    caseUsersState
                   }}
-                  onRoleUserAdded={user => dispatch(addRoleUser(user.login, caseId))}
+                  onRoleUsersInvited={userLogins => dispatch(addRoleUsers(userLogins, caseId))}
                   onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
                   onNewUserInvited={
                     (email, role, isOccupant) => dispatch(inviteNewUser(email, role, isOccupant, caseId, unitItem.id))
@@ -126,6 +127,7 @@ export class Case extends Component {
                   onResetInvitation={() => dispatch(clearInvitation())}
                   onSelectAttachment={this.navigateToAttachment.bind(this)}
                   onFieldEdit={changeSet => dispatch(editCaseField(changeSet, caseId))}
+                  onClearRoleUsersState={() => dispatch(clearRoleUsersState())}
                 />
               )} />
             </Switch>
@@ -165,7 +167,8 @@ Case.propTypes = {
   loadingPendingInvitations: PropTypes.bool.isRequired,
   pendingInvitations: PropTypes.array,
   showWelcomeDialog: PropTypes.bool,
-  invitedByDetails: PropTypes.object
+  invitedByDetails: PropTypes.object,
+  caseUsersState: PropTypes.object.isRequired
 }
 
 let caseError, commentsError, unitError, cfvError
@@ -243,13 +246,15 @@ const connectedWrapper = withRouter(connect(
     {
       caseAttachmentUploads,
       invitationState,
-      invitationLoginState: { showWelcomeMessage, invitedByDetails }
+      invitationLoginState: { showWelcomeMessage, invitedByDetails },
+      caseUsersState
     },
     props
   ) => ({
     attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || [],
     invitationState,
     invitedByDetails,
+    caseUsersState,
     showWelcomeDialog: !!showWelcomeMessage
   })
 )(CaseContainer))
