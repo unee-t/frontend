@@ -14,6 +14,7 @@ import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
 import EditableItem from '../components/editable-item'
+import ErrorDialog from '../dialogs/error-dialog'
 
 import {
   detailLineIconColor,
@@ -235,7 +236,8 @@ class CaseDetails extends Component {
   }
 
   renderPeopleInvolved = (
-    caseItem, unitItem, {creator, assignee, subscribed}, normalizedUnitUsers, pendingInvitations, successAdded
+    caseItem, unitItem, {creator, assignee, subscribed}, normalizedUnitUsers, pendingInvitations,
+    successAdded, addUsersError
   ) => {
     const {
       match, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved, onRoleUsersInvited,
@@ -272,12 +274,21 @@ class CaseDetails extends Component {
           <div className='ml2 pl1 bondi-blue'>Invite users to case</div>
         </Link>
         <InviteDialog
-          {...{onNewUserInvited, invitationState, onResetInvitation}}
+          {...{onNewUserInvited, invitationState}}
           basePath={match.url} relPath='invite'
           title='Who should be invited?'
-          onMainOperation={() => onRoleUsersInvited(usersToBeInvited)}
+          onMainOperation={() => {
+            onRoleUsersInvited(usersToBeInvited)
+            this.setState({
+              usersToBeInvited: []
+            })
+          }}
           linkLabelForNewUser='Invite a new user'
           mainOperationText='Send invitation'
+          onResetInvitation={() => {
+            onResetInvitation()
+            onClearRoleUsersState()
+          }}
           disableMainOperation={usersToBeInvited.length === 0}
           additionalOperationText='Invite more users'
           potentialInvitees={normalizedUnitUsers.filter(u =>
@@ -332,6 +343,15 @@ class CaseDetails extends Component {
             />
           )}
         />
+        <ErrorDialog
+          show={!!addUsersError}
+          text={
+            addUsersError
+            ? ('We couldn\'t add these users to this case due to: ' + addUsersError.error)
+            : ''
+          }
+          onDismissed={onClearRoleUsersState}
+        />
       </InfoItemContainer>
     )
   }
@@ -380,9 +400,10 @@ class CaseDetails extends Component {
   render () {
     const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, cfvDictionary, caseUsersState } = this.props
     const { normalizedUnitUsers } = this.state
-    let successfullyAddedUsers
+    let successfullyAddedUsers, addUsersError
     if (parseInt(caseUsersState.caseId) === parseInt(caseItem.id)) {
       successfullyAddedUsers = caseUsersState.added
+      addUsersError = caseUsersState.error
     }
     return (
       <div className='flex-grow overflow-auto h-100'>
@@ -394,7 +415,8 @@ class CaseDetails extends Component {
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations)}
         {this.renderPeopleInvolved(
-          caseItem, unitItem, caseUserTypes, normalizedUnitUsers, pendingInvitations, successfullyAddedUsers
+          caseItem, unitItem, caseUserTypes, normalizedUnitUsers, pendingInvitations,
+          successfullyAddedUsers, addUsersError
         )}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}

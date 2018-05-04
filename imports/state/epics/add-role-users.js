@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { ADD_ROLE_USERS, ROLE_USERS_ADDED, ROLE_USERS_STATE_ERROR } from '../../ui/case/case.actions'
 import { Subject } from 'rxjs/Subject'
+import { merge } from 'rxjs/observable/merge'
+import { of } from 'rxjs/observable/of'
 
 import 'rxjs/add/operator/mergeMap'
 
@@ -17,15 +19,16 @@ export const addRoleUsers = action$ =>
             users: userLogins,
             caseId
           })
-        } else {
-          meteorResult$.next({
-            type: ROLE_USERS_ADDED,
-            users: userLogins,
-            caseId
-          })
         }
         meteorResult$.complete()
       })
 
-      return meteorResult$
+      return merge(
+        meteorResult$,
+        of({
+          type: ROLE_USERS_ADDED,
+          users: userLogins,
+          caseId
+        })
+      )
     })

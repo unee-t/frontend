@@ -170,7 +170,6 @@ Meteor.methods({
           [opType]: loginNames
         }
       }
-
       try {
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
@@ -185,7 +184,7 @@ Meteor.methods({
           args: [loginNames, caseId, isAdd],
           error: e
         })
-        throw new Meteor.Error('API error')
+        throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
     }
   },
