@@ -278,6 +278,7 @@ class CaseDetails extends Component {
           onMainOperation={() => onRoleUsersInvited(usersToBeInvited)}
           linkLabelForNewUser='Invite a new user'
           mainOperationText='Send invitation'
+          disableMainOperation={usersToBeInvited.length === 0}
           additionalOperationText='Invite more users'
           potentialInvitees={normalizedUnitUsers.filter(u =>
             u.login !== creator.login && u.login !== assignee.login && !invitedUsersEmails.includes(u.login)
