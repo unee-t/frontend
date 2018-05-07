@@ -13,7 +13,9 @@ class UsersSearchList extends Component {
     }
   }
   render () {
-    const { users, onUserClick, userStatusRenderer, searchInputRef, userClassNames } = this.props
+    const {
+      users, onUserClick, userStatusRenderer, searchInputRef, userClassNames, searchEnabled, emptyListMessage
+    } = this.props
     const { filterString } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
     const filteredUsers = users
@@ -33,7 +35,7 @@ class UsersSearchList extends Component {
       <div className='flex-grow flex flex-column'>
         <div className='no-shrink flex'>
           <input placeholder='Enter the name or email'
-            className='input-reset ba b--moon-gray outline-0 lh-dbl mb2 ti3 flex-grow'
+            className={'input-reset ba b--moon-gray outline-0 lh-dbl mb2 ti3 flex-grow' + (searchEnabled ? '' : ' dn')}
             value={filterString} onChange={evt => this.setState({filterString: evt.target.value})}
             ref={searchInputRef}
           />
@@ -60,7 +62,7 @@ class UsersSearchList extends Component {
                           <div className='f7 gray ellipsis'>{user.role}</div>
                         </div>
                         {userStatusComp && (
-                          <div className='ml2'>
+                          <div className='ml2 flex flex-column justify-center'>
                             {userStatusComp}
                           </div>
                         )}
@@ -70,7 +72,9 @@ class UsersSearchList extends Component {
                 })}
               </ul>
             ) : (
-              <p className='tc i warn-crimson'>We couldn't find any users with the name entered.</p>
+              <p className='tc i warn-crimson'>
+                {emptyListMessage || 'We couldn\'t find any users with the name entered.'}
+              </p>
             )}
           </div>
         </div>
@@ -84,7 +88,9 @@ UsersSearchList.propTypes = {
   onUserClick: PropTypes.func.isRequired,
   userStatusRenderer: PropTypes.func,
   userClassNames: PropTypes.func,
-  searchInputRef: PropTypes.func
+  searchInputRef: PropTypes.func,
+  searchEnabled: PropTypes.bool,
+  emptyListMessage: PropTypes.string
 }
 
 export default UsersSearchList

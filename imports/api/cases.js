@@ -131,13 +131,15 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  [`${collectionName}.toggleParticipant`] (email, caseId, isAdd = true) {
-    check(email, String)
+  [`${collectionName}.toggleParticipants`] (loginNames, caseId, isAdd = true) {
+    check(loginNames, Array)
     check(caseId, Number)
 
-    if (!emailValidator(email)) {
-      throw new Meteor.Error('Email is not valid')
-    }
+    loginNames.forEach(email => {
+      if (!emailValidator(email)) {
+        throw new Meteor.Error(`"${email}" is not valid as an email address`)
+      }
+    })
 
     // Making sure the user is logged in before inserting a comment
     if (!Meteor.userId()) {
@@ -149,13 +151,15 @@ Meteor.methods({
 
     if (Meteor.isClient) {
       const opType = isAdd ? '$push' : '$pull'
-      Cases.update({id: caseId}, {
-        [opType]: {
-          involvedList: email
-        },
-        [opType]: {
-          involvedListDetail: {name: email}
-        }
+      loginNames.forEach(email => {
+        Cases.update({id: caseId}, {
+          [opType]: {
+            involvedList: email
+          },
+          [opType]: {
+            involvedListDetail: {name: email}
+          }
+        })
       })
     } else {
       const { token } = currUser.bugzillaCreds
@@ -163,25 +167,24 @@ Meteor.methods({
       const payload = {
         token,
         cc: {
-          [opType]: [email]
+          [opType]: loginNames
         }
       }
-
       try {
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
         const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
         const { involvedList, involvedListDetail } = transformCaseForClient(caseData.data.bugs[0])
-        console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
+        loginNames.forEach(email => console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`))
         publicationObj.handleChanged(caseId, {involvedList, involvedListDetail})
       } catch (e) {
         console.error({
           user: Meteor.userId(),
           method: `${collectionName}.toggleParticipant`,
-          args: [email, caseId, isAdd],
+          args: [loginNames, caseId, isAdd],
           error: e
         })
-        throw new Meteor.Error('API error')
+        throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
     }
   },

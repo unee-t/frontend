@@ -8,10 +8,9 @@ import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
-import { negate, flow } from 'lodash'
+import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
-import { placeholderEmailMatcher } from '../../util/matchers'
 
 import {
   modalCustomContentStyle,
@@ -37,6 +36,13 @@ const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
 const simpleLinkClasses = 'link dib ' + simpleControlClasses
 
 const DIALOG_PADDING = 40
+
+const successWrapper = content => (
+  <div className='tc'>
+    <FontIcon className='material-icons' style={inviteSuccessIconStyle}>check_circle</FontIcon>
+    {content}
+  </div>
+)
 
 class InviteDialog extends Component {
   constructor () {
@@ -80,25 +86,8 @@ class InviteDialog extends Component {
     }, 300)
   }
 
-  componentWillMount () {
-    this.normalizeInvitees(this.props.potentialInvitees)
-  }
-
   componentWillUnmount () {
     window.removeEventListener('resize', this.handleWindowResize)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    if (this.props.potentialInvitees !== nextProps.potentialInvitees) {
-      this.normalizeInvitees(nextProps.potentialInvitees)
-    }
-  }
-
-  normalizeInvitees (invitees) {
-    this.normalizedInviteeList = invitees.filter(flow([
-      u => u.login,
-      negate(placeholderEmailMatcher)
-    ]))
   }
 
   handleWindowResize = () => {
@@ -136,18 +125,17 @@ class InviteDialog extends Component {
 
   render () {
     const {
-      basePath, relPath, invitationState, onResetInvitation, pendingInvitees, selectControlsRenderer,
-      title, additionalOperationText
+      basePath, relPath, invitationState, onResetInvitation, selectControlsRenderer, potentialInvitees,
+      title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser,
+      mainOperationSuccessContent
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
-    const allInvitees = this.normalizedInviteeList
-      .concat(pendingInvitees.map(u => Object.assign({pending: true}, u)))
     return (
       <Route path={`${basePath}/${relPath}`} children={({match}) => {
         return (
           <Dialog
             title={invitationState.loading ? 'Please wait... '
-              : !invitationState.completed ? title
+              : (!invitationState.completed && !mainOperationSuccessContent) ? title
               : null
             }
             titleStyle={modalTitleStyle}
@@ -165,24 +153,35 @@ class InviteDialog extends Component {
             >
               <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
             </Link>
-            <Route exact path={`${basePath}/${relPath}`} render={() => (
-              <div className='mt2 flex flex-column flex-grow'>
-                {selectControlsRenderer({
-                  allInvitees,
-                  inputRefFn: el => { this.inputToFocus = el }
-                })}
-                <div className='no-shrink'>
-                  <p className='tc i mid-gray'>Can't find who you're looking for?</p>
-                  <Link to={`${basePath}/${relPath}/new`}
-                    className={simpleLinkClasses + ' w-100 tc'}>
-                    Invite a new user
-                  </Link>
+            <Route exact path={`${basePath}/${relPath}`} render={() => mainOperationSuccessContent
+              ? successWrapper(mainOperationSuccessContent)
+              : (
+                <div className='mt2 flex flex-column flex-grow'>
+                  {selectControlsRenderer({
+                    users: potentialInvitees,
+                    inputRefFn: el => { this.inputToFocus = el }
+                  })}
+                  <div className='no-shrink pt2'>
+                    <RaisedButton className='mt1' fullWidth backgroundColor='var(--bondi-blue)'
+                      onClick={onMainOperation} disabled={disableMainOperation}
+                    >
+                      <span className={'b ' + (disableMainOperation ? 'gray' : 'white')}>
+                        {mainOperationText}
+                      </span>
+                    </RaisedButton>
+                    <p className='tc i mid-gray lh-title mt3 mb0'>
+                      Can't find who you're looking for?&nbsp;
+                      <Link to={`${basePath}/${relPath}/new`}
+                        className='link b bondi-blue'>
+                        {linkLabelForNewUser}
+                      </Link>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )} />
-            <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? (
-              <div className='tc'>
-                <FontIcon className='material-icons' style={inviteSuccessIconStyle}>check_circle</FontIcon>
+              )
+            } />
+            <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? successWrapper(
+              <div>
                 <p className='f4 mv0'>Awesome! Very soon we’ll send an invite to&nbsp;
                   <span className='fw5'>
                     {invitationState.email}
@@ -288,7 +287,11 @@ InviteDialog.propTypes = {
   invitationState: PropTypes.object.isRequired,
   selectControlsRenderer: PropTypes.func.isRequired,
   additionalOperationText: PropTypes.string.isRequired,
-  pendingInvitees: PropTypes.array
+  mainOperationText: PropTypes.string.isRequired,
+  onMainOperation: PropTypes.func.isRequired,
+  linkLabelForNewUser: PropTypes.string.isRequired,
+  disableMainOperation: PropTypes.bool,
+  mainOperationSuccessContent: PropTypes.element
 }
 
 export default InviteDialog
