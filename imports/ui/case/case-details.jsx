@@ -9,6 +9,7 @@ import moment from 'moment'
 import themes from '../components/user-themes.mss'
 import UserAvatar from '../components/user-avatar'
 import { attachmentTextMatcher, placeholderEmailMatcher } from '../../util/matchers'
+import { userInfoItem } from '/imports/util/user.js'
 import { fitDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
@@ -48,17 +49,6 @@ const infoItemRow = (label, value) => (
   <InfoItemContainer>
     {infoItemMembers(label, value)}
   </InfoItemContainer>
-)
-
-const userInfoItem = (user, theme, rightRenderer) => (
-  <div key={user.login} className={theme + ' flex pt2'}>
-    <UserAvatar user={user} />
-    <div className='ml2 pl1 flex-grow overflow-hidden'>
-      <div className='mid-gray ellipsis'>{user.name || user.login}</div>
-      <div className='mt1 f7 gray ellipsis'>{user.role || 'Administrator'}</div>
-    </div>
-    {rightRenderer && rightRenderer(user)}
-  </div>
 )
 
 const mediaItemsPadding = 4 // Corresponds with the classNames set to the media items
@@ -169,7 +159,7 @@ class CaseDetails extends Component {
     <div className='bt bw3 b--very-light-gray'>
       <InfoItemContainer>
         {infoItemLabel('Created by:')}
-        {userInfoItem(user, themes.theme1)}
+        {userInfoItem(user)}
       </InfoItemContainer>
     </div>
   )
@@ -192,7 +182,7 @@ class CaseDetails extends Component {
     return (
       <InfoItemContainer>
         {infoItemLabel('Assigned to:')}
-        {userInfoItem(resolvedAssignedUser, themes.theme2, user => (
+        {userInfoItem(resolvedAssignedUser, user => (
           <Link to={`${match.url}/assign`} className='link outline-0'>
             <IconButton>
               <FontIcon className='material-icons' color='#999'>edit</FontIcon>
