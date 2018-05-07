@@ -7,6 +7,7 @@ import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
+import FlatButton from 'material-ui/FlatButton'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import CircularProgress from 'material-ui/CircularProgress'
 import { formatDayText } from '../../util/formatters'
@@ -110,8 +111,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderTitle ({ id, status, nextSteps, solution }) {
-    const subheaderBoxClasses = 'flex-grow tc b--gray-93'
+  renderTitle ({ id, priority, nextSteps, solution }) {
     const additionalSubheaders = []
     if (nextSteps) {
       additionalSubheaders.push(additionalSubHeader('Next steps', nextSteps, this.props.onMoreInfo, additionalSubheaders.length))
@@ -121,10 +121,14 @@ class CaseMessages extends Component {
     }
     return [
       (<Subheader style={subheaderStyle} className='flex' key='0'>
-        <div className={subheaderBoxClasses + ' br'}>Case #{id}</div>
-        <div className={subheaderBoxClasses + ' br'}>{status}</div>
-        <div className={subheaderBoxClasses + ' flex items-center justify-center'} onClick={this.props.onMoreInfo}>
-          <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
+        <div className='flex-3 tc f6'>Case #{id}</div>
+        <div className='flex-3 tc br b--gray-93 f6'>Priority: {priority}</div>
+        <div className='flex-4 flex items-center justify-center'>
+          <FlatButton onClick={this.props.onMoreInfo} fullWidth>
+            <div className='flex items-center justify-center tc bondi-blue f6'>
+              <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
+            </div>
+          </FlatButton>
         </div>
       </Subheader>)
     ].concat(additionalSubheaders)
