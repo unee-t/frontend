@@ -18,6 +18,21 @@
     },
     "BUGZILLA_ADMIN_KEY": {
       "required": true
+    },
+    "CLOUDINARY_PRESET": {
+      "required": true
+    },
+    "CLOUDINARY_URL": {
+      "required": true
+    },
+    "FROM_EMAIL": {
+      "required": true
+    },
+    "MAIL_URL": {
+      "required": true
+    },
+    "API_ACCESS_TOKEN": {
+      "required": true
     }
   },
   "formation": {
