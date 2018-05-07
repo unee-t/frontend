@@ -12,7 +12,9 @@ class UsersSearchList extends Component {
     }
   }
   render () {
-    const { users, onUserClick, userStatusRenderer, searchInputRef, userClassNames, searchEnabled } = this.props
+    const {
+      users, onUserClick, userStatusRenderer, searchInputRef, userClassNames, searchEnabled, emptyListMessage
+    } = this.props
     const { filterString } = this.state
     const matcher = filterString ? new RegExp(filterString, 'i') : null
     const filteredUsers = users
@@ -69,7 +71,9 @@ class UsersSearchList extends Component {
                 })}
               </ul>
             ) : (
-              <p className='tc i warn-crimson'>We couldn't find any users with the name entered.</p>
+              <p className='tc i warn-crimson'>
+                {emptyListMessage || 'We couldn\'t find any users with the name entered.'}
+              </p>
             )}
           </div>
         </div>
@@ -84,7 +88,8 @@ UsersSearchList.propTypes = {
   userStatusRenderer: PropTypes.func,
   userClassNames: PropTypes.func,
   searchInputRef: PropTypes.func,
-  searchEnabled: PropTypes.bool
+  searchEnabled: PropTypes.bool,
+  emptyListMessage: PropTypes.string
 }
 
 export default UsersSearchList

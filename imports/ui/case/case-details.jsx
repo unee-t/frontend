@@ -216,6 +216,7 @@ class CaseDetails extends Component {
               onUserClick={user => this.setState({chosenAssigned: user})}
               searchInputRef={inputRefFn}
               userClassNames={user => user.login === resolvedChosenAssigned.login ? 'bg-very-light-gray' : ''}
+              emptyListMessage={'We couldn\'t find any existing users to assign'}
               userStatusRenderer={user => {
                 if (user.pending) {
                   return (
@@ -330,6 +331,7 @@ class CaseDetails extends Component {
                   ? usersToBeInvited.filter(u => u !== user.login)
                   : usersToBeInvited.concat([user.login])
               })}
+              emptyListMessage='All the known users for this unit are already invited'
               searchInputRef={inputRefFn}
               userStatusRenderer={user => (
                 <div className='flex flex-column items-center justify-center'>
