@@ -1,6 +1,4 @@
 export const subheaderStyle = {
-  fontWeight: 500,
-  fontSize: 14,
   fontFamily: 'Roboto, sans-serif',
   color: '#646464',
   height: 48,
@@ -28,7 +26,7 @@ export const sendIconStyle = {
 }
 
 export const infoIconStyle = {
-  color: '#646464',
+  color: 'var(--bondi-blue)',
   fontSize: 16,
   marginRight: '0.25rem'
 }
