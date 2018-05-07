@@ -246,16 +246,12 @@ class CaseDetails extends Component {
     return (
       <InfoItemContainer>
         {infoItemLabel('People involved:')}
-        {subscribed.map((user, ind) => userInfoItem(user, themes['theme' + ((ind + 2) % 10 + 1)], user => (
+        {subscribed.map((user, ind) => userInfoItem(user, user => (
           <IconButton onClick={() => onRoleUserRemoved(user)}>
             <FontIcon className='material-icons' color='#999'>close</FontIcon>
           </IconButton>
         )))}
-        {pendingUsers.map((user, ind) => userInfoItem(
-          user,
-          themes['theme' + ((ind + 2 + subscribed.length) % 10 + 1)],
-          () => <span className='f7 warn-crimson b'>Pending</span>
-        ))}
+        {pendingUsers.map((user, ind) => userInfoItem(user, () => <span className='f7 warn-crimson b'>Pending</span>))}
         <Link to={`${match.url}/invite`}
           className='mt2 link flex items-center outline-0'>
           <div className={[themes.sized, themes.size1, 'br-100 ba b--moon-gray bg-transparent tc'].join(' ')}>
