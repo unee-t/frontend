@@ -3,23 +3,26 @@ import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { createContainer } from 'meteor/react-meteor-data'
-import { Link } from 'react-router-dom'
+import { Link, Route, withRouter } from 'react-router-dom'
 import Drawer from 'material-ui/Drawer'
 import { logoutUser, setDrawerState } from '../general-actions'
 import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
+import Divider from 'material-ui/Divider'
 import { renderAppBarLeft, renderCurrUserAvatar } from '../util/app-bar-utils'
 
-const linkDrawerItem = ({href, iconName, text}) => (
-  <Link className='link' to={href} target='_blank'>
-    <MenuItem>
-      <div className='flex items-center pv2 mv1'>
-        <div className='w1-5 lh-title tc'>
-          <FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>
+const linkDrawerItem = ({href, iconName, text, isExternal}, doHighlight = false) => (
+  <Link className='link' to={href} target={isExternal ? '_blank' : null}>
+    <div className={doHighlight ? 'bg-very-light-gray' : ''}>
+      <MenuItem>
+        <div className='flex items-center pv2 mv1'>
+          <div className='w1-5 lh-title tc'>
+            <FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>
+          </div>
+          <div className='ml4 mid-gray'>{text}</div>
         </div>
-        <div className='ml4 mid-gray'>{text}</div>
-      </div>
-    </MenuItem>
+      </MenuItem>
+    </div>
   </Link>
 )
 
@@ -42,20 +45,38 @@ class SideMenu extends Component {
             </div>
           </div>
         </div>
+        <Route path='/unit' children={({ match }) =>
+          linkDrawerItem({
+            href: '/unit',
+            iconName: 'location_on',
+            text: 'Units'
+          }, !!match)
+        } />
+        <Route path='/case' children={({ match }) =>
+          linkDrawerItem({
+            href: '/case',
+            iconName: 'card_travel',
+            text: 'Cases'
+          }, !!match)
+        } />
+        <Divider />
         {linkDrawerItem({
           href: 'https://unee-t.com/contact-support/',
           iconName: 'live_help',
-          text: 'Support'
+          text: 'Support',
+          isExternal: true
         })}
         {linkDrawerItem({
           href: 'https://forum.unee-t.com/',
           iconName: 'forum',
-          text: 'Forum'
+          text: 'Forum',
+          isExternal: true
         })}
         {linkDrawerItem({
           href: 'https://documentation.unee-t.com',
           iconName: 'help',
-          text: 'FAQ'
+          text: 'FAQ',
+          isExternal: true
         })}
         <MenuItem onClick={() => dispatch(logoutUser())}>
           <div className='flex items-center pv2 mv1'>
@@ -75,8 +96,8 @@ SideMenu.propTypes = {
   isDrawerOpen: PropTypes.bool
 }
 
-export default connect(
+export default withRouter(connect(
   ({ drawerState }) => ({isDrawerOpen: drawerState.isOpen}) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
   user: Meteor.user()
-}), SideMenu))
+}), SideMenu)))
