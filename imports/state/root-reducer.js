@@ -9,6 +9,7 @@ import invitationLoginState from './reducers/invitation-login-state'
 import sendResetLinkState from './reducers/send-reset-link-state'
 import passResetState from './reducers/pass-reset-state'
 import caseUsersState from './reducers/case-users-state'
+import drawerState from './reducers/drawer-state'
 
 const rootReducer = combineReducers({
   hideCompleted,
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   sendResetLinkState,
   passResetState,
   caseUsersState,
+  drawerState,
   router
 })
 

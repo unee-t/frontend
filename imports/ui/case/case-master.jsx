@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Route, Switch, matchPath, Link } from 'react-router-dom'
+import { Route, Switch, matchPath } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
@@ -8,20 +8,15 @@ import _ from 'lodash'
 import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
-import Drawer from 'material-ui/Drawer'
-import MenuItem from 'material-ui/MenuItem'
-import { UneeTIcon, UneeTLogoText } from '../components/unee-t-icons'
+import { UneeTIcon } from '../components/unee-t-icons'
+import { setDrawerState } from '../general-actions'
 import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
-import UserAvatar from '../components/user-avatar'
-import { logoutUser } from '../general-actions'
-import { getColorForUser } from '/imports/util/user.js'
+import { renderCurrUserAvatar, renderAppBarLeft } from '../util/app-bar-utils'
 
 import {
-  titleStyle,
-  logoIconStyle,
-  logoButtonStyle
+  titleStyle
 } from '../components/app-bar.mui-styles'
 
 import {
@@ -30,27 +25,13 @@ import {
 
 const isMobileScreen = window.matchMedia('screen and (max-width: 768px)').matches
 
-const linkDrawerItem = ({href, iconName, text}) => (
-  <Link className='link' to={href} target='_blank'>
-    <MenuItem>
-      <div className='flex items-center pv2 mv1'>
-        <div className='w1-5 lh-title tc'>
-          <FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>
-        </div>
-        <div className='ml4 mid-gray'>{text}</div>
-      </div>
-    </MenuItem>
-  </Link>
-)
-
 class CaseMaster extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       componentsProps: {},
       isLoading: true,
-      isSubLoading: false,
-      drawerOpen: false
+      isSubLoading: false
     }
     this.routes = [
       {
@@ -99,33 +80,11 @@ class CaseMaster extends Component {
     }
   }
   handleIconClick = () => {
-    this.setState({
-      drawerOpen: true
-    })
-  }
-  renderAppBarLeft = () => (
-    <div className='flex items-center pl2'>
-      <UneeTLogoText />
-      <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} onClick={this.handleIconClick}>
-        <UneeTIcon />
-      </IconButton>
-    </div>
-  )
-  renderCurrUserAvatar = (isBig) => {
-    const { user } = this.props
-    const userColor = getColorForUser(user)
-
-    return (
-      <UserAvatar additionalClasses={`ba ${userColor}`} isBig={isBig} user={{
-        name: user.profile && user.profile.name,
-        login: user.bugzillaCreds && user.bugzillaCreds.login,
-        email: user.emails && user.emails[0].address
-      }} />
-    )
+    this.props.dispatch(setDrawerState(true))
   }
   render () {
     const { isLoading, componentsProps } = this.state
-    const { user, dispatch } = this.props
+    const { user } = this.props
     return (
       <div className='flex flex-column full-height roboto overflow-hidden'>
         {isLoading ? (
@@ -140,7 +99,7 @@ class CaseMaster extends Component {
           </Switch>
         ) : (
           <AppBar titleStyle={titleStyle}
-            iconElementLeft={this.renderAppBarLeft()}
+            iconElementLeft={renderAppBarLeft(this.handleIconClick)}
             iconElementRight={
               <div className='flex items-center'>
                 <IconButton>
@@ -151,7 +110,7 @@ class CaseMaster extends Component {
                 </IconButton>
                 <div className='white'>Welcome, {user.profile && user.profile.name}</div>
                 <div className='ml2'>
-                  {this.renderCurrUserAvatar()}
+                  {renderCurrUserAvatar(user)}
                 </div>
               </div>
             }
@@ -208,47 +167,6 @@ class CaseMaster extends Component {
               }} />
             </div>
           </div>
-        )}
-        {!isLoading && (
-          <Drawer
-            docked={false}
-            width={300}
-            open={this.state.drawerOpen}
-            onRequestChange={(open) => this.setState({drawerOpen: open})}
-          >
-            <div className='bg-bondi-blue pa3'>
-              {this.renderAppBarLeft()}
-              <div className='flex items-center mt4'>
-                {this.renderCurrUserAvatar(true)}
-                <div className='ml3 white ellipsis'>
-                  {user.profile && (user.profile.name || user.emails[0].address)}
-                </div>
-              </div>
-            </div>
-            {linkDrawerItem({
-              href: 'https://unee-t.com/contact-support/',
-              iconName: 'live_help',
-              text: 'Support'
-            })}
-            {linkDrawerItem({
-              href: 'https://forum.unee-t.com/',
-              iconName: 'forum',
-              text: 'Forum'
-            })}
-            {linkDrawerItem({
-              href: 'https://documentation.unee-t.com',
-              iconName: 'help',
-              text: 'FAQ'
-            })}
-            <MenuItem onClick={() => dispatch(logoutUser())}>
-              <div className='flex items-center pv2 mv1'>
-                <div className='w1-5 lh-title tc'>
-                  <FontIcon className='icon-logout' color='var(--mid-gray)' />
-                </div>
-                <div className='ml4 mid-gray'>Logout</div>
-              </div>
-            </MenuItem>
-          </Drawer>
         )}
       </div>
     )
