@@ -69,25 +69,36 @@ if (Meteor.isServer) {
     )
   ))
 
-  Meteor.publish(`${collectionName}.forReporting`, function () {
-    let ids
-    if (this.userId) {
-      const { bugzillaCreds: { token } } = Meteor.users.findOne(this.userId)
-      try {
-        const listResponse = callAPI('get', '/rest/product_enterable', {token}, false, true)
-        ids = listResponse.data.ids
-      } catch (e) {
-        console.error('API error encountered', `${collectionName}.forReporting`, this.userId)
-        this.ready()
-        this.error(new Meteor.Error({message: 'REST API error', origError: e}))
+  const makeUnitsPublisher = ({ apiUrl, funcName, additionalFields }) =>
+    Meteor.publish(`${collectionName}.${funcName}`, function () {
+      let ids
+      if (this.userId) {
+        const { bugzillaCreds: { token } } = Meteor.users.findOne(this.userId)
+        try {
+          const listResponse = callAPI('get', apiUrl, {token}, false, true)
+          ids = listResponse.data.ids
+        } catch (e) {
+          console.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
+          this.ready()
+          this.error(new Meteor.Error({message: 'REST API error', origError: e}))
+        }
       }
-    }
-    factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
-      uriTemplate: ids => {
-        const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
-        return `/rest/product?${idsQueryParams}&include_fields=name,id,components`
-      }
-    }).call(this, ids || [])
+      factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
+        uriTemplate: ids => {
+          const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
+          return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
+        }
+      }).call(this, ids || [])
+    })
+  makeUnitsPublisher({
+    apiUrl: '/rest/product_enterable',
+    funcName: 'forReporting',
+    additionalFields: 'components'
+  })
+  makeUnitsPublisher({
+    apiUrl: '/rest/product_selectable',
+    funcName: 'forBrowsing',
+    additionalFields: 'description'
   })
 }
 
