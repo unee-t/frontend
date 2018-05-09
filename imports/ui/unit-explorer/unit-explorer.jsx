@@ -3,15 +3,15 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import InnerAppBar from '../components/inner-app-bar'
-import { goBack } from 'react-router-redux'
+import RootAppBar from '../components/root-app-bar'
+import { setDrawerState } from '../general-actions'
 
 class UnitExplorer extends Component {
   render () {
     const { dispatch } = this.props
     return (
       <div className='full-height flex flex-column'>
-        <InnerAppBar title='My Units' onBack={() => dispatch(goBack())} />
+        <RootAppBar title='My Units' onIconClick={() => dispatch(setDrawerState(true))} />
       </div>
     )
   }

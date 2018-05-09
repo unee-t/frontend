@@ -4,19 +4,12 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import Cases, { collectionName } from '../../api/cases'
 import { push } from 'react-router-redux'
-import { UneeTIcon } from '../components/unee-t-icons'
-
-import {
-  titleStyle,
-  logoIconStyle,
-  logoButtonStyle
-} from '../components/app-bar.mui-styles'
+import RootAppBar from '../components/root-app-bar'
 
 import {
   unitIconsStyle,
@@ -153,23 +146,7 @@ const connectedWrapper = connect(
 }, CaseExplorer))
 
 connectedWrapper.MobileHeader = ({onIconClick}) => (
-  <AppBar title='Cases' titleStyle={titleStyle}
-    iconElementLeft={
-      <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} onClick={onIconClick}>
-        <UneeTIcon />
-      </IconButton>
-    }
-    iconElementRight={
-      <div>
-        <IconButton>
-          <FontIcon className='material-icons' color='white'>search</FontIcon>
-        </IconButton>
-        <IconButton>
-          <FontIcon className='material-icons' color='white'>notifications</FontIcon>
-        </IconButton>
-      </div>
-    }
-  />
+  <RootAppBar title='Cases' onIconClick={onIconClick} />
 )
 
 connectedWrapper.MobileHeader.propTypes = {
