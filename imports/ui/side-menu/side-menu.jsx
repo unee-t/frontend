@@ -11,22 +11,25 @@ import FontIcon from 'material-ui/FontIcon'
 import Divider from 'material-ui/Divider'
 import { renderAppBarLeft, renderCurrUserAvatar } from '../util/app-bar-utils'
 
-const linkDrawerItem = ({href, iconName, text, isExternal}, doHighlight = false) => (
-  <Link className='link' to={href} target={isExternal ? '_blank' : null}>
-    <div className={doHighlight ? 'bg-very-light-gray' : ''}>
-      <MenuItem>
-        <div className='flex items-center pv2 mv1'>
-          <div className='w1-5 lh-title tc'>
-            <FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>
-          </div>
-          <div className='ml4 mid-gray'>{text}</div>
-        </div>
-      </MenuItem>
-    </div>
-  </Link>
-)
-
 class SideMenu extends Component {
+  linkDrawerItem = ({href, iconName, text, isExternal}, doHighlight = false) => {
+    const { dispatch } = this.props
+    return (
+      <Link className='link' to={href} target={isExternal ? '_blank' : null}>
+        <div className={doHighlight ? 'bg-very-light-gray' : ''}>
+          <MenuItem onClick={isExternal ? undefined : () => dispatch(setDrawerState(false))}>
+            <div className='flex items-center pv2 mv1'>
+              <div className='w1-5 lh-title tc'>
+                <FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>
+              </div>
+              <div className='ml4 mid-gray'>{text}</div>
+            </div>
+          </MenuItem>
+        </div>
+      </Link>
+    )
+  }
+
   render () {
     const { user, isDrawerOpen, dispatch } = this.props
     return user ? (
@@ -46,33 +49,33 @@ class SideMenu extends Component {
           </div>
         </div>
         <Route path='/unit' children={({ match }) =>
-          linkDrawerItem({
+          this.linkDrawerItem({
             href: '/unit',
             iconName: 'location_on',
             text: 'Units'
           }, !!match)
         } />
         <Route path='/case' children={({ match }) =>
-          linkDrawerItem({
+          this.linkDrawerItem({
             href: '/case',
             iconName: 'card_travel',
             text: 'Cases'
           }, !!match)
         } />
         <Divider />
-        {linkDrawerItem({
+        {this.linkDrawerItem({
           href: 'https://unee-t.com/contact-support/',
           iconName: 'live_help',
           text: 'Support',
           isExternal: true
         })}
-        {linkDrawerItem({
+        {this.linkDrawerItem({
           href: 'https://forum.unee-t.com/',
           iconName: 'forum',
           text: 'Forum',
           isExternal: true
         })}
-        {linkDrawerItem({
+        {this.linkDrawerItem({
           href: 'https://documentation.unee-t.com',
           iconName: 'help',
           text: 'FAQ',
