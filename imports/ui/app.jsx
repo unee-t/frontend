@@ -13,6 +13,7 @@ import InvitationLogin from './invitation-login/invitation-login'
 import CaseMaster from './case/case-master'
 import ResetPass from './reset-pass/reset-pass'
 import ForgotPass from './forgot-pass/forgot-pass'
+import UnitWizard from './unit-wizard/unit-wizard'
 import UnitExplorer from './unit-explorer/unit-explorer'
 import Unit from './unit/unit'
 import SideMenu from './side-menu/side-menu'
@@ -33,7 +34,7 @@ class App extends Component {
         {userLoggedIn ? (
           <div>
             <Switch>
-              <Route exact path='/unit/new' component={UnderConstruction} />
+              <Route exact path='/unit/new' component={UnitWizard} />
               <Route path='/unit/:unitId' component={Unit} />
               <Route exact path='/unit' component={UnitExplorer} />
               <Route exact path='/dashboard' component={Dashboard} />
