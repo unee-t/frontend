@@ -13,6 +13,8 @@ import InvitationLogin from './invitation-login/invitation-login'
 import CaseMaster from './case/case-master'
 import ResetPass from './reset-pass/reset-pass'
 import ForgotPass from './forgot-pass/forgot-pass'
+import UnitExplorer from './unit-explorer/unit-explorer'
+import SideMenu from './side-menu/side-menu'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
 
@@ -28,14 +30,18 @@ class App extends Component {
     return (
       <div className='roboto'>
         {userLoggedIn ? (
-          <Switch>
-            <Route exact path='/unit/new' component={UnderConstruction} />
-            <Route exact path='/dashboard' component={Dashboard} />
-            <Route exact path='/invitation' component={InvitationLogin} />
-            <Route exact path='/case/new' component={CaseWizard} />
-            <Route path='/case' component={CaseMaster} />
-            <Redirect to='/case' />
-          </Switch>
+          <div>
+            <Switch>
+              <Route exact path='/unit/new' component={UnderConstruction} />
+              <Route exact path='/unit' component={UnitExplorer} />
+              <Route exact path='/dashboard' component={Dashboard} />
+              <Route exact path='/invitation' component={InvitationLogin} />
+              <Route exact path='/case/new' component={CaseWizard} />
+              <Route path='/case' component={CaseMaster} />
+              <Redirect to='/case' />
+            </Switch>
+            <SideMenu />
+          </div>
         ) : (
           <div>
             <Switch>
@@ -60,7 +66,7 @@ App.propTypes = {
 
 // export default App
 export default withRouter(connect(
-  (state) => ({}) // map redux state to props
+  () => ({}) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
   userLoggedIn: !!Meteor.userId()
 }), App)))

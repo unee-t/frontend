@@ -3,6 +3,7 @@
   --bitter-lemon: #cfd924;
   --moon-gray: #ccc; /* exists in the tachyons palette */
   --mid-gray: #555; /* exists in the tachyons palette */
+  --semi-dark-gray: #434343;
   --silver: #999; /* exists in the tachyons palette */
   --gray-93: #ededed;
   --rad-green: #c9fb65;
@@ -38,7 +39,7 @@
 }
 
 .bondi-blue {
-  color: var(--bondi-blue)
+  color: var(--bondi-blue);
 }
 
 .moon-gray {
@@ -50,6 +51,10 @@
 
 .success-green {
   color: var(--success-green);
+}
+
+.semi-dark-gray {
+  color: var(--semi-dark-gray);
 }
 
 .f7 {
@@ -96,6 +101,10 @@
   box-shadow: 0 0 4px 2px rgba( 0, 0, 0, 0.2 );
 }
 /* Custom Shadows - start */
+.card-shadow-1 {
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.18);
+}
+
 .shadow-in-top-1 {
   box-shadow: inset 0 5px 5px -3px rgba(0, 0, 0, 0.16);
 }
