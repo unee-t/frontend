@@ -27,7 +27,7 @@ class UnitExplorer extends Component {
                   <MenuItem key={id} innerDivStyle={{padding: 0}}>
                     <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
                       <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                      <div className='ml3 mv1 semi-dark-gray lh-copy'>
+                      <div className='ml3 mv1 semi-dark-gray lh-copy overflow-hidden'>
                         <div className='ti1 ellipsis'>{name}</div>
                         <div className='ti1 ellipsis'>{description}</div>
                       </div>
