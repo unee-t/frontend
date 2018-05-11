@@ -8,6 +8,7 @@ import { callAPI } from './bugzilla-api'
 
 if (Meteor.isServer) {
   describe('bugzilla-api Util', () => {
+    const base = process.env.BUGZILLA_URL || 'http://localhost:8081'
     let origBugzillaUrl, origBugzillaKey
     beforeEach(() => {
       sinon.stub(HTTP, 'call')
@@ -31,13 +32,13 @@ if (Meteor.isServer) {
       const params = {param1: 1}
       callAPI('get', '/some-route', params)
 
-      expect(HTTP.call).to.have.been.calledWith('get', 'http://localhost:8081/some-route', sinon.match({params: params}), sinon.match.func)
+      expect(HTTP.call).to.have.been.calledWith('get', `${base}/some-route`, sinon.match({params: params}), sinon.match.func)
     })
     it('should call HTTP.call with the appropriate method and params, when using anything other than GET', () => {
       const params = {param1: 1}
       callAPI('post', '/dummy', params)
 
-      expect(HTTP.call).to.have.been.calledWith('post', 'http://localhost:8081/dummy', sinon.match({data: params}), sinon.match.func)
+      expect(HTTP.call).to.have.been.calledWith('post', `${base}/dummy`, sinon.match({data: params}), sinon.match.func)
     })
     it('should use the bugzilla server path from the env var, if specified', () => {
       process.env.BUGZILLA_URL = 'https://bla.bugzilla.unee-t.net'
