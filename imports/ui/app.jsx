@@ -14,6 +14,7 @@ import CaseMaster from './case/case-master'
 import ResetPass from './reset-pass/reset-pass'
 import ForgotPass from './forgot-pass/forgot-pass'
 import UnitExplorer from './unit-explorer/unit-explorer'
+import Unit from './unit/unit'
 import SideMenu from './side-menu/side-menu'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
@@ -33,6 +34,7 @@ class App extends Component {
           <div>
             <Switch>
               <Route exact path='/unit/new' component={UnderConstruction} />
+              <Route path='/unit/:unitId' component={Unit} />
               <Route exact path='/unit' component={UnitExplorer} />
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />

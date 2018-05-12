@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
+import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import MenuItem from 'material-ui/MenuItem'
 import RootAppBar from '../components/root-app-bar'
@@ -24,7 +25,7 @@ class UnitExplorer extends Component {
               <h4 className='semi-dark-gray ma0 ml1 fw5 lh-title no-shrink'>ALL UNITS</h4>
               <div className='overflow-auto pb2'>
                 {unitList.map(({ id, name, description }) => (
-                  <MenuItem key={id} innerDivStyle={{padding: 0}}>
+                  <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
                     <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
                       <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
                       <div className='ml3 mv1 semi-dark-gray lh-copy overflow-hidden'>
