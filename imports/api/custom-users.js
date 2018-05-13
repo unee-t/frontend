@@ -4,6 +4,11 @@ import randToken from 'rand-token'
 
 import AccessInvitations from './access-invitations'
 
+export const makeMatchingUser = bzUser => {
+  const regUser = Meteor.users.findOne({'bugzillaCreds.login': bzUser.login})
+  return regUser ? Object.assign({}, bzUser, regUser.profile) : bzUser
+}
+
 if (Meteor.isServer) {
   Meteor.publish('users.myBzLogin', function () {
     if (!this.userId) {

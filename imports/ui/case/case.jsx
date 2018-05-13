@@ -23,6 +23,7 @@ import { attachmentTextMatcher } from '../../util/matchers'
 import WelcomeDialog from '../dialogs/welcome-dialog'
 import { formatDayText } from '../../util/formatters'
 import Preloader from '../preloader/preloader'
+import { makeMatchingUser } from '../../api/custom-users'
 
 export class Case extends Component {
   componentWillReceiveProps ({caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch, userEmail}) {
@@ -203,10 +204,6 @@ const CaseContainer = createContainer(props => {
 
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
   const unitRoles = currUnit && getUnitRoles(currUnit)
-  const makeMatchingUser = bzUser => {
-    const regUser = Meteor.users.findOne({'bugzillaCreds.login': bzUser.login})
-    return regUser ? Object.assign({}, bzUser, regUser.profile) : bzUser
-  }
   return {
     loadingCase: !caseHandle.ready(),
     caseError,
