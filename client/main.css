@@ -1,13 +1,14 @@
 :root {
   --strong-cerulean: #2D94B0;
   --bitter-lemon: #cfd924;
-  --moon-gray: #ccc; /* exists in the tachyons palette */
-  --mid-gray: #555; /* exists in the tachyons palette */
   --semi-dark-gray: #434343;
+  --mid-gray: #555; /* exists in the tachyons palette */
+  --gray: #777; /* exists in the tachyons palette */
   --silver: #999; /* exists in the tachyons palette */
+  --moon-gray: #ccc; /* exists in the tachyons palette */
   --gray-93: #ededed;
-  --rad-green: #c9fb65;
   --very-light-gray: #f0f0f0;
+  --rad-green: #c9fb65;
   --bondi-blue: #0095b6;
   --warn-crimson: #ab0530;
   --success-green: #99cc33

@@ -5,8 +5,9 @@ import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 
 import { titleStyle } from './app-bar.mui-styles'
-const InnerAppBar = ({title, onBack}) => (
+const InnerAppBar = ({title, onBack, shadowless}) => (
   <AppBar
+    style={shadowless ? {boxShadow: 'none'} : undefined}
     title={title}
     titleStyle={titleStyle}
     iconElementLeft={
@@ -19,7 +20,8 @@ const InnerAppBar = ({title, onBack}) => (
 
 InnerAppBar.propTypes = {
   title: PropTypes.string,
-  onBack: PropTypes.func.isRequired
+  onBack: PropTypes.func.isRequired,
+  shadowless: PropTypes.bool
 }
 
 export default InnerAppBar
