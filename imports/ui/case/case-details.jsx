@@ -15,40 +15,9 @@ import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
 import EditableItem from '../components/editable-item'
 import ErrorDialog from '../dialogs/error-dialog'
+import { infoItemLabel, infoItemMembers, InfoItemContainer, InfoItemRow } from '../util/static-info-rendering'
 
-import {
-  detailLineIconColor,
-  addPersonIconStyle
-} from './case.mui-styles'
-
-const IconDetailRowWrapper = props => (
-  <div className={'bb b--gray-93 ph3 h2-5 flex items-center w-100' + (props.extraClasses ? ' ' + props.extraClasses : '')}>
-    <FontIcon className='material-icons mr4' color={detailLineIconColor}>{props.iconName}</FontIcon>
-    <div className='flex-grow ellipsis'>{props.children}</div>
-  </div>
-)
-IconDetailRowWrapper.propTypes = {
-  iconName: PropTypes.string.isRequired,
-  extraClasses: PropTypes.string
-}
-
-const infoItemLabel = label => (<div key='label' className='mt1 f6 bondi-blue'>{label}</div>)
-const infoItemMembers = (label, value) => [
-  (infoItemLabel(label)),
-  (<div key='value' className='mt2 mid-gray lh-copy'>{value}</div>)
-]
-
-const InfoItemContainer = ({children}) => (
-  <div className='bb b--gray-93 ph3 pt2 pb3'>
-    {children}
-  </div>
-)
-
-const infoItemRow = (label, value) => (
-  <InfoItemContainer>
-    {infoItemMembers(label, value)}
-  </InfoItemContainer>
-)
+import { addPersonIconStyle } from './case.mui-styles'
 
 const mediaItemsPadding = 4 // Corresponds with the classNames set to the media items
 const mediaItemRowCount = 3
@@ -118,9 +87,9 @@ class CaseDetails extends Component {
     </InfoItemContainer>
   )
 
-  renderUnitName = unitItem => infoItemRow('Unit name:', unitItem.name)
+  renderUnitName = unitItem => <InfoItemRow label='Unit name:' value={unitItem.name} />
 
-  renderUnitDescription = unitItem => infoItemRow('Unit description:', unitItem.description)
+  renderUnitDescription = unitItem => <InfoItemRow label='Unit description:' value={unitItem.description} />
 
   renderStatusLine = ({status}, {status: statusDef}) => {
     const { immediateStatusVal } = this.state
