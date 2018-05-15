@@ -92,7 +92,7 @@ class Unit extends Component {
         <Route exact path={`${match.url}/:viewName`} children={({ match }) => {
           const viewIdx = match ? viewsOrder.indexOf(match.params.viewName) : 0
           return (
-            <div className='flex-grow flex flex-column'>
+            <div className='flex-grow flex flex-column overflow-hidden'>
               <Tabs
                 className='no-shrink'
                 onChange={this.handleChange}
@@ -103,78 +103,81 @@ class Unit extends Component {
                 <Tab label='REPORTS' value={1} />
                 <Tab label='OVERVIEW' value={2} />
               </Tabs>
-              <SwipeableViews
-                resistance
-                style={{flex: 1, display: 'flex', flexDirection: 'column'}}
-                containerStyle={{flex: 1}}
-                slideStyle={{display: 'flex', flexDirection: 'column'}}
-                index={viewIdx}
-                onChangeIndex={this.handleChange}
-              >
-                <div className='flex-grow bg-very-light-gray'>
-                  {sortedCases.map(({id, title, severity}) => (
-                    <div key={id} className='bb b--very-light-gray bg-white'>
-                      <Link to={`/case/${id}`} className='link'>
-                        <MenuItem innerDivStyle={caseMenuItemDivStyle}>
-                          <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
-                            {severityIcons[severity].icon}
-                          </FontIcon>
-                          <span className='bondi-blue pl1'>{title}</span>
-                        </MenuItem>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-                <div className='flex-grow'>
-                  <h1>Nothing here yet...</h1>
-                </div>
-                <div className='flex-grow bg-very-light-gray'>
-                  <div className='bg-white card-shadow-1 pa3'>
-                    <div>
-                      {infoItemMembers('Unit name', unitItem.name)}
-                    </div>
-                    <div className='mt3'>
-                      {infoItemMembers('Unit group', unitItem.classification)}
-                    </div>
-                    <div className='mt3'>
-                      {infoItemMembers('Unit type', '---')}
-                    </div>
-                    <div className='mt3'>
-                      {infoItemMembers('Additional description', unitItem.description)}
-                    </div>
-                  </div>
-                  <div className='mt2 bg-white card-shadow-1 pa3'>
-                    <div className='fw5 silver lh-title'>
-                      ADDRESS
-                    </div>
-                    <div className='mt1'>
-                      {infoItemMembers('Address', '---')}
-                    </div>
-                    <div className='mt3'>
-                      {infoItemMembers('City', '---')}
-                    </div>
-                    <div className='mt3'>
-                      {infoItemMembers('Country', '---')}
-                    </div>
-                    <div className='mt3 flex'>
-                      <div className='flex-grow'>
-                        {infoItemMembers('State', '---')}
+              <div className='flex-grow flex flex-column overflow-auto'>
+                <SwipeableViews
+                  resistance
+                  style={{flex: 1, display: 'flex', flexDirection: 'column'}}
+                  containerStyle={{flex: 1}}
+                  slideStyle={{display: 'flex', flexDirection: 'column'}}
+                  index={viewIdx}
+                  onChangeIndex={this.handleChange}
+                >
+                  <div className='flex-grow bg-very-light-gray'>
+                    {sortedCases.map(({id, title, severity}) => (
+                      <div key={id} className='bb b--very-light-gray bg-white'>
+                        <Link to={`/case/${id}`} className='link'>
+                          <MenuItem innerDivStyle={caseMenuItemDivStyle}>
+                            <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
+                              {severityIcons[severity].icon}
+                            </FontIcon>
+                            <span className='bondi-blue pl1'>{title}</span>
+                          </MenuItem>
+                        </Link>
                       </div>
-                      <div className='flex-grow'>
-                        {infoItemMembers('Zip / Postal code', '---')}
-                      </div>
-                    </div>
-                  </div>
-                  <div className='mt2 bg-white card-shadow-1 pa3'>
-                    <div className='fw5 silver lh-title'>
-                      PEOPLE
-                    </div>
-                    {unitUsers.map(user => (
-                      <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
                     ))}
                   </div>
-                </div>
-              </SwipeableViews>
+                  <div className='flex-grow'>
+                    <h1>Nothing here yet...</h1>
+                  </div>
+                  <div className='flex-grow bg-very-light-gray'>
+                    <div className='bg-white card-shadow-1 pa3'>
+                      <div>
+                        {infoItemMembers('Unit name', unitItem.name)}
+                      </div>
+                      <div className='mt3'>
+                        {infoItemMembers('Unit group', unitItem.classification)}
+                      </div>
+                      <div className='mt3'>
+                        {infoItemMembers('Unit type', '---')}
+                      </div>
+                      <div className='mt3'>
+                        {infoItemMembers('Additional description', unitItem.description)}
+                      </div>
+                    </div>
+                    <div className='mt2 bg-white card-shadow-1 pa3'>
+                      <div className='fw5 silver lh-title'>
+                        ADDRESS
+                      </div>
+                      <div className='mt1'>
+                        {infoItemMembers('Address', '---')}
+                      </div>
+                      <div className='mt3'>
+                        {infoItemMembers('City', '---')}
+                      </div>
+                      <div className='mt3'>
+                        {infoItemMembers('Country', '---')}
+                      </div>
+                      <div className='mt3 flex'>
+                        <div className='flex-grow'>
+                          {infoItemMembers('State', '---')}
+                        </div>
+                        <div className='flex-grow'>
+                          {infoItemMembers('Zip / Postal code', '---')}
+                        </div>
+                      </div>
+                    </div>
+                    <div className='mt2 bg-white card-shadow-1 pa3'>
+                      <div className='fw5 silver lh-title'>
+                        PEOPLE
+                      </div>
+                      {unitUsers.map(user => (
+                        <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
+                      ))}
+                    </div>
+                  </div>
+                </SwipeableViews>
+              </div>
+
               <div className='absolute bottom-2 right-1'>
                 <CSSTransition in={viewIdx === 0} timeout={500} classNames='zoom-effect' unmountOnExit>
                   <FloatingActionButton
