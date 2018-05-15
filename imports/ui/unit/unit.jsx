@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
 import { createContainer } from 'meteor/react-meteor-data'
 import { push } from 'react-router-redux'
-import { Route } from 'react-router-dom'
+import { Route, Link } from 'react-router-dom'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 import MenuItem from 'material-ui/MenuItem'
@@ -75,6 +75,8 @@ class Unit extends Component {
     const { unitItem, isLoading, unitError, casesError, unitUsers, dispatch, match } = this.props
     const { sortedCases } = this.state
 
+    const rootMatch = match
+
     if (isLoading) return <Preloader />
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
     if (casesError) return <h1>An error occurred: {casesError.error}</h1>
@@ -112,12 +114,14 @@ class Unit extends Component {
                 <div className='flex-grow bg-very-light-gray'>
                   {sortedCases.map(({id, title, severity}) => (
                     <div key={id} className='bb b--very-light-gray bg-white'>
-                      <MenuItem innerDivStyle={caseMenuItemDivStyle}>
-                        <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
-                          {severityIcons[severity].icon}
-                        </FontIcon>
-                        <span className='bondi-blue pl1'>{title}</span>
-                      </MenuItem>
+                      <Link to={`/case/${id}`} className='link'>
+                        <MenuItem innerDivStyle={caseMenuItemDivStyle}>
+                          <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
+                            {severityIcons[severity].icon}
+                          </FontIcon>
+                          <span className='bondi-blue pl1'>{title}</span>
+                        </MenuItem>
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -173,7 +177,11 @@ class Unit extends Component {
               </SwipeableViews>
               <div className='absolute bottom-2 right-1'>
                 <CSSTransition in={viewIdx === 0} timeout={500} classNames='zoom-effect' unmountOnExit>
-                  <FloatingActionButton backgroundColor='var(--bondi-blue)' className='zoom-effect'>
+                  <FloatingActionButton
+                    backgroundColor='var(--bondi-blue)'
+                    className='zoom-effect'
+                    href={`/case/new/unit/${rootMatch.params.unitId}`}
+                  >
                     <FontIcon className='material-icons'>add</FontIcon>
                   </FloatingActionButton>
                 </CSSTransition>
