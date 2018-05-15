@@ -39,6 +39,9 @@ class App extends Component {
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/case/new' component={CaseWizard} />
+              <Route exact path='/case/new/unit/:unitId' render={(({ match }) => (
+                <CaseWizard preferredUnitId={match.params.unitId} />
+              ))} />
               <Route path='/case' component={CaseMaster} />
               <Redirect to='/case' />
             </Switch>
