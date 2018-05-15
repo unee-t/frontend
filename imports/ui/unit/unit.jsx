@@ -120,7 +120,7 @@ class Unit extends Component {
                             <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
                               {severityIcons[severity].icon}
                             </FontIcon>
-                            <span className='bondi-blue pl1'>{title}</span>
+                            <span className='bondi-blue pl1 ellipsis'>{title}</span>
                           </MenuItem>
                         </Link>
                       </div>
