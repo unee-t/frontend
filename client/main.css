@@ -320,3 +320,21 @@
   text-indent: 16rem;
 }
 /* Custom text-indent scale -end */
+
+/* Custom transitions for react-transition-group -start */
+.zoom-effect-enter {
+  transform: scale(0.01);
+}
+.zoom-effect-enter-active {
+  transform: scale(1);
+  transition: transform 500ms ease-in-out
+}
+
+.zoom-effect-exit {
+  transform: scale(1);
+}
+.zoom-effect-exit-active {
+  transform: scale(0.01);
+  transition: transform 500ms ease-in-out;
+}
+/* Custom transitions for react-transition-group -end */
