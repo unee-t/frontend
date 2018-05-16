@@ -81,7 +81,6 @@ class Unit extends Component {
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
     if (casesError) return <h1>An error occurred: {casesError.error}</h1>
 
-    // console.log('caseList', caseList)
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar
