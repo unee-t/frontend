@@ -55,21 +55,7 @@ if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
   const associationFactory = makeAssociationFactory(collectionName)
 
-  Meteor.publish(`${collectionName}.byId`, associationFactory(
-    factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
-      uriTemplate: unitName => ({
-        url: '/rest/product',
-        params: {names: unitName}
-      })
-    }),
-    withUsers(
-      unitItem => getUnitRoles(unitItem).map(u => u.login),
-      (query, unitItem) => Object.assign(makeInvitationMatcher(unitItem), query),
-      (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
-    )
-  ))
-
-  const makeUnitsPublisher = ({ apiUrl, funcName, additionalFields }) =>
+  const makeUnitListPublisher = ({ apiUrl, funcName, additionalFields }) =>
     Meteor.publish(`${collectionName}.${funcName}`, function () {
       let ids
       if (this.userId) {
@@ -90,12 +76,40 @@ if (Meteor.isServer) {
         }
       }).call(this, ids || [])
     })
-  makeUnitsPublisher({
+
+  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder }) => {
+    Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
+      factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
+        uriTemplate: uriBuilder
+      }),
+      withUsers(
+        unitItem => getUnitRoles(unitItem).map(u => u.login),
+        // Should rely both on completed invitations and unit information (which is why the "$or" is there)
+        (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
+        (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
+      )
+    ))
+  }
+  makeUnitWithUsersPublisher({
+    funcName: 'byNameWithUsers',
+    uriBuilder: unitName => ({
+      url: '/rest/product',
+      params: {names: unitName}
+    })
+  })
+  makeUnitWithUsersPublisher({
+    funcName: 'byIdWithUsers',
+    uriBuilder: unitId => ({
+      url: '/rest/product',
+      params: {ids: unitId}
+    })
+  })
+  makeUnitListPublisher({
     apiUrl: '/rest/product_enterable',
     funcName: 'forReporting',
     additionalFields: 'components'
   })
-  makeUnitsPublisher({
+  makeUnitListPublisher({
     apiUrl: '/rest/product_selectable',
     funcName: 'forBrowsing',
     additionalFields: 'description'
