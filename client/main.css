@@ -31,7 +31,11 @@
 }
 
 .b--bitter-lemon {
-  border-color: var(--bitter-lemon)
+  border-color: var(--bitter-lemon);
+}
+
+.b--bondi-blue {
+  border-color: var(--bondi-blue);
 }
 
 .strong-cerulean {
