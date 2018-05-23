@@ -26,7 +26,10 @@ import Preloader from '../preloader/preloader'
 import { makeMatchingUser } from '../../api/custom-users'
 
 export class Case extends Component {
-  componentWillReceiveProps ({caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch, userEmail}) {
+  componentWillReceiveProps ({
+    caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch,
+    userEmail, ancestorPath
+  }) {
     if (!loadingCase && !loadingComments && !loadingUnit && !loadingPendingInvitations && !caseError &&
       (
         loadingCase !== this.props.loadingCase ||
@@ -35,7 +38,7 @@ export class Case extends Component {
         loadingPendingInvitations !== this.props.loadingPendingInvitations
       )
     ) {
-      this.props.dispatchLoadingResult({caseItem, comments, dispatch, userEmail})
+      this.props.dispatchLoadingResult({caseItem, comments, dispatch, userEmail, ancestorPath})
     }
   }
   navigateToAttachment (id) {
@@ -169,7 +172,8 @@ Case.propTypes = {
   pendingInvitations: PropTypes.array,
   showWelcomeDialog: PropTypes.bool,
   invitedByDetails: PropTypes.object,
-  caseUsersState: PropTypes.object.isRequired
+  caseUsersState: PropTypes.object.isRequired,
+  ancestorPath: PropTypes.string
 }
 
 let caseError, commentsError, unitError, cfvError
@@ -244,7 +248,8 @@ const connectedWrapper = withRouter(connect(
       caseAttachmentUploads,
       invitationState,
       invitationLoginState: { showWelcomeMessage, invitedByDetails },
-      caseUsersState
+      caseUsersState,
+      pathBreadcrumb
     },
     props
   ) => ({
@@ -252,19 +257,20 @@ const connectedWrapper = withRouter(connect(
     invitationState,
     invitedByDetails,
     caseUsersState,
-    showWelcomeDialog: !!showWelcomeMessage
+    showWelcomeDialog: !!showWelcomeMessage,
+    ancestorPath: pathBreadcrumb
   })
 )(CaseContainer))
 
 const MobileHeader = props => {
-  const { caseItem, comments, dispatch, userEmail } = props.contentProps
+  const { caseItem, comments, dispatch, userEmail, ancestorPath } = props.contentProps
   const { match } = props
-  const handleBack = defaultPath => {
-    const { push, goBack } = routerRedux
-    if (props.location.action === 'PUSH') {
-      dispatch(goBack())
+  const handleBack = () => {
+    const { push } = routerRedux
+    if (match.isExact && ancestorPath) {
+      dispatch(push(ancestorPath))
     } else {
-      dispatch(push(defaultPath || props.location.pathname.split('/').slice(0, -1).join('/')))
+      dispatch(push(props.location.pathname.split('/').slice(0, -1).join('/')))
     }
   }
   return (
@@ -289,7 +295,7 @@ const MobileHeader = props => {
       }} />
       <Route path={match.url} render={routeProps => (
         <InnerAppBar
-          title={caseItem.title} onBack={() => handleBack(props.match.isExact ? null : match.url)}
+          title={caseItem.title} onBack={() => handleBack()}
         />
       )} />
     </Switch>

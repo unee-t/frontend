@@ -18,6 +18,7 @@ import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
+import { storeBreadcrumb } from '../general-actions'
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
@@ -114,7 +115,11 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     {sortedCases.map(({id, title, severity}) => (
                       <div key={id} className='bb b--very-light-gray bg-white'>
-                        <Link to={`/case/${id}`} className='link'>
+                        <Link
+                          to={`/case/${id}`}
+                          className='link'
+                          onClick={() => dispatch(storeBreadcrumb(rootMatch.url))}
+                        >
                           <MenuItem innerDivStyle={caseMenuItemDivStyle}>
                             <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
                               {severityIcons[severity].icon}
