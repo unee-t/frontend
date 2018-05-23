@@ -42,9 +42,10 @@ export const getUnitRoles = unit => {
       } : {}
     ).fetch()
     // Mapping the users to the same interface as the first half of the array
-      .map(({ invitedToCases: [{ role }], bugzillaCreds: { login } }) => ({
+      .map(({ invitedToCases: [{ role, isOccupant }], bugzillaCreds: { login } }) => ({
         login,
-        role
+        role,
+        isOccupant
       }))
     ),
     ({login}) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation
