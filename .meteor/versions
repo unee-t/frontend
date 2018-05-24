@@ -34,6 +34,8 @@ ejson@1.0.13
 email@1.2.3
 es5-shim@4.6.15
 fastclick@1.0.13
+force-ssl@1.0.15
+force-ssl-common@1.0.15
 geojson-utils@1.0.10
 hasse:tachyons@1.0.0
 hot-code-push@1.0.4

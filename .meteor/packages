@@ -29,3 +29,4 @@ hasse:tachyons
 simple:json-routes
 pauldowman:dotenv
 dburles:collection-helpers
+force-ssl
