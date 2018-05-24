@@ -182,7 +182,7 @@ class InviteDialog extends Component {
             } />
             <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? successWrapper(
               <div>
-                <p className='f4 mv0'>Awesome! Very soon we’ll send an invite to&nbsp;
+                <p className='f4 mv0'>Awesome! We just sent an invite to&nbsp;
                   <span className='fw5'>
                     {invitationState.email}
                   </span>

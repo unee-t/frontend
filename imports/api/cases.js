@@ -80,9 +80,21 @@ export const factoryOptions = {
   dataResolver: data => data.bugs.map(transformCaseForClient)
 }
 
+export let reloadCaseFields
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
+  reloadCaseFields = (caseId, fieldNames) => {
+    const caseData = bugzillaApi.callAPI('get', `/rest/bug/${caseId}`, {}, true, true)
+    const caseItem = transformCaseForClient(caseData.data.bugs[0])
+    const fields = Object.keys(caseItem).reduce((all, key) => {
+      if (fieldNames.includes(key)) {
+        all[key] = caseItem[key]
+      }
+      return all
+    }, {})
+    publicationObj.handleChanged(caseId, fields)
+  }
   const associationFactory = makeAssociationFactory(collectionName)
 
   Meteor.publish(`${collectionName}.byId`, associationFactory(
@@ -173,10 +185,8 @@ Meteor.methods({
       try {
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
-        const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-        const { involvedList, involvedListDetail } = transformCaseForClient(caseData.data.bugs[0])
+        reloadCaseFields(caseId, ['involvedList', 'involvedListDetail'])
         loginNames.forEach(email => console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`))
-        publicationObj.handleChanged(caseId, {involvedList, involvedListDetail})
       } catch (e) {
         console.error({
           user: Meteor.userId(),
@@ -313,11 +323,8 @@ Meteor.methods({
             [caseServerFieldMapping.assignee]: user.login,
             token
           }, false, true)
-
-          const caseData = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
-          const { assignee, assigneeDetail } = transformCaseForClient(caseData.data.bugs[0])
+          reloadCaseFields(caseId, ['assignee', 'assigneeDetail'])
           console.log(`${user.login} was assigned to case ${caseId}`)
-          publicationObj.handleChanged(caseId, {assignee, assigneeDetail})
         } catch (e) {
           console.error({
             user: Meteor.userId(),

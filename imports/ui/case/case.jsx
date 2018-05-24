@@ -188,7 +188,7 @@ const CaseContainer = createContainer(props => {
   const currCase = caseHandle.ready() ? Cases.findOne(caseId) : null
   let currUnit, unitHandle
   if (currCase) {
-    unitHandle = Meteor.subscribe(`${unitsCollName}.byId`, currCase.selectedUnit, {
+    unitHandle = Meteor.subscribe(`${unitsCollName}.byIdWithUsers`, currCase.selectedUnit, {
       onStop: error => {
         unitError = error
       }
