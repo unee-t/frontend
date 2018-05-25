@@ -178,7 +178,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderSingleMessage ({creator, creatorUser, text, creation_time, process, id}, key) {
+  renderSingleMessage ({creator, creatorUser, text, creation_time: creationTime, process, id}, key) {
     const isSelf = this.props.userEmail === creator
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
@@ -197,7 +197,7 @@ class CaseMessages extends Component {
         { !isSelf ? (
           <UserAvatar user={{login: creator}} />
         ) : ''}
-        { contentRenderer({isSelf, creator, creatorUser, text, creation_time, id, process}) }
+        { contentRenderer({isSelf, creator, creatorUser, text, creationTime, id, process}) }
       </div>
     )
   }
