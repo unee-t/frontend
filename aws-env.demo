@@ -1,4 +1,4 @@
-export ROOT_URL=https://demo.case.unee-t.com
+export ROOT_URL=https://case.demo.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-demo ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
 export BUGZILLA_URL=https://demo.dashboard.unee-t.com
 export INVITE_LAMBDA_URL=https://invite.demo.unee-t.com

@@ -1,5 +1,5 @@
 # TODO: Consider switching to https://github.com/remind101/ssm-env
-export ROOT_URL=https://dev.case.unee-t.com
+export ROOT_URL=https://case.dev.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-dev ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
 export BUGZILLA_URL=https://dev.dashboard.unee-t.com
 export INVITE_LAMBDA_URL=https://invite.dev.unee-t.com
