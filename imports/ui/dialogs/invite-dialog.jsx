@@ -14,7 +14,6 @@ import { emailValidator } from '../../util/validators'
 
 import {
   modalCustomContentStyle,
-  modalBodyStyle,
   inviteSuccessIconStyle
 } from './invite-dialog.mui-styles'
 
@@ -28,7 +27,8 @@ import {
 
 import {
   modalTitleStyle,
-  closeDialogButtonStyle
+  closeDialogButtonStyle,
+  modalBodyStyle
 } from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
