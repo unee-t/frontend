@@ -21,7 +21,7 @@ export const withUsers = (loginNamesGetter, customQuery = _.identity, customProj
     const cursor = Meteor.users.find(customQuery({
       'bugzillaCreds.login': {$in: loginNamesGetter(publishedItem)}
     }, publishedItem), {
-      fields: customProj({profile: 1, 'bugzillaCreds.login': 1, 'emails.address': 1}, publishedItem)
+      fields: customProj({'profile.name': 1, 'bugzillaCreds.login': 1, 'emails.address': 1}, publishedItem)
     })
 
     // Observing changes to the cursor in case the users are added or changed while the sub is still live

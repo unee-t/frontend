@@ -3,7 +3,8 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { goBack } from 'react-router-redux'
+import { goBack, replace } from 'react-router-redux'
+import { withRouter } from 'react-router-dom'
 import TextField from 'material-ui/TextField'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
@@ -58,6 +59,23 @@ class CaseWizard extends Component {
     if (prevState.needsNewUser !== this.state.needsNewUser && this.state.needsNewUser) {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
+    }
+  }
+  componentWillReceiveProps (nextProps) {
+    const { units, preferredUnitId, dispatch } = this.props
+    const { inputValues } = this.state
+    if (
+      units.length === 0 && nextProps.units.length > 0 &&
+      preferredUnitId && !this.state.inputValues.mandatory.selectedUnit
+    ) {
+      this.setState({
+        inputValues: Object.assign({}, inputValues, {
+          mandatory: Object.assign({}, inputValues.mandatory, {
+            selectedUnit: nextProps.units.find(unit => unit.id === parseInt(preferredUnitId)).name
+          })
+        })
+      })
+      dispatch(replace('/case/new'))
     }
   }
 
@@ -366,10 +384,11 @@ CaseWizard.propTypes = {
   error: PropTypes.string,
   units: PropTypes.array,
   userEmail: PropTypes.string,
-  fieldValues: PropTypes.object
+  fieldValues: PropTypes.object,
+  preferredUnitId: PropTypes.string
 }
 
-export default connect(
+export default withRouter(connect(
   ({ caseCreationState: { inProgress, error } }) => ({
     inProgress,
     error
@@ -392,5 +411,4 @@ export default connect(
     })
   },
   CaseWizard
-
-))
+)))

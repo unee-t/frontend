@@ -1,13 +1,14 @@
 :root {
   --strong-cerulean: #2D94B0;
   --bitter-lemon: #cfd924;
-  --moon-gray: #ccc; /* exists in the tachyons palette */
-  --mid-gray: #555; /* exists in the tachyons palette */
   --semi-dark-gray: #434343;
+  --mid-gray: #555; /* exists in the tachyons palette */
+  --gray: #777; /* exists in the tachyons palette */
   --silver: #999; /* exists in the tachyons palette */
+  --moon-gray: #ccc; /* exists in the tachyons palette */
   --gray-93: #ededed;
-  --rad-green: #c9fb65;
   --very-light-gray: #f0f0f0;
+  --rad-green: #c9fb65;
   --bondi-blue: #0095b6;
   --warn-crimson: #ab0530;
   --success-green: #99cc33
@@ -67,6 +68,10 @@
 
 .lh3 {
   line-height: 4rem;
+}
+
+.lh-cram {
+  line-height: 0.7;
 }
 
 .lh-input {
@@ -323,3 +328,21 @@
   text-indent: 16rem;
 }
 /* Custom text-indent scale -end */
+
+/* Custom transitions for react-transition-group -start */
+.zoom-effect-enter {
+  transform: scale(0.01);
+}
+.zoom-effect-enter-active {
+  transform: scale(1);
+  transition: transform 500ms ease-in-out
+}
+
+.zoom-effect-exit {
+  transform: scale(1);
+}
+.zoom-effect-exit-active {
+  transform: scale(0.01);
+  transition: transform 500ms ease-in-out;
+}
+/* Custom transitions for react-transition-group -end */

@@ -140,6 +140,26 @@ if (Meteor.isServer) {
       }
     }
   }))
+  Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
+    uriTemplate: () => '/rest/bug',
+    queryBuilder: (subHandle, unitName) => {
+      return {
+        f1: 'product',
+        o1: 'equals',
+        v1: unitName,
+        list_id: '78',
+        query_format: 'advanced',
+        include_fields: 'product,summary,id,status,severity'
+      }
+    },
+    addedMatcherFactory: strQuery => {
+      const { v1: unitName } = JSON.parse(strQuery)
+      return caseItem => {
+        const { selectedUnit } = transformCaseForClient(caseItem)
+        return selectedUnit === unitName
+      }
+    }
+  }))
 }
 
 Meteor.methods({

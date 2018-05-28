@@ -31,8 +31,6 @@ export const infoIconStyle = {
   marginRight: '0.25rem'
 }
 
-export const detailLineIconColor = '#777'
-
 export const addPersonIconStyle = {
   color: '#a4a4a4',
   fontSize: 16,

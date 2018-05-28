@@ -24,8 +24,10 @@ export const userInfoItem = (user, rightRenderer) => {
     <div key={user.login} className={colorForUser + ' flex pt2'}>
       <UserAvatar user={user} />
       <div className='ml2 pl1 flex-grow overflow-hidden'>
-        <div className='mid-gray ellipsis'>{user.name || user.login}</div>
-        <div className='mt1 f7 gray ellipsis'>{user.role || 'Administrator'}</div>
+        <div className='mid-gray ellipsis'>{user.name || user.login.split('@')[0]}</div>
+        <div className='mt1 f7 gray ellipsis'>
+          {user.role ? (user.role + (user.isOccupant ? ' (Occupant)' : '')) : 'Administrator'}
+        </div>
       </div>
       {rightRenderer && rightRenderer(user)}
     </div>

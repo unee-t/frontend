@@ -3,13 +3,14 @@ import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
+import { Link, withRouter } from 'react-router-dom'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import Cases, { collectionName } from '../../api/cases'
 import { push } from 'react-router-redux'
 import RootAppBar from '../components/root-app-bar'
+import { storeBreadcrumb } from '../general-actions'
 
 import {
   unitIconsStyle,
@@ -63,7 +64,7 @@ class CaseExplorer extends Component {
     }
   }
   render () {
-    const { isLoading, dispatch } = this.props
+    const { isLoading, dispatch, match } = this.props
     const { unitsDict } = this.state
 
     return (
@@ -95,6 +96,7 @@ class CaseExplorer extends Component {
                                 (isClosed(caseItem) ? 'silver strike' : 'bondi-blue')
                             }
                             to={`/case/${caseItem.id}`}
+                            onClick={() => dispatch(storeBreadcrumb(match.url))}
                           >
                             {caseItem.title}
                           </Link>
@@ -153,4 +155,4 @@ connectedWrapper.MobileHeader.propTypes = {
   onIconClick: PropTypes.func.isRequired
 }
 
-export default connectedWrapper
+export default withRouter(connectedWrapper)
