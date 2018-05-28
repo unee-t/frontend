@@ -82,6 +82,20 @@ class Unit extends Component {
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
     if (casesError) return <h1>An error occurred: {casesError.error}</h1>
 
+    const fabDescriptors = [
+      {
+        color: 'var(--bondi-blue)',
+        href: `/case/new/unit/${rootMatch.params.unitId}`,
+        icon: 'add'
+      },
+      {
+        color: 'var(--bondi-blue)',
+        href: ``,
+        icon: 'add',
+        disabled: true
+      }
+    ]
+
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar
@@ -130,8 +144,24 @@ class Unit extends Component {
                       </div>
                     ))}
                   </div>
-                  <div className='flex-grow'>
-                    <h1>Nothing here yet...</h1>
+                  <div className='flex-grow bg-very-light-gray'>
+                    <div className='mt5 pt3 tc'>
+                      <div className='dib relative'>
+                        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
+                          content_paste
+                        </FontIcon>
+                        <div className='absolute bottom-0 right-0 pb1'>
+                          <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
+                            <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+                              add_circle_outline
+                            </FontIcon>
+                          </div>
+                        </div>
+                      </div>
+                      <div className='mid-gray b lh-copy'>
+                        Create your first inspection report
+                      </div>
+                    </div>
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
@@ -182,17 +212,20 @@ class Unit extends Component {
                 </SwipeableViews>
               </div>
 
-              <div className='absolute bottom-2 right-1'>
-                <CSSTransition in={viewIdx === 0} timeout={500} classNames='zoom-effect' unmountOnExit>
-                  <FloatingActionButton
-                    backgroundColor='var(--bondi-blue)'
-                    className='zoom-effect'
-                    href={`/case/new/unit/${rootMatch.params.unitId}`}
-                  >
-                    <FontIcon className='material-icons'>add</FontIcon>
-                  </FloatingActionButton>
-                </CSSTransition>
-              </div>
+              {fabDescriptors.map((desc, ind) => (
+                <div className='absolute bottom-1 right-1'>
+                  <CSSTransition in={viewIdx === ind} timeout={500} classNames='zoom-effect' unmountOnExit>
+                    <FloatingActionButton
+                      backgroundColor={desc.color}
+                      className='zoom-effect'
+                      href={desc.href}
+                      disabled={desc.disabled}
+                    >
+                      <FontIcon className='material-icons'>{desc.icon}</FontIcon>
+                    </FloatingActionButton>
+                  </CSSTransition>
+                </div>
+              ))}
             </div>
           )
         }} />

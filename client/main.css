@@ -70,6 +70,10 @@
   line-height: 4rem;
 }
 
+.lh-cram {
+  line-height: 0.7;
+}
+
 .lh-input {
   line-height: 1.9;
 }
