@@ -4,6 +4,7 @@ import { check } from 'meteor/check'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 import { callAPI } from '../util/bugzilla-api'
+import { HTTP } from 'meteor/http'
 
 export const collectionName = 'pendingInvitations'
 
@@ -140,6 +141,13 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
   })
 
   console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
+  let httpResponse
+  try {
+    httpResponse = HTTP.get(process.env.INVITE_LAMBDA_URL)
+  } catch (e) {
+    console.log('oh no, error', e)
+  }
+  if (httpResponse) console.log('That went fine', httpResponse)
 }
 
 PendingInvitations.helpers({

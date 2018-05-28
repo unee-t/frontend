@@ -85,7 +85,8 @@ if (Meteor.isServer) {
       }),
       withUsers(
         unitItem => getUnitRoles(unitItem).map(u => u.login),
-        (query, unitItem) => Object.assign(makeInvitationMatcher(unitItem), query),
+        // Should rely both on completed invitations and unit information (which is why the "$or" is there)
+        (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
         (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
       )
     ))

@@ -7,6 +7,8 @@
 
 They are securely managed in AWS's [parameter store](https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Parameters:sort=Name). The variables are retrieved via [an environment setup script](https://github.com/unee-t/frontend/blob/master/aws-env.dev), which is utilised by `deploy.sh`.
 
+For local development, copy `.env.sample` to `.env`. The values of the environment variables can be obtained from other developers via [Unee-T Slack](https://unee-t.slack.com/messages/C6UM93HD2).
+
 # Deployment
 
 Happens automatically on master on the development AWS account 8126-4485-3088
