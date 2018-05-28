@@ -19,7 +19,6 @@ export const getColorForUser = (user) => (
 
 export const userInfoItem = (user, rightRenderer) => {
   const colorForUser = getColorForUser(user)
-  console.log('user', user)
 
   return (
     <div key={user.login} className={colorForUser + ' flex pt2'}>
