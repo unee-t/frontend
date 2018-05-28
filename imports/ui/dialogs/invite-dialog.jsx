@@ -14,7 +14,6 @@ import { emailValidator } from '../../util/validators'
 
 import {
   modalCustomContentStyle,
-  modalBodyStyle,
   inviteSuccessIconStyle
 } from './invite-dialog.mui-styles'
 
@@ -28,7 +27,8 @@ import {
 
 import {
   modalTitleStyle,
-  closeDialogButtonStyle
+  closeDialogButtonStyle,
+  modalBodyStyle
 } from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
@@ -182,7 +182,7 @@ class InviteDialog extends Component {
             } />
             <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? successWrapper(
               <div>
-                <p className='f4 mv0'>Awesome! Very soon we’ll send an invite to&nbsp;
+                <p className='f4 mv0'>Awesome! We just sent an invite to&nbsp;
                   <span className='fw5'>
                     {invitationState.email}
                   </span>

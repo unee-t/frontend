@@ -29,9 +29,9 @@ import {
 
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
-const additionalSubHeader = (label, info, onClick, lastIndex) => (
+const additionalSubHeader = (label, info, onClick, lastIndex, colorName) => (
   <Subheader className='bt b--gray-93 pv2 ph3' key={lastIndex + 1}>
-    <div className='pl2 bl bw1 b--bitter-lemon'>
+    <div className={`pl2 bl bw1 b--${colorName}`}>
       <div className='strong-cerulean f7 lh-title mv1'>{label}</div>
       <div className='lh-title mt1 mb2 flex'>
         <div className='ellipsis mid-gray flex-grow'>{info}</div>
@@ -114,10 +114,14 @@ class CaseMessages extends Component {
   renderTitle ({ id, priority, nextSteps, solution }) {
     const additionalSubheaders = []
     if (nextSteps) {
-      additionalSubheaders.push(additionalSubHeader('Next steps', nextSteps, this.props.onMoreInfo, additionalSubheaders.length))
+      additionalSubheaders.push(
+        additionalSubHeader('Next steps', nextSteps, this.props.onMoreInfo, additionalSubheaders.length, 'bondi-blue')
+      )
     }
     if (solution) {
-      additionalSubheaders.push(additionalSubHeader('Solution', solution, this.props.onMoreInfo, additionalSubheaders.length))
+      additionalSubheaders.push(
+        additionalSubHeader('Solution', solution, this.props.onMoreInfo, additionalSubheaders.length, 'bitter-lemon')
+      )
     }
     return [
       (<Subheader style={subheaderStyle} className='flex' key='0'>
@@ -174,7 +178,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderSingleMessage ({creator, creatorUser, text, creation_time, process, id}, key) {
+  renderSingleMessage ({creator, creatorUser, text, creation_time: creationTime, process, id}, key) {
     const isSelf = this.props.userEmail === creator
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
@@ -193,7 +197,7 @@ class CaseMessages extends Component {
         { !isSelf ? (
           <UserAvatar user={{login: creator}} />
         ) : ''}
-        { contentRenderer({isSelf, creator, creatorUser, text, creation_time, id, process}) }
+        { contentRenderer({isSelf, creator, creatorUser, text, creationTime, id, process}) }
       </div>
     )
   }

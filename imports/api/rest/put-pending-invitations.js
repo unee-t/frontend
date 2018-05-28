@@ -1,6 +1,7 @@
 import PendingInvitations from '../pending-invitations'
 import { invite } from '../../util/email-invite'
 import { Meteor } from 'meteor/meteor'
+import { reloadCaseFields } from '../cases'
 
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
@@ -55,6 +56,17 @@ export default (req, res) => {
           }
         }
       )
+
+      // Since calling this implies that a new user has been added to the case, the case needs to be reloaded
+      try {
+        reloadCaseFields(inviteInfo.caseId, ['involvedList', 'involvedListDetail'])
+      } catch (e) {
+        console.error({
+          apiCall: `PUT /pendingInvitations/done`,
+          reqBody: req.body,
+          error: e
+        })
+      }
     })
     res.send(200, results)
   } catch (e) {

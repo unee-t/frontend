@@ -86,7 +86,7 @@ if (Meteor.isServer) {
 
         expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledOnce()
-        expect(callAPIStub).to.have.been.calledWith('get', '/rest/login', sinon.match({ login: fakeEmail, password: sinon.match.string }), false, true)
+        expect(callAPIStub).to.have.been.calledWith('get', '/rest/login', sinon.match({ login: bzLogin, password: sinon.match.string }), false, true)
       })
 
       it('should not store the password on the bugzillaCreds object if bzLogin and bzPass are provided', () => {

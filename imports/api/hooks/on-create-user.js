@@ -32,7 +32,7 @@ export function onCreateUser (options, user) {
 
   let loginResult
   try {
-    loginResult = callAPI('get', '/rest/login', {login: email, password}, false, true)
+    loginResult = callAPI('get', '/rest/login', {login: bzLogin || email, password}, false, true)
   } catch (e) {
     console.error(e)
     throw new Meteor.Error({message: 'REST API error', origError: e})
