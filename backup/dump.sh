@@ -1,5 +1,5 @@
 #!/bin/bash
-for STAGE in dev prod
+for STAGE in demo
 do
 	echo Mongo dumping stage $STAGE
 	source ../aws-env.$STAGE
