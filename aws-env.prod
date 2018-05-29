@@ -4,7 +4,7 @@ export BUGZILLA_URL=https://dashboard.unee-t.com
 export INVITE_LAMBDA_URL=https://invite.unee-t.com
 export APIENROLL_LAMBDA_URL=https://apienroll.unee-t.com
 export MONGO_PASSWORD=$(aws --profile uneet-prod ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
-export MONGO_CONNECT="prod-shard-00-00-n2ose.mongodb.net:27017,prod-shard-00-01-n2ose.mongodb.net:27017,prod-shard-00-02-n2ose.mongodb.net:27017/test?ssl=true&replicaSet=Prod-shard-0&authSource=admin"
+export MONGO_CONNECT=$(aws --profile uneet-prod ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
 export CLOUDINARY_PRESET=$(aws --profile uneet-prod ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
 export CLOUDINARY_URL=$(aws --profile uneet-prod ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
 export API_ACCESS_TOKEN=$(aws --profile uneet-prod ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
