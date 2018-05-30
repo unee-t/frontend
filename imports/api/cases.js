@@ -143,20 +143,42 @@ if (Meteor.isServer) {
   Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: (subHandle, unitName) => {
+      if (!subHandle.userId) {
+        return {}
+      }
+      const currUser = Meteor.users.findOne(subHandle.userId)
+      const { login: userIdentifier } = currUser.bugzillaCreds
       return {
         f1: 'product',
         o1: 'equals',
         v1: unitName,
-        list_id: '78',
+        f2: 'OP',
+        j2: 'OR',
+        f3: 'assigned_to',
+        o3: 'equals',
+        v3: userIdentifier,
+        f4: 'cc',
+        o4: 'substring',
+        v4: userIdentifier,
+        f5: 'reporter',
+        o5: 'equals',
+        v5: userIdentifier,
+        list_id: '8',
         query_format: 'advanced',
         include_fields: 'product,summary,id,status,severity'
       }
     },
     addedMatcherFactory: strQuery => {
-      const { v1: unitName } = JSON.parse(strQuery)
+      const { v1: unitName, v3: userIdentifier } = JSON.parse(strQuery)
       return caseItem => {
-        const { selectedUnit } = transformCaseForClient(caseItem)
-        return selectedUnit === unitName
+        const { selectedUnit, assignee, creator, involvedList } = transformCaseForClient(caseItem)
+        return (
+          selectedUnit === unitName && (
+            userIdentifier === assignee ||
+            userIdentifier === creator ||
+            involvedList.includes(userIdentifier)
+          )
+        )
       }
     }
   }))
