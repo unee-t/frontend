@@ -77,6 +77,7 @@ class Unit extends Component {
     const { sortedCases } = this.state
 
     const rootMatch = match
+    const { unitId } = match.params
 
     if (isLoading) return <Preloader />
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
@@ -85,7 +86,7 @@ class Unit extends Component {
     const fabDescriptors = [
       {
         color: 'var(--bondi-blue)',
-        href: `/case/new/unit/${rootMatch.params.unitId}`,
+        href: `/case/new?unit=${unitId}`,
         icon: 'add'
       },
       {
@@ -213,16 +214,17 @@ class Unit extends Component {
               </div>
 
               {fabDescriptors.map((desc, ind) => (
-                <div className='absolute bottom-1 right-1'>
+                <div key={ind} className='absolute bottom-1 right-1'>
                   <CSSTransition in={viewIdx === ind} timeout={500} classNames='zoom-effect' unmountOnExit>
-                    <FloatingActionButton
-                      backgroundColor={desc.color}
-                      className='zoom-effect'
-                      href={desc.href}
-                      disabled={desc.disabled}
-                    >
-                      <FontIcon className='material-icons'>{desc.icon}</FontIcon>
-                    </FloatingActionButton>
+                    <Link className='link' to={desc.href}>
+                      <FloatingActionButton
+                        backgroundColor={desc.color}
+                        className='zoom-effect'
+                        disabled={desc.disabled}
+                      >
+                        <FontIcon className='material-icons'>{desc.icon}</FontIcon>
+                      </FloatingActionButton>
+                    </Link>
                   </CSSTransition>
                 </div>
               ))}
