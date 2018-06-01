@@ -91,9 +91,8 @@ class Unit extends Component {
       },
       {
         color: 'var(--bondi-blue)',
-        href: ``,
-        icon: 'add',
-        disabled: true
+        href: `/report/new?unit=${unitId}`,
+        icon: 'add'
       }
     ]
 
@@ -216,15 +215,13 @@ class Unit extends Component {
               {fabDescriptors.map((desc, ind) => (
                 <div key={ind} className='absolute bottom-1 right-1'>
                   <CSSTransition in={viewIdx === ind} timeout={500} classNames='zoom-effect' unmountOnExit>
-                    <Link className='link' to={desc.href}>
-                      <FloatingActionButton
-                        backgroundColor={desc.color}
-                        className='zoom-effect'
-                        disabled={desc.disabled}
-                      >
-                        <FontIcon className='material-icons'>{desc.icon}</FontIcon>
-                      </FloatingActionButton>
-                    </Link>
+                    <FloatingActionButton
+                      backgroundColor={desc.color}
+                      className='zoom-effect'
+                      onClick={() => dispatch(push(desc.href))}
+                    >
+                      <FontIcon className='material-icons'>{desc.icon}</FontIcon>
+                    </FloatingActionButton>
                   </CSSTransition>
                 </div>
               ))}
