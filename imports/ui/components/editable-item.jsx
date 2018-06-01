@@ -38,7 +38,6 @@ export default class EditableItem extends Component {
         <TextField
           floatingLabelText={label}
           floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-          floatingLabelFixed
           underlineFocusStyle={textInputUnderlineFocusStyle}
           inputStyle={textInputStyle}
           fullWidth
