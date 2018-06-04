@@ -13,7 +13,7 @@ import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import CaseFieldValues, { collectionName as fieldValsCollName } from '../../api/case-field-values'
 import Checkbox from 'material-ui/Checkbox'
-import { parse as parseQueryString } from 'query-string'
+import { parseQueryString } from '../../util/parsers'
 import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
@@ -58,8 +58,8 @@ class CaseWizard extends Component {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    const { dispatch, match, units } = this.props
-    const { selectedUnit } = this.state.inputValues.mandatory
+    const {dispatch, match, units} = this.props
+    const {selectedUnit} = this.state.inputValues.mandatory
     if (prevState.needsNewUser !== this.state.needsNewUser && this.state.needsNewUser) {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
@@ -69,9 +69,10 @@ class CaseWizard extends Component {
       dispatch(replace(`${match.url}?unit=${unitId}`))
     }
   }
+
   componentWillReceiveProps (nextProps) {
-    const { preferredUnitId } = this.props
-    const { inputValues, initDone } = this.state
+    const {preferredUnitId} = this.props
+    const {inputValues, initDone} = this.state
     if (nextProps.units.length > 0 && !initDone && preferredUnitId && !this.state.inputValues.mandatory.selectedUnit) {
       this.setState({
         inputValues: Object.assign({}, inputValues, {
