@@ -14,6 +14,7 @@ import '../imports/config/email'
 const publicClientEnvVars = ['CLOUDINARY_URL', 'CLOUDINARY_PRESET']
 Object.assign(Meteor.settings.public, publicClientEnvVars.reduce((obj, key) => {
   obj[key] = process.env[key]
+
   return obj
 }, {}))
 
