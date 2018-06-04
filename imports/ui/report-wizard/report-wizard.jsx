@@ -1,10 +1,11 @@
+/* global URLSearchParams */
 import React, { Component } from 'react'
 import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, replace, push } from 'react-router-redux'
-import { parse as parseQueryString } from 'query-string'
+// import { parse as parseQueryString } from 'query-string'
 import moment from 'moment'
 import CircularProgress from 'material-ui/CircularProgress'
 import FontIcon from 'material-ui/FontIcon'
@@ -16,6 +17,13 @@ import Preloader from '../preloader/preloader'
 import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { makeMatchingUser } from '../../api/custom-users'
+
+const parseQueryString = searchString => {
+  let params = {}
+  const searchParams = new URLSearchParams(searchString)
+  searchParams.forEach((val, key) => { params[key] = val })
+  return params
+}
 
 const CreatorWrapperInt = props => {
   const { userIdentity, loading, loadingUser } = props
