@@ -1,4 +1,3 @@
-/* global URLSearchParams */
 import React, { Component } from 'react'
 import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
@@ -14,7 +13,7 @@ import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import CaseFieldValues, { collectionName as fieldValsCollName } from '../../api/case-field-values'
 import Checkbox from 'material-ui/Checkbox'
-// import { parse as parseQueryString } from 'query-string'
+import { parse as parseQueryString } from 'query-string'
 import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
@@ -31,13 +30,6 @@ import {
   selectInputIconStyle,
   controlLabelStyle
 } from '../components/form-controls.mui-styles'
-
-const parseQueryString = searchString => {
-  let params = {}
-  const searchParams = new URLSearchParams(searchString)
-  searchParams.forEach((val, key) => { params[key] = val })
-  return params
-}
 
 class CaseWizard extends Component {
   constructor () {

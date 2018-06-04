@@ -22,6 +22,7 @@
     "meteor-node-stubs": "~0.2.4",
     "moment": "^2.19.3",
     "prop-types": "^15.5.10",
+    "query-string": "^6.1.0",
     "rand-token": "^0.4.0",
     "react": "^15.6.1",
     "react-addons-pure-render-mixin": "^15.6.0",
