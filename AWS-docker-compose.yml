@@ -17,6 +17,7 @@ services:
        - FROM_EMAIL=${FROM_EMAIL}
        - MAIL_URL=${MAIL_URL}
        - INVITE_LAMBDA_URL=${INVITE_LAMBDA_URL}
+       - APIENROLL_LAMBDA_URL=${APIENROLL_LAMBDA_URL}
       logging:
             driver: awslogs
             options:

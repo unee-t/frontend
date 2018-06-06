@@ -216,10 +216,10 @@ Meteor.methods({
         })
       })
     } else {
-      const { token } = currUser.bugzillaCreds
+      const { apiKey } = currUser.bugzillaCreds
       const opType = isAdd ? 'add' : 'remove'
       const payload = {
-        token,
+        api_key: apiKey,
         cc: {
           [opType]: loginNames
         }
@@ -245,13 +245,13 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized')
     }
     if (Meteor.isServer) {
-      const { bugzillaCreds: { token } } = Meteor.users.findOne(Meteor.userId())
+      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(Meteor.userId())
       const { callAPI } = bugzillaApi
 
       let unitItem
       try {
         const requestUrl = `/rest/product?names=${encodeURIComponent(params.selectedUnit)}`
-        const unitResult = callAPI('get', requestUrl, {token}, false, true)
+        const unitResult = callAPI('get', requestUrl, {api_key: apiKey}, false, true)
         unitItem = unitResult.data.products[0]
       } catch (e) {
         console.error(e)
@@ -287,7 +287,7 @@ Meteor.methods({
       normalizedParams[caseServerFieldMapping.category] = normalizedParams[caseServerFieldMapping.category] || '---'
       normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
 
-      normalizedParams.token = token
+      normalizedParams.api_key = apiKey
       let newCaseId
       try {
         const { data } = callAPI('post', '/rest/bug', normalizedParams, false, true)
@@ -359,11 +359,11 @@ Meteor.methods({
         })
       } else { // is server
         const { callAPI } = bugzillaApi
-        const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
+        const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({_id: Meteor.userId()})
         try {
           callAPI('put', `/rest/bug/${caseId}`, {
             [caseServerFieldMapping.assignee]: user.login,
-            token
+            api_key: apiKey
           }, false, true)
           reloadCaseFields(caseId, ['assignee', 'assigneeDetail'])
           console.log(`${user.login} was assigned to case ${caseId}`)
@@ -407,14 +407,16 @@ Meteor.methods({
       })
     } else { // is server
       const { callAPI } = bugzillaApi
-      const { bugzillaCreds: { token } } = Meteor.users.findOne({_id: Meteor.userId()})
+      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({_id: Meteor.userId()})
       try {
         const normalizedSet = Object.keys(changeSet).reduce((all, key) => {
           all[caseServerFieldMapping[key]] = changeSet[key]
           return all
         }, {})
-        callAPI('put', `/rest/bug/${caseId}`, Object.assign({token}, normalizedSet), false, true)
-        const { data: { bugs: [caseItem] } } = callAPI('get', `/rest/bug/${caseId}`, {token}, false, true)
+        callAPI('put', `/rest/bug/${caseId}`, Object.assign({api_key: apiKey}, normalizedSet), false, true)
+        const { data: { bugs: [caseItem] } } = callAPI(
+          'get', `/rest/bug/${caseId}`, {api_key: apiKey}, false, true
+        )
         const updatedSet = Object.keys(changeSet).reduce((all, key) => {
           all[key] = caseItem[caseServerFieldMapping[key]]
           return all

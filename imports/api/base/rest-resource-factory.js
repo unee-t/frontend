@@ -59,7 +59,7 @@ export default ({collectionName, dataResolver}) => {
     let handleStopped
 
     // Fetching the data from bugzilla using the uriTemplate given by the resource implementation
-    callAPI('get', url, Object.assign({token: currUser.bugzillaCreds.token}, payload))
+    callAPI('get', url, Object.assign({api_key: currUser.bugzillaCreds.apiKey}, payload))
       .then(data => {
         // Using the dataResolver callback to focus on the relevant data from the response object
         const payload = resolver(data)

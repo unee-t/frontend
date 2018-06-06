@@ -36,6 +36,9 @@
     },
     "INVITE_LAMBDA_URL": {
       "required": true
+    },
+    "APIENROLL_LAMBDA_URL": {
+      "required": true
     }
   },
   "formation": {

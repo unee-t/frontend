@@ -1,16 +1,18 @@
 import { Accounts } from 'meteor/accounts-base'
 import { Meteor } from 'meteor/meteor'
+import { HTTP } from 'meteor/http'
+import randToken from 'rand-token'
 import bugzillaApi from '../../util/bugzilla-api'
 
 // Exported for testing purposes
 export function onCreateUser (options, user) {
   const { callAPI } = bugzillaApi
-  const {bzLogin, bzPass} = options.profile
+  const { bzLogin, bzPass } = options.profile
   delete options.profile.bzLogin
   delete options.profile.bzPass
 
   // Creating a random bz pass if one was not provided
-  const password = bzPass || 'a' + Math.floor(0xffffff * Math.random()) + '!'
+  const password = bzPass || 'a' + randToken.generate(10) + '!'
   const { email } = options
   console.log('creating user for', email)
   const customizedUser = Object.assign({
@@ -21,24 +23,45 @@ export function onCreateUser (options, user) {
   }, user)
 
   // Checking if there's an existing bz user, or creating one
-  if (!bzLogin && !bzPass) {
-    try {
-      callAPI('post', '/rest/user', {email, password}, true, true)
-    } catch (e) {
-      console.error(e)
-      throw new Meteor.Error({message: 'REST API error', origError: e})
-    }
-  }
-
-  let loginResult
+  let apiResult
   try {
-    loginResult = callAPI('get', '/rest/login', {login: bzLogin || email, password}, false, true)
+    if (!bzLogin && !bzPass) {
+      apiResult = callAPI('post', '/rest/user', {email, password}, true, true)
+    } else {
+      apiResult = callAPI('get', '/rest/login', {login: bzLogin, password: bzPass}, false, true)
+    }
   } catch (e) {
     console.error(e)
     throw new Meteor.Error({message: 'REST API error', origError: e})
   }
-  const {token, id} = loginResult.data
-  Object.assign(customizedUser.bugzillaCreds, {token, id})
+  const { id: userId } = apiResult.data
+  const userApiKey = randToken.generate(16)
+  try {
+    HTTP.call('POST', process.env.APIENROLL_LAMBDA_URL, {
+      data: {
+        userApiKey,
+        userId: userId.toString()
+      },
+      headers: {
+        Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+      }
+    })
+  } catch (e) {
+    console.error({
+      endpoint: process.env.APIENROLL_LAMBDA_URL,
+      method: 'POST',
+      error: e,
+      userId
+    })
+    throw new Meteor.Error({
+      message: 'Lambda REST API error',
+      origError: e
+    })
+  }
+  Object.assign(customizedUser.bugzillaCreds, {
+    apiKey: userApiKey,
+    id: userId
+  })
   customizedUser.profile = options.profile
   console.log(`User for ${email} was created successfully`)
   return customizedUser

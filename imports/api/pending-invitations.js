@@ -42,11 +42,11 @@ export const unassignPending = caseId => {
 
 export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
   const currUser = Meteor.users.findOne({_id: Meteor.userId()})
-  const { token } = currUser.bugzillaCreds
+  const { apiKey } = currUser.bugzillaCreds
 
   let unitItem
   try {
-    const unitRequest = callAPI('get', `/rest/product/${unitId}`, {token}, false, true)
+    const unitRequest = callAPI('get', `/rest/product/${unitId}`, {api_key: apiKey}, false, true)
     unitItem = unitRequest.data.products[0]
   } catch (e) {
     console.error(e)

@@ -16,7 +16,7 @@ if (Meteor.isServer) {
 
     describe('generated publication', () => {
       let callAPIStub, callAPIPromise, innerResolve, innerReject, usersFindOneStub
-      const fakeToken = '3DfdHDkrjCBY554GH'
+      const fakeApiKey = '3DfdHDkrjCBY554GH'
       beforeEach(() => {
         callAPIPromise = new Promise((resolve, reject) => {
           innerResolve = resolve
@@ -25,7 +25,7 @@ if (Meteor.isServer) {
         callAPIStub = sinon.stub(bugzillaApi, 'callAPI').returns(callAPIPromise)
         usersFindOneStub = sinon.stub(Meteor.users, 'findOne').returns({
           bugzillaCreds: {
-            token: fakeToken
+            apiKey: fakeApiKey
           }
         })
       })
@@ -44,7 +44,7 @@ if (Meteor.isServer) {
         expect(usersFindOneStub).to.not.have.been.called()
         expect(callAPIStub).to.not.have.been.called()
       })
-      it('should call BZ API with the uriTemplate result and with the user\'s API token', () => {
+      it('should call BZ API with the uriTemplate result and with the user\'s api key', () => {
         const resourceId = 2636
         const userId = 2848
         const publishFunc = publishFactory({}).publishById({uriTemplate: (id) => `/bla/${id}/blabla`})
@@ -52,7 +52,9 @@ if (Meteor.isServer) {
         publishFunc.call(({ userId, onStop: () => {} }), resourceId)
 
         expect(usersFindOneStub).to.have.been.calledWithMatch({ _id: userId })
-        expect(callAPIStub).to.have.been.calledWith('get', `/bla/${resourceId}/blabla`, sinon.match({ token: fakeToken }))
+        expect(callAPIStub).to.have.been.calledWith(
+          'get', `/bla/${resourceId}/blabla`, sinon.match({ api_key: fakeApiKey })
+        )
       })
       it('should call the "ready" method and "added" method once after the API promise resolves, if isMulti=false', async function () {
         const context = {

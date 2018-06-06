@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 
 import { Meteor } from 'meteor/meteor'
+import { HTTP } from 'meteor/http'
 import bugzillaApi from '../../util/bugzilla-api'
 import { sinon } from 'meteor/practicalmeteor:sinon'
 import { expect } from 'meteor/practicalmeteor:chai'
@@ -9,34 +10,60 @@ import { onCreateUser } from './on-create-user'
 if (Meteor.isServer) {
   describe('Accounts.onCreateUser hook', () => {
     const fakeEmail = 'bla@example.com'
-    let callAPIStub
+    let callAPIStub, origApiEnrollUrl, origApiAccessToken
+    before(() => {
+      origApiEnrollUrl = process.env.APIENROLL_LAMBDA_URL
+      process.env.APIENROLL_LAMBDA_URL = 'http://something/asdsa'
+      origApiAccessToken = process.env.API_ACCESS_TOKEN
+      process.env.API_ACCESS_TOKEN = 'abc123'
+    })
     beforeEach(() => {
       callAPIStub = sinon.stub(bugzillaApi, 'callAPI')
+      sinon.stub(HTTP, 'call')
     })
     afterEach(() => {
       callAPIStub.restore()
+      HTTP.call.restore()
     })
-    it('should call "callAPI" with "POST /rest/user" and the right arguments and throw an error if it throws', () => {
-      callAPIStub.throws()
-
-      const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
-
-      expect(boundFunc).to.throw()
-      expect(callAPIStub).to.have.been.calledWith('post', '/rest/user', sinon.match({ email: fakeEmail, password: sinon.match.string }), true, true)
+    after(() => {
+      process.env.APIENROLL_LAMBDA_URL = origApiEnrollUrl
+      process.env.API_ACCESS_TOKEN = origApiAccessToken
     })
-    it('should "callAPI" with "GET /rest/login" for the second time and throw an error if it throws', () => {
-      callAPIStub.onFirstCall().returns({ data: {} })
-      callAPIStub.onSecondCall().throws()
+    describe('With no Bugzilla credentials', () => {
+      it('should call "callAPI" with "POST /rest/user" and throw an error if it throws', () => {
+        callAPIStub.throws()
 
-      const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
 
-      expect(boundFunc).to.throw()
-      expect(callAPIStub).to.have.been.calledTwice()
-      expect(callAPIStub).to.have.been.calledWith('get', '/rest/login', sinon.match({ login: fakeEmail, password: sinon.match.string }), false, true)
+        expect(boundFunc).to.throw()
+        expect(callAPIStub).to.have.been.calledWith(
+          'post', '/rest/user', sinon.match({ email: fakeEmail, password: sinon.match.string }), true, true
+        )
+      })
+      it('should do an http request "POST (apienroll API)" and throw an error if it throws', () => {
+        callAPIStub.returns({ data: {id: 2626} })
+        HTTP.call.throws()
+
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
+
+        expect(boundFunc).to.throw()
+        expect(callAPIStub).to.have.been.calledOnce()
+        expect(HTTP.call).to.have.been.calledWith(
+          'POST', process.env.APIENROLL_LAMBDA_URL, sinon.match({
+            data: sinon.match({
+              userId: '2626',
+              userApiKey: sinon.match.string
+            }),
+            headers: sinon.match({
+              Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+            })
+          })
+        )
+      })
     })
-    it('should return a customized user that contains the BZ credentials, id and token', () => {
+
+    it('should return a customized user that contains the BZ credentials, id and apiKey', () => {
       const fakeId = 1337
-      const fakeToken = '453dDFs4SDsds9G'
       const fakeProfile = {
         someInfo: 'bla'
       }
@@ -47,8 +74,8 @@ if (Meteor.isServer) {
         email: fakeEmail,
         profile: fakeProfile
       }
-      callAPIStub.onFirstCall().returns({ data: { id: fakeId } })
-      callAPIStub.onSecondCall().returns({ data: { token: fakeToken, id: fakeId } })
+      callAPIStub.returns({ data: { id: fakeId } })
+      HTTP.call.returns()
 
       const customizedUser = onCreateUser(fakeOptions, fakeUser)
 
@@ -58,10 +85,10 @@ if (Meteor.isServer) {
       })
       expect(customizedUser.bugzillaCreds).to.deep.include({
         login: fakeEmail,
-        id: fakeId,
-        token: fakeToken
+        id: fakeId
       })
       expect(customizedUser.bugzillaCreds.password).to.be.a('string')
+      expect(customizedUser.bugzillaCreds.apiKey).to.be.a('string')
 
       // NOTE: This is kept for reference to show how the assertion would look like if the syntax wasn't so clunky
       // expect(customizedUser).to.deep.equal({
@@ -70,14 +97,14 @@ if (Meteor.isServer) {
       //     login: fakeEmail,
       //     password: String,
       //     id: fakeId,
-      //     token: fakeToken
+      //     apiKey: String
       //   },
       //   profile: fakeProfile
       // })
     })
 
     describe('Existing BZ user handling', () => {
-      it('should skip creating a new user if bzLogin and bzPass are provided', () => {
+      it('should call "callAPI" with "GET /rest/login" and throw an error if it throws', () => {
         callAPIStub.throws()
         const bzLogin = 'bla'
         const bzPass = 'bla bla'
@@ -85,21 +112,45 @@ if (Meteor.isServer) {
         const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
 
         expect(boundFunc).to.throw()
+        expect(callAPIStub).to.have.been.calledWith(
+          'get', '/rest/login', sinon.match({ login: bzLogin, password: bzPass }), false, true
+        )
+      })
+      it('should do an http request "POST (apienroll API)" and throw an error if it throws', () => {
+        callAPIStub.returns({ data: {id: 3232} })
+        HTTP.call.throws()
+        const bzLogin = 'bla'
+        const bzPass = 'bla bla'
+
+        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+
+        expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledOnce()
-        expect(callAPIStub).to.have.been.calledWith('get', '/rest/login', sinon.match({ login: bzLogin, password: sinon.match.string }), false, true)
+        expect(HTTP.call).to.have.been.calledWith(
+          'POST', process.env.APIENROLL_LAMBDA_URL, sinon.match({
+            data: sinon.match({
+              userId: '3232',
+              userApiKey: sinon.match.string
+            }),
+            headers: sinon.match({
+              Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+            })
+          })
+        )
       })
 
       it('should not store the password on the bugzillaCreds object if bzLogin and bzPass are provided', () => {
         const bzLogin = 'bla'
         const bzPass = 'bla bla'
         const fakeId = 1337
-        const fakeToken = '453dDFs4SDsds9G'
-        callAPIStub.returns({ data: { token: fakeToken, id: fakeId } })
+        callAPIStub.returns({ data: { id: fakeId } })
+        HTTP.call.returns()
 
         const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
         const customizedUser = boundFunc()
 
         expect(customizedUser.bugzillaCreds.password).to.not.be.ok()
+        expect(customizedUser.bugzillaCreds.apiKey).to.be.a('string')
         expect(customizedUser.profile).to.not.have.keys('bzLogin', 'bzPass')
       })
     })

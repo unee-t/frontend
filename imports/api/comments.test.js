@@ -67,13 +67,13 @@ describe('Comments collection', () => {
 
           expect(boundFunc).to.throw('not-authorized')
         })
-        it('should "POST" to "/rest/bug/{caseId}/comment" with the comment and the user\'s token, and throw if it fails', () => {
-          const token = 'sm23ASDjsajq34Casda4'
+        it('should "POST" to "/rest/bug/{caseId}/comment" with the comment and the user\'s api key, and throw if it fails', () => {
+          const apiKey = 'sm23ASDjsajq34Casda4'
           const comment = 'Something to say'
           const caseId = 123
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {token}
+            bugzillaCreds: {apiKey}
           })
           callAPIStub.throws()
 
@@ -81,14 +81,16 @@ describe('Comments collection', () => {
 
           expect(bound).to.throw(Meteor.Error)
           expect(callAPIStub).to.have.been.calledOnce()
-          expect(callAPIStub).to.have.been.calledWithMatch('post', `/rest/bug/${caseId}/comment`, {comment, token}, false, true)
+          expect(callAPIStub).to.have.been.calledWithMatch(
+            'post', `/rest/bug/${caseId}/comment`, {comment, api_key: apiKey}, false, true
+          )
         })
         it('should fetch the created comment by "GET /rest/bug/comment/{commentId}", and throw if it fails', () => {
           const newCommentId = 432
-          const token = 'asdkjajsej12@QasdAj2kad'
+          const apiKey = 'asdkjajsej12@QasdAj2kad'
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {token}
+            bugzillaCreds: {apiKey}
           })
           callAPIStub.onFirstCall().returns({
             data: {id: newCommentId}
@@ -99,7 +101,9 @@ describe('Comments collection', () => {
 
           expect(bound).to.throw(Meteor.Error)
           expect(callAPIStub).to.have.been.calledTwice()
-          expect(callAPIStub).to.have.been.calledWithMatch('get', `/rest/bug/comment/${newCommentId}`, {token}, false, true)
+          expect(callAPIStub).to.have.been.calledWithMatch(
+            'get', `/rest/bug/comment/${newCommentId}`, {api_key: apiKey}, false, true
+          )
         })
         it('should notify subscribers by using "handleAdded" with the new comment object for the specified caseId', () => {
           const caseId = 987
@@ -113,7 +117,7 @@ describe('Comments collection', () => {
           }
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {token: 'sdfS5aDra923sAS'}
+            bugzillaCreds: {apiKey: 'sdfS5aDra923sAS'}
           })
           callAPIStub.onFirstCall().returns({
             data: {id: newCommentObj.id}
