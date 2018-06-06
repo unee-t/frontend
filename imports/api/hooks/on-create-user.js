@@ -58,7 +58,6 @@ export function onCreateUser (options, user) {
       origError: e
     })
   }
-  // const {token, id} = loginResult.data
   Object.assign(customizedUser.bugzillaCreds, {
     apiKey: userApiKey,
     id: userId

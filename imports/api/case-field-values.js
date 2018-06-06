@@ -17,10 +17,12 @@ if (Meteor.isServer) {
       this.error(new Meteor.Error({message: 'Authentication required'}))
       return false
     }
-    const {bugzillaCreds: { token }} = Meteor.users.findOne(this.userId)
+    const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(this.userId)
     const serverName = serverLocalFieldMapping[name]
     try {
-      const {data: {fields: [fieldMeta]}} = callAPI('get', `/rest/field/bug/${serverName}`, {token}, false, true)
+      const { data: { fields: [fieldMeta] } } = callAPI(
+        'get', `/rest/field/bug/${serverName}`, {api_key: apiKey}, false, true
+      )
       this.added(collectionName, fieldMeta.id.toString(), {...fieldMeta, name: clientLocalFieldMapping[fieldMeta.name]})
       this.ready()
     } catch (e) {

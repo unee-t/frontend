@@ -60,9 +60,9 @@ if (Meteor.isServer) {
     Meteor.publish(`${collectionName}.${funcName}`, function () {
       let ids
       if (this.userId) {
-        const { bugzillaCreds: { token } } = Meteor.users.findOne(this.userId)
+        const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(this.userId)
         try {
-          const listResponse = callAPI('get', apiUrl, {token}, false, true)
+          const listResponse = callAPI('get', apiUrl, {api_key: apiKey}, false, true)
           ids = listResponse.data.ids
         } catch (e) {
           console.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
