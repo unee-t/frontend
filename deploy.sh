@@ -36,7 +36,7 @@ done
 AWS_PROFILE=uneet-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
-export COMMIT=$(git describe --always)
+export COMMIT=$(git rev-parse --short HEAD)
 
 # Run deploy hooks
 for hook in deploy-hooks/*
