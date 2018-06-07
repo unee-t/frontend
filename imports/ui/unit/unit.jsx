@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
 import { createContainer } from 'meteor/react-meteor-data'
-import { push } from 'react-router-redux'
+import { push, goBack } from 'react-router-redux'
 import { Route, Link } from 'react-router-dom'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
@@ -14,6 +14,7 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
 import InnerAppBar from '../components/inner-app-bar'
+import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
@@ -91,7 +92,7 @@ class Unit extends Component {
       },
       {
         color: 'var(--bondi-blue)',
-        href: `/report/new?unit=${unitId}`,
+        href: `${rootMatch.url}/${viewsOrder[1]}/new`,
         icon: 'add'
       }
     ]
@@ -103,7 +104,7 @@ class Unit extends Component {
           title={unitItem.name}
           onBack={() => dispatch(push(match.url.split('/').slice(0, -1).join('/')))}
         />
-        <Route exact path={`${match.url}/:viewName`} children={({ match }) => {
+        <Route path={`${rootMatch.url}/:viewName`} children={({ match }) => {
           const viewIdx = match ? viewsOrder.indexOf(match.params.viewName) : 0
           return (
             <div className='flex-grow flex flex-column overflow-hidden'>
@@ -162,6 +163,13 @@ class Unit extends Component {
                         Create your first inspection report
                       </div>
                     </div>
+                    <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
+                      <CreateReportDialog
+                        show={!!match}
+                        onDismissed={() => dispatch(goBack())}
+                        inProgress={false}
+                      />
+                    )} />
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
