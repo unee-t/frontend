@@ -25,12 +25,26 @@ class UnitWizard extends Component {
   }
   render () {
     return (
-      <div>
+      <div className='full-height flex flex-column overflow-hidden'>
         <InnerAppBar title='Add Unit'></InnerAppBar>
-        <form onSubmit={this.handleSubmit} className='overflow-auto'>
-          <InputRow label='Unit Name*' onChange={this.handleUnitNameChange} />
-          <SelectField>
-          </SelectField>
+        <form onSubmit={this.handleSubmit} className='overflow-auto flex-grow flex flex-column'>
+          <div className='flex-grow'>
+            <InputRow label='Unit Name*' onChange={this.handleUnitNameChange} />
+            <SelectField>
+            </SelectField>
+            <InputRow label='Additional Description' onChange={this.handleAdditionalDescriptionChange} />
+            <div className='bb b--gray-93 ph3 pt2 pb3'>
+              <div key='label' className='mt1 f6 bondi-blue'>Address</div>
+              <InputRow label='Address' onChange={this.handleAddressChange} />
+              <InputRow label='City' onChange={this.handleCityChange} />
+              <SelectField>
+              </SelectField>
+              <SelectField>
+              </SelectField>
+              <InputRow label='Zip / Postal code' onChange={this.handleZipChange} />
+            </div>
+          </div>
+          <h1>fasdasf</h1>
         </form>
       </div>
     )
