@@ -167,7 +167,7 @@ class Unit extends Component {
                       <CreateReportDialog
                         show={!!match}
                         onDismissed={() => dispatch(goBack())}
-                        inProgress={false}
+                        unitName={unitItem.name}
                       />
                     )} />
                   </div>
