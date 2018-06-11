@@ -4,8 +4,18 @@ import { createContainer } from 'meteor/react-meteor-data'
 import InnerAppBar from '../components/inner-app-bar'
 import InputRow from '../components/input-row'
 import SelectField from 'material-ui/SelectField'
+import RaisedButton from 'material-ui/RaisedButton'
+import MenuItem from 'material-ui/MenuItem'
+import { goBack } from 'react-router-redux'
 
 class UnitWizard extends Component {
+  constructor () {
+    super(...arguments)
+    this.state = {
+      type: '',
+      relationship: ''
+    }
+  }
   handleSubmit = evt => {
     evt.preventDefault()
     const { email, error } = this.state
@@ -26,25 +36,63 @@ class UnitWizard extends Component {
   render () {
     return (
       <div className='full-height flex flex-column overflow-hidden'>
-        <InnerAppBar title='Add Unit'></InnerAppBar>
+        <InnerAppBar title='Add Unit' onBack={() => this.props.dispatch(goBack())} />
         <form onSubmit={this.handleSubmit} className='overflow-auto flex-grow flex flex-column'>
-          <div className='flex-grow'>
-            <InputRow label='Unit Name*' onChange={this.handleUnitNameChange} />
-            <SelectField>
-            </SelectField>
-            <InputRow label='Additional Description' onChange={this.handleAdditionalDescriptionChange} />
-            <div className='bb b--gray-93 ph3 pt2 pb3'>
+          <div className='flex-grow bg-very-light-gray'>
+            <div className='bg-white card-shadow-1 pa3'>
+              <InputRow label='Unit Name' onChange={this.handleUnitNameChange} />
+              <p className='f7 gray ma0 mt1'>This will be displayed to everyone involved in the unit.</p>
+              <SelectField
+                value={this.state.type}
+                floatingLabelText='Unit Type'
+                fullWidth
+                onChange={(evt, idx, val) => {
+                  this.setState({
+                    type: val
+                  })
+                }}
+              >
+                <MenuItem value='apartment' primaryText='Apartment' />
+                <MenuItem value='house' primaryText='House' />
+                <MenuItem value='absolute' primaryText='Absolute' />
+              </SelectField>
+              <SelectField
+                floatingLabelText='Relationship to Unit'
+                fullWidth
+                value={this.state.relationship}
+                onChange={(evt, idx, val) => {
+                  this.setState({
+                    relationship: val
+                  })
+                }}
+              >
+                <MenuItem value='owner' primaryText='Owner' />
+                <MenuItem value='tenant' primaryText='Tenant' />
+                <MenuItem value='occupant' primaryText='Occupant' />
+                <MenuItem value='contractor' primaryText='Contractor' />
+                <MenuItem value='agent' primaryText='Agent' />
+                <MenuItem value='other' primaryText='Other' />
+              </SelectField>
+              <InputRow label='Additional Description' onChange={this.handleAdditionalDescriptionChange} />
+            </div>
+            <div className='bg-white card-shadow-1 pa3 mt2'>
               <div key='label' className='mt1 f6 bondi-blue'>Address</div>
               <InputRow label='Address' onChange={this.handleAddressChange} />
               <InputRow label='City' onChange={this.handleCityChange} />
-              <SelectField>
-              </SelectField>
-              <SelectField>
-              </SelectField>
-              <InputRow label='Zip / Postal code' onChange={this.handleZipChange} />
+              <SelectField
+                floatingLabelText='Country'
+                fullWidth
+              ></SelectField>
+              <SelectField
+                floatingLabelText='State'
+              ></SelectField>
+              <InputRow label='ZIP / Postal Code' onChange={this.handleZipChange} />
             </div>
           </div>
-          <h1>fasdasf</h1>
+          <RaisedButton
+            label='Add Unit'
+            type='submit'
+          />
         </form>
       </div>
     )
