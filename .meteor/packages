@@ -31,3 +31,4 @@ pauldowman:dotenv
 dburles:collection-helpers
 force-ssl
 percolate:migrations
+email
