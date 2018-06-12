@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
+import { invite } from '../util/email-invite'
 import bugzillaApi from '../util/bugzilla-api'
 import _ from 'lodash'
 
@@ -228,7 +229,11 @@ Meteor.methods({
         callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
 
         reloadCaseFields(caseId, ['involvedList', 'involvedListDetail'])
-        loginNames.forEach(email => console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`))
+        loginNames.forEach(email => {
+          console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
+          const invitedUser = Meteor.users.findOne({'bugzillaCreds.login': email})
+          invite(invitedUser, currUser)
+        })
       } catch (e) {
         console.error({
           user: Meteor.userId(),
