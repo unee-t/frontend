@@ -143,7 +143,11 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
   console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
   let httpResponse
   try {
-    httpResponse = HTTP.get(process.env.INVITE_LAMBDA_URL)
+    httpResponse = HTTP.get(process.env.INVITE_LAMBDA_URL, {
+      headers: {
+        Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+      }
+    })
   } catch (e) {
     console.log('oh no, error', e)
   }
