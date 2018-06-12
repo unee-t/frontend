@@ -231,8 +231,10 @@ Meteor.methods({
         reloadCaseFields(caseId, ['involvedList', 'involvedListDetail'])
         loginNames.forEach(email => {
           console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`)
-          const invitedUser = Meteor.users.findOne({'bugzillaCreds.login': email})
-          invite(invitedUser, currUser)
+          if (isAdd) {
+            const invitedUser = Meteor.users.findOne({'bugzillaCreds.login': email})
+            invite(invitedUser, currUser)
+          }
         })
       } catch (e) {
         console.error({
