@@ -7,6 +7,7 @@ import SelectField from 'material-ui/SelectField'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
 import { goBack } from 'react-router-redux'
+import countries from 'iso-3166-1-codes'
 
 class UnitWizard extends Component {
   constructor () {
@@ -75,23 +76,28 @@ class UnitWizard extends Component {
               </SelectField>
               <InputRow label='Additional Description' onChange={this.handleAdditionalDescriptionChange} />
             </div>
-            <div className='bg-white card-shadow-1 pa3 mt2'>
+            <div className='bg-white card-shadow-1 pa3 mv3'>
               <div key='label' className='mt1 f6 bondi-blue'>Address</div>
               <InputRow label='Address' onChange={this.handleAddressChange} />
               <InputRow label='City' onChange={this.handleCityChange} />
               <SelectField
                 floatingLabelText='Country'
                 fullWidth
-              ></SelectField>
-              <SelectField
-                floatingLabelText='State'
-              ></SelectField>
+              >
+                {countries.map(({ alpha2: code, name }) => (
+                  <MenuItem key={code} value={code} primaryText={name} />
+                ))}
+              </SelectField>
+              <InputRow label='Administrative Region' />
+              <p className='f7 gray ma0 mt1'>State, province, prefecture, etc.</p>
               <InputRow label='ZIP / Postal Code' onChange={this.handleZipChange} />
             </div>
           </div>
           <RaisedButton
             label='Add Unit'
             type='submit'
+            primary
+            className='ma3'
           />
         </form>
       </div>
