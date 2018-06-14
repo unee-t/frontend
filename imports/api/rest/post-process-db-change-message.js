@@ -9,8 +9,8 @@ export default (req, res) => {
     return
   }
 
-  const { Message: messageText } = req.body
-  const message = JSON.parse(messageText)
+  const message = req.body
+  console.log('Incoming to /api/db-change-message/process', message)
 
   MessagePayloads.insert(message)
 
