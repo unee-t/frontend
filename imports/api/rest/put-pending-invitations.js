@@ -28,9 +28,9 @@ export default (req, res) => {
       const invitee = Meteor.users.findOne({ 'bugzillaCreds.id': inviteInfo.invitee }, {
         fields: {
           emails: 1,
-          invitedToCases: {
+          receivedInvites: {
             $elemMatch: {
-              caseId: inviteInfo.caseId
+              invitationId: id
             }
           }
         }
@@ -48,11 +48,11 @@ export default (req, res) => {
       Meteor.users.update(
         {
           'bugzillaCreds.id': inviteInfo.invitee,
-          'invitedToCases': { $elemMatch: { caseId: inviteInfo.caseId } }
+          'receivedInvites': { $elemMatch: { invitationId: id } }
         },
         {
           $set: {
-            'invitedToCases.$.done': true
+            'receivedInvites.$.done': true
           }
         }
       )

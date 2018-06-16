@@ -5,7 +5,7 @@ const { callAPI } = bugzillaApi
 
 export const invite = (user, invitedBy) => {
   try {
-    const { accessToken, caseId, unitId, role: inviteeRole } = user.invitedToCases[0]
+    const { accessToken, caseId, unitId, role: inviteeRole } = user.receivedInvites[0]
     const caseData = callAPI('get', `/rest/bug/${caseId}`, {}, true, true)
     const unitData = callAPI('get', `/rest/product/${unitId}`, {}, true, true)
     const caseTitle = caseData.data.bugs[0].summary

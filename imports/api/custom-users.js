@@ -28,7 +28,7 @@ Meteor.methods({
   'users.invitationLogin': function (code) {
     // Reusable matcher object for the next mongo queries
     const codeMatcher = {
-      invitedToCases: {
+      receivedInvites: {
         $elemMatch: {
           accessToken: code
         }
@@ -51,11 +51,11 @@ Meteor.methods({
     // Track accesses
     AccessInvitations.upsert({
       userId: invitedUser._id,
-      unitId: invitedUser.invitedToCases[0].unitId
+      unitId: invitedUser.receivedInvites[0].unitId
     }, {
       $set: {
         userId: invitedUser._id,
-        unitId: invitedUser.invitedToCases[0].unitId
+        unitId: invitedUser.receivedInvites[0].unitId
       },
       $push: {
         dates: new Date()
@@ -65,10 +65,10 @@ Meteor.methods({
     // Keeping track of how many times the user used this invitation to access the system
     Meteor.users.update({
       _id: invitedUser._id,
-      'invitedToCases.accessToken': code
+      'receivedInvites.accessToken': code
     }, {
       $inc: {
-        'invitedToCases.$.accessedCount': 1
+        'receivedInvites.$.accessedCount': 1
       }
     })
     console.log(`${invitedUser.emails[0].address} is using an invitation to access the system`)
@@ -79,7 +79,7 @@ Meteor.methods({
 
     const invitedByDetails = (() => {
       const { emails: [{ address: email }], profile: { name } } =
-        Meteor.users.findOne(invitedUser.invitedToCases[0].invitedBy)
+        Meteor.users.findOne(invitedUser.receivedInvites[0].invitedBy)
       return {
         email,
         name
@@ -88,7 +88,7 @@ Meteor.methods({
     return {
       email: invitedUser.emails[0].address,
       pw: randPass,
-      caseId: invitedUser.invitedToCases[0].caseId,
+      caseId: invitedUser.receivedInvites[0].caseId,
       invitedByDetails
     }
   },
