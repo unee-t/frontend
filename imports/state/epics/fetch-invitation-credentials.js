@@ -18,7 +18,7 @@ export const fetchInvitationCredentials = action$ => action$
   .ofType(FETCH_INVITATION_CREDENTIALS)
   .switchMap(({code}) => {
     const meteorResult$ = new Subject()
-    Meteor.call('users.invitationLogin', code, (error, {email, pw, caseId, invitedByDetails}) => {
+    Meteor.call('users.invitationLogin', code, (error, result) => {
       if (error) {
         meteorResult$.next({
           type: ERROR_INVITATION_CREDENTIALS,
@@ -27,6 +27,7 @@ export const fetchInvitationCredentials = action$ => action$
         meteorResult$.complete()
         return
       }
+      const { email, pw, caseId, invitedByDetails } = result
       meteorResult$.next({
         type: LOGIN_INVITATION_CREDENTIALS
       })
