@@ -11,6 +11,7 @@ import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
+import { possibleRoles } from '../../api/unit-roles-data'
 
 import {
   modalCustomContentStyle,
@@ -56,25 +57,7 @@ class InviteDialog extends Component {
 
     window.addEventListener('resize', this.handleWindowResize)
 
-    this.roleTypes = [
-      {
-        name: 'Tenant',
-        canBeOccupant: true
-      },
-      {
-        name: 'Owner/Landlord',
-        canBeOccupant: true
-      },
-      {
-        name: 'Contractor'
-      },
-      {
-        name: 'Management Company'
-      },
-      {
-        name: 'Agent'
-      }
-    ]
+    this.roleTypes = possibleRoles
   }
 
   componentDidUpdate () {
