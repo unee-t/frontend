@@ -1,16 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import { Migrations } from 'meteor/percolate:migrations'
+
+import { baseUserSchema } from '../api/custom-users'
+
 Migrations.add({
   version: 5,
   up: () => {
     Meteor.users.update({}, {
-      $set: {
-        notificationSettings: {
-          assignedNewCase: true,
-          assignedExistingCase: true,
-          invitedToCase: true
-        }
-      }
+      $set: baseUserSchema // This is the notification settings bit actually
     }, {
       multi: true
     })
