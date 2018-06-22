@@ -9,20 +9,50 @@ export const makeMatchingUser = bzUser => {
   return regUser ? Object.assign({}, bzUser, regUser.profile) : bzUser
 }
 
+const verifyUserLogin = handle => {
+  if (!handle.userId) {
+    handle.ready()
+    handle.error(new Meteor.Error({message: 'Authentication required'}))
+    return false
+  }
+  return true
+}
+
+export const baseUserSchema = Object.freeze({
+  notificationSettings: {
+    assignedNewCase: true,
+    assignedExistingCase: true,
+    invitedToCase: true
+  }
+}) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation
+
 if (Meteor.isServer) {
   Meteor.publish('users.myBzLogin', function () {
-    if (!this.userId) {
-      this.ready()
-      this.error(new Meteor.Error({message: 'Authentication required'}))
-      return false
+    if (verifyUserLogin(this)) {
+      return Meteor.users.find({_id: this.userId}, {
+        fields: {
+          'bugzillaCreds.login': 1
+        }
+      })
     }
-    return Meteor.users.find({_id: this.userId}, {
-      fields: {
-        'bugzillaCreds.login': 1
-      }
-    })
+  })
+
+  Meteor.publish('users.myNotificationSettings', function () {
+    if (verifyUserLogin(this)) {
+      return Meteor.users.find({_id: this.userId}, {
+        fields: {
+          'notificationSettings': 1
+        }
+      })
+    }
   })
 }
+
+const notifSettsNames = [
+  'assignedNewCase',
+  'assignedExistingCase',
+  'invitedToCase'
+]
 
 Meteor.methods({
   'users.invitationLogin': function (code) {
@@ -100,6 +130,16 @@ Meteor.methods({
 
     Meteor.users.update(Meteor.userId(), {
       $set: {'profile.name': name}
+    })
+  },
+  'users.updateNotificationSetting': function (settingName, isOn) {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    if (!notifSettsNames.includes(settingName)) return new Meteor.Error(`Setting name '${settingName}' is invalid`)
+
+    Meteor.users.update(Meteor.userId(), {
+      $set: {
+        [`notificationSettings.${settingName}`]: !!isOn
+      }
     })
   }
 })
