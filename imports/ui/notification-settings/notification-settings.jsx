@@ -23,7 +23,7 @@ class NotificationSettings extends Component {
       <div className='full-height flex flex-column'>
         <InnerAppBar title='Notification Settings' onBack={() => dispatch(goBack())} />
         <div className='flex-grow flex flex-column pa3'>
-          {infoItemLabel('Receive updates')}
+          {infoItemLabel('Receive email updates')}
           <div className='mt2 pa1 relative'>
             <div className={!settings ? 'o-40' : ''}>
               <Toggle
