@@ -13,38 +13,34 @@ class UnitWizard extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      type: '',
-      relationship: ''
+      type: null,
+      name: '',
+      role: null,
+      moreInfo: '',
+      streetAddress: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: null
     }
   }
   handleSubmit = evt => {
-    evt.preventDefault()
-    const { email, error } = this.state
-    if (!email || !!error) return
-
-    this.props.dispatch(forgotPass(email))
   }
-  handleUnitNameChange = evt => {
-    const { asyncError, dispatch } = this.props
-    this.setState({
-      email: evt.target.value,
-      error: emailValidator(evt.target.value) ? null : 'Email address is invalid'
-    })
-    if (asyncError) {
-      dispatch(resetError())
-    }
-  }
+  createTextStateHandler = stateVarName => evt => this.setState({
+    [stateVarName]: evt.target.value
+  })
   render () {
+    const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state } = this.state
     return (
       <div className='full-height flex flex-column overflow-hidden'>
         <InnerAppBar title='Add Unit' onBack={() => this.props.dispatch(goBack())} />
         <form onSubmit={this.handleSubmit} className='overflow-auto flex-grow flex flex-column'>
           <div className='flex-grow bg-very-light-gray'>
             <div className='bg-white card-shadow-1 pa3'>
-              <InputRow label='Unit Name' onChange={this.handleUnitNameChange} />
+              <InputRow label='Unit Name' value={name} onChange={this.createTextStateHandler('name')} />
               <p className='f7 gray ma0 mt1'>This will be displayed to everyone involved in the unit.</p>
               <SelectField
-                value={this.state.type}
+                value={type}
                 floatingLabelText='Unit Type'
                 fullWidth
                 onChange={(evt, idx, val) => {
@@ -60,10 +56,10 @@ class UnitWizard extends Component {
               <SelectField
                 floatingLabelText='Relationship to Unit'
                 fullWidth
-                value={this.state.relationship}
+                value={role}
                 onChange={(evt, idx, val) => {
                   this.setState({
-                    relationship: val
+                    role: val
                   })
                 }}
               >
@@ -74,31 +70,43 @@ class UnitWizard extends Component {
                 <MenuItem value='agent' primaryText='Agent' />
                 <MenuItem value='other' primaryText='Other' />
               </SelectField>
-              <InputRow label='Additional Description' onChange={this.handleAdditionalDescriptionChange} />
+              <InputRow
+                label='Additional Description'
+                value={moreInfo}
+                onChange={this.createTextStateHandler('moreInfo')}
+              />
             </div>
             <div className='bg-white card-shadow-1 pa3 mv3'>
-              <div key='label' className='mt1 f6 bondi-blue'>Address</div>
-              <InputRow label='Address' onChange={this.handleAddressChange} />
-              <InputRow label='City' onChange={this.handleCityChange} />
+              <div className='mt1 silver fw5'>ADDRESS</div>
+              <InputRow label='Address' value={streetAddress} onChange={this.createTextStateHandler('streetAddress')} />
+              <InputRow label='City' value={city} onChange={this.createTextStateHandler('city')} />
               <SelectField
                 floatingLabelText='Country'
                 fullWidth
+                value={country}
+                onChange={(evt, idx, val) => {
+                  this.setState({
+                    country: val
+                  })
+                }}
               >
                 {countries.map(({ alpha2: code, name }) => (
                   <MenuItem key={code} value={code} primaryText={name} />
                 ))}
               </SelectField>
-              <InputRow label='Administrative Region' />
+              <InputRow label='Administrative Region' value={state} onChange={this.createTextStateHandler('state')} />
               <p className='f7 gray ma0 mt1'>State, province, prefecture, etc.</p>
-              <InputRow label='ZIP / Postal Code' onChange={this.handleZipChange} />
+              <InputRow label='ZIP / Postal Code' value={zipCode} onChange={this.createTextStateHandler('zipCode')} />
+              <RaisedButton
+                fullWidth
+                type='submit'
+                primary
+                className='mv3'
+              >
+                <div className='f4 white'>Add Unit</div>
+              </RaisedButton>
             </div>
           </div>
-          <RaisedButton
-            label='Add Unit'
-            type='submit'
-            primary
-            className='ma3'
-          />
         </form>
       </div>
     )
@@ -106,7 +114,6 @@ class UnitWizard extends Component {
 }
 
 export default connect(
-  ({ drawerState }) => ({isDrawerOpen: drawerState.isOpen}) // map redux state to props
+  () => ({}) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
-  user: Meteor.user()
 }), UnitWizard))

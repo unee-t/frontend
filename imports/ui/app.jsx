@@ -21,8 +21,6 @@ import SideMenu from './side-menu/side-menu'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
 
-import UnderConstruction from './under-construction.jsx'
-
 class App extends Component {
   componentWillMount () {
     this.props.dispatch(checkPassReset())
