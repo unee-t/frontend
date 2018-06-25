@@ -45,6 +45,23 @@ class NotificationSettings extends Component {
                 toggled={!!settings && settings.invitedToCase}
                 onToggle={(evt, isChecked) => this.handleSettingToggled('invitedToCase', isChecked)}
               />
+
+              <Toggle
+                className='mt2'
+                labelStyle={toggleLabelStyle}
+                label='When there is a new message on a case'
+                toggled={!!settings && settings.caseNewMessage}
+                onToggle={(evt, isChecked) => this.handleSettingToggled('caseNewMessage', isChecked)}
+              />
+
+              <Toggle
+                className='mt2'
+                labelStyle={toggleLabelStyle}
+                label='When a case is updated'
+                toggled={!!settings && settings.caseUpdate}
+                onToggle={(evt, isChecked) => this.handleSettingToggled('caseUpdate', isChecked)}
+              />
+
             </div>
             {!settings && (
               <div className='absolute tc pa3 top-0 right-0 left-0'>

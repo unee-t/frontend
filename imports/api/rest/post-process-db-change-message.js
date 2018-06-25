@@ -1,9 +1,27 @@
 import { Meteor } from 'meteor/meteor'
 import { Email } from 'meteor/email'
 import MessagePayloads from '../message-payloads'
-import caseUserInvitedTemplate from '../../email-templates/user-invited-to-case'
 import caseAssigneeUpdateTemplate from '../../email-templates/case-assignee-updated'
-import caseNewTemplate from '../../email-templates/case-new'
+import caseUpdatedTemplate from '../../email-templates/case-updated'
+import caseNewMessageTemplate from '../../email-templates/case-new-message'
+import caseUserInvitedTemplate from '../../email-templates/case-user-invited'
+
+function getUserByBZId (idStr) {
+  return Meteor.users.findOne({ 'bugzillaCreds.id': parseInt(idStr) })
+}
+
+function sendEmail (assignee, emailContent, notificationId) {
+  const emailAddr = assignee.emails[0].address
+  try {
+    Email.send(Object.assign({
+      to: emailAddr,
+      from: process.env.FROM_EMAIL
+    }, emailContent))
+    console.log('Sent', emailAddr, 'notification:', notificationId)
+  } catch (e) {
+    console.error(`An error ${e} occurred while sending an email to ${emailAddr}`)
+  }
+}
 
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
@@ -13,7 +31,7 @@ export default (req, res) => {
 
   const message = req.body
 
-  if (MessagePayloads.findOne({notification_id: message.notification_id})) {
+  if (MessagePayloads.findOne({ notification_id: message.notification_id })) {
     console.log(`Duplicate message ${message.notification_id}`)
     res.send(400, `Duplicate message ${message.notification_id}`)
     return
@@ -22,6 +40,7 @@ export default (req, res) => {
   console.log('Incoming to /api/db-change-message/process', message)
   MessagePayloads.insert(message)
 
+  // Common between https://github.com/unee-t/lambda2sns/tree/master/tests/events
   const {
     notification_type: type,
     case_title: caseTitle,
@@ -29,30 +48,41 @@ export default (req, res) => {
     notification_id: notificationId
   } = message
 
-  let userId, templateFunction, settingType
+  let userIds, templateParams, templateFn, settingType
 
   switch (type) {
-    case 'case_new':
-      // https://github.com/unee-t/sns2email/issues/1
-      // When a new case is created, we need to inform the person who is assigned to that case.
-      userId = message.assignee_user_id
-      templateFunction = caseNewTemplate
-      settingType = 'assignedNewCase'
-      break
-
     case 'case_assignee_updated':
       // https://github.com/unee-t/sns2email/issues/2
       // When the user assigned to a case change, we need to inform the person who is the new assignee to that case.
-      userId = message.assignee_user_id
-      templateFunction = caseAssigneeUpdateTemplate
       settingType = 'assignedExistingCase'
+      userIds = [message.new_case_assignee_user_id]
+      templateFn = caseAssigneeUpdateTemplate
+      templateParams = [caseTitle, caseId]
+      break
+
+    case 'case_new_message':
+      // https://github.com/unee-t/lambda2sns/issues/5
+      settingType = 'caseNewMessage'
+      userIds = message.current_list_of_invitees.split(',').concat([message.new_case_assignee_user_id])
+      templateFn = caseNewMessageTemplate
+      templateParams = [caseTitle, caseId, getUserByBZId(message.created_by_user_id), message.message_truncated]
+      break
+
+    case 'case_updated':
+      // https://github.com/unee-t/lambda2sns/issues/4
+      // More are notified: https://github.com/unee-t/lambda2sns/issues/4#issuecomment-399339075
+      settingType = 'caseUpdate'
+      userIds = message.current_list_of_invitees.split(',').concat([message.new_case_assignee_user_id, message.case_reporter_user_id])
+      templateFn = caseUpdatedTemplate
+      templateParams = [caseTitle, caseId, message.update_what, getUserByBZId(message.user_id)]
       break
 
     case 'case_user_invited':
       // https://github.com/unee-t/sns2email/issues/3
-      userId = message.invitee_user_id
-      templateFunction = caseUserInvitedTemplate
       settingType = 'invitedToCase'
+      userIds = [message.invitee_user_id]
+      templateFn = caseUserInvitedTemplate
+      templateParams = [caseTitle, caseId]
       break
 
     default:
@@ -60,31 +90,21 @@ export default (req, res) => {
       res.send(400)
       return
   }
-
-  const assignee = Meteor.users.findOne({'bugzillaCreds.id': parseInt(userId)})
-  if (!assignee) {
-    console.error('Could deliver message to missing user of BZ ID: ' + userId)
-    res.send(400)
-    return
-  }
-  if (!assignee.notificationSettings[settingType]) {
-    console.log(
-      `${assignee.bugzillaCreds.login} has previously opted out from '${settingType}' notifications. ` +
-       `Skipping email for notification ${notificationId}.`
-    )
-  } else {
-    const emailAddr = assignee.emails[0].address
-    const emailContent = templateFunction(assignee, caseTitle, caseId)
-    try {
-      Email.send(Object.assign({
-        to: emailAddr,
-        from: process.env.FROM_EMAIL
-      }, emailContent))
-      console.log('Sent', emailAddr, 'notification type:', type)
-    } catch (e) {
-      console.error(`An error ${e} occurred while sending an email to ${emailAddr}`)
+  (new Set(userIds)).forEach(userId => {
+    const recipient = getUserByBZId(userId)
+    if (!recipient) {
+      console.error(`User with bz id ${userId} was not found in mongo`)
+      return
     }
-  }
+    if (!recipient.notificationSettings[settingType]) {
+      console.log(
+          `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications.`
+        )
+    } else {
+      const emailContent = templateFn(...[recipient].concat(templateParams))
+      sendEmail(recipient, emailContent, notificationId)
+    }
+  })
 
   res.send(200)
 }
