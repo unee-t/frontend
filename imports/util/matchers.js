@@ -7,6 +7,8 @@ export const attachmentTextMatcher = text => {
   return text.indexOf(prefix + cloudinaryDownloadUrl) === 0 || text.indexOf(prefix + previewPrefix) === 0
 }
 
-export const placeholderEmailMatcher = email => !!email.match(/^temporary\..+@.+\..+\.?.*\.{0,2}.*$/)
+const isTemporaryEmail = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
+export const placeholderEmailMatcher = email => isTemporaryEmail.test(email)
 
-export const roleCanBeOccupantMatcher = roleName => !!roleName.match(/(owner|landlord|tenant)/i)
+const isRoleCanBeOccupant = /(owner|landlord|tenant)/i
+export const roleCanBeOccupantMatcher = roleName => isRoleCanBeOccupant.test(roleName)

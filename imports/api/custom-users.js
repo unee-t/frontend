@@ -22,7 +22,9 @@ export const baseUserSchema = Object.freeze({
   notificationSettings: {
     assignedNewCase: true,
     assignedExistingCase: true,
-    invitedToCase: true
+    invitedToCase: true,
+    caseNewMessage: true,
+    caseUpdate: true
   }
 }) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation
 
@@ -51,7 +53,9 @@ if (Meteor.isServer) {
 const notifSettsNames = [
   'assignedNewCase',
   'assignedExistingCase',
-  'invitedToCase'
+  'invitedToCase',
+  'caseNewMessage',
+  'caseUpdate'
 ]
 
 Meteor.methods({
