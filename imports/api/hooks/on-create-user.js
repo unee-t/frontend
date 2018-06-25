@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { HTTP } from 'meteor/http'
 import randToken from 'rand-token'
 import bugzillaApi from '../../util/bugzilla-api'
+import { baseUserSchema } from '../custom-users'
 
 // Exported for testing purposes
 export function onCreateUser (options, user) {
@@ -63,6 +64,7 @@ export function onCreateUser (options, user) {
     id: userId
   })
   customizedUser.profile = options.profile
+  Object.assign(customizedUser, baseUserSchema)
   console.log(`User for ${email} was created successfully`)
   return customizedUser
 }

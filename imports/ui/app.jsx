@@ -15,6 +15,7 @@ import ResetPass from './reset-pass/reset-pass'
 import ForgotPass from './forgot-pass/forgot-pass'
 import UnitWizard from './unit-wizard/unit-wizard'
 import UnitExplorer from './unit-explorer/unit-explorer'
+import NotificationSettings from './notification-settings/notification-settings'
 import Unit from './unit/unit'
 import SideMenu from './side-menu/side-menu'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
@@ -39,6 +40,7 @@ class App extends Component {
               <Route exact path='/unit' component={UnitExplorer} />
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />
+              <Route exact path='/notification-settings' component={NotificationSettings} />
               <Route exact path='/case/new' component={CaseWizard} />
               <Route exact path='/case/new/unit/:unitId' render={(({ match }) => (
                 <CaseWizard preferredUnitId={match.params.unitId} />

@@ -14,7 +14,7 @@ export const factoryOptions = {
 }
 
 const makeInvitationMatcher = unitItem => ({
-  invitedToCases: {
+  receivedInvites: {
     $elemMatch: {
       unitId: unitItem.id
     }
@@ -23,7 +23,7 @@ const makeInvitationMatcher = unitItem => ({
 
 export const getUnitRoles = unit => {
   const invMatcher = makeInvitationMatcher(unit)
-  invMatcher.invitedToCases.$elemMatch.done = true
+  invMatcher.receivedInvites.$elemMatch.done = true
   return _.uniqBy(
     unit.components.reduce((all, {default_assigned_to: assigned, name}) => { // Getting names from the unit's components
       if (assigned) {
@@ -42,7 +42,7 @@ export const getUnitRoles = unit => {
       } : {}
     ).fetch()
     // Mapping the users to the same interface as the first half of the array
-      .map(({ invitedToCases: [{ role, isOccupant }], bugzillaCreds: { login } }) => ({
+      .map(({ receivedInvites: [{ role, isOccupant }], bugzillaCreds: { login } }) => ({
         login,
         role,
         isOccupant

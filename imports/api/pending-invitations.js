@@ -17,7 +17,7 @@ const PendingInvitations = new Mongo.Collection(collectionName)
 
 export const unassignPending = caseId => {
   Meteor.users.update({
-    invitedToCases: {
+    receivedInvites: {
       $elemMatch: {
         caseId,
         type: TYPE_ASSIGNED,
@@ -26,7 +26,7 @@ export const unassignPending = caseId => {
     }
   }, {
     $set: {
-      'invitedToCases.$.type': TYPE_CC
+      'receivedInvites.$.type': TYPE_CC
     }
   })
   PendingInvitations.update({
@@ -60,7 +60,7 @@ export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
   const userWasInvitedToRole = (() => {
     const existingInvolvedUser = Meteor.users.findOne({
       'emails.address': email,
-      invitedToCases: {
+      receivedInvites: {
         $elemMatch: {
           unitId,
           // This is only for if the invitation was already 'done' so the user can be added to the case directly,
@@ -77,8 +77,8 @@ export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
   }
 
   const inviteeUser = Accounts.findUserByEmail(email)
-  if (inviteeUser && inviteeUser.invitedToCases) {
-    const conflictingUnitInvitations = inviteeUser.invitedToCases.filter(
+  if (inviteeUser && inviteeUser.receivedInvites) {
+    const conflictingUnitInvitations = inviteeUser.receivedInvites.filter(
       ({role: roleB, isOccupant: isOccupantB, unitId: unitIdB}) => (
         unitIdB === unitId && (isOccupantB !== isOccupant || roleB !== role)
       )
@@ -112,10 +112,23 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
     unassignPending(caseId)
   }
 
+  const invitationId = PendingInvitations.insert({
+    invitedBy: currUser.bugzillaCreds.id,
+    invitee: inviteeUser.bugzillaCreds.id,
+    role,
+    isOccupant,
+    caseId,
+    unitId,
+    type
+  })
+
+  console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
+
   // Updating the invitee user with the details of the invitation
   Meteor.users.update(inviteeUser._id, {
     $push: {
-      invitedToCases: {
+      receivedInvites: {
+        invitationId,
         role,
         isOccupant,
         caseId,
@@ -128,22 +141,15 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
     }
   })
 
-  console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).invitedToCases)
+  console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).receivedInvites)
 
-  const invitationId = PendingInvitations.insert({
-    invitedBy: currUser.bugzillaCreds.id,
-    invitee: inviteeUser.bugzillaCreds.id,
-    role,
-    isOccupant,
-    caseId,
-    unitId,
-    type
-  })
-
-  console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
   let httpResponse
   try {
-    httpResponse = HTTP.get(process.env.INVITE_LAMBDA_URL)
+    httpResponse = HTTP.get(process.env.INVITE_LAMBDA_URL, {
+      headers: {
+        Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+      }
+    })
   } catch (e) {
     console.log('oh no, error', e)
   }
@@ -172,7 +178,7 @@ if (Meteor.isServer) {
         done: {$ne: true}
       }),
       Meteor.users.find({
-        invitedToCases: {
+        receivedInvites: {
           $elemMatch: {
             caseId,
             done: {$ne: true}
@@ -204,8 +210,8 @@ Meteor.methods({
       }
 
       const inviteeUser = Accounts.findUserByEmail(email)
-      if (inviteeUser && inviteeUser.invitedToCases) {
-        const conflictingCaseInvitations = inviteeUser.invitedToCases.filter(({caseId: caseIdB}) => caseIdB === caseId)
+      if (inviteeUser && inviteeUser.receivedInvites) {
+        const conflictingCaseInvitations = inviteeUser.receivedInvites.filter(({caseId: caseIdB}) => caseIdB === caseId)
         if (conflictingCaseInvitations.length) {
           throw new Meteor.Error(
             'This user has been invited before to this case, please wait until the invitation is finalized'

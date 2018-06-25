@@ -338,10 +338,10 @@ Meteor.methods({
     if (isPending) {
       Meteor.users.update({
         'bugzillaCreds.login': user.login,
-        'invitedToCases.caseId': caseId
+        'receivedInvites.caseId': caseId
       }, {
         $set: {
-          'invitedToCases.$.type': TYPE_ASSIGNED
+          'receivedInvites.$.type': TYPE_ASSIGNED
         }
       })
       PendingInvitations.update(invitationMatcher, {
