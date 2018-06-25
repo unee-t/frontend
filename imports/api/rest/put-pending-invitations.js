@@ -16,7 +16,7 @@ export default (req, res) => {
       _id: { $in: req.body },
       done: { $ne: true }
     },
-      { $set: { done: true } })
+    { $set: { done: true } })
     if (results < 1) {
       // Nothing happened, so don't send any emails
       res.send(200, results)

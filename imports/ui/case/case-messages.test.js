@@ -25,7 +25,7 @@ if (Meteor.isClient) {
     const findLabel = (comp, labelText) => comp.findWhere(n => n.children().length === 0 && n.text() === labelText)
     const generateComment = (time = Date.now(), text = 'Something to say', creator = 'bla@example.com') => ({
       id: Math.round(Math.random() * Number.MAX_VALUE),
-      creation_time: (new Date(time)).toISOString(),
+      creationTime: (new Date(time)).toISOString(),
       creator,
       text
     })
