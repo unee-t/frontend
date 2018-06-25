@@ -167,7 +167,7 @@ class Unit extends Component {
                       </div>
                       <div onClick={this.handleClosedClicked} className={'f6 fw5 ml2 ' + (showOpenCases ? 'silver' : 'mid-gray')}>
                         { closedCases.length } Closed
-                    </div>
+                      </div>
                     </div>
                     {filteredCases.map(({id, title, severity}) => (
                       <div key={id} className='bb b--very-light-gray bg-white'>

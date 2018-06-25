@@ -113,7 +113,7 @@ describe('Comments collection', () => {
             text: msgContent,
             bug_id: caseId,
             id: Math.round(Math.random() * Number.MAX_VALUE),
-            creation_time: (new Date()).toISOString()
+            creationTime: (new Date()).toISOString()
           }
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
@@ -157,7 +157,7 @@ describe('Comments collection', () => {
             text: msgContent,
             bug_id: caseId
           })
-          expect(newComment.creation_time).to.be.a('string')
+          expect(newComment.creationTime).to.be.a('string')
           expect(newComment.id).to.be.a('number')
         })
       })

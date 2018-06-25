@@ -23,7 +23,7 @@ if (Meteor.isServer) {
     uriTemplate: caseId => `/rest/bug/${caseId}/comment`,
     addedMatcherFactory: caseId => comment => comment.bug_id.toString() === caseId.toString()
   }),
-   withUsers(commentItem => [commentItem.creator])
+  withUsers(commentItem => [commentItem.creator])
   ))
 }
 
@@ -46,7 +46,7 @@ Meteor.methods({
         id: Math.round(Math.random() * Number.MAX_VALUE),
         creator: currUser.emails[0].address,
         text,
-        creation_time: (new Date()).toISOString(),
+        creationTime: (new Date()).toISOString(),
         bug_id: caseId
       })
     } else {

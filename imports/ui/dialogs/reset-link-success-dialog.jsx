@@ -29,11 +29,8 @@ class ResetLinkSuccessDialog extends Component {
           <FontIcon className='material-icons' color='var(--success-green)' style={{fontSize: '80px'}}>
             check_circle
           </FontIcon>
-          <p className='mv0'>We just sent a password reset link to&nbsp;
-            <span className='fw5'>
-              {email}
-            </span>
-            <br />
+          <p className='mv0'>
+      We just sent a password reset link to <span className='fw5'> {email}</span> <br />
             Please check your inbox for further instructions.
           </p>
           <div className='mt2'>
