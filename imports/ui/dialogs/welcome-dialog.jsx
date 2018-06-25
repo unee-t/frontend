@@ -56,7 +56,7 @@ class WelcomeDialog extends Component {
             {invitedByDetails ? invitedByDetails.name : ''} has invited you to collaborate on the case&nbsp;
             <span className='b'>
             "#{caseId} - {caseSummary}"
-          </span>
+            </span>
             &nbsp;in&nbsp;
             <span className='b'>
               {unitName}

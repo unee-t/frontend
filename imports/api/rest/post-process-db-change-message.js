@@ -49,6 +49,11 @@ export default (req, res) => {
   } = message
 
   let userIds, templateParams, templateFn, settingType
+  const settingMapping = {
+    case_assignee_updated: 'assignedExistingCase'
+  }
+
+  settingType = settingMapping[type]
 
   switch (type) {
     case 'case_assignee_updated':
@@ -98,8 +103,8 @@ export default (req, res) => {
     }
     if (!recipient.notificationSettings[settingType]) {
       console.log(
-          `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications.`
-        )
+        `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications.`
+      )
     } else {
       const emailContent = templateFn(...[recipient].concat(templateParams))
       sendEmail(recipient, emailContent, notificationId)

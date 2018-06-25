@@ -8,13 +8,13 @@ import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
 import
-  PendingInvitations,
-  {
-    unassignPending,
-    createPendingInvitation,
-    findUnitRoleConflictErrors,
-    TYPE_ASSIGNED
-  } from './pending-invitations'
+PendingInvitations,
+{
+  unassignPending,
+  createPendingInvitation,
+  findUnitRoleConflictErrors,
+  TYPE_ASSIGNED
+} from './pending-invitations'
 
 export const collectionName = 'cases'
 export const caseServerFieldMapping = {
