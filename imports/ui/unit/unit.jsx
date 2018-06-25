@@ -13,6 +13,7 @@ import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
+import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
@@ -204,9 +205,14 @@ class Unit extends Component {
                       <div className='fw5 silver lh-title'>
                         PEOPLE
                       </div>
-                      {unitUsers.map(user => (
-                        <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
-                      ))}
+                      {unitUsers
+                        .filter(user => (
+                          !placeholderEmailMatcher(user.login)
+                        ))
+                        .map(user => (
+                          <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
+                        ))
+                      }
                     </div>
                   </div>
                 </SwipeableViews>
