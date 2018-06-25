@@ -303,8 +303,8 @@ class CaseDetails extends Component {
           show={!!addUsersError}
           text={
             addUsersError
-            ? ('We couldn\'t add these users to this case due to: ' + addUsersError.error)
-            : ''
+              ? ('We couldn\'t add these users to this case due to: ' + addUsersError.error)
+              : ''
           }
           onDismissed={onClearRoleUsersState}
         />
