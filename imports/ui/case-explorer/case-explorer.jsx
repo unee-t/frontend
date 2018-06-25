@@ -7,7 +7,7 @@ import { Link, withRouter } from 'react-router-dom'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
-import Cases, { collectionName } from '../../api/cases'
+import Cases, { collectionName, isClosed } from '../../api/cases'
 import { push } from 'react-router-redux'
 import RootAppBar from '../components/root-app-bar'
 import { storeBreadcrumb } from '../general-actions'
@@ -16,8 +16,6 @@ import {
   unitIconsStyle,
   moreIconColor
 } from './case-explorer.mui-styles'
-
-const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
 
 class CaseExplorer extends Component {
   constructor () {
