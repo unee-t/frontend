@@ -10,6 +10,7 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
+import { Link } from 'react-router-dom'
 
 class UnitExplorer extends Component {
   render () {
@@ -37,13 +38,13 @@ class UnitExplorer extends Component {
                 ))}
               </div>
             </div>
-            {/* Use for linking to unit creation wizard
-            <MenuItem className='no-shrink' innerDivStyle={{padding: 0}}>
-              <div className='tc bondi-blue fw5 bt b--moon-gray'>
-                Add Unit
-              </div>
-            </MenuItem>
-            */}
+            <Link to='/unit/new' className='link'>
+              <MenuItem className='no-shrink' innerDivStyle={{padding: 0}}>
+                <div className='tc bondi-blue fw5 bt b--moon-gray'>
+                  Add Unit
+                </div>
+              </MenuItem>
+            </Link>
           </div>
         </div>
       </div>
