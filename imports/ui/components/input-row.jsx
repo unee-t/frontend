@@ -9,7 +9,7 @@ import {
 
 export default class InputRow extends Component {
   render () {
-    const { inpType, inpRef, label, placeholder, errorText, disabled, value, onChange } = this.props
+    const { inpType, inpRef, label, placeholder, errorText, disabled, value, onChange, isMultiLine } = this.props
     const type = inpType || 'text'
     return (
       <TextField
@@ -18,6 +18,7 @@ export default class InputRow extends Component {
         underlineFocusStyle={textInputUnderlineFocusStyle}
         inputStyle={textInputStyle}
         fullWidth
+        multiLine={!!isMultiLine}
         hintText={placeholder}
         ref={inpRef}
         {...{type, errorText, disabled, value, onChange}}
@@ -34,5 +35,6 @@ InputRow.propTypes = {
   inpRef: PropTypes.func,
   inpType: PropTypes.string,
   disabled: PropTypes.bool,
+  isMultiLine: PropTypes.bool,
   placeholder: PropTypes.string
 }
