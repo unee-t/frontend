@@ -55,8 +55,8 @@ export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
 
   // Checking only the default_assigned_to field (Should default_qa_contact be added too in the future?)
   const userAssignedToComponent = unitItem.components.filter(
-      ({default_assigned_to: assignedTo}) => assignedTo === email
-    ).length > 0
+    ({default_assigned_to: assignedTo}) => assignedTo === email
+  ).length > 0
   const userWasInvitedToRole = (() => {
     const existingInvolvedUser = Meteor.users.findOne({
       'emails.address': email,

@@ -52,7 +52,7 @@
     "react-test-renderer": "^15.6.1",
     "snazzy": "^7.0.0",
     "spacejam": "^1.6.1",
-    "standard": "^10.0.2"
+    "standard": "^11.0.1"
   },
   "cssModules": {
     "cssClassNamingConvention": {

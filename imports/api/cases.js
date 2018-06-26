@@ -8,13 +8,13 @@ import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { emailValidator } from '../util/validators'
 import
-  PendingInvitations,
-  {
-    unassignPending,
-    createPendingInvitation,
-    findUnitRoleConflictErrors,
-    TYPE_ASSIGNED
-  } from './pending-invitations'
+PendingInvitations,
+{
+  unassignPending,
+  createPendingInvitation,
+  findUnitRoleConflictErrors,
+  TYPE_ASSIGNED
+} from './pending-invitations'
 
 export const collectionName = 'cases'
 export const caseServerFieldMapping = {
@@ -39,6 +39,8 @@ export const caseServerFieldMapping = {
   status: 'status',
   resolution: 'resolution'
 }
+
+export const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
 
 export const caseClientFieldMapping = Object.assign(
   Object.keys(caseServerFieldMapping).reduce((all, key) => ({
