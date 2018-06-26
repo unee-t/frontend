@@ -4,6 +4,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import SelectField from 'material-ui/SelectField'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
+import Checkbox from 'material-ui/Checkbox'
 import { goBack } from 'react-router-redux'
 import countries from 'iso-3166-1-codes'
 
@@ -11,6 +12,8 @@ import InnerAppBar from '../components/inner-app-bar'
 import InputRow from '../components/input-row'
 import { possibleRoles } from '../../api/unit-roles-data'
 import { unitTypes } from '../../api/unit-meta-data'
+
+import { controlLabelStyle } from '../components/form-controls.mui-styles'
 
 const mandatoryFields = [
   'type',
@@ -30,7 +33,8 @@ class UnitWizard extends Component {
       city: '',
       state: '',
       zipCode: '',
-      country: null
+      country: null,
+      isOccupant: false
     }
   }
   createTextStateHandler = stateVarName => evt => this.setState({
@@ -40,7 +44,7 @@ class UnitWizard extends Component {
     return mandatoryFields.find(fName => !this.state[fName])
   }
   render () {
-    const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state } = this.state
+    const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state, isOccupant } = this.state
     return (
       <div className='full-height flex flex-column overflow-hidden'>
         <InnerAppBar title='Add Unit' onBack={() => this.props.dispatch(goBack())} />
@@ -69,7 +73,8 @@ class UnitWizard extends Component {
                 value={role}
                 onChange={(evt, idx, val) => {
                   this.setState({
-                    role: val
+                    role: val,
+                    isOccupant: false
                   })
                 }}
               >
@@ -77,6 +82,14 @@ class UnitWizard extends Component {
                   <MenuItem key={role.name} value={role} primaryText={role.name} />
                 ))}
               </SelectField>
+              {role && role.canBeOccupant && (
+                <Checkbox
+                  label='I am also the occupant of this unit'
+                  labelStyle={controlLabelStyle}
+                  checked={isOccupant}
+                  onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
+                />
+              )}
               <InputRow
                 label='Additional Description'
                 value={moreInfo}
