@@ -1,13 +1,22 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import InnerAppBar from '../components/inner-app-bar'
-import InputRow from '../components/input-row'
 import SelectField from 'material-ui/SelectField'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
 import { goBack } from 'react-router-redux'
 import countries from 'iso-3166-1-codes'
+
+import InnerAppBar from '../components/inner-app-bar'
+import InputRow from '../components/input-row'
+import { possibleRoles } from '../../api/unit-roles-data'
+import { unitTypes } from '../../api/unit-meta-data'
+
+const mandatoryFields = [
+  'type',
+  'name',
+  'role'
+]
 
 class UnitWizard extends Component {
   constructor () {
@@ -24,17 +33,18 @@ class UnitWizard extends Component {
       country: null
     }
   }
-  handleSubmit = evt => {
-  }
   createTextStateHandler = stateVarName => evt => this.setState({
     [stateVarName]: evt.target.value
   })
+  checkIsFormInvalid () {
+    return mandatoryFields.find(fName => !this.state[fName])
+  }
   render () {
     const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state } = this.state
     return (
       <div className='full-height flex flex-column overflow-hidden'>
         <InnerAppBar title='Add Unit' onBack={() => this.props.dispatch(goBack())} />
-        <form onSubmit={this.handleSubmit} className='overflow-auto flex-grow flex flex-column'>
+        <form className='overflow-auto flex-grow flex flex-column'>
           <div className='flex-grow bg-very-light-gray'>
             <div className='bg-white card-shadow-1 pa3'>
               <InputRow label='Unit Name' value={name} onChange={this.createTextStateHandler('name')} />
@@ -49,9 +59,9 @@ class UnitWizard extends Component {
                   })
                 }}
               >
-                <MenuItem value='apartment' primaryText='Apartment' />
-                <MenuItem value='house' primaryText='House' />
-                <MenuItem value='absolute' primaryText='Absolute' />
+                {unitTypes.map(type => (
+                  <MenuItem key={type.name} value={type} primaryText={type.name} />
+                ))}
               </SelectField>
               <SelectField
                 floatingLabelText='Relationship to Unit'
@@ -63,12 +73,9 @@ class UnitWizard extends Component {
                   })
                 }}
               >
-                <MenuItem value='owner' primaryText='Owner' />
-                <MenuItem value='tenant' primaryText='Tenant' />
-                <MenuItem value='occupant' primaryText='Occupant' />
-                <MenuItem value='contractor' primaryText='Contractor' />
-                <MenuItem value='agent' primaryText='Agent' />
-                <MenuItem value='other' primaryText='Other' />
+                {possibleRoles.map(role => (
+                  <MenuItem key={role.name} value={role} primaryText={role.name} />
+                ))}
               </SelectField>
               <InputRow
                 label='Additional Description'
@@ -78,7 +85,12 @@ class UnitWizard extends Component {
             </div>
             <div className='bg-white card-shadow-1 pa3 mv3'>
               <div className='mt1 silver fw5'>ADDRESS</div>
-              <InputRow label='Address' value={streetAddress} onChange={this.createTextStateHandler('streetAddress')} />
+              <InputRow
+                label='Address'
+                value={streetAddress}
+                onChange={this.createTextStateHandler('streetAddress')}
+                isMultiLine
+              />
               <InputRow label='City' value={city} onChange={this.createTextStateHandler('city')} />
               <SelectField
                 floatingLabelText='Country'
@@ -90,16 +102,22 @@ class UnitWizard extends Component {
                   })
                 }}
               >
-                {countries.map(({ alpha2: code, name }) => (
-                  <MenuItem key={code} value={code} primaryText={name} />
-                ))}
+                {countries.map(({ alpha2: code, name }) => {
+                  // Manual ellipsis
+                  const displayName = name.length > 34 // max tested length on an iphone 5 screen width
+                    ? name.slice(0, 31) + '...'
+                    : name
+                  return (
+                    <MenuItem key={code} value={code} primaryText={displayName} />
+                  )
+                })}
               </SelectField>
               <InputRow label='Administrative Region' value={state} onChange={this.createTextStateHandler('state')} />
               <p className='f7 gray ma0 mt1'>State, province, prefecture, etc.</p>
               <InputRow label='ZIP / Postal Code' value={zipCode} onChange={this.createTextStateHandler('zipCode')} />
               <RaisedButton
                 fullWidth
-                type='submit'
+                disabled={this.checkIsFormInvalid()}
                 primary
                 className='mv3'
               >
