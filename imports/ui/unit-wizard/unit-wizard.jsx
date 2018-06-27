@@ -41,7 +41,7 @@ class UnitWizard extends Component {
     [stateVarName]: evt.target.value
   })
   checkIsFormInvalid () {
-    return mandatoryFields.find(fName => !this.state[fName])
+    return !!mandatoryFields.find(fName => !this.state[fName])
   }
   render () {
     const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state, isOccupant } = this.state
