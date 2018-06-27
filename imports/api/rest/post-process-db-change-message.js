@@ -96,6 +96,10 @@ export default (req, res) => {
       console.error(`User with bz id ${userId} was not found in mongo`)
       return
     }
+    if (!recipient.emails[0].verified) {
+      console.error(`User with bz id ${userId} has no verified email address, skipping notification`)
+      return
+    }
     if (!recipient.notificationSettings[settingType]) {
       console.log(
         `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications.`
