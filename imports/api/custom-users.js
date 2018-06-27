@@ -104,6 +104,9 @@ Meteor.methods({
       }, {
         $inc: {
           'receivedInvites.$.accessedCount': 1
+        },
+        $set: {
+          'emails.0.verified': true
         }
       })
       console.log(`${invitedUser.emails[0].address} is using an invitation to access the system`)
