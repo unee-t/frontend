@@ -94,6 +94,7 @@ class UnitWizard extends Component {
                 label='Additional Description'
                 value={moreInfo}
                 onChange={this.createTextStateHandler('moreInfo')}
+                isMultiLine
               />
             </div>
             <div className='bg-white card-shadow-1 pa3 mv3'>
