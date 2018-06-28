@@ -24,7 +24,7 @@ export const baseUserSchema = Object.freeze({
     assignedExistingCase: true,
     invitedToCase: true,
     caseNewMessage: true,
-    caseUpdate: true
+    caseUpdate: false
   }
 }) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation
 
@@ -104,6 +104,9 @@ Meteor.methods({
       }, {
         $inc: {
           'receivedInvites.$.accessedCount': 1
+        },
+        $set: {
+          'emails.0.verified': true
         }
       })
       console.log(`${invitedUser.emails[0].address} is using an invitation to access the system`)
