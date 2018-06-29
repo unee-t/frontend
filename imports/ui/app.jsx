@@ -16,7 +16,7 @@ import ForgotPass from './forgot-pass/forgot-pass'
 import UnitExplorer from './unit-explorer/unit-explorer'
 import NotificationSettings from './notification-settings/notification-settings'
 import Unit from './unit/unit'
-import ReportWizard from './report-wizard/report-wizard'
+// import ReportWizard from './report-wizard/report-wizard'
 import SideMenu from './side-menu/side-menu'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
@@ -41,7 +41,7 @@ class App extends Component {
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
-              <Route exact path='/report/new' component={ReportWizard} />
+              {/* <Route exact path='/report/new' component={ReportWizard} /> */}
               <Route exact path='/case/new' component={CaseWizard} />
               <Route path='/case' component={CaseMaster} />
               <Redirect to='/case' />

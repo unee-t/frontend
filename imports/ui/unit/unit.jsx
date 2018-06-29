@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
 import { createContainer } from 'meteor/react-meteor-data'
-import { push, goBack } from 'react-router-redux'
+import { push } from 'react-router-redux'
 import { Route, Link } from 'react-router-dom'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
@@ -15,7 +15,7 @@ import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
-import CreateReportDialog from '../dialogs/create-report-dialog'
+// import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
@@ -122,12 +122,12 @@ class Unit extends Component {
         color: 'var(--bondi-blue)',
         href: `/case/new?unit=${unitId}`,
         icon: 'add'
-      },
-      {
-        color: 'var(--bondi-blue)',
-        href: `${rootMatch.url}/${viewsOrder[1]}/new`,
-        icon: 'add'
       }
+      // {
+      //   color: 'var(--bondi-blue)',
+      //   href: `${rootMatch.url}/${viewsOrder[1]}/new`,
+      //   icon: 'add'
+      // }
     ]
 
     return (
@@ -202,16 +202,16 @@ class Unit extends Component {
                         </div>
                       </div>
                       <div className='mid-gray b lh-copy'>
-                        Create your first inspection report
+                        You have no inspection reports yet
                       </div>
                     </div>
-                    <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
+                    {/* <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
                         show={!!match}
                         onDismissed={() => dispatch(goBack())}
                         unitName={unitItem.name}
                       />
-                    )} />
+                    )} /> */}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
