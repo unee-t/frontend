@@ -14,7 +14,7 @@ export class LoginPage extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      email: '',
+      email: new URL(window.location).searchParams.get('email'),
       password: ''
     }
   }

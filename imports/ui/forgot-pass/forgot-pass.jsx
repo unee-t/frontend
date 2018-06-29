@@ -14,7 +14,7 @@ class ForgotPass extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      email: ''
+      email: new URL(window.location).searchParams.get('email')
     }
   }
   handleSubmit = evt => {
