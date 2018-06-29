@@ -105,7 +105,7 @@ export default (req, res) => {
         `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications.`
       )
     } else {
-      const emailContent = templateFn(...[recipient].concat(templateParams))
+      const emailContent = templateFn(...[recipient, notificationId, settingType].concat(templateParams))
       sendEmail(recipient, emailContent, notificationId)
     }
   })
