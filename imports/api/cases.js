@@ -115,16 +115,20 @@ if (Meteor.isServer) {
       const currUser = Meteor.users.findOne(subHandle.userId)
       const { login: userIdentifier } = currUser.bugzillaCreds
       return {
-        f1: 'assigned_to',
-        o1: 'equals',
-        v1: userIdentifier,
-        f2: 'cc',
-        o2: 'substring',
-        v2: userIdentifier,
-        f3: 'reporter',
+        f1: 'keywords',
+        o1: 'nowords',
+        v1: 'inspection_report',
+        f2: 'OP',
+        j2: 'OR',
+        f3: 'assigned_to',
         o3: 'equals',
         v3: userIdentifier,
-        j_top: 'OR',
+        f4: 'cc',
+        o4: 'substring',
+        v4: userIdentifier,
+        f5: 'reporter',
+        o5: 'equals',
+        v5: userIdentifier,
         list_id: '78',
         query_format: 'advanced',
         include_fields: 'product,summary,id,status'
@@ -133,11 +137,13 @@ if (Meteor.isServer) {
     addedMatcherFactory: strQuery => {
       const { v1: userIdentifier } = JSON.parse(strQuery)
       return caseItem => {
-        const { assignee, creator, involvedList } = transformCaseForClient(caseItem)
+        const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
         return (
-          userIdentifier === assignee ||
-          userIdentifier === creator ||
-          involvedList.includes(userIdentifier)
+          !(keywords && keywords.includes('inspection_report')) && (
+            userIdentifier === assignee ||
+            userIdentifier === creator ||
+            involvedList.includes(userIdentifier)
+          )
         )
       }
     }
@@ -154,17 +160,20 @@ if (Meteor.isServer) {
         f1: 'product',
         o1: 'equals',
         v1: unitName,
-        f2: 'OP',
-        j2: 'OR',
-        f3: 'assigned_to',
-        o3: 'equals',
-        v3: userIdentifier,
+        f2: 'keywords',
+        o2: 'nowords',
+        v2: 'inspection_report',
+        f3: 'OP',
+        j3: 'OR',
         f4: 'cc',
         o4: 'substring',
         v4: userIdentifier,
         f5: 'reporter',
         o5: 'equals',
         v5: userIdentifier,
+        f6: 'assigned_to',
+        o6: 'equals',
+        v6: userIdentifier,
         list_id: '8',
         query_format: 'advanced',
         include_fields: 'product,summary,id,status,severity'
@@ -173,9 +182,9 @@ if (Meteor.isServer) {
     addedMatcherFactory: strQuery => {
       const { v1: unitName, v3: userIdentifier } = JSON.parse(strQuery)
       return caseItem => {
-        const { selectedUnit, assignee, creator, involvedList } = transformCaseForClient(caseItem)
+        const { selectedUnit, assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
         return (
-          selectedUnit === unitName && (
+          selectedUnit === unitName && !(keywords && keywords.includes('inspection_report')) && (
             userIdentifier === assignee ||
             userIdentifier === creator ||
             involvedList.includes(userIdentifier)

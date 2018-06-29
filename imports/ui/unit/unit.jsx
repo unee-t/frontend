@@ -15,6 +15,7 @@ import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
+// import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
@@ -110,6 +111,7 @@ class Unit extends Component {
     const { filteredCases, closedCases, openCases } = this
 
     const rootMatch = match
+    const { unitId } = match.params
 
     if (isLoading) return <Preloader />
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
@@ -118,15 +120,14 @@ class Unit extends Component {
     const fabDescriptors = [
       {
         color: 'var(--bondi-blue)',
-        href: `/case/new/unit/${rootMatch.params.unitId}`,
+        href: `/case/new?unit=${unitId}`,
         icon: 'add'
-      },
-      {
-        color: 'var(--bondi-blue)',
-        href: ``,
-        icon: 'add',
-        disabled: true
       }
+      // {
+      //   color: 'var(--bondi-blue)',
+      //   href: `${rootMatch.url}/${viewsOrder[1]}/new`,
+      //   icon: 'add'
+      // }
     ]
 
     return (
@@ -136,7 +137,7 @@ class Unit extends Component {
           title={unitItem.name}
           onBack={() => dispatch(push(match.url.split('/').slice(0, -1).join('/')))}
         />
-        <Route exact path={`${match.url}/:viewName`} children={({ match }) => {
+        <Route path={`${rootMatch.url}/:viewName`} children={({ match }) => {
           const viewIdx = match ? viewsOrder.indexOf(match.params.viewName) : 0
           return (
             <div className='flex-grow flex flex-column overflow-hidden'>
@@ -201,9 +202,16 @@ class Unit extends Component {
                         </div>
                       </div>
                       <div className='mid-gray b lh-copy'>
-                        Create your first inspection report
+                        You have no inspection reports yet
                       </div>
                     </div>
+                    {/* <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
+                      <CreateReportDialog
+                        show={!!match}
+                        onDismissed={() => dispatch(goBack())}
+                        unitName={unitItem.name}
+                      />
+                    )} /> */}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
@@ -265,8 +273,7 @@ class Unit extends Component {
                     <FloatingActionButton
                       backgroundColor={desc.color}
                       className='zoom-effect'
-                      href={desc.href}
-                      disabled={desc.disabled}
+                      onClick={() => dispatch(push(desc.href))}
                     >
                       <FontIcon className='material-icons'>{desc.icon}</FontIcon>
                     </FloatingActionButton>
