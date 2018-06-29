@@ -64,8 +64,8 @@ class CreateReportDialog extends Component {
                 </div>
               ) : (
                 <span className='white fw5'>
-                Next
-              </span>
+                  Next
+                </span>
               )}
             </RaisedButton>
           </div>
