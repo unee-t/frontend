@@ -371,7 +371,7 @@ class CaseWizard extends Component {
               ) : (
                 <span className='white f4 b'>
                 Add Case
-              </span>
+                </span>
               )}
             </RaisedButton>
           </div>

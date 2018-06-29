@@ -30,6 +30,12 @@ class SideMenu extends Component {
     )
   }
 
+  routeDrawerItem = (path, options) => (
+    <Route path={path} children={({ match }) =>
+      this.linkDrawerItem(options, !!match)
+    } />
+  )
+
   render () {
     const { user, isDrawerOpen, dispatch } = this.props
     return user ? (
@@ -48,20 +54,16 @@ class SideMenu extends Component {
             </div>
           </div>
         </div>
-        <Route path='/unit' children={({ match }) =>
-          this.linkDrawerItem({
-            href: '/unit',
-            iconName: 'location_on',
-            text: 'Units'
-          }, !!match)
-        } />
-        <Route path='/case' children={({ match }) =>
-          this.linkDrawerItem({
-            href: '/case',
-            iconName: 'card_travel',
-            text: 'Cases'
-          }, !!match)
-        } />
+        {this.routeDrawerItem('/unit', {
+          href: '/unit',
+          iconName: 'location_on',
+          text: 'Units'
+        })}
+        {this.routeDrawerItem('/case', {
+          href: '/case',
+          iconName: 'card_travel',
+          text: 'Cases'
+        })}
         <Divider />
         {this.linkDrawerItem({
           href: 'https://unee-t.com/contact-support/',
@@ -80,6 +82,12 @@ class SideMenu extends Component {
           iconName: 'help',
           text: 'FAQ',
           isExternal: true
+        })}
+        <Divider />
+        {this.routeDrawerItem('/notification-settings', {
+          href: '/notification-settings',
+          iconName: 'settings_applications',
+          text: 'Notification Settings'
         })}
         <MenuItem onClick={() => dispatch(logoutUser())}>
           <div className='flex items-center pv2 mv1'>

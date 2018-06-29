@@ -5,7 +5,7 @@ const { callAPI } = bugzillaApi
 
 export const invite = (user, invitedBy) => {
   try {
-    const { accessToken, caseId, unitId, role: inviteeRole } = user.invitedToCases[0]
+    const { accessToken, caseId, unitId, role: inviteeRole } = user.receivedInvites[0]
     const caseData = callAPI('get', `/rest/bug/${caseId}`, {}, true, true)
     const unitData = callAPI('get', `/rest/product/${unitId}`, {}, true, true)
     const caseTitle = caseData.data.bugs[0].summary
@@ -58,14 +58,11 @@ https://unee-t.com
 
 `,
       attachments: [{
-        filename: 'unee-t_logo_email.png',
-        path: `/home/meteor/www/bundle/programs/web.browser/app/unee-t_logo_email.png`,
+        path: 'https://s3-ap-southeast-1.amazonaws.com/prod-media-unee-t/2018-06-14/unee-t_logo_email.png',
         cid: 'logo@unee-t.com'
       }]
     })
   } catch (e) {
-    console.log(`${process.env.PWD}/public/unee-t_logo_email.png`)
-    console.log(process.cwd())
     console.log(e)
   }
 }

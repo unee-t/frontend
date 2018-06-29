@@ -11,6 +11,7 @@ import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
+import { possibleRoles } from '../../api/unit-roles-data'
 
 import {
   modalCustomContentStyle,
@@ -56,25 +57,7 @@ class InviteDialog extends Component {
 
     window.addEventListener('resize', this.handleWindowResize)
 
-    this.roleTypes = [
-      {
-        name: 'Tenant',
-        canBeOccupant: true
-      },
-      {
-        name: 'Owner/Landlord',
-        canBeOccupant: true
-      },
-      {
-        name: 'Contractor'
-      },
-      {
-        name: 'Management Company'
-      },
-      {
-        name: 'Agent'
-      }
-    ]
+    this.roleTypes = possibleRoles
   }
 
   componentDidUpdate () {
@@ -136,7 +119,7 @@ class InviteDialog extends Component {
           <Dialog
             title={invitationState.loading ? 'Please wait... '
               : (!invitationState.completed && !mainOperationSuccessContent) ? title
-              : null
+                : null
             }
             titleStyle={modalTitleStyle}
             modal
@@ -182,11 +165,8 @@ class InviteDialog extends Component {
             } />
             <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? successWrapper(
               <div>
-                <p className='f4 mv0'>Awesome! We just sent an invite to&nbsp;
-                  <span className='fw5'>
-                    {invitationState.email}
-                  </span>
-                  &nbsp;so you could collaborate on this case.
+                <p className='f4 mv0'>
+              Awesome! We just sent an invite to <span className='fw5'>{invitationState.email}</span> so you could collaborate on this case.
                 </p>
                 <button className={simpleButtonClasses + ' mt4'} onClick={onResetInvitation}>
                   {additionalOperationText}

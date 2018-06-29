@@ -23,7 +23,7 @@ if (Meteor.isServer) {
     uriTemplate: caseId => `/rest/bug/${caseId}/comment`,
     addedMatcherFactory: caseId => comment => comment.bug_id.toString() === caseId.toString()
   }),
-   withUsers(commentItem => [commentItem.creator])
+  withUsers(commentItem => [commentItem.creator])
   ))
 }
 

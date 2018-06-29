@@ -12,7 +12,8 @@ import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
-import Cases, { collectionName as casesCollName } from '../../api/cases'
+import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
+import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
 import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
@@ -55,13 +56,43 @@ class Unit extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      sortedCases: []
+      sortedCases: [],
+      showOpenCases: true
     }
   }
+
+  get openCases () {
+    const { sortedCases } = this.state
+    return sortedCases.filter(x => !isClosed(x))
+  }
+
+  get closedCases () {
+    const { sortedCases } = this.state
+    return sortedCases.filter(x => isClosed(x))
+  }
+
+  get filteredCases () {
+    const { showOpenCases } = this.state
+    if (showOpenCases) {
+      return this.openCases
+    } else {
+      return this.closedCases
+    }
+  }
+
+  handleOpenClicked = () => {
+    this.setState({ showOpenCases: true })
+  }
+
+  handleClosedClicked = () => {
+    this.setState({ showOpenCases: false })
+  }
+
   handleChange = val => {
     const { match, dispatch } = this.props
     dispatch(push(`${match.url}/${viewsOrder[val]}`))
   }
+
   componentWillReceiveProps (nextProps) {
     const { caseList } = this.props
     if ((!caseList && nextProps.caseList) || (caseList && caseList.length !== nextProps.caseList.length)) {
@@ -73,9 +104,11 @@ class Unit extends Component {
       })
     }
   }
+
   render () {
     const { unitItem, isLoading, unitError, casesError, unitUsers, dispatch, match } = this.props
-    const { sortedCases } = this.state
+    const { sortedCases, showOpenCases } = this.state
+    const { filteredCases, closedCases, openCases } = this
 
     const rootMatch = match
     const { unitId } = match.params
@@ -127,8 +160,17 @@ class Unit extends Component {
                   index={viewIdx}
                   onChangeIndex={this.handleChange}
                 >
+
                   <div className='flex-grow bg-very-light-gray'>
-                    {sortedCases.map(({id, title, severity}) => (
+                    <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
+                      <div onClick={this.handleOpenClicked} className={'f6 fw5 ' + (showOpenCases ? 'mid-gray' : 'silver')}>
+                        { openCases.length } Open
+                      </div>
+                      <div onClick={this.handleClosedClicked} className={'f6 fw5 ml2 ' + (showOpenCases ? 'silver' : 'mid-gray')}>
+                        { closedCases.length } Closed
+                      </div>
+                    </div>
+                    {filteredCases.map(({id, title, severity}) => (
                       <div key={id} className='bb b--very-light-gray bg-white'>
                         <Link
                           to={`/case/${id}`}
@@ -212,9 +254,14 @@ class Unit extends Component {
                       <div className='fw5 silver lh-title'>
                         PEOPLE
                       </div>
-                      {unitUsers.map(user => (
-                        <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
-                      ))}
+                      {unitUsers
+                        .filter(user => (
+                          !placeholderEmailMatcher(user.login)
+                        ))
+                        .map(user => (
+                          <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
+                        ))
+                      }
                     </div>
                   </div>
                 </SwipeableViews>

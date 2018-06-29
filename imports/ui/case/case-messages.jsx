@@ -140,7 +140,7 @@ class CaseMessages extends Component {
 
   renderMessages (comments, uploads) {
     const messageList = comments.concat(uploads.map(process => ({
-      creation_time: (new Date()).toISOString(),
+      'creation_time': (new Date()).toISOString(),
       creator: this.props.userEmail,
       text: '[!attachment]\n' + process.preview,
       process
@@ -151,7 +151,7 @@ class CaseMessages extends Component {
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
         {messageList.reduce((listItems, comment) => { // Rendering all starting from the second
-          const currDay = comment.creation_time.slice(0, 10)
+          const currDay = comment['creation_time'].slice(0, 10)
 
           // Checking if the day of this message is different than the previous
           if (currDay !== lastDay) {
@@ -169,8 +169,8 @@ class CaseMessages extends Component {
     )
   }
 
-  renderDayLabel ({creation_time}, key) {
-    const dayString = formatDayText(creation_time)
+  renderDayLabel ({creation_time: creationTime}, key) {
+    const dayString = formatDayText(creationTime)
     return (
       <div className='tc mt3 mb2' key={key}>
         <span className='br-pill bg-gray ph3 lh-dbl f7 white dib'>{dayString}</span>

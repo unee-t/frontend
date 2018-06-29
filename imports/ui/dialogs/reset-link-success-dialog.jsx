@@ -7,7 +7,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import FontIcon from 'material-ui/FontIcon'
 
 import { successClear } from '../forgot-pass/forgot-pass.actions'
-import {closeDialogButtonStyle} from './generic-dialog.mui-styles'
+import { closeDialogButtonStyle } from './generic-dialog.mui-styles'
 
 class ResetLinkSuccessDialog extends Component {
   handleDismiss = () => {
@@ -26,13 +26,11 @@ class ResetLinkSuccessDialog extends Component {
           <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
         </button>
         <div className='tc'>
-          <FontIcon className='material-icons' color='var(--success-green)' style={{fontSize: '80px'}}>
+          <FontIcon className='material-icons' color='var(--success-green)' style={{ fontSize: '80px' }}>
             check_circle
           </FontIcon>
-          <p className='mv0'>We just sent a password reset link to&nbsp;
-            <span className='fw5'>
-              {email}
-            </span>
+          <p className='mv0'>
+            We just sent a password reset link to <span className='fw5'>{email}</span>
             <br />
             Please check your inbox for further instructions.
           </p>
