@@ -143,17 +143,18 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
 
   console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).receivedInvites)
 
-  let httpResponse
   try {
-    httpResponse = HTTP.get(process.env.INVITE_LAMBDA_URL, {
+    HTTP.get(process.env.INVITE_LAMBDA_URL, {
       headers: {
         Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
       }
     })
   } catch (e) {
-    console.log('oh no, error', e)
+    console.error({
+      message: 'Invite lambda error in "pull" mode',
+      error: e
+    })
   }
-  if (httpResponse) console.log('That went fine', httpResponse)
 }
 
 PendingInvitations.helpers({

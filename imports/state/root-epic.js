@@ -15,6 +15,7 @@ import { forgotPass } from './epics/forgot-pass'
 import { checkPassReset } from './epics/check-pass-reset'
 import { resetPass } from './epics/reset-pass'
 import { changeNotificationSetting } from './epics/change-notification-setting'
+import { createUnit } from './epics/create-unit'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -32,5 +33,6 @@ export const rootEpic = combineEpics(
   forgotPass,
   checkPassReset,
   resetPass,
-  changeNotificationSetting
+  changeNotificationSetting,
+  createUnit
 )
