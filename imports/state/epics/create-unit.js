@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Subject } from 'rxjs/Subject'
 import { merge } from 'rxjs/observable/merge'
 import { of } from 'rxjs/observable/of'
-import { push, goBack } from 'react-router-redux'
+import { replace } from 'react-router-redux'
 import {
   CREATE_UNIT,
   CREATE_UNIT_ERROR,
@@ -32,8 +32,7 @@ export const createUnit = action$ => action$
           of({
             type: CREATE_UNIT_SUCCESS
           }),
-          of(goBack()),
-          of(push(`/unit/${newUnitId}`))
+          of(replace(`/unit/${newUnitId}`))
         )
       })
     Meteor.call(
