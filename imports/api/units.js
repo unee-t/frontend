@@ -199,7 +199,7 @@ Meteor.methods({
       // Creating matching invitation records
       const invType = REPLACE_DEFAULT
       const invitationObj = {
-        invitedBy: 1, // Using the ID for system admin
+        invitedBy: owner.bugzillaCreds.id, // The user "self-invites" itself to the new role
         invitee: owner.bugzillaCreds.id,
         type: invType,
         unitId: unitBzId,
