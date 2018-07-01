@@ -8,6 +8,7 @@ import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import UnitMetaData, { unitTypes } from './unit-meta-data'
 import UnitRolesData, { possibleRoles } from './unit-roles-data'
+import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
 
 export const collectionName = 'units'
@@ -172,6 +173,7 @@ Meteor.methods({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
           args: [creationArgs],
+          step: 'UNIT CREATE lambda request',
           error: e
         })
         throw new Meteor.Error('Unit creation API Lambda error', e)
@@ -193,12 +195,56 @@ Meteor.methods({
         moreInfo
       })
 
-      // Adding to the user to a role on BZ using lambda
-      // ....
-
-      //TODO: Once all dependencies of role resolving are moved from invitations to UnitRolesData, this could be removed
+      // TODO: Once all dependencies of role resolving are moved from invitations to UnitRolesData, remove this
       // Creating matching invitation records
-      // ...
+      const invType = REPLACE_DEFAULT
+      const invitationObj = {
+        invitedBy: 1, // Using the ID for system admin
+        invitee: owner.bugzillaCreds.id,
+        type: invType,
+        unitId: unitBzId,
+        role,
+        isOccupant
+      }
+
+      const invitationId = PendingInvitations.insert(Object.assign({
+        done: true
+      }, invitationObj))
+
+      // Linking invitation to user
+      Meteor.users.update(owner._id, {
+        $push: {
+          receivedInvites: {
+            unitId: invitationObj.unitId,
+            invitedBy: invitationObj.invitedBy,
+            timestamp: Date.now(),
+            type: invitationObj.type,
+            done: true,
+            invitationId,
+            role,
+            isOccupant
+          }
+        }
+      })
+
+      // Adding to the user to a role on BZ using lambda
+      try {
+        HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
+          data: [Object.assign({_id: invitationId}, invitationObj)],
+          headers: {
+            Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+          }
+        })
+      } catch (e) {
+        console.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.insert`,
+          args: [creationArgs],
+          step: 'INVITE lambda request, unit cleanup might be necessary',
+          error: e
+        })
+        throw new Meteor.Error('Invite API Lambda error', e)
+      }
 
       // Populating the roles for the new unit
       possibleRoles.forEach(({ name: roleName }) => {
@@ -222,6 +268,8 @@ Meteor.methods({
           members
         })
       })
+
+      return {newUnitId: unitBzId}
     }
   }
 })
