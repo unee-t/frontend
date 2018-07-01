@@ -27,7 +27,7 @@ class UnitExplorer extends Component {
               <div className='overflow-auto pb2'>
                 {unitList.length === 0 ? (
                   <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
-                    You have no units managed by Unee-T yet
+                    You have no units managed with Unee-T yet
                   </div>
                 ) : unitList.map(({ id, name, description }) => (
                   <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
