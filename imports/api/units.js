@@ -155,6 +155,8 @@ Meteor.methods({
       const unitMongoId = randToken.generate(17)
       const owner = Meteor.users.findOne(Meteor.userId())
       let unitBzId
+      console.log('Using unit creation lambda API: ' + process.env.UNIT_CREATE_LAMBDA_URL)
+
       try {
         const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
           data: [{
