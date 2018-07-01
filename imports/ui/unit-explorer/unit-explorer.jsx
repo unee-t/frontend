@@ -25,7 +25,11 @@ class UnitExplorer extends Component {
             <div className='ph2 flex flex-column'>
               <h4 className='semi-dark-gray ma0 ml1 fw5 lh-title no-shrink'>ALL UNITS</h4>
               <div className='overflow-auto pb2'>
-                {unitList.map(({ id, name, description }) => (
+                {unitList.length === 0 ? (
+                  <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
+                    You have no units managed by Unee-T yet
+                  </div>
+                ) : unitList.map(({ id, name, description }) => (
                   <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
                     <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
                       <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
@@ -65,6 +69,7 @@ export default connect(
   () => {
     const unitsHandle = Meteor.subscribe(`${collectionName}.forBrowsing`, {
       onStop: (error) => {
+        console.log('There is an error', error)
         unitsError = error
       }
     })

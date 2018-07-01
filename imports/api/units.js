@@ -76,12 +76,16 @@ if (Meteor.isServer) {
           this.error(new Meteor.Error({message: 'REST API error', origError: e}))
         }
       }
-      factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
-        uriTemplate: ids => {
-          const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
-          return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
-        }
-      }).call(this, ids || [])
+      if (ids.length === 0) {
+        this.ready()
+      } else {
+        factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
+          uriTemplate: ids => {
+            const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
+            return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
+          }
+        }).call(this, ids || [])
+      }
     })
 
   const makeUnitWithUsersPublisher = ({ funcName, uriBuilder }) => {
