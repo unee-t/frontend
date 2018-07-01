@@ -2,6 +2,7 @@ export ROOT_URL=https://case.dev.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-dev ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
 export BUGZILLA_URL=https://dev.dashboard.unee-t.com
 export INVITE_LAMBDA_URL=https://invite.dev.unee-t.com
+export UNIT_CREATE_LAMBDA_URL=https://unit.dev.unee-t.com/create
 export APIENROLL_LAMBDA_URL=https://apienroll.dev.unee-t.com
 export MONGO_PASSWORD=$(aws --profile uneet-dev ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
 export MONGO_CONNECT=$(aws --profile uneet-dev ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)

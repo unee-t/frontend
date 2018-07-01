@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Migrations } from 'meteor/percolate:migrations'
 
-import '../imports/api/tasks'
 import '../imports/api/cases'
 import '../imports/api/comments'
 import '../imports/api/units'

@@ -12,6 +12,7 @@ import passResetState from './reducers/pass-reset-state'
 import caseUsersState from './reducers/case-users-state'
 import drawerState from './reducers/drawer-state'
 import pathBreadcrumb from './reducers/path-breadcrumb'
+import unitCreationState from './reducers/unit-creation-state'
 
 const rootReducer = combineReducers({
   hideCompleted,
@@ -25,6 +26,7 @@ const rootReducer = combineReducers({
   caseUsersState,
   drawerState,
   pathBreadcrumb,
+  unitCreationState,
   reportCreationState,
   router
 })
