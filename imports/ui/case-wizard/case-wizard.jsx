@@ -13,6 +13,7 @@ import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import CaseFieldValues, { collectionName as fieldValsCollName } from '../../api/case-field-values'
 import Checkbox from 'material-ui/Checkbox'
+import { parseQueryString } from '../../util/parsers'
 import InnerAppBar from '../components/inner-app-bar'
 import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
@@ -51,31 +52,36 @@ class CaseWizard extends Component {
       needsNewUser: false,
       newUserEmail: '',
       newUserCanBeOccupant: false,
-      newUserIsOccupant: false
+      newUserIsOccupant: false,
+      initDone: false
     }
   }
 
   componentDidUpdate (prevProps, prevState) {
+    const {dispatch, match, units} = this.props
+    const {selectedUnit} = this.state.inputValues.mandatory
     if (prevState.needsNewUser !== this.state.needsNewUser && this.state.needsNewUser) {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
     }
+    if (prevState.inputValues.mandatory.selectedUnit !== selectedUnit) {
+      const unitId = units.find(unit => unit.name === selectedUnit).id
+      dispatch(replace(`${match.url}?unit=${unitId}`))
+    }
   }
+
   componentWillReceiveProps (nextProps) {
-    const { units, preferredUnitId, dispatch } = this.props
-    const { inputValues } = this.state
-    if (
-      units.length === 0 && nextProps.units.length > 0 &&
-      preferredUnitId && !this.state.inputValues.mandatory.selectedUnit
-    ) {
+    const {preferredUnitId} = this.props
+    const {inputValues, initDone} = this.state
+    if (nextProps.units.length > 0 && !initDone && preferredUnitId && !this.state.inputValues.mandatory.selectedUnit) {
       this.setState({
         inputValues: Object.assign({}, inputValues, {
           mandatory: Object.assign({}, inputValues.mandatory, {
             selectedUnit: nextProps.units.find(unit => unit.id === parseInt(preferredUnitId)).name
           })
-        })
+        }),
+        initDone: true
       })
-      dispatch(replace('/case/new'))
     }
   }
 
@@ -389,10 +395,14 @@ CaseWizard.propTypes = {
 }
 
 export default withRouter(connect(
-  ({ caseCreationState: { inProgress, error } }) => ({
-    inProgress,
-    error
-  })
+  ({ caseCreationState: { inProgress, error } }, props) => {
+    const { unit } = parseQueryString(props.location.search)
+    return {
+      preferredUnitId: unit,
+      inProgress,
+      error
+    }
+  }
 )(createContainer(
   () => {
     const enumFields = ['category', 'subCategory', 'priority', 'severity']
