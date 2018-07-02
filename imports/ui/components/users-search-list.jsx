@@ -47,6 +47,7 @@ class UsersSearchList extends Component {
                 {filteredUsers.map((user, idx) => {
                   const userStatusComp = userStatusRenderer && userStatusRenderer(user)
                   const extraClasses = userClassNames ? userClassNames(user) : ''
+                  const emailId = user.login.split('@')[0]
                   return (
                     <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={{padding: 0}}>
                       <div className={
@@ -57,7 +58,7 @@ class UsersSearchList extends Component {
                         </div>
                         <div className='ml2 flex-grow overflow-hidden'>
                           <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
-                            {user.name || user.login}
+                            { user.name || emailId }
                           </div>
                           <div className='f7 gray ellipsis'>{user.role}</div>
                         </div>
