@@ -12,7 +12,8 @@ import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
-import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
+import Cases, { collectionName as casesCollName } from '../../api/cases'
+import { isClosed } from '../case-explorer/case-list'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
 // import CreateReportDialog from '../dialogs/create-report-dialog'
@@ -56,27 +57,19 @@ class Unit extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      sortedCases: [],
-      showOpenCases: true
+      showOpenCases: true,
+      sortedCases: []
     }
   }
 
-  get openCases () {
-    const { sortedCases } = this.state
-    return sortedCases.filter(x => !isClosed(x))
-  }
-
-  get closedCases () {
-    const { sortedCases } = this.state
-    return sortedCases.filter(x => isClosed(x))
-  }
-
   get filteredCases () {
-    const { showOpenCases } = this.state
+    const { showOpenCases, sortedCases } = this.state
+    const openCases = sortedCases.filter(x => !isClosed(x))
+    const closedCases = sortedCases.filter(x => isClosed(x))
     if (showOpenCases) {
-      return this.openCases
+      return openCases
     } else {
-      return this.closedCases
+      return closedCases
     }
   }
 
@@ -108,15 +101,15 @@ class Unit extends Component {
   render () {
     const { unitItem, isLoading, unitError, casesError, unitUsers, dispatch, match } = this.props
     const { sortedCases, showOpenCases } = this.state
-    const { filteredCases, closedCases, openCases } = this
-
+    const { filteredCases } = this
+    const openCasesCount = sortedCases.filter(x => !isClosed(x))
+    const closedCasesCount = sortedCases.filter(x => isClosed(x))
     const rootMatch = match
     const { unitId } = match.params
 
     if (isLoading) return <Preloader />
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
     if (casesError) return <h1>An error occurred: {casesError.error}</h1>
-
     const fabDescriptors = [
       {
         color: 'var(--bondi-blue)',
@@ -164,10 +157,10 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
                       <div onClick={this.handleOpenClicked} className={'f6 fw5 ' + (showOpenCases ? 'mid-gray' : 'silver')}>
-                        { openCases.length } Open
+                        {openCasesCount.length} Open
                       </div>
                       <div onClick={this.handleClosedClicked} className={'f6 fw5 ml2 ' + (showOpenCases ? 'silver' : 'mid-gray')}>
-                        { closedCases.length } Closed
+                        {closedCasesCount.length} Closed
                       </div>
                     </div>
                     {filteredCases.map(({id, title, severity}) => (
