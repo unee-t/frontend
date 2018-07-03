@@ -117,7 +117,9 @@ if (Meteor.isServer) {
         (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
         (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
       ),
-      withMetaData({})
+      withMetaData({
+        ownerIds: 0
+      })
     ))
   }
   makeUnitWithUsersPublisher({
