@@ -27,6 +27,17 @@ const makeInvitationMatcher = unitItem => ({
   }
 })
 
+const withMetaData = fields => withDocs({
+  cursorMaker: publishedItem => {
+    return UnitMetaData.find({
+      bzId: publishedItem.id
+    }, {
+      fields
+    })
+  },
+  collectionName: 'unitMetaData'
+})
+
 export const getUnitRoles = unit => {
   const invMatcher = makeInvitationMatcher(unit)
   invMatcher.receivedInvites.$elemMatch.done = true
@@ -86,20 +97,10 @@ if (Meteor.isServer) {
               return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
             }
           }),
-          withDocs({
-            cursorMaker: publishedItem => {
-              const metaData = UnitMetaData.find({
-                bzId: publishedItem.id
-              }, {
-                fields: {
-                  bzId: 1,
-                  displayName: 1,
-                  moreInfo: 1
-                }
-              })
-              return metaData
-            },
-            collectionName: 'unitMetaData'
+          withMetaData({
+            bzId: 1,
+            displayName: 1,
+            moreInfo: 1
           })
         ).call(this, ids || [])
       }
@@ -115,7 +116,8 @@ if (Meteor.isServer) {
         // Should rely both on completed invitations and unit information (which is why the "$or" is there)
         (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
         (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
-      )
+      ),
+      withMetaData({})
     ))
   }
   makeUnitWithUsersPublisher({
