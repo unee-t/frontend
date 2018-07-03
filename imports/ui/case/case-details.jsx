@@ -114,10 +114,10 @@ class CaseDetails extends Component {
     <InfoItemContainer>
       <div className='flex'>
         <div className='flex-grow'>
-          {infoItemMembers('Category:', category || '---')}
+          {infoItemMembers('Category:', category)}
         </div>
         <div className='flex-grow'>
-          {infoItemMembers('Sub-Category:', subCategory || '---')}
+          {infoItemMembers('Sub-Category:', subCategory)}
         </div>
       </div>
     </InfoItemContainer>
