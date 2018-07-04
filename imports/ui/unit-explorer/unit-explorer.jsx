@@ -10,6 +10,7 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
+import UnitMetaData from '../../api/unit-meta-data'
 import { Link } from 'react-router-dom'
 
 class UnitExplorer extends Component {
@@ -29,13 +30,13 @@ class UnitExplorer extends Component {
                   <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
                     You have no units managed with Unee-T yet
                   </div>
-                ) : unitList.map(({ id, name, description }) => (
+                ) : unitList.map(({ id, name, description, metaData }) => (
                   <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
                     <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
                       <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
                       <div className='ml3 mv1 semi-dark-gray lh-copy overflow-hidden'>
-                        <div className='ti1 ellipsis'>{name}</div>
-                        <div className='ti1 ellipsis'>{description}</div>
+                        <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                        <div className='ti1 ellipsis'>{metaData.moreInfo || description}&nbsp;</div>
                       </div>
                     </div>
                   </MenuItem>
@@ -69,12 +70,13 @@ export default connect(
   () => {
     const unitsHandle = Meteor.subscribe(`${collectionName}.forBrowsing`, {
       onStop: (error) => {
-        console.log('There is an error', error)
         unitsError = error
       }
     })
     return {
-      unitList: Units.find().fetch(),
+      unitList: Units.find().fetch().map(unit => Object.assign({}, unit, {
+        metaData: UnitMetaData.findOne({bzId: unit.id}) || {}
+      })),
       isLoading: !unitsHandle.ready(),
       unitsError
     }

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 export const infoItemLabel = label => (<div key='label' className='mt1 f6 bondi-blue'>{label}</div>)
 export const infoItemMembers = (label, value) => [
   (infoItemLabel(label)),
-  (<div key='value' className='mt2 mid-gray lh-copy'>{value}</div>)
+  (<div key='value' className='mt2 mid-gray lh-copy'>{value || '---'}</div>)
 ]
 
 export const InfoItemContainer = ({ children, additionalClasses = '' }) => (

@@ -2,11 +2,11 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
+import { isClosed } from '../../api/cases'
+
 import {
   moreIconColor
 } from './case-explorer.mui-styles'
-
-export const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
 
 export function CaseList (props) {
   return (

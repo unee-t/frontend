@@ -5,7 +5,7 @@ import { check } from 'meteor/check'
 import randToken from 'rand-token'
 import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
-import { makeAssociationFactory, withUsers } from './base/associations-helper'
+import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
 import UnitMetaData, { unitTypes } from './unit-meta-data'
 import UnitRolesData, { possibleRoles } from './unit-roles-data'
 import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
@@ -25,6 +25,17 @@ const makeInvitationMatcher = unitItem => ({
       unitId: unitItem.id
     }
   }
+})
+
+const withMetaData = fields => withDocs({
+  cursorMaker: publishedItem => {
+    return UnitMetaData.find({
+      bzId: publishedItem.id
+    }, {
+      fields
+    })
+  },
+  collectionName: 'unitMetaData'
 })
 
 export const getUnitRoles = unit => {
@@ -79,12 +90,19 @@ if (Meteor.isServer) {
       if (ids.length === 0) {
         this.ready()
       } else {
-        factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
-          uriTemplate: ids => {
-            const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
-            return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
-          }
-        }).call(this, ids || [])
+        associationFactory(
+          factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
+            uriTemplate: ids => {
+              const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
+              return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
+            }
+          }),
+          withMetaData({
+            bzId: 1,
+            displayName: 1,
+            moreInfo: 1
+          })
+        ).call(this, ids || [])
       }
     })
 
@@ -98,7 +116,10 @@ if (Meteor.isServer) {
         // Should rely both on completed invitations and unit information (which is why the "$or" is there)
         (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
         (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
-      )
+      ),
+      withMetaData({
+        ownerIds: 0
+      })
     ))
   }
   makeUnitWithUsersPublisher({
@@ -155,7 +176,6 @@ Meteor.methods({
       const unitMongoId = randToken.generate(17)
       const owner = Meteor.users.findOne(Meteor.userId())
       let unitBzId
-      console.log('Using unit creation lambda API: ' + process.env.UNIT_CREATE_LAMBDA_URL)
 
       try {
         const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {

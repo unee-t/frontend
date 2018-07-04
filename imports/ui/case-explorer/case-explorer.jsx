@@ -6,11 +6,11 @@ import PropTypes from 'prop-types'
 import { withRouter, Link } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
-import Cases, { collectionName } from '../../api/cases'
+import Cases, { collectionName, isClosed } from '../../api/cases'
 import { push } from 'react-router-redux'
 import RootAppBar from '../components/root-app-bar'
 import { storeBreadcrumb } from '../general-actions'
-import { CaseList, isClosed } from '../case-explorer/case-list'
+import { CaseList } from '../case-explorer/case-list'
 import {
   unitIconsStyle
 } from './case-explorer.mui-styles'

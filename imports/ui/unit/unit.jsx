@@ -12,8 +12,8 @@ import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
-import Cases, { collectionName as casesCollName } from '../../api/cases'
-import { isClosed } from '../case-explorer/case-list'
+import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
+import UnitMetaData from '../../api/unit-meta-data'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
 // import CreateReportDialog from '../dialogs/create-report-dialog'
@@ -123,11 +123,13 @@ class Unit extends Component {
       // }
     ]
 
+    const unitName = unitItem.metaData.displayName || unitItem.name
+
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar
           shadowless
-          title={unitItem.name}
+          title={unitName}
           onBack={() => dispatch(push(match.url.split('/').slice(0, -1).join('/')))}
         />
         <Route path={`${rootMatch.url}/:viewName`} children={({ match }) => {
@@ -156,10 +158,16 @@ class Unit extends Component {
 
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
-                      <div onClick={this.handleOpenClicked} className={'f6 fw5 ' + (showOpenCases ? 'mid-gray' : 'silver')}>
+                      <div
+                        className={'f6 fw5 ' + (showOpenCases ? 'mid-gray' : 'silver')}
+                        onClick={this.handleOpenClicked}
+                      >
                         {openCasesCount.length} Open
                       </div>
-                      <div onClick={this.handleClosedClicked} className={'f6 fw5 ml2 ' + (showOpenCases ? 'silver' : 'mid-gray')}>
+                      <div
+                        className={'f6 fw5 ml2 ' + (showOpenCases ? 'silver' : 'mid-gray')}
+                        onClick={this.handleClosedClicked}
+                      >
                         {closedCasesCount.length} Closed
                       </div>
                     </div>
@@ -209,16 +217,16 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
                       <div>
-                        {infoItemMembers('Unit name', unitItem.name)}
+                        {infoItemMembers('Unit name', unitName)}
                       </div>
                       <div className='mt3'>
                         {infoItemMembers('Unit group', unitItem.classification)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Unit type', '---')}
+                        {infoItemMembers('Unit type', unitItem.metaData.unitType)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Additional description', unitItem.description)}
+                        {infoItemMembers('Additional description', unitItem.metaData.moreInfo || unitItem.description)}
                       </div>
                     </div>
                     <div className='mt2 bg-white card-shadow-1 pa3'>
@@ -226,20 +234,20 @@ class Unit extends Component {
                         ADDRESS
                       </div>
                       <div className='mt1'>
-                        {infoItemMembers('Address', '---')}
+                        {infoItemMembers('Address', unitItem.metaData.streetAddress)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('City', '---')}
+                        {infoItemMembers('City', unitItem.metaData.city)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Country', '---')}
+                        {infoItemMembers('Country', unitItem.metaData.country)}
                       </div>
                       <div className='mt3 flex'>
                         <div className='flex-grow'>
-                          {infoItemMembers('State', '---')}
+                          {infoItemMembers('State', unitItem.metaData.state)}
                         </div>
                         <div className='flex-grow'>
-                          {infoItemMembers('Zip / Postal code', '---')}
+                          {infoItemMembers('Zip / Postal code', unitItem.metaData.zipCode)}
                         </div>
                       </div>
                     </div>
@@ -302,6 +310,9 @@ export default connect(
   const unitItem = unitHandle.ready() ? Units.findOne({id: parseInt(unitId)}) : null
   let casesHandle
   if (unitItem) {
+    Object.assign(unitItem, {
+      metaData: UnitMetaData.findOne({bzId: unitItem.id}) || {}
+    })
     casesHandle = Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
       onStop: error => {
         casesError = error
