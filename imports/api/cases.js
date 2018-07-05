@@ -151,8 +151,6 @@ if (Meteor.isServer) {
     }),
     withDocs({
       cursorMaker: publishedItem => {
-        console.log('matching for ', publishedItem)
-
         return UnitMetaData.find({
           bzName: publishedItem.selectedUnit
         }, {
