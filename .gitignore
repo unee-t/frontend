@@ -4,3 +4,4 @@
 .env
 /settings.json
 /pre-commit-hook.sh
+.vs
