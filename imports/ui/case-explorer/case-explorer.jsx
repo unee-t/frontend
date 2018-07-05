@@ -7,6 +7,7 @@ import { withRouter, Link } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import Cases, { collectionName, isClosed } from '../../api/cases'
+import UnitMetaData from '../../api/unit-meta-data'
 import { push } from 'react-router-redux'
 import RootAppBar from '../components/root-app-bar'
 import { storeBreadcrumb } from '../general-actions'
@@ -55,9 +56,9 @@ class CaseExplorer extends Component {
         const bVal = isClosed(caseB) ? 1 : 0
         return aVal - bVal
       }).reduce((dict, caseItem) => {
-        const { selectedUnit: unitTitle } = caseItem
-        const unitCases = dict[unitTitle] = dict[unitTitle] || []
-        unitCases.push(caseItem)
+        const { selectedUnit: unitTitle, selectedUnitBzId: bzId } = caseItem
+        const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId}
+        unitDesc.cases.push(caseItem)
         return dict
       }, {})
       this.setState({
@@ -80,7 +81,7 @@ class CaseExplorer extends Component {
           {!isLoading && Object.keys(unitsDict)
             .reduce((all, unitTitle) => {
               const isExpanded = expandedUnits.includes(unitTitle)
-              const allCases = unitsDict[unitTitle]
+              const allCases = unitsDict[unitTitle].cases
               const hasCases = allCases.filter(casesFilterFunc)
               if (hasCases.length > 0) {
                 all.push(
@@ -97,10 +98,7 @@ class CaseExplorer extends Component {
                           <div>
                             <Link
                               className={'f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5 '}
-                              to={{
-                                pathname: '/case/new',
-                                state: { unitTitle: unitTitle }
-                              }}>
+                              to={`/case/new?unitId=${unitsDict[unitTitle].bzId}`}>
                               Add case
                             </Link>
                           </div>
@@ -150,7 +148,9 @@ const connectedWrapper = connect(
     }
   })
   return {
-    caseList: Cases.find().fetch(),
+    caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
+      selectedUnitBzId: UnitMetaData.findOne({bzName: caseItem.selectedUnit}).bzId
+    })),
     isLoading: !casesHandle.ready(),
     casesError
   }
