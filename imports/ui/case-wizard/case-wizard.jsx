@@ -74,14 +74,17 @@ class CaseWizard extends Component {
     const {preferredUnitId} = this.props
     const {inputValues, initDone} = this.state
     if (nextProps.units.length > 0 && !initDone && preferredUnitId && !this.state.inputValues.mandatory.selectedUnit) {
-      this.setState({
-        inputValues: Object.assign({}, inputValues, {
-          mandatory: Object.assign({}, inputValues.mandatory, {
-            selectedUnit: nextProps.units.find(unit => unit.id === parseInt(preferredUnitId)).name
-          })
-        }),
-        initDone: true
-      })
+      const matchingUnit = nextProps.units.find(unit => unit.id === parseInt(preferredUnitId))
+      if (matchingUnit) {
+        this.setState({
+          inputValues: Object.assign({}, inputValues, {
+            mandatory: Object.assign({}, inputValues.mandatory, {
+              selectedUnit: matchingUnit.name
+            })
+          }),
+          initDone: true
+        })
+      }
     }
   }
 
