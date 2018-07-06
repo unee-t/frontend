@@ -99,7 +99,7 @@ class CaseExplorer extends Component {
                             <div>
                               <Link
                                 className={'f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5 '}
-                                to={`/case/new?unitId=${unitsDict[unitTitle].bzId}`}>
+                                to={`/case/new?unit=${unitsDict[unitTitle].bzId}`}>
                                 Add case
                               </Link>
                             </div>
