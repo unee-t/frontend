@@ -46,7 +46,7 @@ class UnitExplorer extends Component {
             <Link to='/unit/new' className='link'>
               <MenuItem className='no-shrink' innerDivStyle={{padding: 0}}>
                 <div className='tc bondi-blue fw5 bt b--moon-gray'>
-                  Add Unit
+                  Enter Unit Details
                 </div>
               </MenuItem>
             </Link>
