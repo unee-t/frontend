@@ -95,13 +95,15 @@ class CaseExplorer extends Component {
                           <div className={'f6 silver mt1 '}>
                             { hasCases.length } cases
                           </div>
-                          <div>
-                            <Link
-                              className={'f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5 '}
-                              to={`/case/new?unitId=${unitsDict[unitTitle].bzId}`}>
-                              Add case
-                            </Link>
-                          </div>
+                          {unitsDict[unitTitle].bzId && (
+                            <div>
+                              <Link
+                                className={'f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5 '}
+                                to={`/case/new?unitId=${unitsDict[unitTitle].bzId}`}>
+                                Add case
+                              </Link>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -149,7 +151,7 @@ const connectedWrapper = connect(
   })
   return {
     caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
-      selectedUnitBzId: UnitMetaData.findOne({bzName: caseItem.selectedUnit}).bzId
+      selectedUnitBzId: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).bzId
     })),
     isLoading: !casesHandle.ready(),
     casesError
