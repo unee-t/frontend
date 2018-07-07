@@ -6,7 +6,7 @@ import randToken from 'rand-token'
 import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
-import UnitMetaData, { unitTypes } from './unit-meta-data'
+import UnitMetaData, { unitTypes, collectionName as unitMetaCollName } from './unit-meta-data'
 import UnitRolesData, { possibleRoles } from './unit-roles-data'
 import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
@@ -35,7 +35,7 @@ const withMetaData = fields => withDocs({
       fields
     })
   },
-  collectionName: 'unitMetaData'
+  collectionName: unitMetaCollName
 })
 
 export const getUnitRoles = unit => {
@@ -106,7 +106,7 @@ if (Meteor.isServer) {
       }
     })
 
-  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder }) => {
+  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder, metaDataFields }) => {
     Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
       factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
         uriTemplate: uriBuilder
@@ -117,7 +117,7 @@ if (Meteor.isServer) {
         (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
         (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
       ),
-      withMetaData({
+      withMetaData(metaDataFields || {
         ownerIds: 0
       })
     ))
@@ -136,6 +136,24 @@ if (Meteor.isServer) {
       params: {ids: unitId}
     })
   })
+
+  // TODO: make this join the roles data as well, so dependency on 'components' can be removed
+  makeUnitWithUsersPublisher({
+    funcName: 'byId',
+    uriBuilder: unitId => ({
+      url: '/rest/product',
+      params: {
+        ids: unitId,
+        include_fields: 'name,id,components'
+      }
+    }),
+    metaDataFields: {
+      bzId: 1,
+      displayName: 1
+    }
+  })
+
+  // TODO: remove this if it doesn't get reused by other UI components
   makeUnitListPublisher({
     apiUrl: '/rest/product_enterable',
     funcName: 'forReporting',
@@ -175,7 +193,7 @@ Meteor.methods({
     if (Meteor.isServer) {
       const unitMongoId = randToken.generate(17)
       const owner = Meteor.users.findOne(Meteor.userId())
-      let unitBzId
+      let unitBzId, unitBzName
 
       try {
         const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
@@ -191,7 +209,8 @@ Meteor.methods({
             Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
           }
         })
-        unitBzId = apiResult.data[0]
+        unitBzId = apiResult.data[0].id
+        unitBzName = apiResult.data[0].name
 
         console.log(`BZ Unit ${name} was created successfully`)
       } catch (e) {
@@ -209,6 +228,7 @@ Meteor.methods({
       UnitMetaData.insert({
         _id: unitMongoId,
         bzId: unitBzId,
+        bzName: unitBzName,
         displayName: name,
         unitType: type,
         ownerIds: [owner._id],

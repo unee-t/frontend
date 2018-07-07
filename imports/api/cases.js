@@ -4,7 +4,8 @@ import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
 import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
-import { makeAssociationFactory, withUsers } from './base/associations-helper'
+import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
+import UnitMetaData, { collectionName as unitMetaCollName } from './unit-meta-data'
 import { emailValidator } from '../util/validators'
 import
 PendingInvitations,
@@ -105,48 +106,61 @@ if (Meteor.isServer) {
     withUsers(caseItem => _.flatten(Object.values(getCaseUsers(caseItem))).map(u => u.login))
   ))
   // TODO: Add tests for this
-  Meteor.publish(`${collectionName}.associatedWithMe`, publicationObj.publishByCustomQuery({
-    uriTemplate: () => '/rest/bug',
-    queryBuilder: subHandle => {
-      if (!subHandle.userId) {
-        return {}
-      }
-      const currUser = Meteor.users.findOne(subHandle.userId)
-      const { login: userIdentifier } = currUser.bugzillaCreds
-      return {
-        f1: 'keywords',
-        o1: 'nowords',
-        v1: 'inspection_report',
-        f2: 'OP',
-        j2: 'OR',
-        f3: 'assigned_to',
-        o3: 'equals',
-        v3: userIdentifier,
-        f4: 'cc',
-        o4: 'substring',
-        v4: userIdentifier,
-        f5: 'reporter',
-        o5: 'equals',
-        v5: userIdentifier,
-        list_id: '78',
-        query_format: 'advanced',
-        include_fields: 'product,summary,id,status,assigned_to'
-      }
-    },
-    addedMatcherFactory: strQuery => {
-      const { v1: userIdentifier } = JSON.parse(strQuery)
-      return caseItem => {
-        const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
-        return (
-          !(keywords && keywords.includes('inspection_report')) && (
-            userIdentifier === assignee ||
-            userIdentifier === creator ||
-            involvedList.includes(userIdentifier)
+  Meteor.publish(`${collectionName}.associatedWithMe`, associationFactory(
+    publicationObj.publishByCustomQuery({
+      uriTemplate: () => '/rest/bug',
+      queryBuilder: subHandle => {
+        if (!subHandle.userId) {
+          return {}
+        }
+        const currUser = Meteor.users.findOne(subHandle.userId)
+        const { login: userIdentifier } = currUser.bugzillaCreds
+        return {
+          f1: 'keywords',
+          o1: 'nowords',
+          v1: 'inspection_report',
+          f2: 'OP',
+          j2: 'OR',
+          f3: 'assigned_to',
+          o3: 'equals',
+          v3: userIdentifier,
+          f4: 'cc',
+          o4: 'substring',
+          v4: userIdentifier,
+          f5: 'reporter',
+          o5: 'equals',
+          v5: userIdentifier,
+          list_id: '78',
+          query_format: 'advanced',
+          include_fields: 'product,summary,id,status,assigned_to'
+        }
+      },
+      addedMatcherFactory: strQuery => {
+        const { v1: userIdentifier } = JSON.parse(strQuery)
+        return caseItem => {
+          const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
+          return (
+            !(keywords && keywords.includes('inspection_report')) && (
+              userIdentifier === assignee ||
+              userIdentifier === creator ||
+              involvedList.includes(userIdentifier)
+            )
           )
-        )
+        }
       }
-    }
-  }))
+    }),
+    withDocs({
+      cursorMaker: publishedItem => {
+        return UnitMetaData.find({
+          bzName: publishedItem.selectedUnit
+        }, {
+          bzId: 1,
+          bzName: 1
+        })
+      },
+      collectionName: unitMetaCollName
+    })
+  ))
   Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: (subHandle, unitName) => {
