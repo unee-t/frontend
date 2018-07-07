@@ -106,7 +106,7 @@ if (Meteor.isServer) {
       }
     })
 
-  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder }) => {
+  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder, metaDataFields }) => {
     Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
       factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
         uriTemplate: uriBuilder
@@ -117,7 +117,7 @@ if (Meteor.isServer) {
         (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
         (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
       ),
-      withMetaData({
+      withMetaData(metaDataFields || {
         ownerIds: 0
       })
     ))
@@ -136,6 +136,24 @@ if (Meteor.isServer) {
       params: {ids: unitId}
     })
   })
+
+  // TODO: make this join the roles data as well, so dependency on 'components' can be removed
+  makeUnitWithUsersPublisher({
+    funcName: 'byId',
+    uriBuilder: unitId => ({
+      url: '/rest/product',
+      params: {
+        ids: unitId,
+        include_fields: 'name,id,components'
+      }
+    }),
+    metaDataFields: {
+      bzId: 1,
+      displayName: 1
+    }
+  })
+
+  // TODO: remove this if it doesn't get reused by other UI components
   makeUnitListPublisher({
     apiUrl: '/rest/product_enterable',
     funcName: 'forReporting',
