@@ -77,7 +77,7 @@ class UnitWizard extends Component {
     const { inProgress, error, dispatch } = this.props
     return (
       <div className='full-height flex flex-column overflow-hidden'>
-        <InnerAppBar title='Add Unit' onBack={() => dispatch(goBack())} />
+        <InnerAppBar title='Enter Unit Details' onBack={() => dispatch(goBack())} />
         <form className='overflow-auto flex-grow flex flex-column'>
           <div className='flex-grow bg-very-light-gray'>
             <div className='bg-white card-shadow-1 pa3'>
