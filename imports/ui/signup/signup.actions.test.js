@@ -12,12 +12,9 @@ if (Meteor.isClient) {
     describe('submitSignupInfo', () => {
       const makeFakeInfo = () => ({
         emailAddress: 'ytb@example.org',
-        password: '553SA434dsd#@sd!@#',
-        phoneNumber: '31288292',
-        fullName: 'Kanye West',
-        country: 'Singapore',
-        bzLogin: 'bla',
-        bzPass: 'superSecret'
+        password: '553SA434dsd#@sd!@#'
+        // bzLogin: 'bla',
+        // bzPass: 'superSecret'
       })
 
       it('should return a thunk action function', () => {
@@ -46,11 +43,8 @@ if (Meteor.isClient) {
             email: info.emailAddress,
             password: info.password,
             profile: {
-              phone: info.phoneNumber,
-              name: info.fullName,
-              country: info.country,
-              bzLogin: info.bzLogin,
-              bzPass: info.bzPass
+              // bzLogin: info.bzLogin,
+              // bzPass: info.bzPass
             }
           })
         })

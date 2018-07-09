@@ -9,15 +9,10 @@ export function submitSignupInfo (info) {
       email: info.emailAddress,
       password: info.password,
       profile: {
-        phone: info.phoneNumber,
-        name: info.fullName,
-        country: info.country,
-        bzLogin: info.bzLogin,
-        bzPass: info.bzPass
       }
     }, (err) => {
       if (err) return console.error(err)
-      dispatch(push('/case'))
+      dispatch(push('/unit'))
     })
   }
 }
