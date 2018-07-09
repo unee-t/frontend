@@ -13,9 +13,9 @@ if (Meteor.isClient) {
       const makeFakeInfo = () => ({
         emailAddress: 'ytb@example.org',
         password: '553SA434dsd#@sd!@#',
-        phoneNumber: '31288292',
-        fullName: 'Kanye West',
-        country: 'Singapore',
+        // phoneNumber: '31288292',
+        // fullName: 'Kanye West',
+        // country: 'Singapore',
         bzLogin: 'bla',
         bzPass: 'superSecret'
       })
@@ -46,9 +46,9 @@ if (Meteor.isClient) {
             email: info.emailAddress,
             password: info.password,
             profile: {
-              phone: info.phoneNumber,
-              name: info.fullName,
-              country: info.country,
+              // phone: info.phoneNumber,
+              // name: info.fullName,
+              // country: info.country,
               bzLogin: info.bzLogin,
               bzPass: info.bzPass
             }

@@ -25,21 +25,6 @@ export class SignupPage extends Component {
 
     this.inputs = [
       {
-        label: 'Name',
-        identifier: 'fullName',
-        placeholder: 'Your name'
-      },
-      {
-        label: 'Phone',
-        identifier: 'phoneNumber',
-        placeholder: 'Your phone number'
-      },
-      {
-        label: 'Country',
-        identifier: 'country',
-        placeholder: 'Country of residence'
-      },
-      {
         label: 'Email',
         identifier: 'emailAddress',
         placeholder: 'Your email address',

@@ -71,6 +71,7 @@ class CaseExplorer extends Component {
       })
     }
   }
+
   render () {
     const { isLoading, dispatch, match } = this.props
     const { unitsDict, showOpen, expandedUnits, assignedToMe } = this.state
@@ -88,7 +89,7 @@ class CaseExplorer extends Component {
           {!isLoading && Object.keys(unitsDict)
             .reduce((all, unitTitle) => {
               const isExpanded = expandedUnits.includes(unitTitle)
-              const allCases = unitsDict[unitTitle].cases
+              const allCases = unitsDict[unitTitle]
               const casesToRender = allCases.filter(caseItem => assignedFilter(caseItem) && casesFilter(caseItem))
               if (casesToRender.length > 0) {
                 all.push(
@@ -101,6 +102,16 @@ class CaseExplorer extends Component {
                         <div className='flex justify-space'>
                           <div className={'f6 silver mt1 '}>
                             { casesToRender.length } cases
+                          </div>
+                          <div>
+                            <Link
+                              className={'f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5 '}
+                              to={{
+                                pathname: '/case/new',
+                                state: { unitTitle: unitTitle }
+                              }}>
+                              Add case
+                            </Link>
                           </div>
                           {unitsDict[unitTitle].bzId && (
                             <div>
@@ -149,6 +160,7 @@ const connectedWrapper = connect(
       casesError = error
     }
   })
+
   return {
     caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
       selectedUnitBzId: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).bzId

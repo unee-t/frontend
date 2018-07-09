@@ -9,9 +9,6 @@ export function submitSignupInfo (info) {
       email: info.emailAddress,
       password: info.password,
       profile: {
-        phone: info.phoneNumber,
-        name: info.fullName,
-        country: info.country,
         bzLogin: info.bzLogin,
         bzPass: info.bzPass
       }

@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import MenuItem from 'material-ui/MenuItem'
@@ -11,12 +12,18 @@ import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
 import UnitMetaData from '../../api/unit-meta-data'
-import { Link } from 'react-router-dom'
 
 class UnitExplorer extends Component {
   render () {
     const { isLoading, unitList, dispatch } = this.props
     if (isLoading) return <Preloader />
+    const fabDescriptors = [
+      {
+        color: 'var(--bondi-blue)',
+        href: `/unit/new`,
+        icon: 'add'
+      }
+    ]
 
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -43,13 +50,17 @@ class UnitExplorer extends Component {
                 ))}
               </div>
             </div>
-            <Link to='/unit/new' className='link'>
-              <MenuItem className='no-shrink' innerDivStyle={{padding: 0}}>
-                <div className='tc bondi-blue fw5 bt b--moon-gray'>
-                  Add Unit
-                </div>
-              </MenuItem>
-            </Link>
+            {fabDescriptors.map((desc, ind) => (
+              <div key={ind} className='absolute bottom-2 right-2'>
+                <FloatingActionButton
+                  backgroundColor={desc.color}
+                  className='zoom-effect'
+                  onClick={() => dispatch(push(desc.href))}
+                >
+                  <FontIcon className='material-icons'>{desc.icon}</FontIcon>
+                </FloatingActionButton>
+              </div>
+              ))}
           </div>
         </div>
       </div>
