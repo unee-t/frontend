@@ -4,7 +4,9 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import { withRouter, Link } from 'react-router-dom'
+import { replace } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
+import RaisedButton from 'material-ui/RaisedButton'
 import Cases, { collectionName, isClosed } from '../../api/cases'
 import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
@@ -77,23 +79,39 @@ class CaseExplorer extends Component {
     if (isLoading) return <Preloader />
     const casesFilter = showOpen ? x => !isClosed(x) : x => isClosed(x)
     const assignedFilter = assignedToMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => x
+
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100'>
-        <div className='bb b--black-10 overflow-auto flex-grow'>
-          <div className='flex pl3 pv3 bb b--very-light-gray'>
-            <div onClick={() => this.handleStatusClicked(true)} className={'f6 fw5 ' + (showOpen ? 'mid-gray' : 'silver')}> Open </div>
-            <div onClick={() => this.handleStatusClicked(false)} className={'f6 fw5 ml4 ' + (!showOpen ? 'mid-gray' : 'silver')}> Closed </div>
-            <div onClick={() => this.handleAssignedClicked()} className={'f6 fw5 ml4 ' + (assignedToMe ? 'mid-gray' : 'silver')}> Assigned To Me</div>
+        <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
+          <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
+            <div
+              onClick={() => this.handleStatusClicked(true)}
+              className={'f6 fw5 ph2 ' + (showOpen ? 'mid-gray' : 'silver')}
+            >
+              Open
+            </div>
+            <div
+              onClick={() => this.handleStatusClicked(false)}
+              className={'f6 fw5 ml4 ph2 ' + (!showOpen ? 'mid-gray' : 'silver')}
+            >
+              Closed
+            </div>
+            <div
+              onClick={() => this.handleAssignedClicked()}
+              className={'f6 fw5 ml4 ph2 ' + (assignedToMe ? 'mid-gray' : 'silver')}
+            >
+              Assigned To Me
+            </div>
           </div>
-          {!isLoading && Object.keys(unitsDict)
-            .reduce((all, unitTitle) => {
+          {!isLoading && Object.keys(unitsDict).length
+            ? Object.keys(unitsDict).reduce((all, unitTitle) => {
               const isExpanded = expandedUnits.includes(unitTitle)
               const allCases = unitsDict[unitTitle].cases
               const casesToRender = allCases.filter(caseItem => assignedFilter(caseItem) && casesFilter(caseItem))
               if (casesToRender.length > 0) {
                 all.push(
                   <div key={unitTitle}>
-                    <div className='flex items-center h3 bt b--light-gray'
+                    <div className='flex items-center h3 bt b--light-gray bg-white'
                       onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
                       <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
                       <div className='flex-grow ellipsis mid-gray mr4'>
@@ -126,7 +144,42 @@ class CaseExplorer extends Component {
                 )
               }
               return all
-            }, [])}
+            }, [])
+            : (
+              <div className='flex-grow flex flex-column items-center justify-center'>
+                <div className='tc'>
+                  <div className='dib relative'>
+                    <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '6rem'}}>
+                      card_travel
+                    </FontIcon>
+                    <div className='absolute bottom--1 right--1 pb2'>
+                      <div className='br-100 pa1 bg-very-light-gray lh-cram'>
+                        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+                          add_circle
+                        </FontIcon>
+                      </div>
+                    </div>
+                  </div>
+                  <div className='mt3 ph4'>
+                    <span className='mid-gray b lh-copy'>
+                      There are no cases associated with you. To create a new case, select a unit at
+                    </span>
+                    <RaisedButton
+                      fullWidth
+                      primary
+                      className='mv2'
+                      onClick={() => dispatch(replace('/unit'))}
+                    >
+                      <span className='white f4 b'>Units</span>
+                    </RaisedButton>
+                    <span className='mid-gray b lh-copy'>
+                      Then click on the "+" button
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          }
         </div>
       </div>
     )
