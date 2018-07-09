@@ -6,6 +6,23 @@ import caseUpdatedTemplate from '../../email-templates/case-updated'
 import caseNewMessageTemplate from '../../email-templates/case-new-message'
 import caseUserInvitedTemplate from '../../email-templates/case-user-invited'
 
+const updatedWhatWhiteList = [
+  'Unit',
+  'Role',
+  'Component',
+  'Product',
+  'Severity',
+  'Priority',
+  'Platform',
+  'Case Category',
+  'Summary',
+  'Next Step',
+  'AssignedTo',
+  'Resolution',
+  'Status',
+  'CC'
+]
+
 function getUserByBZId (idStr) {
   return Meteor.users.findOne({ 'bugzillaCreds.id': parseInt(idStr) })
 }
@@ -31,6 +48,11 @@ export default (req, res) => {
 
   const message = req.body
 
+  if (message.notification_type === 'case_updated' && !updatedWhatWhiteList.includes(message.update_what)) {
+    console.log(`Ignoring "case_updated" notification type with "${message.update_what}" update subject`)
+    res.send(200)
+    return
+  }
   if (MessagePayloads.findOne({ notification_id: message.notification_id })) {
     console.log(`Duplicate message ${message.notification_id}`)
     res.send(400, `Duplicate message ${message.notification_id}`)
