@@ -14,6 +14,7 @@ export class SignupPage extends Component {
   constructor () {
     super(...arguments)
     this.state = {
+      termsAgreement: false,
       info: {
         password: ''
       },
@@ -52,11 +53,10 @@ export class SignupPage extends Component {
     if (!this.isFormValid()) return
 
     const { info } = this.state
-
     // Copying all the input values and trimming them
     const signupInfo = Object.keys(info).reduce((all, curr) => {
       if (info[curr]) {
-        all[curr] = info[curr].trim()
+        all[curr] = info[curr]
       }
       return all
     }, {})
@@ -64,12 +64,21 @@ export class SignupPage extends Component {
     this.props.dispatch(submitSignupInfo(signupInfo))
   }
 
+  handleTermCheckbox = () => {
+    const { info } = this.state
+    this.setState({
+      termsAgreement: !this.state.termsAgreement,
+      info: Object.assign({}, info, {termsAgreement: !this.state.termsAgreement})
+    })
+  }
+
   isFormValid = () => {
-    const { info, errorTexts } = this.state
+    const { info, errorTexts, termsAgreement } = this.state
     return (
       this.inputs.filter(({identifier}) => !!info[identifier]).length === this.inputs.length && // All have a value
       Object.keys(errorTexts).filter(key => !!errorTexts[key]).length === 0 && // No error messages
-      !!info.password // Password has a value
+      !!info.password && // Password has a value
+      !!termsAgreement
     )
   }
   render () {
@@ -93,7 +102,10 @@ export class SignupPage extends Component {
             ))}
             <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
           </fieldset>
-          <div className='f7 gray mt3 lh-terms'> By signing up, you agree to our
+          <div className='f7 gray mt3 lh-terms'>
+            <label className='pa0 ma0 lh-copy f6 pointer mid-gray'>
+              <input type='checkbox' onChange={this.handleTermCheckbox} />
+            </label> By signing up, you agree to our
           <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Terms of Service</a> and
           <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Privacy Policy</a> and
             allow Unee-t to send you notifications and emails about your cases</div>

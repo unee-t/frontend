@@ -9,6 +9,7 @@ export function submitSignupInfo (info) {
       email: info.emailAddress,
       password: info.password,
       profile: {
+        termsAgreement: info.termsAgreement
       }
     }, (err) => {
       if (err) return console.error(err)
