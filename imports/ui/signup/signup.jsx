@@ -69,7 +69,7 @@ export class SignupPage extends Component {
     return (
       this.inputs.filter(({identifier}) => !!info[identifier]).length === this.inputs.length && // All have a value
       Object.keys(errorTexts).filter(key => !!errorTexts[key]).length === 0 && // No error messages
-      !!info.password  // Password has a value
+      !!info.password // Password has a value
     )
   }
   render () {
@@ -94,8 +94,8 @@ export class SignupPage extends Component {
             <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
           </fieldset>
           <div className='f7 gray mt3 lh-terms'> By signing up, you agree to our
-            <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Terms of Service</a> and
-            <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Privacy Policy</a> and
+          <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Terms of Service</a> and
+          <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Privacy Policy</a> and
             allow Unee-t to send you notifications and emails about your cases</div>
           <div className='mt3 tr'>
             <RaisedButton label='Submit' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
