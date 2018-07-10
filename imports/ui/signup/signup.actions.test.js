@@ -12,9 +12,8 @@ if (Meteor.isClient) {
     describe('submitSignupInfo', () => {
       const makeFakeInfo = () => ({
         emailAddress: 'ytb@example.org',
-        password: '553SA434dsd#@sd!@#'
-        // bzLogin: 'bla',
-        // bzPass: 'superSecret'
+        password: '553SA434dsd#@sd!@#',
+        termsAgreement: Date()
       })
 
       it('should return a thunk action function', () => {
@@ -43,8 +42,7 @@ if (Meteor.isClient) {
             email: info.emailAddress,
             password: info.password,
             profile: {
-              // bzLogin: info.bzLogin,
-              // bzPass: info.bzPass
+              termsAgreement: info.termsAgreement
             }
           })
         })
