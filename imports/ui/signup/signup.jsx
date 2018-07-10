@@ -14,7 +14,7 @@ export class SignupPage extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      termsAgreement: false,
+      termsAgreement: null,
       info: {
         password: ''
       },
@@ -67,8 +67,8 @@ export class SignupPage extends Component {
   handleTermCheckbox = () => {
     const { info } = this.state
     this.setState({
-      termsAgreement: !this.state.termsAgreement,
-      info: Object.assign({}, info, {termsAgreement: !this.state.termsAgreement})
+      termsAgreement: Date(),
+      info: Object.assign({}, info, {termsAgreement: Date()})
     })
   }
 
@@ -106,8 +106,8 @@ export class SignupPage extends Component {
             <label className='pa0 ma0 lh-copy f6 pointer mid-gray'>
               <input type='checkbox' onChange={this.handleTermCheckbox} />
             </label> By signing up, you agree to our
-          <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Terms of Service</a> and
-          <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Privacy Policy</a> and
+            <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Terms of Service</a> and
+            <a className='clean_link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Privacy Policy</a> and
             allow Unee-t to send you notifications and emails about your cases</div>
           <div className='mt3 tr'>
             <RaisedButton label='Submit' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
