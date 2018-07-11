@@ -77,6 +77,8 @@ export default (req, res) => {
       // https://github.com/unee-t/sns2email/issues/2
       // When the user assigned to a case change, we need to inform the person who is the new assignee to that case.
       settingType = 'assignedExistingCase'
+
+      // TODO: notify the de-assigned user?
       userIds = [message.new_case_assignee_user_id]
       templateFn = caseAssigneeUpdateTemplate
       templateParams = [caseTitle, caseId]
@@ -85,7 +87,10 @@ export default (req, res) => {
     case 'case_new_message':
       // https://github.com/unee-t/lambda2sns/issues/5
       settingType = 'caseNewMessage'
-      userIds = message.current_list_of_invitees.split(',').concat([message.new_case_assignee_user_id])
+      userIds = message.current_list_of_invitees.split(', ').concat([
+        message.new_case_assignee_user_id,
+        message.case_reporter_user_id
+      ]).filter(id => id === message.created_by_user_id) // Preventing a notification being sent to the creator
       templateFn = caseNewMessageTemplate
       templateParams = [caseTitle, caseId, getUserByBZId(message.created_by_user_id), message.message_truncated]
       break
@@ -94,7 +99,10 @@ export default (req, res) => {
       // https://github.com/unee-t/lambda2sns/issues/4
       // More are notified: https://github.com/unee-t/lambda2sns/issues/4#issuecomment-399339075
       settingType = 'caseUpdate'
-      userIds = message.current_list_of_invitees.split(',').concat([message.new_case_assignee_user_id, message.case_reporter_user_id])
+      userIds = message.current_list_of_invitees.split(', ').concat([
+        message.new_case_assignee_user_id,
+        message.case_reporter_user_id
+      ]).filter(id => id === message.userId)
       templateFn = caseUpdatedTemplate
       templateParams = [caseTitle, caseId, message.update_what, getUserByBZId(message.user_id)]
       break
