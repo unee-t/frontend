@@ -32,7 +32,8 @@ export const infoIconStyle = {
 }
 
 export const addPersonIconStyle = {
-  color: '#a4a4a4',
+  color: 'var(--bondi-blue)',
   fontSize: 16,
-  lineHeight: '1.7rem'
+  lineHeight: '1.7rem',
+  marginRight: '0.25rem'
 }
