@@ -34,9 +34,20 @@ class UnitExplorer extends Component {
                   <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
                     <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
                       <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                      <div className='ml3 mv1 semi-dark-gray lh-copy overflow-hidden'>
+                      <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
                         <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                        <div className='ti1 ellipsis'>{metaData.moreInfo || description}&nbsp;</div>
+                        <div className='flex'>
+                          <div className='ti1 ellipsis'>{metaData.moreInfo || description}&nbsp;</div>
+                          <div
+                            onClick={evt => {
+                              evt.stopPropagation()
+                              dispatch(push(`/case/new?unit=${id}`))
+                            }}
+                            className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                          >
+                            Add case
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </MenuItem>
