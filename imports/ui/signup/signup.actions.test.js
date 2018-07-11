@@ -13,7 +13,10 @@ if (Meteor.isClient) {
       const makeFakeInfo = () => ({
         emailAddress: 'ytb@example.org',
         password: '553SA434dsd#@sd!@#',
-        termsAgreement: Date()
+        tac: {
+          acceptedAt: new Date(),
+          version: '08/06/2018'
+        }
       })
 
       it('should return a thunk action function', () => {
@@ -41,8 +44,11 @@ if (Meteor.isClient) {
           expect(Accounts.createUser).to.have.been.calledWithMatch({
             email: info.emailAddress,
             password: info.password,
+            tac: {
+              acceptedAt: new Date(),
+              version: '08/06/2018'
+            },
             profile: {
-              termsAgreement: info.termsAgreement
             }
           })
         })

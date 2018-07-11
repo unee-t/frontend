@@ -8,8 +8,11 @@ export function submitSignupInfo (info) {
     Accounts.createUser({
       email: info.emailAddress,
       password: info.password,
+      tac: {
+        acceptedAt: new Date(),
+        version: '08/06/2018'
+      },
       profile: {
-        termsAgreement: info.termsAgreement
       }
     }, (err) => {
       if (err) return console.error(err)

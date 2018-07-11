@@ -14,9 +14,7 @@
   --success-green: #99cc33
 }
 
-.clean_link {
-  text-decoration: none;
-}
+
 
 /* Tachyons fixes, overrides and additions */
 .b--transparent {
@@ -76,10 +74,6 @@
 
 .lh-cram {
   line-height: 0.7;
-}
-
-.lh-terms {
-  line-height: 1.5;
 }
 
 .lh-input {

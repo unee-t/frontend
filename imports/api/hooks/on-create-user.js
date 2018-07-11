@@ -15,8 +15,11 @@ export function onCreateUser (options, user) {
   // Creating a random bz pass if one was not provided
   const password = bzPass || 'a' + randToken.generate(10) + '!'
   const { email } = options
-  console.log('creating user for', email)
   const customizedUser = Object.assign({
+    tac: {
+      acceptedAt: new Date(),
+      version: '08/06/2018'
+    },
     bugzillaCreds: {
       login: bzLogin || email,
       password: bzPass ? null : password
@@ -27,7 +30,7 @@ export function onCreateUser (options, user) {
   let apiResult
   try {
     if (!bzLogin && !bzPass) {
-      apiResult = callAPI('post', '/rest/user', {email, password}, true, true)
+      apiResult = callAPI('post', '/rest/user', { email, password }, true, true)
     } else {
       apiResult = callAPI('get', '/rest/login', {login: bzLogin, password: bzPass}, false, true)
     }
@@ -66,6 +69,7 @@ export function onCreateUser (options, user) {
   customizedUser.profile = options.profile
   Object.assign(customizedUser, baseUserSchema)
   console.log(`User for ${email} was created successfully`)
+  console.log(customizedUser)
   return customizedUser
 }
 if (Meteor.isServer) {
