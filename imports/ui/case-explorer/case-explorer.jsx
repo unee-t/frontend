@@ -155,7 +155,7 @@ class CaseExplorer extends Component {
                   <div className='mt3 ph4'>
                     <div className='mid-gray b lh-copy'>
                       <div>There are no cases that match your current filter combination.</div>
-                      <div>Click on the "+" button to create a new case</div>
+                      <div>Click on the "+" button to select a unit to add a new case</div>
                     </div>
                   </div>
                 </div>
