@@ -4,8 +4,9 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import { withRouter, Link } from 'react-router-dom'
-// import { replace } from 'react-router-redux'
+import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
 import Cases, { collectionName, isClosed } from '../../api/cases'
 import UnitMetaData from '../../api/unit-meta-data'
@@ -76,7 +77,7 @@ class CaseExplorer extends Component {
     if (isLoading) return <Preloader />
     const unitsDict = this.makeUnitsDict(caseList, showOpen, assignedToMe)
     return (
-      <div className='flex flex-column roboto overflow-hidden flex-grow h-100'>
+      <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
           <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
             <div
@@ -152,14 +153,22 @@ class CaseExplorer extends Component {
                     </div>
                   </div>
                   <div className='mt3 ph4'>
-                    <span className='mid-gray b lh-copy'>
-                      There are no cases associated with you. Click on the "+" button to create a case on a specific unit
-                    </span>
+                    <div className='mid-gray b lh-copy'>
+                      <div>There are no cases that match your current filter combination.</div>
+                      <div>Click on the "+" button to create a new case</div>
+                    </div>
                   </div>
                 </div>
               </div>
             )
           }
+        </div>
+        <div className='absolute right-1 bottom-2'>
+          <FloatingActionButton
+            onClick={() => dispatch(push('/unit'))}
+          >
+            <FontIcon className='material-icons'>add</FontIcon>
+          </FloatingActionButton>
         </div>
       </div>
     )
