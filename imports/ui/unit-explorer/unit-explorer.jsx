@@ -17,7 +17,6 @@ class UnitExplorer extends Component {
   render () {
     const { isLoading, unitList, dispatch } = this.props
     if (isLoading) return <Preloader />
-
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar title='My Units' onIconClick={() => dispatch(setDrawerState(true))} />

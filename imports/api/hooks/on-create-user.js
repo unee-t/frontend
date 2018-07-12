@@ -30,7 +30,7 @@ export function onCreateUser (options, user) {
   let apiResult
   try {
     if (!bzLogin && !bzPass) {
-      apiResult = callAPI('post', '/rest/user', { email, password }, true, true)
+      apiResult = callAPI('post', '/rest/user', {email, password}, true, true)
     } else {
       apiResult = callAPI('get', '/rest/login', {login: bzLogin, password: bzPass}, false, true)
     }
@@ -69,7 +69,6 @@ export function onCreateUser (options, user) {
   customizedUser.profile = options.profile
   Object.assign(customizedUser, baseUserSchema)
   console.log(`User for ${email} was created successfully`)
-  console.log(customizedUser)
   return customizedUser
 }
 if (Meteor.isServer) {
