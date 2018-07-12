@@ -40,16 +40,12 @@ if (Meteor.isClient) {
           expect(Accounts.createUser).to.have.been.calledWithMatch({
             email: info.emailAddress,
             password: info.password,
-            tac: {
-              acceptedAt: new Date(),
-              version: '08/06/2018'
-            },
             profile: {
             }
           })
         })
         // Needs implementation and testing
-        it('should dispatch "error" if the API yields an error', () => {})
+        it.skip('should dispatch "error" if the API yields an error', () => {})
         it('should dispatch a navigation event to "/unit" if the API call is successful', () => {
           const mockAction = { fake: true }
           Accounts.createUser.yields()

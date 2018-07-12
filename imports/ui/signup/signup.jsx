@@ -14,6 +14,7 @@ export class SignupPage extends Component {
   constructor () {
     super(...arguments)
     this.state = {
+      termsAgreement: false,
       info: {
         password: ''
       },
@@ -55,7 +56,7 @@ export class SignupPage extends Component {
     // Copying all the input values and trimming them
     const signupInfo = Object.keys(info).reduce((all, curr) => {
       if (info[curr]) {
-        all[curr] = info[curr]
+        all[curr] = info[curr].trim()
       }
       return all
     }, {})
@@ -64,23 +65,22 @@ export class SignupPage extends Component {
   }
 
   handleTermCheckbox = () => {
-    const { info } = this.state
     this.setState({
-      info: Object.assign({}, info, {termsAgreement: 'true'})
+      termsAgreement: !this.state.termsAgreement
     })
   }
 
   isFormValid = () => {
-    const { info, errorTexts } = this.state
+    const { info, errorTexts, termsAgreement } = this.state
     return (
       this.inputs.filter(({identifier}) => !!info[identifier]).length === this.inputs.length && // All have a value
       Object.keys(errorTexts).filter(key => !!errorTexts[key]).length === 0 && // No error messages
       !!info.password && // Password has a value
-      !!info.termsAgreement
+      !!termsAgreement
     )
   }
   render () {
-    const { info, errorTexts } = this.state
+    const { info, errorTexts, termsAgreement } = this.state
     return (
       <LoginLayout subHeading='Sign up for a free account!'
         footerContent={
@@ -102,7 +102,7 @@ export class SignupPage extends Component {
           </fieldset>
           <div className='f7 gray mt3 lh-copy'>
             <label className='pa0 ma0 lh-copy f6 pointer mid-gray'>
-              <input type='checkbox' onChange={this.handleTermCheckbox} />
+              <input type='checkbox' checked={termsAgreement} onChange={this.handleTermCheckbox} />
             </label> By signing up, you agree to our
             <a className='link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Terms of Service</a> and
             <a className='link bondi-blue fw8' href='https://unee-t.com/privacy-and-terms/'> Privacy Policy</a> and
