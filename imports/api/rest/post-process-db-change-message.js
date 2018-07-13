@@ -90,7 +90,7 @@ export default (req, res) => {
       userIds = message.current_list_of_invitees.split(', ').concat([
         message.new_case_assignee_user_id,
         message.case_reporter_user_id
-      ]).filter(id => id === message.created_by_user_id) // Preventing a notification being sent to the creator
+      ]).filter(id => id !== message.created_by_user_id) // Preventing a notification being sent to the creator
       templateFn = caseNewMessageTemplate
       templateParams = [caseTitle, caseId, getUserByBZId(message.created_by_user_id), message.message_truncated]
       break
@@ -102,7 +102,7 @@ export default (req, res) => {
       userIds = message.current_list_of_invitees.split(', ').concat([
         message.new_case_assignee_user_id,
         message.case_reporter_user_id
-      ]).filter(id => id === message.userId)
+      ]).filter(id => id !== message.user_id)
       templateFn = caseUpdatedTemplate
       templateParams = [caseTitle, caseId, message.update_what, getUserByBZId(message.user_id)]
       break
