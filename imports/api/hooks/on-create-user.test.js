@@ -40,16 +40,6 @@ if (Meteor.isServer) {
           'post', '/rest/user', sinon.match({ email: fakeEmail, password: sinon.match.string }), true, true
         )
       })
-      // it('should include tac in a newly created user', () => {
-      //   const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
-      //   const expected = {email: 'a@gmail.com',
-      //     password: 'asdf',
-      //     tac:
-      //   { acceptedAt: new Date(),
-      //     version: '08/06/2018'}
-      //   }
-      //   sinon.assert.match(boundFunc, expected)
-      // })
       it('should do an http request "POST (apienroll API)" and throw an error if it throws', () => {
         callAPIStub.returns({ data: {id: 2626} })
         HTTP.call.throws()
