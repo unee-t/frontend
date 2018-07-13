@@ -63,12 +63,18 @@ if (Meteor.isServer) {
     })
 
     it('should return a customized user that contains the BZ credentials, id and apiKey', () => {
+      const acceptedAt = new Date()
+      const version = '08/06/2018'
       const fakeId = 1337
       const fakeProfile = {
         someInfo: 'bla'
       }
       const fakeUser = {
-        age: 99999
+        age: 99999,
+        tac: {
+          acceptedAt: acceptedAt,
+          version: version
+        }
       }
       const fakeOptions = {
         email: fakeEmail,
@@ -86,6 +92,11 @@ if (Meteor.isServer) {
       expect(customizedUser.bugzillaCreds).to.deep.include({
         login: fakeEmail,
         id: fakeId
+      })
+
+      expect(customizedUser.tac).to.deep.include({
+        acceptedAt: acceptedAt,
+        version: version
       })
       expect(customizedUser.bugzillaCreds.password).to.be.a('string')
       expect(customizedUser.bugzillaCreds.apiKey).to.be.a('string')
