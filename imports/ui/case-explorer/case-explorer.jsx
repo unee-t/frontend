@@ -70,7 +70,7 @@ class CaseExplorer extends Component {
         return dict
       }, {})
     }
-  }
+  )
   render () {
     const { isLoading, dispatch, match, caseList } = this.props
     const { showOpen, expandedUnits, assignedToMe } = this.state
