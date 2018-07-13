@@ -15,8 +15,11 @@ export function onCreateUser (options, user) {
   // Creating a random bz pass if one was not provided
   const password = bzPass || 'a' + randToken.generate(10) + '!'
   const { email } = options
-  console.log('creating user for', email)
   const customizedUser = Object.assign({
+    tac: {
+      acceptedAt: new Date(),
+      version: '08/06/2018'
+    },
     bugzillaCreds: {
       login: bzLogin || email,
       password: bzPass ? null : password

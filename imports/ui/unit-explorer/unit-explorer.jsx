@@ -11,7 +11,7 @@ import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
 import UnitMetaData from '../../api/unit-meta-data'
-import { Link } from 'react-router-dom'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
 
 class UnitExplorer extends Component {
   render () {
@@ -54,13 +54,13 @@ class UnitExplorer extends Component {
                 ))}
               </div>
             </div>
-            <Link to='/unit/new' className='link'>
-              <MenuItem className='no-shrink' innerDivStyle={{padding: 0}}>
-                <div className='tc bondi-blue fw5 bt b--moon-gray'>
-                  Add Unit
-                </div>
-              </MenuItem>
-            </Link>
+            <div className='absolute bottom-2 right-2'>
+              <FloatingActionButton
+                onClick={() => dispatch(push(`/unit/new`))}
+              >
+                <FontIcon className='material-icons'>add</FontIcon>
+              </FloatingActionButton>
+            </div>
           </div>
         </div>
       </div>
