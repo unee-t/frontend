@@ -65,7 +65,8 @@ class CaseExplorer extends Component {
       const currTime = curr.createdAt.getTime()
       dict[caseIdStr] = prevTime < currTime ? currTime : prevTime
       return dict
-    }, {})
+    }, {}),
+    (a, b) => a.length === b.length
   )
   makeCaseUnreadDict = memoizeOne(
     unreadNotifs => unreadNotifs.reduce((dict, curr) => {
@@ -79,7 +80,8 @@ class CaseExplorer extends Component {
           unreadItem.updates++
       }
       return dict
-    }, {})
+    }, {}),
+    (a, b) => a.length === b.length
   )
   makeCaseGrouping = memoizeOne(
     (caseList, showOpen, onlyAssigned, allNotifs, unreadNotifs) => {
@@ -124,6 +126,13 @@ class CaseExplorer extends Component {
         })
         return all
       }, []).sort((a, b) => b.latestCaseUpdate - a.latestCaseUpdate) // Sorting by the latest case update for each
+    },
+    (a, b) => {
+      if (a && b && Array.isArray(a)) {
+        return a.length === b.length
+      } else {
+        return a === b
+      }
     }
   )
   render () {
