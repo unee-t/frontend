@@ -119,7 +119,7 @@ class CaseExplorer extends Component {
         cases.sort((a, b) => b.latestUpdate - a.latestUpdate)
         all.push({
           latestCaseUpdate: cases[0].latestUpdate, // The first case has to be latest due to the previous sort
-          hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts),
+          hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts), // true if any case has unreads
           unitTitle,
           bzId,
           cases
@@ -227,9 +227,7 @@ class CaseExplorer extends Component {
           }
         </div>
         <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton
-            onClick={() => dispatch(push('/unit'))}
-          >
+          <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
         </div>
