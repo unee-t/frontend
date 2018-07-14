@@ -37,7 +37,7 @@ class UnitExplorer extends Component {
                       <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
                         <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                         <div className='flex'>
-                          <div className='ti1 ellipsis'>{metaData.moreInfo || description}&nbsp;</div>
+                          <div className='ti1 ellipsis flex-grow'>{metaData.moreInfo || description}&nbsp;</div>
                           <div
                             onClick={evt => {
                               evt.stopPropagation()
