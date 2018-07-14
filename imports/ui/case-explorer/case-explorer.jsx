@@ -9,6 +9,7 @@ import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
 import Cases, { collectionName, isClosed } from '../../api/cases'
+import CaseNotifications, { collectionName as notifCollName } from '../../api/case-notifications'
 import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
@@ -57,25 +58,88 @@ class CaseExplorer extends Component {
       this.props.dispatchLoadingResult({caseList})
     }
   }
-  makeUnitsDict = memoizeOne(
-    (caseList, showOpen, onlyAssigned) => {
+  makeCaseUpdateTimeDict = memoizeOne(
+    allNotifications => allNotifications.reduce((dict, curr) => {
+      const caseIdStr = curr.caseId.toString()
+      const prevTime = dict[caseIdStr] ? dict[caseIdStr] : 0 // if dict[curr.caseId] === 0 it'll be set to 0, so no harm
+      const currTime = curr.createdAt.getTime()
+      dict[caseIdStr] = prevTime < currTime ? currTime : prevTime
+      return dict
+    }, {}),
+    (a, b) => a.length === b.length
+  )
+  makeCaseUnreadDict = memoizeOne(
+    unreadNotifs => unreadNotifs.reduce((dict, curr) => {
+      const caseIdStr = curr.caseId.toString()
+      const unreadItem = dict[caseIdStr] = dict[caseIdStr] || {messages: 0, updates: 0}
+      switch (curr.type) {
+        case 'message':
+          unreadItem.messages++
+          break
+        case 'update':
+          unreadItem.updates++
+      }
+      return dict
+    }, {}),
+    (a, b) => a.length === b.length
+  )
+  makeCaseGrouping = memoizeOne(
+    (caseList, showOpen, onlyAssigned, allNotifs, unreadNotifs) => {
       const openFilter = showOpen ? x => !isClosed(x) : x => isClosed(x)
-      const assignedFilter = onlyAssigned ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => x
-      return caseList.reduce((dict, caseItem) => {
-        if (openFilter(caseItem) && assignedFilter(caseItem)) {
+      const assignedFilter = onlyAssigned ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+
+      const caseUpdateTimeDict = this.makeCaseUpdateTimeDict(allNotifs)
+      const caseUnreadDict = this.makeCaseUnreadDict(unreadNotifs)
+
+      // Building a unit dictionary to group the cases together
+      const unitsDict = caseList.reduce((dict, caseItem) => {
+        if (openFilter(caseItem) && assignedFilter(caseItem)) { // Filtering only the cases that match the selection
           const { selectedUnit: unitTitle, selectedUnitBzId: bzId } = caseItem
+
+          // Pulling the existing or creating a new dictionary entry if none
           const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId}
-          unitDesc.cases.push(caseItem)
+          const caseIdStr = caseItem.id.toString()
+
+          // Adding the latest update time to the case for easier sorting later
+          unitDesc.cases.push(
+            Object.assign({
+              latestUpdate: caseUpdateTimeDict[caseIdStr] || 0,
+              unreadCounts: caseUnreadDict[caseIdStr]
+            }, caseItem)
+          )
         }
         return dict
       }, {})
+
+      // Creating a case grouping *array* from the unit dictionary
+      return Object.keys(unitsDict).reduce((all, unitTitle) => {
+        const { bzId, cases } = unitsDict[unitTitle]
+
+        // Sorting cases within a unit by the order descending order of last update
+        cases.sort((a, b) => b.latestUpdate - a.latestUpdate)
+        all.push({
+          latestCaseUpdate: cases[0].latestUpdate, // The first case has to be latest due to the previous sort
+          hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts), // true if any case has unreads
+          unitTitle,
+          bzId,
+          cases
+        })
+        return all
+      }, []).sort((a, b) => b.latestCaseUpdate - a.latestCaseUpdate) // Sorting by the latest case update for each
+    },
+    (a, b) => {
+      if (a && b && Array.isArray(a)) {
+        return a.length === b.length
+      } else {
+        return a === b
+      }
     }
   )
   render () {
-    const { isLoading, dispatch, match, caseList } = this.props
+    const { isLoading, dispatch, match, caseList, allNotifications, unreadNotifications } = this.props
     const { showOpen, expandedUnits, assignedToMe } = this.state
     if (isLoading) return <Preloader />
-    const unitsDict = this.makeUnitsDict(caseList, showOpen, assignedToMe)
+    const caseGrouping = this.makeCaseGrouping(caseList, showOpen, assignedToMe, allNotifications, unreadNotifications)
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
@@ -99,10 +163,9 @@ class CaseExplorer extends Component {
               Assigned To Me
             </div>
           </div>
-          {!isLoading && Object.keys(unitsDict).length
-            ? Object.keys(unitsDict).map(unitTitle => {
+          {!isLoading && caseGrouping.length
+            ? caseGrouping.map(({ unitTitle, bzId, hasUnread, cases: unitCases }) => {
               const isExpanded = expandedUnits.includes(unitTitle)
-              const { bzId, cases: unitCases } = unitsDict[unitTitle]
               return (
                 <div key={unitTitle}>
                   <div className='flex items-center h3 bt b--light-gray bg-white'
@@ -111,11 +174,11 @@ class CaseExplorer extends Component {
                     <div className='flex-grow ellipsis mid-gray mr4'>
                       {unitTitle}
                       <div className='flex justify-space'>
-                        <div className={'f6 silver mt1 '}>
+                        <div className={'f6 silver mt1' + (hasUnread ? ' b' : '')}>
                           { unitCases.length } cases
                         </div>
                         {bzId && (
-                          <div>
+                          <div className='no-shrink flex items-center'>
                             <Link
                               className='f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5'
                               to={`/case/new?unit=${bzId}`}>
@@ -164,9 +227,7 @@ class CaseExplorer extends Component {
           }
         </div>
         <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton
-            onClick={() => dispatch(push('/unit'))}
-          >
+          <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
         </div>
@@ -179,6 +240,8 @@ CaseExplorer.propTypes = {
   caseList: PropTypes.array,
   isLoading: PropTypes.bool,
   casesError: PropTypes.object,
+  allNotifications: PropTypes.array.isRequired,
+  unreadNotifications: PropTypes.array.isRequired,
   dispatchLoadingResult: PropTypes.func.isRequired
 }
 
@@ -191,11 +254,16 @@ const connectedWrapper = connect(
       casesError = error
     }
   })
+  const notifsHandle = Meteor.subscribe(`${notifCollName}.myUpdates`)
   return {
     caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
       selectedUnitBzId: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).bzId
     })),
-    isLoading: !casesHandle.ready(),
+    allNotifications: notifsHandle.ready() ? CaseNotifications.find().fetch() : [],
+    unreadNotifications: notifsHandle.ready() ? CaseNotifications.find({
+      markedAsRead: {$ne: true}
+    }).fetch() : [],
+    isLoading: !casesHandle.ready() || !notifsHandle.ready(),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
     casesError
   }

@@ -21,6 +21,7 @@ export const INVITATION_CLEARED = 'invitation_cleared'
 export const CLEAR_WELCOME_MESSAGE = 'clear_welcome_message'
 export const UPDATE_INVITED_USER_NAME = 'update_invited_user_name'
 export const EDIT_CASE_FIELD = 'edit_case_field'
+export const MARK_NOTIFICATIONS_AS_READ = 'case_notifications_mark_as_read'
 
 export function createComment (text, caseId) {
   return {
@@ -124,5 +125,12 @@ export function editCaseField (changeSet, caseId) {
 export function clearRoleUsersState () {
   return {
     type: CLEAR_ROLE_USERS_STATE
+  }
+}
+
+export function markNotificationsAsRead (caseId) {
+  return {
+    type: MARK_NOTIFICATIONS_AS_READ,
+    caseId
   }
 }

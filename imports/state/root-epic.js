@@ -17,6 +17,7 @@ import { resetPass } from './epics/reset-pass'
 import { createReport } from './epics/create-report'
 import { changeNotificationSetting } from './epics/change-notification-setting'
 import { createUnit } from './epics/create-unit'
+import { markCaseCommentsAsRead } from './epics/mark-case-notifications-as-read'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -36,5 +37,6 @@ export const rootEpic = combineEpics(
   resetPass,
   changeNotificationSetting,
   createUnit,
-  createReport
+  createReport,
+  markCaseCommentsAsRead
 )
