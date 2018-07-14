@@ -146,14 +146,17 @@ export default (req, res) => {
       return
     }
 
-    CaseNotifications.insert({
-      userId: recipient._id,
-      unitBzId: parseInt(unitId),
-      caseId: parseInt(caseId),
-      createdAt: new Date(),
-      payloadId,
-      ...objectTemplate
-    })
+    // Checking if the content to create a client notification has been defined
+    if (objectTemplate) {
+      CaseNotifications.insert({
+        userId: recipient._id,
+        unitBzId: parseInt(unitId),
+        caseId: parseInt(caseId),
+        createdAt: new Date(),
+        payloadId,
+        ...objectTemplate
+      })
+    }
 
     if (!recipient.emails[0].verified) {
       console.error(`User with bz id ${userId} has no verified email address, skipping notification`)
