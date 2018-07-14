@@ -15,7 +15,7 @@ import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/
 import PendingInvitations, { collectionName as inviteCollName } from '../../api/pending-invitations'
 import CaseFieldValues, { collectionName as cfvCollName } from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
-import actions from './case.actions'
+import actions, { markNotificationsAsRead } from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
@@ -26,6 +26,11 @@ import Preloader from '../preloader/preloader'
 import { makeMatchingUser } from '../../api/custom-users'
 
 export class Case extends Component {
+  componentDidMount () {
+    const { match, dispatch } = this.props
+    const { caseId } = match.params
+    dispatch(markNotificationsAsRead(caseId))
+  }
   componentWillReceiveProps ({
     caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch,
     userEmail, ancestorPath
