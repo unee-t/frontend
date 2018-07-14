@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
@@ -22,10 +23,10 @@ const updateCounter = (iconType, count) => {
   )
 }
 
-export function CaseList (props) {
+export function CaseList ({ allCases, onItemClick }) {
   return (
     <div>
-      {props.allCases.map((caseItem, ind) =>
+      {allCases.map((caseItem, ind) =>
         <li key={caseItem.id} className='h2-5 bt b--black-10'>
           <div className='flex items-center'>
             <Link
@@ -35,7 +36,7 @@ export function CaseList (props) {
                   (isClosed(caseItem) ? 'silver strike' : 'bondi-blue')
               }
               to={`/case/${caseItem.id}`}
-              onClick={() => this.props.onItemClick}
+              onClick={onItemClick}
             >
               {caseItem.title}
             </Link>
@@ -49,4 +50,9 @@ export function CaseList (props) {
       )}
     </div>
   )
+}
+
+CaseList.propTypes = {
+  allCases: PropTypes.array.isRequired,
+  onItemClick: PropTypes.func.isRequired
 }
