@@ -67,7 +67,7 @@ export default (req, res) => {
     return
   }
 
-  console.log('Incoming to /api/db-change-message/process', message)
+  console.log('Incoming to /api/db-change-message/process', message.notification_id)
   const payloadId = MessagePayloads.insert(message)
 
   // Common between https://github.com/unee-t/lambda2sns/tree/master/tests/events
