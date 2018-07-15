@@ -20,6 +20,7 @@ const updatedWhatWhiteList = [
   'Next Step',
   'AssignedTo',
   'Resolution',
+  'Solution',
   'Status',
   'CC'
 ]
