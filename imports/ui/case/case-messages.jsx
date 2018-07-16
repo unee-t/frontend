@@ -126,20 +126,20 @@ class CaseMessages extends Component {
     }
     return [
       (<Subheader style={subheaderStyle} className='flex bg-white' key='0'>
-        <div className='flex-4 flex items-center justify-center br b--gray-93'>
-          <Link to={`/case/${id}/details/invite`}>
-            <FlatButton onClick={this.props.onMoreInfo} fullWidth>
-              <div className='flex items-center justify-center tc bondi-blue f6'>
-                <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon> Invite User
-              </div>
-            </FlatButton>
-          </Link>
-        </div>
         <div className='flex-4 flex items-center justify-center'>
           <FlatButton onClick={this.props.onMoreInfo} fullWidth>
             <div className='flex items-center justify-center tc bondi-blue f6'>
               <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More Information
             </div>
+          </FlatButton>
+        </div>
+        <div className='flex-4 flex items-center justify-center br b--gray-93'>
+          <FlatButton fullWidth>
+            <Link to={`/case/${id}/details/invite`} className='remove-underline'>
+              <div className='flex items-center justify-center tc bondi-blue f6'>
+                <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon> Invite User
+              </div>
+            </Link>
           </FlatButton>
         </div>
       </Subheader>)
