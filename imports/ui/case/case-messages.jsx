@@ -17,6 +17,7 @@ import UserAvatar from '../components/user-avatar'
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
 import colors from '../../mui-theme/colors'
+import { Link } from 'react-router-dom'
 import {
   subheaderStyle,
   infoIconStyle,
@@ -126,13 +127,13 @@ class CaseMessages extends Component {
     return [
       (<Subheader style={subheaderStyle} className='flex bg-white' key='0'>
         <div className='flex-4 flex items-center justify-center br b--gray-93'>
-        {/* <Link to={`${match.url}/invite`} */}
-          <FlatButton onClick={this.props.onMoreInfo} fullWidth>
-            <div className='flex items-center justify-center tc bondi-blue f6'>
-              <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon> Invite User
-            </div>
-          </FlatButton>
-          {/* </Link> */}
+          <Link to={`/case/${id}/details/invite`}>
+            <FlatButton onClick={this.props.onMoreInfo} fullWidth>
+              <div className='flex items-center justify-center tc bondi-blue f6'>
+                <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon> Invite User
+              </div>
+            </FlatButton>
+          </Link>
         </div>
         <div className='flex-4 flex items-center justify-center'>
           <FlatButton onClick={this.props.onMoreInfo} fullWidth>
