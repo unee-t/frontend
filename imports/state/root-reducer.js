@@ -12,6 +12,7 @@ import caseUsersState from './reducers/case-users-state'
 import drawerState from './reducers/drawer-state'
 import pathBreadcrumb from './reducers/path-breadcrumb'
 import unitCreationState from './reducers/unit-creation-state'
+import genericErrorState from './reducers/generic-error-state'
 
 const rootReducer = combineReducers({
   showLoginError,
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   pathBreadcrumb,
   unitCreationState,
   reportCreationState,
+  genericErrorState,
   router
 })
 
