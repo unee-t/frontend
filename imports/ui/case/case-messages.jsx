@@ -14,17 +14,18 @@ import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
-
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
 import colors from '../../mui-theme/colors'
+import { Link } from 'react-router-dom'
 import {
   subheaderStyle,
   infoIconStyle,
   attachmentButtonStyle,
   retryButtonStyle,
   replayIconColor,
-  sendIconStyle
+  sendIconStyle,
+  addPersonCaseMsg
 } from './case.mui-styles'
 
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
@@ -124,14 +125,21 @@ class CaseMessages extends Component {
       )
     }
     return [
-      (<Subheader style={subheaderStyle} className='flex' key='0'>
-        <div className='flex-3 tc f6'>Case #{id}</div>
-        <div className='flex-3 tc br b--gray-93 f6'>Priority: {priority}</div>
+      (<Subheader style={subheaderStyle} className='flex bg-white' key='0'>
         <div className='flex-4 flex items-center justify-center'>
           <FlatButton onClick={this.props.onMoreInfo} fullWidth>
             <div className='flex items-center justify-center tc bondi-blue f6'>
-              <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More info
+              <FontIcon className='material-icons' style={infoIconStyle}>info</FontIcon>More Information
             </div>
+          </FlatButton>
+        </div>
+        <div className='flex-4 flex items-center justify-center br b--gray-93'>
+          <FlatButton fullWidth>
+            <Link to={`/case/${id}/details/invite`} className='link'>
+              <div className='flex items-center justify-center tc bondi-blue f6'>
+                <FontIcon className='material-icons' style={addPersonCaseMsg}>person_add</FontIcon> Invite User
+              </div>
+            </Link>
           </FlatButton>
         </div>
       </Subheader>)
@@ -274,6 +282,7 @@ class CaseMessages extends Component {
             <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
           </label>
         </IconButton>
+        <inviteUserIcon />
         <div className='flex-grow relative'>
           <input type='text' placeholder='Type your response' ref='messageInput'
             onChange={this.handleMessageInput.bind(this)} value={message}
