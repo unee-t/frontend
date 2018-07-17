@@ -14,9 +14,6 @@
   --success-green: #99cc33
 }
 
-.remove-underline {
-  text-decoration: none;
-}
 /* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;

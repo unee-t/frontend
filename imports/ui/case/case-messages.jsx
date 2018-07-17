@@ -25,7 +25,7 @@ import {
   retryButtonStyle,
   replayIconColor,
   sendIconStyle,
-  addPersonIconStyle
+  addPersonCaseMsg
 } from './case.mui-styles'
 
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
@@ -135,9 +135,9 @@ class CaseMessages extends Component {
         </div>
         <div className='flex-4 flex items-center justify-center br b--gray-93'>
           <FlatButton fullWidth>
-            <Link to={`/case/${id}/details/invite`} className='remove-underline'>
+            <Link to={`/case/${id}/details/invite`} className='link'>
               <div className='flex items-center justify-center tc bondi-blue f6'>
-                <FontIcon className='material-icons' style={addPersonIconStyle}>person_add</FontIcon> Invite User
+                <FontIcon className='material-icons' style={addPersonCaseMsg}>person_add</FontIcon> Invite User
               </div>
             </Link>
           </FlatButton>
