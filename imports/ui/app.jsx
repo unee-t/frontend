@@ -19,8 +19,10 @@ import NotificationSettings from './notification-settings/notification-settings'
 import Unit from './unit/unit'
 // import ReportWizard from './report-wizard/report-wizard'
 import SideMenu from './side-menu/side-menu'
+import ErrorDialog from './dialogs/error-dialog'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
+import { genericErrorCleared } from './general-actions'
 
 class App extends Component {
   componentWillMount () {
@@ -28,7 +30,8 @@ class App extends Component {
   }
 
   render () {
-    const { userLoggedIn } = this.props
+    const { userLoggedIn, errors, dispatch } = this.props
+    const firstError = errors.length ? errors[0] : ''
     return (
       <div className='roboto'>
         {userLoggedIn ? (
@@ -46,6 +49,11 @@ class App extends Component {
               <Redirect to='/case' />
             </Switch>
             <SideMenu />
+            <ErrorDialog
+              show={!!firstError}
+              text={firstError}
+              onDismissed={() => dispatch(genericErrorCleared(0))}
+            />
           </div>
         ) : (
           <div>
@@ -66,12 +74,13 @@ class App extends Component {
 }
 
 App.propTypes = {
-  userLoggedIn: PropTypes.bool
+  userLoggedIn: PropTypes.bool,
+  errors: PropTypes.array.isRequired
 }
 
 // export default App
 export default withRouter(connect(
-  () => ({}) // map redux state to props
+  ({ genericErrorState }) => ({errors: genericErrorState}) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
   userLoggedIn: !!Meteor.userId()
 }), App)))

@@ -21,6 +21,7 @@ if (Meteor.isClient) {
     it('should call comments.insert on the server', (done) => {
       const input = new ReduxInput()
       const output = createComment(input)
+      Meteor.call.yields()
 
       Meteor.userId.returns(99)
 

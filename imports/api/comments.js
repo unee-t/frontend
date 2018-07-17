@@ -5,7 +5,7 @@ import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 
-const collectionName = 'comments'
+export const collectionName = 'comments'
 
 // Exported for testing purposes
 export const factoryOptions = {
@@ -16,15 +16,21 @@ export const factoryOptions = {
 }
 
 export let publicationObj // Exported for testing purposes
+let FailedComments
 if (Meteor.isServer) {
   const associationFactory = makeAssociationFactory(collectionName)
   publicationObj = publicationFactory(factoryOptions)
-  Meteor.publish('caseComments', associationFactory(publicationObj.publishById({
-    uriTemplate: caseId => `/rest/bug/${caseId}/comment`,
-    addedMatcherFactory: caseId => comment => comment.bug_id.toString() === caseId.toString()
-  }),
-  withUsers(commentItem => [commentItem.creator])
-  ))
+  Meteor.publish(
+    'caseComments',
+    associationFactory(
+      publicationObj.publishById({
+        uriTemplate: caseId => `/rest/bug/${caseId}/comment`,
+        addedMatcherFactory: caseId => comment => comment.bug_id.toString() === caseId.toString()
+      }),
+      withUsers(commentItem => [commentItem.creator])
+    )
+  )
+  FailedComments = new Mongo.Collection('failedComments')
 }
 
 Meteor.methods({
@@ -39,15 +45,17 @@ Meteor.methods({
 
     const { callAPI } = bugzillaApi
     const currUser = Meteor.users.findOne({_id: Meteor.userId()})
-
+    const mockCommentObject = {
+      creator: currUser.bugzillaCreds.login,
+      creation_time: (new Date()).toISOString(),
+      bug_id: caseId,
+      text
+    }
     if (Meteor.isClient) {
       // Simulating the comment creation on the client
       Comments.insert({
         id: Math.round(Math.random() * Number.MAX_VALUE),
-        creator: currUser.emails[0].address,
-        text,
-        creation_time: (new Date()).toISOString(),
-        bug_id: caseId
+        ...mockCommentObject
       })
     } else {
       const payload = {
@@ -55,24 +63,33 @@ Meteor.methods({
         api_key: currUser.bugzillaCreds.apiKey
       }
 
+      console.log(`${currUser.bugzillaCreds.login} is commenting "${text}" on case ${caseId}`)
+
       try {
         // Creating the comment
         const createData = callAPI('post', `/rest/bug/${caseId}/comment`, payload, false, true)
         const { apiKey } = currUser.bugzillaCreds
-        console.log('createData.data', createData.data)
 
         // Fetching the full comment object by the returned id from the creation operation
         const commentData = callAPI(
           'get', `/rest/bug/comment/${createData.data.id}`, {api_key: apiKey}, false, true
         )
-        console.log('commentData.data', commentData.data)
 
         // Digging the new comment object out of the response
         const newComment = commentData.data.comments[createData.data.id.toString()]
         publicationObj.handleAdded(newComment)
       } catch (e) {
-        console.error(e)
-        throw new Meteor.Error('API error')
+        console.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.insert`,
+          args: [text, caseId],
+          error: e.response.data
+        })
+        FailedComments.insert({
+          error: e,
+          ...mockCommentObject
+        })
+        throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
     }
   }
