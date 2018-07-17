@@ -38,7 +38,6 @@ export const addPersonIconStyle = {
   marginRight: '0.25rem'
 }
 
-
 export const addPersonCaseMsg = {
   color: 'var(--bondi-blue)',
   fontSize: 16,
