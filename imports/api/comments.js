@@ -46,7 +46,7 @@ Meteor.methods({
     const { callAPI } = bugzillaApi
     const currUser = Meteor.users.findOne({_id: Meteor.userId()})
     const mockCommentObject = {
-      creator: currUser.emails[0].address,
+      creator: currUser.bugzillaCreds.login,
       creation_time: (new Date()).toISOString(),
       bug_id: caseId,
       text

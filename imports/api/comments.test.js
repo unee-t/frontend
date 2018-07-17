@@ -73,9 +73,9 @@ describe('Comments collection', () => {
           const caseId = 123
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {apiKey}
+            bugzillaCreds: {apiKey, login: 'a@example.com'}
           })
-          callAPIStub.throws()
+          callAPIStub.throws({response: {data: {}}})
 
           const bound = commentsInsert.bind(null, comment, caseId)
 
@@ -90,12 +90,12 @@ describe('Comments collection', () => {
           const apiKey = 'asdkjajsej12@QasdAj2kad'
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {apiKey}
+            bugzillaCreds: {apiKey, login: 'a@example.com'}
           })
           callAPIStub.onFirstCall().returns({
             data: {id: newCommentId}
           })
-          callAPIStub.onSecondCall().throws()
+          callAPIStub.onSecondCall().throws({response: {data: {}}})
 
           const bound = commentsInsert.bind(null, 'bla bla bla', 123)
 
@@ -117,7 +117,7 @@ describe('Comments collection', () => {
           }
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {apiKey: 'sdfS5aDra923sAS'}
+            bugzillaCreds: {apiKey: 'sdfS5aDra923sAS', login: 'a@example.com'}
           })
           callAPIStub.onFirstCall().returns({
             data: {id: newCommentObj.id}
@@ -144,7 +144,7 @@ describe('Comments collection', () => {
           const caseId = 555
           Meteor.userId.returns(5)
           Meteor.users.findOne.returns({
-            emails: [{ address: emailAddr }]
+            bugzillaCreds: {login: emailAddr}
           })
 
           Meteor.call('comments.insert', msgContent, caseId, () => {}) // Empty cb fn used to silence the server error
