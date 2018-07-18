@@ -57,10 +57,10 @@ export function addRoleUsers (userLogins, caseId) {
   }
 }
 
-export function removeRoleUser (userEmail, caseId) {
+export function removeRoleUser (userBzLogin, caseId) {
   return {
     type: REMOVE_ROLE_USER,
-    userEmail,
+    userBzLogin,
     caseId
   }
 }

@@ -108,7 +108,8 @@ class CaseWizard extends Component {
 
   render () {
     const {
-      loadingUnitInfo, loadingUserEmail, loadingFieldValues, fieldValues, unitItem, userEmail, dispatch, error, inProgress
+      loadingUnitInfo, loadingUserEmail, loadingFieldValues, fieldValues,
+      unitItem, userBzLogin, dispatch, error, inProgress
     } = this.props
     if (loadingUnitInfo || loadingUserEmail || loadingFieldValues) {
       return <Preloader />
@@ -273,7 +274,7 @@ class CaseWizard extends Component {
                 unitItem.components
                   .map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
                     <RadioButton
-                      key={id} value={name} label={name + (assignedTo === userEmail ? ' (you)' : '')} disabled={inProgress}
+                      key={id} value={name} label={name + (assignedTo === userBzLogin ? ' (you)' : '')} disabled={inProgress}
                     />
                   ))
               }
@@ -333,7 +334,7 @@ CaseWizard.propTypes = {
   inProgress: PropTypes.bool.isRequired,
   error: PropTypes.string,
   unitItem: PropTypes.object,
-  userEmail: PropTypes.string,
+  userBzLogin: PropTypes.string,
   fieldValues: PropTypes.object,
   preferredUnitId: PropTypes.string
 }
@@ -353,16 +354,17 @@ export default withRouter(connect(
     const { unit } = parseQueryString(props.location.search)
     const loadingUnitInfo = !Meteor.subscribe(`${unitsCollName}.byId`, unit).ready()
     const unitIdInt = parseInt(unit)
+    const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
     return ({
       loadingUnitInfo,
-      loadingUserEmail: !Meteor.subscribe('users.myBzLogin').ready(),
+      loadingUserEmail: !bzLoginHandle.ready(),
       loadingFieldValues: enumFields
         .map(name => Meteor.subscribe(`${fieldValsCollName}.fetchByName`, name))
         .filter(handle => !handle.ready()).length > 0,
       unitItem: !loadingUnitInfo
         ? Object.assign(Units.findOne({id: unitIdInt}), UnitMetaData.findOne({bzId: unitIdInt}))
         : null,
-      userEmail: Meteor.user() && Meteor.user().bugzillaCreds && Meteor.user().bugzillaCreds.login,
+      userBzLogin: bzLoginHandle.ready() ? Meteor.user().bugzillaCreds.login : null,
       fieldValues: enumFields.reduce((all, name) => {
         all[name] = CaseFieldValues.findOne({name})
         return all

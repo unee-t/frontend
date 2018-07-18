@@ -15,7 +15,7 @@ if (Meteor.isClient) {
       product: 'The name of the unit'
     }
     const emptyParams = {
-      userEmail: '',
+      userBzLogin: '',
       attachmentUploads: [],
       onCreateComment: () => {},
       onCreateAttachment: () => {},
@@ -108,7 +108,7 @@ if (Meteor.isClient) {
       const meEmail = 'bla123@example.com'
       const comment = generateComment(Date.now(), 'bla bla', meEmail)
 
-      const comp = shallow(<CaseMessages {...emptyParams} caseItem={caseItem} comments={[comment]} userEmail={meEmail} />)
+      const comp = shallow(<CaseMessages {...emptyParams} caseItem={caseItem} comments={[comment]} userBzLogin={meEmail} />)
 
       expect(findLabel(comp, comment.creator)).to.have.lengthOf(0) // No label
       expect(comp.find(`.${styles.messagesContainer}`).childAt(1).is('.tr')).to.be.true()

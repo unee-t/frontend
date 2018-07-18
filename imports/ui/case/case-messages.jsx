@@ -149,7 +149,7 @@ class CaseMessages extends Component {
   renderMessages (comments, uploads) {
     const messageList = comments.concat(uploads.map(process => ({
       'creation_time': (new Date()).toISOString(),
-      creator: this.props.userEmail,
+      creator: this.props.userBzLogin,
       text: '[!attachment]\n' + process.preview,
       process
     })))
@@ -187,7 +187,7 @@ class CaseMessages extends Component {
   }
 
   renderSingleMessage ({creator, creatorUser, text, creation_time: creationTime, process, id}, key) {
-    const isSelf = this.props.userEmail === creator
+    const isSelf = this.props.userBzLogin === creator
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
       : this.renderMessageTextContent.bind(this)
@@ -305,7 +305,7 @@ CaseMessages.propTypes = {
   caseItem: PropTypes.object.isRequired,
   comments: PropTypes.array.isRequired,
   attachmentUploads: PropTypes.array.isRequired,
-  userEmail: PropTypes.string.isRequired,
+  userBzLogin: PropTypes.string.isRequired,
   onCreateComment: PropTypes.func.isRequired,
   onCreateAttachment: PropTypes.func.isRequired,
   onRetryAttachment: PropTypes.func.isRequired,
