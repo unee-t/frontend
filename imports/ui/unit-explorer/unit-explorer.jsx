@@ -16,10 +16,10 @@ import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 
 function ActiveDisabledFilteredUnits (props) {
-  const { filteredUnits, active, dispatch } = props
+  const { filteredUnits, dispatch } = props
   return (
     <div className='ph2 flex flex-column'>
-      {filteredUnits.length === 0 && active ? (
+      {filteredUnits.length === 0 ? (
         <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
           You have no units managed with Unee-T yet
         </div>
@@ -52,23 +52,21 @@ class UnitExplorer extends Component {
     super(props)
     this.state = {
       slideIndex: 0,
-      activeCaseCreation: true
+      activeStatus: true
     }
   }
 
   handleChange = (value) => {
     this.setState({
       slideIndex: value,
-      activeCaseCreation: !this.state.activeCaseCreation
+      activeStatus: !this.state.activeStatus
     })
   };
 
   render () {
     const { isLoading, unitList, dispatch } = this.props
-    console.log(unitList)
-    const { activeCaseCreation } = this.state
-    const activeFilter = unitItem => unitItem.is_active === activeCaseCreation
-    const filteredUnits = unitList.filter(unitItem => activeFilter(unitItem))
+    const activeDisabledFilter = this.state.activeStatus ? unitItem => unitItem.is_active : unitItem => unitItem.metaData.disabled
+    const filteredUnits = unitList.filter(unitItem => activeDisabledFilter(unitItem))
 
     if (isLoading) return <Preloader />
 
@@ -93,11 +91,11 @@ class UnitExplorer extends Component {
             >
               {/* tab 1 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <ActiveDisabledFilteredUnits filteredUnits={filteredUnits} dispatch={dispatch} active={activeCaseCreation} />
+                <ActiveDisabledFilteredUnits filteredUnits={filteredUnits} dispatch={dispatch} />
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <ActiveDisabledFilteredUnits filteredUnits={filteredUnits} dispatch={dispatch} active={activeCaseCreation} />
+                <ActiveDisabledFilteredUnits filteredUnits={filteredUnits} dispatch={dispatch} />
               </div>
             </SwipeableViews>
           </div>
@@ -109,49 +107,6 @@ class UnitExplorer extends Component {
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
         </div>
-
-        {/* <div className='flex flex-column flex-grow pa3 bg-very-light-gray'>
-          <div className='br2 bg-white card-shadow-1 w-100 pt2 flex flex-column'>
-            <div className='ph2 flex flex-column'>
-              <h4 className='semi-dark-gray ma0 ml1 fw5 lh-title no-shrink'>ALL UNITS</h4>
-              <div className='overflow-auto pb2'>
-                {unitList.length === 0 ? (
-                  <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
-                    You have no units managed with Unee-T yet
-                  </div>
-                ) : unitList.map(({ id, name, description, metaData }) => (
-                  <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
-                    <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
-                      <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                      <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                        <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                        <div className='flex'>
-                          <div className='ti1 ellipsis flex-grow'>{metaData.moreInfo || description}&nbsp;</div>
-                          <div
-                            onClick={evt => {
-                              evt.stopPropagation()
-                              dispatch(push(`/case/new?unit=${id}`))
-                            }}
-                            className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                          >
-                            Add case
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </MenuItem>
-                ))}
-              </div>
-            </div>
-            <div className='absolute bottom-2 right-2'>
-              <FloatingActionButton
-                onClick={() => dispatch(push(`/unit/new`))}
-              >
-                <FontIcon className='material-icons'>add</FontIcon>
-              </FloatingActionButton>
-            </div>
-          </div>
-        </div> */}
       </div>
     )
   }
