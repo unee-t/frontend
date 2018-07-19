@@ -101,7 +101,11 @@ if (Meteor.isServer) {
             bzId: 1,
             displayName: 1,
             moreInfo: 1,
-            ownerIds: 1,
+            ownerIds: {
+              $elemMatch: {
+                $in: [this.userId]
+              }
+            },
             disabled: true
           })
         ).call(this, ids || [])
@@ -196,7 +200,6 @@ Meteor.methods({
       const unitMongoId = randToken.generate(17)
       const owner = Meteor.users.findOne(Meteor.userId())
       let unitBzId, unitBzName
-      console.log('heello word unit server')
 
       try {
         const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
@@ -214,7 +217,6 @@ Meteor.methods({
         })
         unitBzId = apiResult.data[0].id
         unitBzName = apiResult.data[0].name
-        console.log('what info?', apiResult.data[0])
         console.log(`BZ Unit ${name} was created successfully`)
       } catch (e) {
         console.error({

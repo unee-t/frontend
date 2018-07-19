@@ -13,7 +13,7 @@ import {
 } from '../components/app-bar.mui-styles'
 
 const RootAppBar = ({ title, onIconClick }) => (
-  <AppBar title={title} titleStyle={titleStyle}
+  <AppBar title={title} titleStyle={titleStyle} style={{boxShadow: 'none'}}
     iconElementLeft={
       <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} onClick={onIconClick}>
         <UneeTIcon />

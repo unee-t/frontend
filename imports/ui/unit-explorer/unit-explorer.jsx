@@ -17,32 +17,72 @@ import SwipeableViews from 'react-swipeable-views'
 
 function ActiveDisabledFilteredUnits (props) {
   const { filteredUnits, dispatch } = props
+  const unitsWithOwnerIds = filteredUnits.filter(element => element.metaData.ownerIds)
+  const currentUser = Meteor.userId()
+  const unitsICreated = unitsWithOwnerIds.filter(element => element.metaData.ownerIds.includes(currentUser))
+  const unitsInvolvedIn = unitsWithOwnerIds.filter(element => !element.metaData.ownerIds.includes(currentUser))
+
   return (
-    <div className='ph2 flex flex-column'>
+    <div className='flex flex-column'>
       {filteredUnits.length === 0 ? (
         <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
           You have no units managed with Unee-T yet
         </div>
-      ) : filteredUnits.map(({ id, name, description, metaData }) => (
-        <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
-          <div className='mt2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-            <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-            <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-              <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-              <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
-            </div>
-            <div
-              onClick={evt => {
-                evt.stopPropagation()
-                dispatch(push(`/case/new?unit=${id}`))
-              }}
-              className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-            >
-              Add case
-            </div>
+      ) : <div>
+        <div>
+          <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+            Units I Administrate
           </div>
-        </MenuItem>
-      ))}
+          {
+            unitsICreated.map(({ id, name, description, metaData }) => (
+              <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
+                <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                  <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                    <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                    <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
+                  </div>
+                  <div
+                    onClick={evt => {
+                      evt.stopPropagation()
+                      dispatch(push(`/case/new?unit=${id}`))
+                    }}
+                    className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                  >
+                    Add case
+                  </div>
+                </div>
+              </MenuItem>
+            ))}
+        </div>
+        <div>
+          <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+             Units Involved In
+          </div>
+          {
+            unitsInvolvedIn.map(({ id, name, description, metaData }) => (
+              <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
+                <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                  <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                    <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                    <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
+                  </div>
+                  <div
+                    onClick={evt => {
+                      evt.stopPropagation()
+                      dispatch(push(`/case/new?unit=${id}`))
+                    }}
+                    className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                  >
+                  Add case
+                  </div>
+                </div>
+              </MenuItem>
+            ))}
+        </div>
+      </div>
+      }
     </div>
   )
 }
