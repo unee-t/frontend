@@ -33,7 +33,7 @@ export class Case extends Component {
   }
   componentWillReceiveProps ({
     caseItem, comments, loadingCase, loadingComments, loadingUnit, loadingPendingInvitations, caseError, dispatch,
-    userEmail, ancestorPath
+    userBzLogin, ancestorPath
   }) {
     if (!loadingCase && !loadingComments && !loadingUnit && !loadingPendingInvitations && !caseError &&
       (
@@ -43,7 +43,7 @@ export class Case extends Component {
         loadingPendingInvitations !== this.props.loadingPendingInvitations
       )
     ) {
-      this.props.dispatchLoadingResult({caseItem, comments, dispatch, userEmail, ancestorPath})
+      this.props.dispatchLoadingResult({caseItem, comments, dispatch, userBzLogin, ancestorPath})
     }
   }
   navigateToAttachment (id) {
@@ -54,7 +54,7 @@ export class Case extends Component {
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
-      attachmentUploads, match, userEmail, dispatch, unitUsers, invitationState, caseUserTypes,
+      attachmentUploads, match, userBzLogin, dispatch, unitUsers, invitationState, caseUserTypes,
       loadingPendingInvitations, pendingInvitations, showWelcomeDialog, invitedByDetails,
       cfvDictionary, loadingCfv, cfvError, caseUsersState
     } = this.props
@@ -103,7 +103,7 @@ export class Case extends Component {
             <Switch>
               <Route exact path={match.url} render={() => (
                 <CaseMessages
-                  {...{caseItem, comments, attachmentUploads, userEmail}}
+                  {...{caseItem, comments, attachmentUploads, userBzLogin}}
                   onCreateComment={text => dispatch(createComment(text, caseId))}
                   onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
                   onRetryAttachment={process => dispatch(retryAttachment(process))}
@@ -161,7 +161,7 @@ Case.propTypes = {
   loadingComments: PropTypes.bool,
   commentsError: PropTypes.object,
   comments: PropTypes.array,
-  userEmail: PropTypes.string,
+  userBzLogin: PropTypes.string,
   dispatchLoadingResult: PropTypes.func.isRequired,
   attachmentUploads: PropTypes.array,
   loadingUnit: PropTypes.bool,
@@ -211,6 +211,8 @@ const CaseContainer = createContainer(props => {
     }
   })
 
+  const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
+
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
   const unitRoles = currUnit && getUnitRoles(currUnit)
   return {
@@ -223,7 +225,7 @@ const CaseContainer = createContainer(props => {
       const creatorUser = Meteor.users.findOne({ 'bugzillaCreds.login': comment.creator })
       return { ...comment, creatorUser }
     }),
-    userEmail: Meteor.user() ? Meteor.user().emails[0].address : null,
+    userBzLogin: bzLoginHandle.ready() ? Meteor.user().bugzillaCreds.login : null,
     loadingUnit: !unitHandle || !unitHandle.ready(),
     unitError,
     unitItem: currUnit,
@@ -268,7 +270,7 @@ const connectedWrapper = withRouter(connect(
 )(CaseContainer))
 
 const MobileHeader = props => {
-  const { caseItem, comments, dispatch, userEmail, ancestorPath } = props.contentProps
+  const { caseItem, comments, dispatch, userBzLogin, ancestorPath } = props.contentProps
   const { match } = props
   const handleBack = () => {
     const { push } = routerRedux
@@ -285,7 +287,7 @@ const MobileHeader = props => {
         const selectedComment = _.find(comments, {id: parseInt(attachId)})
         const { creationTime, creator } = selectedComment
         const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
-        const creatorText = userEmail === creator ? 'You' : creator
+        const creatorText = userBzLogin === creator ? 'You' : creator
         return (
           <div className='fixed top-0 w-100 bg-black-20 flex items-center'>
             <IconButton onClick={() => handleBack(match.url)}>

@@ -40,7 +40,7 @@ if (Meteor.isClient) {
 
     it('should render the main sub-route after all data has been loaded', () => {
       const comp = shallow(
-        <Case userEmail='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
+        <Case userBzLogin='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
           match={{url: '/bla', params: {caseId: 41}}} />
       )
 
@@ -58,7 +58,7 @@ if (Meteor.isClient) {
 
     it('should redirect to the main sub-route if no match is found after all data has been loaded', () => {
       const comp = shallow(
-        <Case userEmail='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
+        <Case userBzLogin='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
           match={{url: '/bla/32', params: {caseId: 41}}} />
       )
 

@@ -8,9 +8,9 @@ import 'rxjs/add/operator/ignoreElements'
 export const removeRoleUser = action$ =>
   action$.ofType(REMOVE_ROLE_USER)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({userEmail, caseId}) => {
+    .mergeMap(({userBzLogin, caseId}) => {
       const meteorResult$ = new Subject()
-      const userLogins = [userEmail]
+      const userLogins = [userBzLogin]
       Meteor.call('cases.toggleParticipants', userLogins, parseInt(caseId), false, err => {
         if (err) {
           meteorResult$.next({
