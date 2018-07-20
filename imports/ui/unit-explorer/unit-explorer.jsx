@@ -105,7 +105,7 @@ class UnitExplorer extends Component {
 
   render () {
     const { isLoading, unitList, dispatch } = this.props
-    const activeDisabledFilter = this.state.activeStatus ? unitItem => unitItem.is_active : unitItem => unitItem.metaData.disabled
+    const activeDisabledFilter = this.state.activeStatus ? unitItem => !unitItem.metaData.disabled : unitItem => unitItem.metaData.disabled
     const filteredUnits = unitList.filter(unitItem => activeDisabledFilter(unitItem))
 
     if (isLoading) return <Preloader />
