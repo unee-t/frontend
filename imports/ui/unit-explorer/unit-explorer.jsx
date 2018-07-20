@@ -17,10 +17,12 @@ import SwipeableViews from 'react-swipeable-views'
 
 function ActiveDisabledFilteredUnits (props) {
   const { filteredUnits, dispatch } = props
-  const unitsWithOwnerIds = filteredUnits.filter(element => element.metaData.ownerIds)
   const currentUser = Meteor.userId()
-  const unitsICreated = unitsWithOwnerIds.filter(element => element.metaData.ownerIds.includes(currentUser))
-  const unitsInvolvedIn = unitsWithOwnerIds.filter(element => !element.metaData.ownerIds.includes(currentUser))
+  const unitsByRoles = filteredUnits.filter(x => x.metaData.ownerIds)
+  const administratorUnits = unitsByRoles.filter(x => x.metaData.ownerIds.includes(currentUser))
+  const participantUnits = unitsByRoles.filter(x => !x.metaData.ownerIds.includes(currentUser))
+  const unassignedUnits = filteredUnits.filter(a => administratorUnits.filter(b => a.id === b.id).length === 0)
+  const unitsInvolvedIn = unassignedUnits.concat(participantUnits)
 
   return (
     <div className='flex flex-column'>
@@ -34,7 +36,7 @@ function ActiveDisabledFilteredUnits (props) {
             Units I Administrate
           </div>
           {
-            unitsICreated.map(({ id, name, description, metaData }) => (
+            administratorUnits.map(({ id, name, description, metaData }) => (
               <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
                 <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
                   <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
