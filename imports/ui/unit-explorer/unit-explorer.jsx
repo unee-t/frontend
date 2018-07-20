@@ -114,7 +114,7 @@ class UnitExplorer extends Component {
 
     return (
       <div className='flex flex-column flex-grow full-height'>
-        <RootAppBar title='My Units' onIconClick={() => dispatch(setDrawerState(true))} />
+        <RootAppBar title='My Units' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
         <div className='flex-grow flex flex-column overflow-hidden'>
           <Tabs
             className='no-shrink'
