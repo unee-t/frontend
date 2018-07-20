@@ -235,7 +235,6 @@ Meteor.methods({
         bzName: unitBzName,
         displayName: name,
         unitType: type,
-        disabled: true,
         ownerIds: [owner._id],
         createdAt: new Date(),
         streetAddress,
