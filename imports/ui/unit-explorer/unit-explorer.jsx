@@ -30,11 +30,8 @@ class FilteredUnitsList extends Component {
 
   render () {
     const { filteredUnits, value, currentUser } = this.props
-    const unitswithMetaData = filteredUnits.filter(x => x.metaData.ownerIds)
-    const unitsIAdministrate = unitswithMetaData.filter(x => x.metaData.ownerIds.includes(currentUser))
-    const participantUnits = unitswithMetaData.filter(x => !x.metaData.ownerIds.includes(currentUser))
-    const unitswithoutMetaData = filteredUnits.filter(a => unitsIAdministrate.filter(b => a.id === b.id).length === 0)
-    const unitsInvolvedIn = unitswithoutMetaData.concat(participantUnits)
+    const administratedUnits = filteredUnits.filter(unit => unit.metaData.ownerIds && unit.metaData.ownerIds.includes(currentUser))
+    const unitsInvolvedIn = filteredUnits.filter(unit => !unit.metaData.ownerIds || !unit.metaData.ownerIds.includes(currentUser))
 
     return (
       <div className='flex flex-column'>
@@ -44,14 +41,14 @@ class FilteredUnitsList extends Component {
           </div>
         ) : <div>
           <div>
-            {unitsIAdministrate.length === 0 ? (undefined) : (
+            {administratedUnits.length === 0 ? (undefined) : (
               <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
                 Units I Administrate
               </div>
             )
             }
             {
-              unitsIAdministrate.map(({ id, name, description, metaData }) => (
+              administratedUnits.map(({ id, name, description, metaData }) => (
                 <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => this.handleUnitClicked(id)} >
                   <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
                     <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
