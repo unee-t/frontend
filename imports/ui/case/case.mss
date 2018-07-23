@@ -21,5 +21,4 @@
 
 .inputRow {
   background-color: #ddd;
-  height: 3rem;
 }

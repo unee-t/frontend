@@ -14,6 +14,7 @@ import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
+import TextField from 'material-ui/TextField'
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
 import colors from '../../mui-theme/colors'
@@ -28,6 +29,9 @@ import {
   addPersonCaseMsg
 } from './case.mui-styles'
 
+import {
+  whiteTextInputStyle
+} from '../components/form-controls.mui-styles'
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
 const additionalSubHeader = (label, info, onClick, lastIndex, colorName) => (
@@ -274,8 +278,9 @@ class CaseMessages extends Component {
 
   renderInputControls () {
     const { message } = this.state
+
     return (
-      <div className={[styles.inputRow, 'flex items-center overflow-visible'].join(' ')}>
+      <div className={[styles.inputRow, 'flex items-end overflow-visible'].join(' ')}>
         <IconButton style={attachmentButtonStyle}>
           <label>
             <ContentAdd color={colors.main} />
@@ -284,12 +289,20 @@ class CaseMessages extends Component {
         </IconButton>
         <inviteUserIcon />
         <div className='flex-grow relative'>
-          <input type='text' placeholder='Type your response' ref='messageInput'
-            onChange={this.handleMessageInput.bind(this)} value={message}
-            onKeyPress={event => { if (event.key === 'Enter' && message.replace(/\s/g, '').length > 0) { this.handleCreateMessage(event) } }}
-            className='input-reset bg-white br-pill ba b--moon-gray lh-input h2 ph3 dib outline-0 w-100' />
+          <TextField
+            id='chatbox'
+            hintText='Type your response'
+            underlineShow={false}
+            textareaStyle={whiteTextInputStyle}
+            multiLine
+            rowsMax={4}
+            fullWidth
+            value={message}
+            onChange={this.handleMessageInput.bind(this)}
+            ref='messageInput'
+          />
         </div>
-        <div className='mh2'>
+        <div className='mb2 pb1 mr2 ml1'>
           <FloatingActionButton mini zDepth={0} iconStyle={sendIconStyle}
             onClick={this.handleCreateMessage.bind(this)}
             disabled={message === ''}>

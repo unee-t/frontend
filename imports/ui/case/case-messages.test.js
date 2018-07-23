@@ -122,7 +122,7 @@ if (Meteor.isClient) {
           <CaseMessages {...emptyParams}
             caseItem={caseItem} comments={[]} userEmail='mail@example.com' onCreateComment={onCreateComment} />
         )
-        comp.find(`.${styles.inputRow} input[type="text"]`)
+        comp.find('#chatbox')
           .simulate('change', {target: {value}}) // Triggering the change
         comp.find('FloatingActionButton').simulate('click', {preventDefault: () => {}})
 
