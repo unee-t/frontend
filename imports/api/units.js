@@ -106,7 +106,7 @@ if (Meteor.isServer) {
                 $in: [this.userId]
               }
             },
-            disabled: true
+            disabled: 1
           })
         ).call(this, ids || [])
       }

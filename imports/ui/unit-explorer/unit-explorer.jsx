@@ -15,18 +15,18 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 
-function ActiveDisabledFilteredUnits (props) {
-  const { filteredUnits, dispatch } = props
+function FilteredUnitsList (props) {
+  const { filteredUnits, dispatch, value } = props
   const currentUser = Meteor.userId()
-  const unitsByRoles = filteredUnits.filter(x => x.metaData.ownerIds)
-  const administratorUnits = unitsByRoles.filter(x => x.metaData.ownerIds.includes(currentUser))
-  const participantUnits = unitsByRoles.filter(x => !x.metaData.ownerIds.includes(currentUser))
-  const unassignedUnits = filteredUnits.filter(a => administratorUnits.filter(b => a.id === b.id).length === 0)
-  const unitsInvolvedIn = unassignedUnits.concat(participantUnits)
+  const unitswithMetaData = filteredUnits.filter(x => x.metaData.ownerIds)
+  const unitsIAdministrate = unitswithMetaData.filter(x => x.metaData.ownerIds.includes(currentUser))
+  const participantUnits = unitswithMetaData.filter(x => !x.metaData.ownerIds.includes(currentUser))
+  const unitswithoutMetaData = filteredUnits.filter(a => unitsIAdministrate.filter(b => a.id === b.id).length === 0) //removes administrator units from units without metadata
+  const unitsInvolvedIn = unitswithoutMetaData.concat(participantUnits)
 
   return (
     <div className='flex flex-column'>
-      {filteredUnits.length === 0 ? (
+      {unitsIAdministrate.length === 0 ? (
         <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
           You have no units managed with Unee-T yet
         </div>
@@ -36,7 +36,7 @@ function ActiveDisabledFilteredUnits (props) {
             Units I Administrate
           </div>
           {
-            administratorUnits.map(({ id, name, description, metaData }) => (
+            unitsIAdministrate.map(({ id, name, description, metaData }) => (
               <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
                 <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
                   <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
@@ -44,15 +44,18 @@ function ActiveDisabledFilteredUnits (props) {
                     <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                     <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                   </div>
-                  <div
-                    onClick={evt => {
-                      evt.stopPropagation()
-                      dispatch(push(`/case/new?unit=${id}`))
-                    }}
-                    className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                  >
-                    Add case
-                  </div>
+                  { !value ? (
+                    <div
+                      onClick={evt => {
+                        evt.stopPropagation()
+                        dispatch(push(`/case/new?unit=${id}`))
+                      }}
+                      className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                    >
+                      Add case
+                    </div>
+                  ) : (undefined)
+                  }
                 </div>
               </MenuItem>
             ))}
@@ -70,15 +73,18 @@ function ActiveDisabledFilteredUnits (props) {
                     <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                     <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                   </div>
-                  <div
-                    onClick={evt => {
-                      evt.stopPropagation()
-                      dispatch(push(`/case/new?unit=${id}`))
-                    }}
-                    className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                  >
-                  Add case
-                  </div>
+                  { !value ? (
+                    <div
+                      onClick={evt => {
+                        evt.stopPropagation()
+                        dispatch(push(`/case/new?unit=${id}`))
+                      }}
+                      className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                    >
+                      Add case
+                    </div>
+                  ) : (undefined)
+                  }
                 </div>
               </MenuItem>
             ))}
@@ -93,22 +99,20 @@ class UnitExplorer extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      slideIndex: 0,
-      activeStatus: true
+      slideIndex: 0
     }
   }
 
   handleChange = (value) => {
     this.setState({
-      slideIndex: value,
-      activeStatus: !this.state.activeStatus
+      slideIndex: value
     })
   };
 
   render () {
     const { isLoading, unitList, dispatch } = this.props
-    const activeDisabledFilter = this.state.activeStatus ? unitItem => !unitItem.metaData.disabled : unitItem => unitItem.metaData.disabled
-    const filteredUnits = unitList.filter(unitItem => activeDisabledFilter(unitItem))
+    const activeUnits = unitList.filter(unitItem => !unitItem.metaData.disabled)
+    const disabledUnits = unitList.filter(unitItem => unitItem.metaData.disabled)
 
     if (isLoading) return <Preloader />
 
@@ -133,11 +137,11 @@ class UnitExplorer extends Component {
             >
               {/* tab 1 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <ActiveDisabledFilteredUnits filteredUnits={filteredUnits} dispatch={dispatch} />
+                <FilteredUnitsList filteredUnits={activeUnits} dispatch={dispatch} />
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <ActiveDisabledFilteredUnits filteredUnits={filteredUnits} dispatch={dispatch} />
+                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} value={this.state.slideIndex} />
               </div>
             </SwipeableViews>
           </div>
@@ -158,6 +162,11 @@ UnitExplorer.propTypes = {
   unitList: PropTypes.array,
   isLoading: PropTypes.bool,
   unitsError: PropTypes.object
+}
+
+
+FilteredUnitsList.propTypes = {
+  filteredUnits: PropTypes.array
 }
 
 let unitsError
