@@ -31,9 +31,12 @@ function UnitListByRoles (props) {
         </div>
       ) : <div>
         <div>
-          <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
-            Units I Administrate
-          </div>
+          {unitsIAdministrate.length === 0 ? (undefined) : (
+            <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+              Units I Administrate
+            </div>
+          )
+          }
           {
             unitsIAdministrate.map(({ id, name, description, metaData }) => (
               <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
@@ -60,9 +63,12 @@ function UnitListByRoles (props) {
             ))}
         </div>
         <div>
-          <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
-             Units Involved In
-          </div>
+          {unitsInvolvedIn.length === 0 ? (undefined) : (
+            <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+              Units Involved In
+            </div>
+          )
+          }
           {
             unitsInvolvedIn.map(({ id, name, description, metaData }) => (
               <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
