@@ -15,20 +15,19 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 
-function FilteredUnitsList (props) {
-  const { filteredUnits, dispatch, value } = props
-  const currentUser = Meteor.userId()
+function UnitListByRoles (props) {
+  const { filteredUnits, dispatch, value, currentUser } = props
   const unitswithMetaData = filteredUnits.filter(x => x.metaData.ownerIds)
   const unitsIAdministrate = unitswithMetaData.filter(x => x.metaData.ownerIds.includes(currentUser))
   const participantUnits = unitswithMetaData.filter(x => !x.metaData.ownerIds.includes(currentUser))
-  const unitswithoutMetaData = filteredUnits.filter(a => unitsIAdministrate.filter(b => a.id === b.id).length === 0) //removes administrator units from units without metadata
+  const unitswithoutMetaData = filteredUnits.filter(a => unitsIAdministrate.filter(b => a.id === b.id).length === 0)
   const unitsInvolvedIn = unitswithoutMetaData.concat(participantUnits)
 
   return (
     <div className='flex flex-column'>
-      {unitsIAdministrate.length === 0 ? (
+      {filteredUnits.length === 0 ? (
         <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
-          You have no units managed with Unee-T yet
+          {!value ? ('You have no units managed with Unee-T yet') : ('you have no disabled units') }
         </div>
       ) : <div>
         <div>
@@ -110,7 +109,7 @@ class UnitExplorer extends Component {
   };
 
   render () {
-    const { isLoading, unitList, dispatch } = this.props
+    const { isLoading, unitList, dispatch, currentUser } = this.props
     const activeUnits = unitList.filter(unitItem => !unitItem.metaData.disabled)
     const disabledUnits = unitList.filter(unitItem => unitItem.metaData.disabled)
 
@@ -137,11 +136,11 @@ class UnitExplorer extends Component {
             >
               {/* tab 1 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={activeUnits} dispatch={dispatch} />
+                <UnitListByRoles filteredUnits={activeUnits} dispatch={dispatch} currentUser={currentUser} />
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} value={this.state.slideIndex} />
+                <UnitListByRoles filteredUnits={disabledUnits} dispatch={dispatch} currentUser={currentUser} value={this.state.slideIndex} />
               </div>
             </SwipeableViews>
           </div>
@@ -165,7 +164,7 @@ UnitExplorer.propTypes = {
 }
 
 
-FilteredUnitsList.propTypes = {
+UnitListByRoles.propTypes = {
   filteredUnits: PropTypes.array
 }
 
@@ -184,6 +183,7 @@ export default connect(
         metaData: UnitMetaData.findOne({bzId: unit.id}) || {}
       })),
       isLoading: !unitsHandle.ready(),
+      currentUser: Meteor.userId(),
       unitsError
     }
   }, // Meteor data to props
