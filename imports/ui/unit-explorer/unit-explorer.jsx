@@ -15,89 +15,97 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 
-function UnitListByRoles (props) {
-  const { filteredUnits, dispatch, value, currentUser } = props
-  const unitswithMetaData = filteredUnits.filter(x => x.metaData.ownerIds)
-  const unitsIAdministrate = unitswithMetaData.filter(x => x.metaData.ownerIds.includes(currentUser))
-  const participantUnits = unitswithMetaData.filter(x => !x.metaData.ownerIds.includes(currentUser))
-  const unitswithoutMetaData = filteredUnits.filter(a => unitsIAdministrate.filter(b => a.id === b.id).length === 0)
-  const unitsInvolvedIn = unitswithoutMetaData.concat(participantUnits)
+class FilteredUnitsList extends Component {
+  handleUnitClicked (id) {
+    console.log('id', id)
+    const { dispatch } = this.props
+    dispatch(push(`/unit/${id}`))
+  }
 
-  return (
-    <div className='flex flex-column'>
-      {filteredUnits.length === 0 ? (
-        <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
-          {!value ? ('You have no units managed with Unee-T yet') : ('you have no disabled units') }
-        </div>
-      ) : <div>
-        <div>
-          {unitsIAdministrate.length === 0 ? (undefined) : (
-            <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
-              Units I Administrate
-            </div>
-          )
-          }
-          {
-            unitsIAdministrate.map(({ id, name, description, metaData }) => (
-              <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
-                <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                  <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                    <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                    <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
-                  </div>
-                  { !value ? (
-                    <div
-                      onClick={evt => {
-                        evt.stopPropagation()
-                        dispatch(push(`/case/new?unit=${id}`))
-                      }}
-                      className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                    >
-                      Add case
+  handleAddCaseClicked (evt, id) {
+    const { dispatch } = this.props
+    evt.stopPropagation()
+    dispatch(push(`/case/new?unit=${id}`))
+  }
+
+  render () {
+    const { filteredUnits, value, currentUser } = this.props
+    const unitswithMetaData = filteredUnits.filter(x => x.metaData.ownerIds)
+    const unitsIAdministrate = unitswithMetaData.filter(x => x.metaData.ownerIds.includes(currentUser))
+    const participantUnits = unitswithMetaData.filter(x => !x.metaData.ownerIds.includes(currentUser))
+    const unitswithoutMetaData = filteredUnits.filter(a => unitsIAdministrate.filter(b => a.id === b.id).length === 0)
+    const unitsInvolvedIn = unitswithoutMetaData.concat(participantUnits)
+
+    return (
+      <div className='flex flex-column'>
+        {filteredUnits.length === 0 ? (
+          <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
+            {!value ? ('You have no units managed with Unee-T yet') : ('you have no disabled units') }
+          </div>
+        ) : <div>
+          <div>
+            {unitsIAdministrate.length === 0 ? (undefined) : (
+              <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+                Units I Administrate
+              </div>
+            )
+            }
+            {
+              unitsIAdministrate.map(({ id, name, description, metaData }) => (
+                <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => this.handleUnitClicked(id)} >
+                  <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                    <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                    <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                      <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                      <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                     </div>
-                  ) : (undefined)
-                  }
-                </div>
-              </MenuItem>
-            ))}
-        </div>
-        <div>
-          {unitsInvolvedIn.length === 0 ? (undefined) : (
-            <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
-              Units Involved In
-            </div>
-          )
-          }
-          {
-            unitsInvolvedIn.map(({ id, name, description, metaData }) => (
-              <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
-                <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                  <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                    <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                    <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
+                    { !value ? (
+                      <div
+                        onClick={evt => this.handleAddCaseClicked(evt, id)}
+                        className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                      >
+                        Add case
+                      </div>
+                    ) : (undefined)
+                    }
                   </div>
-                  { !value ? (
-                    <div
-                      onClick={evt => {
-                        evt.stopPropagation()
-                        dispatch(push(`/case/new?unit=${id}`))
-                      }}
-                      className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                    >
-                      Add case
+                </MenuItem>
+              ))}
+          </div>
+          <div>
+            {unitsInvolvedIn.length === 0 ? (undefined) : (
+              <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+                Units Involved In
+              </div>
+            )
+            }
+            {
+              unitsInvolvedIn.map(({ id, name, description, metaData }) => (
+                <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => this.handleUnitClicked(id)}>
+                  <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                    <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                    <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                      <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                      <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                     </div>
-                  ) : (undefined)
-                  }
-                </div>
-              </MenuItem>
-            ))}
+                    { !value ? (
+                      <div
+                        onClick={evt => this.handleAddCaseClicked(evt, id)}
+                        className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                      >
+                        Add case
+                      </div>
+                    ) : (undefined)
+                    }
+                  </div>
+                </MenuItem>
+              ))}
+          </div>
         </div>
+        }
       </div>
-      }
-    </div>
-  )
+    )
+  }
 }
 
 class UnitExplorer extends Component {
@@ -142,11 +150,11 @@ class UnitExplorer extends Component {
             >
               {/* tab 1 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <UnitListByRoles filteredUnits={activeUnits} dispatch={dispatch} currentUser={currentUser} />
+                <FilteredUnitsList filteredUnits={activeUnits} dispatch={dispatch} currentUser={currentUser} />
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <UnitListByRoles filteredUnits={disabledUnits} dispatch={dispatch} currentUser={currentUser} value={this.state.slideIndex} />
+                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} currentUser={currentUser} value={this.state.slideIndex} />
               </div>
             </SwipeableViews>
           </div>
@@ -163,15 +171,17 @@ class UnitExplorer extends Component {
   }
 }
 
+FilteredUnitsList.propTypes = {
+  filteredUnits: PropTypes.array,
+  currrentUser: PropTypes.string,
+  value: PropTypes.number
+
+}
+
 UnitExplorer.propTypes = {
   unitList: PropTypes.array,
   isLoading: PropTypes.bool,
   unitsError: PropTypes.object
-}
-
-
-UnitListByRoles.propTypes = {
-  filteredUnits: PropTypes.array
 }
 
 let unitsError
