@@ -136,7 +136,7 @@ class UnitWizard extends Component {
                 isMultiLine
               />
             </div>
-            <div className='bg-white card-shadow-1 pa3 mt3'>
+            <div className='bg-white card-shadow-1 pa3 mt3 mb4'>
               <div className='mt1 silver fw5'>ADDRESS</div>
               <InputRow
                 label='Address'
@@ -185,24 +185,24 @@ class UnitWizard extends Component {
                 disabled={inProgress}
                 onChange={this.createTextStateHandler('zipCode')}
               />
-              <RaisedButton
-                className='mt3 absolute bottom-0 right-0 z-1'
-                fullWidth
-                primary
-                disabled={this.checkIsFormInvalid() || inProgress}
-                onClick={this.handleAddClicked}
-              >
-                {inProgress ? (
-                  <div className='absolute top-0 right-0 bottom-0 left-0'>
-                    <CircularProgress color='white' size={30} />
-                  </div>
-                ) : (
-                  <div className='f4 white'>Add Unit</div>
-                )}
-              </RaisedButton>
             </div>
           </div>
         </form>
+        <RaisedButton
+          className='mt3 absolute bottom-0 right-0 z-1'
+          fullWidth
+          primary
+          disabled={this.checkIsFormInvalid() || inProgress}
+          onClick={this.handleAddClicked}
+        >
+          {inProgress ? (
+            <div className='absolute top-0 right-0 bottom-0 left-0'>
+              <CircularProgress color='white' size={30} />
+            </div>
+          ) : (
+            <div className='f4 white'>Add Unit</div>
+          )}
+        </RaisedButton>
         <ErrorDialog show={!!error} text={error || ''} onDismissed={() => dispatch(clearError())} />
       </div>
     )
