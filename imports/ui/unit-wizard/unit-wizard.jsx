@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import SelectField from 'material-ui/SelectField'
+import AutoComplete from 'material-ui/AutoComplete'
 import RaisedButton from 'material-ui/RaisedButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import MenuItem from 'material-ui/MenuItem'
@@ -43,6 +44,21 @@ const objectTypeFields = [
   'role'
 ]
 
+const countryList = countries.map(({ alpha2: code, name }) => {
+  // Manual ellipsis
+  const displayName = name.length > 34 // max tested length on an iphone 5 screen width
+    ? name.slice(0, 31) + '...'
+    : name
+  return (
+    {
+      text: displayName,
+      value: (
+        <MenuItem key={code} value={code} primaryText={displayName} />
+      )
+    }
+  )
+})
+
 class UnitWizard extends Component {
   constructor () {
     super(...arguments)
@@ -72,6 +88,12 @@ class UnitWizard extends Component {
     }, {})
     this.props.dispatch(createUnit(creationObject))
   }
+  handleUpdateInput = (value) => {
+    this.setState({
+      country: value
+    })
+  }
+
   render () {
     const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state, isOccupant } = this.state
     const { inProgress, error, dispatch } = this.props
@@ -151,27 +173,16 @@ class UnitWizard extends Component {
                 disabled={inProgress}
                 onChange={this.createTextStateHandler('city')}
               />
-              <SelectField
+              <AutoComplete
                 floatingLabelText='Country'
                 fullWidth
-                value={country}
-                disabled={inProgress}
-                onChange={(evt, idx, val) => {
-                  this.setState({
-                    country: val
-                  })
-                }}
-              >
-                {countries.map(({ alpha2: code, name }) => {
-                  // Manual ellipsis
-                  const displayName = name.length > 34 // max tested length on an iphone 5 screen width
-                    ? name.slice(0, 31) + '...'
-                    : name
-                  return (
-                    <MenuItem key={code} value={code} primaryText={displayName} />
-                  )
-                })}
-              </SelectField>
+                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                targetOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                filter={AutoComplete.caseInsensitiveFilter}
+                maxSearchResults={4}
+                dataSource={countryList}
+                onUpdateInput={this.handleUpdateInput}
+              />
               <InputRow
                 label='Administrative Region'
                 value={state}
