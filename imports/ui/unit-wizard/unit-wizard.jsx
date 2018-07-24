@@ -186,7 +186,7 @@ class UnitWizard extends Component {
                 onChange={this.createTextStateHandler('zipCode')}
               />
               <RaisedButton
-                className='mt3'
+                className='mt3 absolute bottom-0 right-0 z-1'
                 fullWidth
                 primary
                 disabled={this.checkIsFormInvalid() || inProgress}
