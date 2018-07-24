@@ -17,7 +17,6 @@ import SwipeableViews from 'react-swipeable-views'
 
 class FilteredUnitsList extends Component {
   handleUnitClicked (id) {
-    console.log('id', id)
     const { dispatch } = this.props
     dispatch(push(`/unit/${id}`))
   }
@@ -29,7 +28,7 @@ class FilteredUnitsList extends Component {
   }
 
   render () {
-    const { filteredUnits, value, currentUser } = this.props
+    const { filteredUnits, currentUser, showAddBtn, active } = this.props
     const administratedUnits = filteredUnits.filter(unit => unit.metaData.ownerIds && unit.metaData.ownerIds.includes(currentUser))
     const unitsInvolvedIn = filteredUnits.filter(unit => !unit.metaData.ownerIds || !unit.metaData.ownerIds.includes(currentUser))
 
@@ -37,7 +36,7 @@ class FilteredUnitsList extends Component {
       <div className='flex flex-column'>
         {filteredUnits.length === 0 ? (
           <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
-            {!value ? ('You have no units managed with Unee-T yet') : ('you have no disabled units') }
+            { !active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
           </div>
         ) : <div>
           <div>
@@ -56,7 +55,7 @@ class FilteredUnitsList extends Component {
                       <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                       <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                     </div>
-                    { !value ? (
+                    { !showAddBtn ? (
                       <div
                         onClick={evt => this.handleAddCaseClicked(evt, id)}
                         className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
@@ -85,14 +84,14 @@ class FilteredUnitsList extends Component {
                       <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                       <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                     </div>
-                    { !value ? (
+                    { !showAddBtn && (
                       <div
                         onClick={evt => this.handleAddCaseClicked(evt, id)}
                         className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
                       >
                         Add case
                       </div>
-                    ) : (undefined)
+                    )
                     }
                   </div>
                 </MenuItem>
@@ -151,7 +150,7 @@ class UnitExplorer extends Component {
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} currentUser={currentUser} value={this.state.slideIndex} />
+                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} currentUser={currentUser} showAddBtn={1} active={1} />
               </div>
             </SwipeableViews>
           </div>
@@ -171,8 +170,8 @@ class UnitExplorer extends Component {
 FilteredUnitsList.propTypes = {
   filteredUnits: PropTypes.array,
   currrentUser: PropTypes.string,
-  value: PropTypes.number
-
+  active: PropTypes.number,
+  showAddBtn: PropTypes.number
 }
 
 UnitExplorer.propTypes = {
@@ -196,7 +195,7 @@ export default connect(
         metaData: UnitMetaData.findOne({bzId: unit.id}) || {}
       })),
       isLoading: !unitsHandle.ready(),
-      currentUser: Meteor.userId(),
+      currentUserId: Meteor.userId(),
       unitsError
     }
   }, // Meteor data to props
