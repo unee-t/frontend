@@ -136,7 +136,7 @@ class UnitWizard extends Component {
                 isMultiLine
               />
             </div>
-            <div className='bg-white card-shadow-1 pa3 mt3 mb4'>
+            <div className='bg-white card-shadow-1 pa3 mt3'>
               <div className='mt1 silver fw5'>ADDRESS</div>
               <InputRow
                 label='Address'
@@ -189,7 +189,7 @@ class UnitWizard extends Component {
           </div>
         </form>
         <RaisedButton
-          className='mt3 absolute bottom-0 right-0 z-1'
+          className='mt3 bottom-0 right-0'
           fullWidth
           primary
           disabled={this.checkIsFormInvalid() || inProgress}
