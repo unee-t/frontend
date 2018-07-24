@@ -49,3 +49,12 @@ Accounts.onEnrollmentLink((token, done) => {
     })
   })
 })
+Accounts.onEmailVerificationLink((token, done) => {
+  Accounts.verifyEmail(token, err => {
+    if (err) {
+      console.error(err)
+    } else {
+      done()
+    }
+  })
+})
