@@ -95,7 +95,7 @@ class UnitWizard extends Component {
   }
 
   render () {
-    const { name, type, role, moreInfo, streetAddress, city, zipCode, country, state, isOccupant } = this.state
+    const { name, type, role, moreInfo, streetAddress, city, zipCode, state, isOccupant } = this.state
     const { inProgress, error, dispatch } = this.props
     return (
       <div className='full-height flex flex-column overflow-hidden'>
