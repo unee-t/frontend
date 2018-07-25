@@ -3,7 +3,7 @@ import { optOutHtml, optOutText } from './components/helpers'
 
 export default (invitee, notificationId, settingType, caseTitle, caseId) => ({
   subject: `Collaborate on "${caseTitle}"`,
-  html: `<img src="cid:logo@unee-t.com"/>
+  html: `<img src="cid:logo@unee-t.com"/><pre>##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##</pre>
 
 <p>Hi ${invitee.profile.name || invitee.emails[0].address.split('@')[0]},</p>
 
@@ -12,7 +12,9 @@ export default (invitee, notificationId, settingType, caseTitle, caseId) => ({
 <p>Please follow <a href='${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}'>${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}</a> to participate.</p>
 
 ` + optOutHtml(settingType, notificationId, invitee),
-  text: `Hi ${invitee.profile.name || invitee.emails[0].address.split('@')[0]},
+  text: `##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##
+
+Hi ${invitee.profile.name || invitee.emails[0].address.split('@')[0]},
 
 You've been invited to collaborate on a case ${caseTitle} in Unee-T.
 

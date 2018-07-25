@@ -3,7 +3,7 @@ import { optOutHtml, optOutText } from './components/helpers'
 
 export default (assignee, notificationId, settingType, caseTitle, caseId, updateWhat, userId) => ({
   subject: `Case updated "${caseTitle}"`,
-  html: `<img src="cid:logo@unee-t.com"/>
+  html: `<img src="cid:logo@unee-t.com"/><pre>##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##</pre>
 
 <p>Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},</p>
 
@@ -14,7 +14,7 @@ export default (assignee, notificationId, settingType, caseTitle, caseId, update
 ` + optOutHtml(settingType, notificationId, assignee),
   text: `##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##
 
-  Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
+Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
 
 ${caseTitle} has has a ${updateWhat} made by ${userId}.
 

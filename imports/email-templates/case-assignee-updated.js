@@ -3,7 +3,7 @@ import { optOutHtml, optOutText } from './components/helpers'
 
 export default (assignee, notificationId, settingType, caseTitle, caseId) => ({
   subject: `Assigned to "${caseTitle}"`,
-  html: `<img src="cid:logo@unee-t.com"/>
+  html: `<img src="cid:logo@unee-t.com"/><pre>##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##</pre>
 
 <p>Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},</p>
 
@@ -12,7 +12,9 @@ export default (assignee, notificationId, settingType, caseTitle, caseId) => ({
 <p>Please follow <a href='${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}'>${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}</a> to participate.</p>
 
 ` + optOutHtml(settingType, notificationId, assignee),
-  text: `Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
+  text: `##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##
+
+Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
 
 You have been assigned the case ${caseTitle}.
 
