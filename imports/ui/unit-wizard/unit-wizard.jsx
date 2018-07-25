@@ -94,6 +94,12 @@ class UnitWizard extends Component {
     })
   }
 
+  handleNewRequest = () => {
+    this.setState({
+      country: ''
+    })
+  }
+
   render () {
     const { name, type, role, moreInfo, streetAddress, city, zipCode, state, isOccupant } = this.state
     const { inProgress, error, dispatch } = this.props
@@ -180,6 +186,7 @@ class UnitWizard extends Component {
                 targetOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 filter={AutoComplete.caseInsensitiveFilter}
                 maxSearchResults={4}
+                onNewRequest={this.handleNewRequest}
                 dataSource={countryList}
                 onUpdateInput={this.handleUpdateInput}
               />
