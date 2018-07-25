@@ -15,22 +15,51 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 
-class FilteredUnitsList extends Component {
-  handleUnitClicked (id) {
-    const { dispatch } = this.props
-    dispatch(push(`/unit/${id}`))
-  }
-
-  handleAddCaseClicked (evt, id) {
-    const { dispatch } = this.props
-    evt.stopPropagation()
-    dispatch(push(`/case/new?unit=${id}`))
-  }
-
+class UnitsByRoles extends Component {
   render () {
-    const { filteredUnits, currentUser, showAddBtn, active } = this.props
-    const administratedUnits = filteredUnits.filter(unit => unit.metaData.ownerIds && unit.metaData.ownerIds.includes(currentUser))
-    const unitsInvolvedIn = filteredUnits.filter(unit => !unit.metaData.ownerIds || !unit.metaData.ownerIds.includes(currentUser))
+    const { unitsByRoles, showAddBtn, handleUnitClicked, handleAddCaseClicked, administrate } = this.props
+    return (
+      <div>
+        {unitsByRoles.length === 0 ? (undefined) : (
+          <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
+            { administrate ? ('Units I Administrate') : ('Units Involved In') }
+          </div>
+        )
+        }
+        {
+          unitsByRoles.map(({ id, name, description, metaData }) => (
+            <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => handleUnitClicked(id)} >
+              <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                  <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                  <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
+                </div>
+                { !showAddBtn ? (
+                  <div
+                    onClick={evt => handleAddCaseClicked(evt, id)}
+                    className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                  >
+                    Add case
+                  </div>
+                ) : (undefined)
+                }
+              </div>
+            </MenuItem>
+          ))}
+      </div>
+    )
+  }
+}
+
+class FilteredUnitsList extends Component {
+  render () {
+    const { filteredUnits, currentUserId, active } = this.props
+    const administratedUnits = filteredUnits.filter(unit => unit.metaData.ownerIds && unit.metaData.ownerIds.includes(currentUserId))
+    const unitsInvolvedIn = filteredUnits.filter(unit => !unit.metaData.ownerIds || !unit.metaData.ownerIds.includes(currentUserId))
+    const divProps = Object.assign({}, this.props)
+    delete divProps.active
+    delete divProps.currentUserId
 
     return (
       <div className='flex flex-column'>
@@ -39,64 +68,8 @@ class FilteredUnitsList extends Component {
             { !active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
           </div>
         ) : <div>
-          <div>
-            {administratedUnits.length === 0 ? (undefined) : (
-              <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
-                Units I Administrate
-              </div>
-            )
-            }
-            {
-              administratedUnits.map(({ id, name, description, metaData }) => (
-                <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => this.handleUnitClicked(id)} >
-                  <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                    <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                    <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                      <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                      <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
-                    </div>
-                    { !showAddBtn ? (
-                      <div
-                        onClick={evt => this.handleAddCaseClicked(evt, id)}
-                        className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                      >
-                        Add case
-                      </div>
-                    ) : (undefined)
-                    }
-                  </div>
-                </MenuItem>
-              ))}
-          </div>
-          <div>
-            {unitsInvolvedIn.length === 0 ? (undefined) : (
-              <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
-                Units Involved In
-              </div>
-            )
-            }
-            {
-              unitsInvolvedIn.map(({ id, name, description, metaData }) => (
-                <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => this.handleUnitClicked(id)}>
-                  <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                    <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                    <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                      <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                      <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
-                    </div>
-                    { !showAddBtn && (
-                      <div
-                        onClick={evt => this.handleAddCaseClicked(evt, id)}
-                        className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                      >
-                        Add case
-                      </div>
-                    )
-                    }
-                  </div>
-                </MenuItem>
-              ))}
-          </div>
+          <UnitsByRoles {...divProps} unitsByRoles={administratedUnits} administrate />
+          <UnitsByRoles {...divProps} unitsByRoles={unitsInvolvedIn} />
         </div>
         }
       </div>
@@ -118,8 +91,19 @@ class UnitExplorer extends Component {
     })
   };
 
+  handleAddCaseClicked (evt, id) {
+    const { dispatch } = this.props
+    evt.stopPropagation()
+    dispatch(push(`/case/new?unit=${id}`))
+  }
+
+  handleUnitClicked (id) {
+    const { dispatch } = this.props
+    dispatch(push(`/unit/${id}`))
+  }
+
   render () {
-    const { isLoading, unitList, dispatch, currentUser } = this.props
+    const { isLoading, unitList, dispatch, currentUserId } = this.props
     const activeUnits = unitList.filter(unitItem => !unitItem.metaData.disabled)
     const disabledUnits = unitList.filter(unitItem => unitItem.metaData.disabled)
 
@@ -146,11 +130,11 @@ class UnitExplorer extends Component {
             >
               {/* tab 1 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={activeUnits} dispatch={dispatch} currentUser={currentUser} />
+                <FilteredUnitsList filteredUnits={activeUnits} dispatch={dispatch} currentUserId={currentUserId} handleUnitClicked={this.handleUnitClicked.bind(this)} handleAddCaseClicked={this.handleAddCaseClicked.bind(this)} />
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} currentUser={currentUser} showAddBtn={1} active={1} />
+                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} currentUserId={currentUserId} showAddBtn={1} active={1} />
               </div>
             </SwipeableViews>
           </div>
@@ -167,11 +151,18 @@ class UnitExplorer extends Component {
   }
 }
 
+UnitsByRoles.propTypes = {
+  unitsByRoles: PropTypes.array,
+  handleUnitClicked: PropTypes.func,
+  handleAddCaseClicked: PropTypes.func,
+  administrate: PropTypes.bool,
+  showAddBtn: PropTypes.number
+}
+
 FilteredUnitsList.propTypes = {
   filteredUnits: PropTypes.array,
-  currrentUser: PropTypes.string,
-  active: PropTypes.number,
-  showAddBtn: PropTypes.number
+  currrentUserId: PropTypes.string,
+  active: PropTypes.number
 }
 
 UnitExplorer.propTypes = {
