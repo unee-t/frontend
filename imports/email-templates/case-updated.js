@@ -3,7 +3,7 @@ import { optOutHtml, optOutText } from './components/helpers'
 
 export default (assignee, notificationId, settingType, caseTitle, caseId, updateWhat, userId) => ({
   subject: `Case updated "${caseTitle}"`,
-  html: `<img src="cid:logo@unee-t.com"/><pre>##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##</pre>
+  html: `<img src="cid:logo@unee-t.com"/><pre>##- This is a notification message - Please use this link ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} to reply -##</pre>
 
 <p>Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},</p>
 
@@ -12,7 +12,7 @@ export default (assignee, notificationId, settingType, caseTitle, caseId, update
 <p>Please follow <a href='${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}'>${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}</a> to participate.</p>
 
 ` + optOutHtml(settingType, notificationId, assignee),
-  text: `##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##
+  text: `##- This is a notification message - Please use this link ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} to reply -##
 
 Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
 
