@@ -12,7 +12,9 @@ export default (assignee, notificationId, settingType, caseTitle, caseId, update
 <p>Please follow <a href='${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}'>${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)}</a> to participate.</p>
 
 ` + optOutHtml(settingType, notificationId, assignee),
-  text: `Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
+  text: `##- Please type your reply upon ${url.resolve(process.env.ROOT_URL, `/case/${caseId}`)} -##
+
+  Hi ${assignee.profile.name || assignee.emails[0].address.split('@')[0]},
 
 ${caseTitle} has has a ${updateWhat} made by ${userId}.
 
