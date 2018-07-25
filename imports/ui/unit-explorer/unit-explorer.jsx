@@ -64,7 +64,7 @@ class FilteredUnitsList extends Component {
     return (
       <div className='flex flex-column'>
         {filteredUnits.length === 0 ? (
-          <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
+          <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1 mr3 ml3'>
             { !active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
           </div>
         ) : <div>
