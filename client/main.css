@@ -14,9 +14,6 @@
   --success-green: #99cc33
 }
 
-.z-1 {
-  z-index: 1;
-}
 /* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;

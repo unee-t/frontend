@@ -189,7 +189,7 @@ class UnitWizard extends Component {
           </div>
         </form>
         <RaisedButton
-          className='mt3 bottom-0 right-0'
+          className='mt3'
           fullWidth
           primary
           disabled={this.checkIsFormInvalid() || inProgress}
