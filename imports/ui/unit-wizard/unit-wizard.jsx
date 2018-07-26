@@ -185,24 +185,24 @@ class UnitWizard extends Component {
                 disabled={inProgress}
                 onChange={this.createTextStateHandler('zipCode')}
               />
-              <RaisedButton
-                className='mt3'
-                fullWidth
-                primary
-                disabled={this.checkIsFormInvalid() || inProgress}
-                onClick={this.handleAddClicked}
-              >
-                {inProgress ? (
-                  <div className='absolute top-0 right-0 bottom-0 left-0'>
-                    <CircularProgress color='white' size={30} />
-                  </div>
-                ) : (
-                  <div className='f4 white'>Add Unit</div>
-                )}
-              </RaisedButton>
             </div>
           </div>
         </form>
+        <RaisedButton
+          className='mt3'
+          fullWidth
+          primary
+          disabled={this.checkIsFormInvalid() || inProgress}
+          onClick={this.handleAddClicked}
+        >
+          {inProgress ? (
+            <div className='absolute top-0 right-0 bottom-0 left-0'>
+              <CircularProgress color='white' size={30} />
+            </div>
+          ) : (
+            <div className='f4 white'>Add Unit</div>
+          )}
+        </RaisedButton>
         <ErrorDialog show={!!error} text={error || ''} onDismissed={() => dispatch(clearError())} />
       </div>
     )
