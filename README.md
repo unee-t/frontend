@@ -18,6 +18,15 @@ not have access to `AWS_SECRET_ACCESS_KEY`.
 Production deployment on AWS account 1924-5899-3663 is done manually via
 `./deploy.sh -p` via the AWS_PROFILE `aws-prod` only once the **build is tagged**.
 
+# Debugging with VScode
+
+[Background reading](https://github.com/Microsoft/vscode-recipes/blob/master/meteor/README.md#configure-meteor-to-run-in-debug-mode)
+
+* `cd .vscode; curl -O https://media.dev.unee-t.com/2018-07-05/launch.json` for example, edit this to point to where your browser binary lives
+* `npm run debug`... you need to run this manually on the CLI
+* Meteor: Node to attach & debug server side
+* Meteor: Chrome to debug client side
+
 # Logs
 
 Frontend logs to the [meteor log group in

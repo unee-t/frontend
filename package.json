@@ -4,6 +4,7 @@
   "scripts": {
     "start": "meteor run",
     "test": "npm run lint && npm run proof",
+    "debug": "meteor run --inspect",
     "lint": "standard --verbose | snazzy",
     "proof": "TEST_BROWSER_DRIVER=puppeteer meteor test --once --driver-package meteortesting:mocha",
     "test-local": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha"
