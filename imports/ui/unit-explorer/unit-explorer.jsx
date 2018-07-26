@@ -35,15 +35,14 @@ class UnitsByRoles extends Component {
                   <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                   <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                 </div>
-                { !showAddBtn ? (
+                { !showAddBtn && (
                   <div
-                    onClick={evt => handleAddCaseClicked(evt, id)}
+                    onClick={(evt) => { evt.stopPropagation(); handleAddCaseClicked(id) }}
                     className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
                   >
                     Add case
                   </div>
-                ) : (undefined)
-                }
+                )}
               </div>
             </MenuItem>
           ))}
@@ -54,12 +53,9 @@ class UnitsByRoles extends Component {
 
 class FilteredUnitsList extends Component {
   render () {
-    const { filteredUnits, currentUserId, active } = this.props
+    const { filteredUnits, currentUserId, active, handleAddCaseClicked, handleUnitClicked, showAddBtn } = this.props
     const administratedUnits = filteredUnits.filter(unit => unit.metaData.ownerIds && unit.metaData.ownerIds.includes(currentUserId))
     const unitsInvolvedIn = filteredUnits.filter(unit => !unit.metaData.ownerIds || !unit.metaData.ownerIds.includes(currentUserId))
-    const divProps = Object.assign({}, this.props)
-    delete divProps.active
-    delete divProps.currentUserId
 
     return (
       <div className='flex flex-column'>
@@ -68,8 +64,8 @@ class FilteredUnitsList extends Component {
             { !active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
           </div>
         ) : <div>
-          <UnitsByRoles {...divProps} unitsByRoles={administratedUnits} administrate />
-          <UnitsByRoles {...divProps} unitsByRoles={unitsInvolvedIn} />
+          <UnitsByRoles unitsByRoles={administratedUnits} handleAddCaseClicked={handleAddCaseClicked} handleUnitClicked={handleUnitClicked} showAddBtn={showAddBtn} administrate />
+          <UnitsByRoles unitsByRoles={unitsInvolvedIn} handleAddCaseClicked={handleAddCaseClicked} handleUnitClicked={handleUnitClicked} showAddBtn={showAddBtn} />
         </div>
         }
       </div>
@@ -91,13 +87,12 @@ class UnitExplorer extends Component {
     })
   };
 
-  handleAddCaseClicked (evt, id) {
+  handleAddCaseClicked = (id) => {
     const { dispatch } = this.props
-    evt.stopPropagation()
     dispatch(push(`/case/new?unit=${id}`))
   }
 
-  handleUnitClicked (id) {
+  handleUnitClicked = (id) => {
     const { dispatch } = this.props
     dispatch(push(`/unit/${id}`))
   }
@@ -130,11 +125,21 @@ class UnitExplorer extends Component {
             >
               {/* tab 1 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={activeUnits} dispatch={dispatch} currentUserId={currentUserId} handleUnitClicked={this.handleUnitClicked.bind(this)} handleAddCaseClicked={this.handleAddCaseClicked.bind(this)} />
+                <FilteredUnitsList
+                  filteredUnits={activeUnits}
+                  currentUserId={currentUserId}
+                  handleUnitClicked={this.handleUnitClicked}
+                  handleAddCaseClicked={this.handleAddCaseClicked}
+                />
               </div>
               {/* tab 2 */}
               <div className='flex-grow bb b--very-light-gray bg-white'>
-                <FilteredUnitsList filteredUnits={disabledUnits} dispatch={dispatch} currentUserId={currentUserId} showAddBtn={1} active={1} />
+                <FilteredUnitsList
+                  filteredUnits={disabledUnits}
+                  currentUserId={currentUserId}
+                  handleUnitClicked={this.handleUnitClicked}
+                  showAddBtn={1} active={1}
+                />
               </div>
             </SwipeableViews>
           </div>
@@ -162,7 +167,9 @@ UnitsByRoles.propTypes = {
 FilteredUnitsList.propTypes = {
   filteredUnits: PropTypes.array,
   currrentUserId: PropTypes.string,
-  active: PropTypes.number
+  active: PropTypes.number,
+  handleUnitClicked: PropTypes.func,
+  handleAddCaseClicked: PropTypes.func
 }
 
 UnitExplorer.propTypes = {
