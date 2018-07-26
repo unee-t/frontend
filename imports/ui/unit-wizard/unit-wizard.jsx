@@ -101,7 +101,7 @@ class UnitWizard extends Component {
   }
 
   render () {
-    const { name, type, role, moreInfo, streetAddress, city, zipCode, state, isOccupant } = this.state
+    const { name, type, role, moreInfo, streetAddress, city, zipCode, state, isOccupant, country } = this.state
     const { inProgress, error, dispatch } = this.props
     return (
       <div className='full-height flex flex-column overflow-hidden'>
@@ -189,6 +189,7 @@ class UnitWizard extends Component {
                 onNewRequest={this.handleNewRequest}
                 dataSource={countryList}
                 onUpdateInput={this.handleUpdateInput}
+                searchText={country}
               />
               <InputRow
                 label='Administrative Region'
