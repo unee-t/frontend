@@ -169,6 +169,7 @@ if (Meteor.isServer) {
 Meteor.methods({
   [`${collectionName}.insert`] (creationArgs) {
     // Making sure the user is logged in before creating a unit
+    console.log('country ??', creationArgs)
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }

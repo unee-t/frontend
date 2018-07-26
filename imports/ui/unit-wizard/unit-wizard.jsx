@@ -96,7 +96,8 @@ class UnitWizard extends Component {
 
   handleNewRequest = () => {
     this.setState({
-      country: ''
+      searchText: ''
+      // country: ''
     })
   }
 
