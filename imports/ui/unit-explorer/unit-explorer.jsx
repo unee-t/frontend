@@ -35,7 +35,7 @@ class UnitsByRoles extends Component {
                   <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
                   <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                 </div>
-                { !showAddBtn && (
+                { showAddBtn && (
                   <div
                     onClick={(evt) => { evt.stopPropagation(); handleAddCaseClicked(id) }}
                     className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
@@ -61,11 +61,22 @@ class FilteredUnitsList extends Component {
       <div className='flex flex-column'>
         {filteredUnits.length === 0 ? (
           <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1 mr3 ml3'>
-            { !active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
+            { active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
           </div>
         ) : <div>
-          <UnitsByRoles unitsByRoles={administratedUnits} handleAddCaseClicked={handleAddCaseClicked} handleUnitClicked={handleUnitClicked} showAddBtn={showAddBtn} administrate />
-          <UnitsByRoles unitsByRoles={unitsInvolvedIn} handleAddCaseClicked={handleAddCaseClicked} handleUnitClicked={handleUnitClicked} showAddBtn={showAddBtn} />
+          <UnitsByRoles
+            unitsByRoles={administratedUnits}
+            handleAddCaseClicked={handleAddCaseClicked}
+            handleUnitClicked={handleUnitClicked}
+            showAddBtn={showAddBtn}
+            administrate
+          />
+          <UnitsByRoles
+            unitsByRoles={unitsInvolvedIn}
+            handleAddCaseClicked={handleAddCaseClicked}
+            handleUnitClicked={handleUnitClicked}
+            showAddBtn={showAddBtn}
+          />
         </div>
         }
       </div>
@@ -130,6 +141,8 @@ class UnitExplorer extends Component {
                   currentUserId={currentUserId}
                   handleUnitClicked={this.handleUnitClicked}
                   handleAddCaseClicked={this.handleAddCaseClicked}
+                  showAddBtn
+                  active
                 />
               </div>
               {/* tab 2 */}
@@ -138,7 +151,6 @@ class UnitExplorer extends Component {
                   filteredUnits={disabledUnits}
                   currentUserId={currentUserId}
                   handleUnitClicked={this.handleUnitClicked}
-                  showAddBtn={1} active={1}
                 />
               </div>
             </SwipeableViews>
@@ -161,15 +173,16 @@ UnitsByRoles.propTypes = {
   handleUnitClicked: PropTypes.func,
   handleAddCaseClicked: PropTypes.func,
   administrate: PropTypes.bool,
-  showAddBtn: PropTypes.number
+  showAddBtn: PropTypes.bool
 }
 
 FilteredUnitsList.propTypes = {
   filteredUnits: PropTypes.array,
   currrentUserId: PropTypes.string,
-  active: PropTypes.number,
+  active: PropTypes.bool,
   handleUnitClicked: PropTypes.func,
-  handleAddCaseClicked: PropTypes.func
+  handleAddCaseClicked: PropTypes.func,
+  showAddBtn: PropTypes.bool
 }
 
 UnitExplorer.propTypes = {
