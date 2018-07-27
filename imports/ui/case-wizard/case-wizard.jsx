@@ -352,7 +352,7 @@ export default withRouter(connect(
   (props) => {
     const enumFields = ['category', 'subCategory', 'priority', 'severity']
     const { unit } = parseQueryString(props.location.search)
-    const loadingUnitInfo = !Meteor.subscribe(`${unitsCollName}.byId`, unit).ready()
+    const loadingUnitInfo = !Meteor.subscribe(`${unitsCollName}.byIdWithRoles`, unit).ready()
     const unitIdInt = parseInt(unit)
     const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
     return ({

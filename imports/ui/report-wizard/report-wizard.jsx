@@ -5,79 +5,15 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, replace, push } from 'react-router-redux'
 import moment from 'moment'
-import CircularProgress from 'material-ui/CircularProgress'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
-import { parseQueryString } from '../../util/parsers'
-import Units, { collectionName, getUnitRoles } from '../../api/units'
+import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
+import Reports, { collectionName } from '../../api/reports'
 import InnerAppBar from '../components/inner-app-bar'
-import EditableItem from '../components/editable-item'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { makeMatchingUser } from '../../api/custom-users'
-
-const CreatorWrapperInt = props => {
-  const { userIdentity, loading, loadingUser } = props
-  if (loadingUser) return <CircularProgress size={30} thickness={3} />
-  return (
-    <div className='relative'>
-      <div className={loading ? 'o-60' : ''}>{userInfoItem(userIdentity)}</div>
-      {loading && (
-        <div className='absolute top-0 bottom-0 right-0 left-0 flex justify-center items-center'>
-          <CircularProgress size={30} thickness={3} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-CreatorWrapperInt.propTypes = {
-  unitId: PropTypes.string,
-  userIdentity: PropTypes.object,
-  loading: PropTypes.bool.isRequired,
-  loadingUser: PropTypes.bool.isRequired
-}
-
-const CreatorWrapper = createContainer(props => {
-  const { unitId } = props
-  const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
-  if (!bzLoginHandle.ready()) {
-    return {
-      loading: true,
-      loadingUser: true
-    }
-  }
-  const currUser = Meteor.user()
-
-  const rolelessIdentity = makeMatchingUser({
-    login: currUser.bugzillaCreds.login,
-    role: ' '
-  })
-  if (unitId) {
-    const unitHandle = Meteor.subscribe(`${collectionName}.byIdWithUsers`, unitId)
-
-    let userIdentity
-    if (unitHandle.ready() && currUser) {
-      const userRoleDesc = getUnitRoles(Units.findOne({id: parseInt(unitId)}))
-        .find(desc => desc.login === currUser.bugzillaCreds.login)
-      userIdentity = makeMatchingUser(userRoleDesc)
-    } else {
-      userIdentity = rolelessIdentity
-    }
-    return {
-      loading: !unitHandle.ready(),
-      userIdentity: userIdentity,
-      loadingUser: false
-    }
-  } else {
-    return {
-      loading: false,
-      userIdentity: rolelessIdentity,
-      loadingUser: false
-    }
-  }
-}, CreatorWrapperInt)
 
 const addIconStyle = {
   fontSize: '1rem',
@@ -103,7 +39,7 @@ class ReportWizard extends Component {
     }
   }
   componentWillReceiveProps (nextProps) {
-    if (nextProps.preferredUnitId && !nextProps.loadingUnits && !this.state.initDone) {
+    if (nextProps.preferredUnitId && !nextProps.isLoading && !this.state.initDone) {
       this.setState({
         selectedUnit: nextProps.unitList.find(u => u.id === parseInt(nextProps.preferredUnitId)).name,
         initDone: true
@@ -119,43 +55,48 @@ class ReportWizard extends Component {
     }
   }
   render () {
-    const { unitList, loadingUnits, dispatch } = this.props
-    const { selectedUnit, reportTitle } = this.state
+    const { unitItem, reportItem, isLoading, user, dispatch } = this.props
 
-    if (loadingUnits) {
+    if (isLoading) {
       return <Preloader />
     }
-    const unitId = selectedUnit ? unitList.find(u => u.name === selectedUnit).id.toString() : null
-
+    const memberIdMatcher = ({ id }) => id === user._id
+    const unitDisplayName = (unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name
+    const matchingMongoRole = unitItem.rolesData().find(
+      role => role.members.find(memberIdMatcher)
+    )
+    const userInfo = matchingMongoRole ? {
+      login: user.bugzillaCreds.login,
+      name: user.profile.name,
+      role: matchingMongoRole.roleType,
+      isOccupant: matchingMongoRole.members.find(memberIdMatcher).isOccupant
+    } : makeMatchingUser(
+      getUnitRoles(unitItem).find(desc => desc.login === user.bugzillaCreds.login)
+    )
     return (
       <div className='full-height flex flex-column'>
-        <InnerAppBar onBack={() => dispatch(goBack())} title='Create Report' />
+        <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
         <div className='flex-grow bg-very-light-gray overflow-auto'>
-          <div className='bg-white card-shadow-1 ph3 pb3'>
-            <EditableItem
-              label='Unit *'
-              onEdit={val => this.setState({selectedUnit: val})}
-              selectionList={unitList.map(u => u.name)}
-              initialValue={selectedUnit}
-            />
-            <EditableItem
-              label='Report title *'
-              onEdit={val => this.setState({reportTitle: val})}
-              initialValue={reportTitle}
-            />
+          <div className='bg-white card-shadow-1 pa3'>
+            <div>
+              {infoItemMembers('Report title', reportItem.title)}
+            </div>
+            <div>
+              {infoItemMembers('Unit', unitDisplayName)}
+            </div>
             <div className='pt1'>
               {infoItemMembers('Created on', moment().format('DD/MM/YYYY'))}
             </div>
             <div className='mt2 pt1'>
               {infoItemLabel('Created by')}
-              <CreatorWrapper unitId={unitId} />
+              {userInfoItem(userInfo)}
             </div>
           </div>
           <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
             <div className='b dark-gray lh-copy'>
               Would you like to report any issue with the unit?
             </div>
-            {makeCreationButton('Add case', () => dispatch(push(`/case/new?unit=${unitId}`)))}
+            {makeCreationButton('Add case', () => dispatch(push(`/case/new?unit=${unitItem.id}`)))}
           </div>
           <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
             {infoItemLabel('Rooms')}
@@ -172,25 +113,29 @@ class ReportWizard extends Component {
 }
 
 ReportWizard.propTypes = {
-  loadingUnits: PropTypes.bool.isRequired,
-  unitList: PropTypes.array.isRequired,
-  preferredUnitId: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
+  unitItem: PropTypes.object,
+  reportItem: PropTypes.object,
   user: PropTypes.object
 }
 
 export default connect(
-  (state, props) => {
-    const { unit } = parseQueryString(props.location.search)
-    return {
-      preferredUnitId: unit
-    }
-  }
+  () => ({})
 )(
-  createContainer(() => {
+  createContainer(props => {
+    const { reportId } = props.match.params
+    const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
+    const reportItem = reportHandle.ready() ? Reports.findOne({id: parseInt(reportId)}) : null
+    const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
+    let unitHandle
+    if (reportItem) {
+      unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit)
+    }
     return {
-      loadingUnits: !Meteor.subscribe(`${collectionName}.forReporting`).ready(),
-      unitList: Units.find().fetch(),
-      user: Meteor.user()
+      isLoading: !reportHandle.ready() || (unitHandle && !unitHandle.ready()) || !bzLoginHandle.ready(),
+      unitItem: reportItem ? Units.findOne({name: reportItem.selectedUnit}) : null,
+      user: Meteor.user(),
+      reportItem
     }
   }, ReportWizard)
 )

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Subject } from 'rxjs/Subject'
 import { merge } from 'rxjs/observable/merge'
 import { of } from 'rxjs/observable/of'
-import { push } from 'react-router-redux'
+import { replace } from 'react-router-redux'
 import {
   CREATE_REPORT,
   CREATE_REPORT_ERROR,
@@ -28,13 +28,12 @@ export const createReport = action$ => action$
             errorText: error.error
           })
         }
-        console.log('report success?')
 
         return merge(
           of({
             type: CREATE_REPORT_SUCCESS
           }),
-          of(push(`/report/${newReportId}`))
+          of(replace(`/report/${newReportId}/draft`))
         )
       })
     const payload = {
