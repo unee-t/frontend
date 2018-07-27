@@ -2,10 +2,22 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
+import publicationFactory from './base/rest-resource-factory'
 import { getUnitRoles } from './units'
-import { caseServerFieldMapping } from './cases'
+import { caseServerFieldMapping, REPORT_KEYWORD, factoryOptions as caseFactoryOpts, idUrlTemplate } from './cases'
 
 export const collectionName = 'reports'
+const factoryOptions = {
+  collectionName,
+  dataResolver: caseFactoryOpts.dataResolver
+}
+
+if (Meteor.isServer) {
+  const publicationObj = publicationFactory(factoryOptions)
+  Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
+    uriTemplate: idUrlTemplate
+  }))
+}
 
 Meteor.methods({
   [`${collectionName}.insert`] (params) {
@@ -31,6 +43,8 @@ Meteor.methods({
         throw new Meteor.Error('API error')
       }
       const currUser = Meteor.user()
+
+      // TODO: use UnitRolesData over this, and then this as a fallback
       const currUserRole = getUnitRoles(unitItem).find(role => role.login === currUser.bugzillaCreds.login)
 
       if (!currUserRole) {
@@ -44,7 +58,7 @@ Meteor.methods({
       }, {
         component: currUserRole.role,
         description: `Unee-T Inspection Report for the unit "${selectedUnit}"`,
-        keywords: ['inspection_report'],
+        keywords: [REPORT_KEYWORD],
         status: 'UNCONFIRMED',
         api_key: apiKey,
 

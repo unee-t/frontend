@@ -40,6 +40,8 @@ export const caseServerFieldMapping = {
   resolution: 'resolution'
 }
 
+export const REPORT_KEYWORD = 'inspection_report'
+
 export const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
 
 export const caseClientFieldMapping = Object.assign(
@@ -81,13 +83,14 @@ export const factoryOptions = {
   collectionName,
   dataResolver: data => data.bugs.map(transformCaseForClient)
 }
+export const idUrlTemplate = caseId => `/rest/bug/${caseId}`
 
 export let reloadCaseFields
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
   reloadCaseFields = (caseId, fieldNames) => {
-    const caseData = bugzillaApi.callAPI('get', `/rest/bug/${caseId}`, {}, true, true)
+    const caseData = bugzillaApi.callAPI('get', idUrlTemplate(caseId), {}, true, true)
     const caseItem = transformCaseForClient(caseData.data.bugs[0])
     const fields = Object.keys(caseItem).reduce((all, key) => {
       if (fieldNames.includes(key)) {
@@ -101,7 +104,7 @@ if (Meteor.isServer) {
 
   Meteor.publish(`${collectionName}.byId`, associationFactory(
     publicationObj.publishById({
-      uriTemplate: caseId => `/rest/bug/${caseId}`
+      uriTemplate: idUrlTemplate
     }),
     withUsers(caseItem => _.flatten(Object.values(getCaseUsers(caseItem))).map(u => u.login))
   ))
@@ -118,7 +121,7 @@ if (Meteor.isServer) {
         return {
           f1: 'keywords',
           o1: 'nowords',
-          v1: 'inspection_report',
+          v1: REPORT_KEYWORD,
           f2: 'OP',
           j2: 'OR',
           f3: 'assigned_to',
@@ -140,7 +143,7 @@ if (Meteor.isServer) {
         return caseItem => {
           const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
           return (
-            !(keywords && keywords.includes('inspection_report')) && (
+            !(keywords && keywords.includes(REPORT_KEYWORD)) && (
               userIdentifier === assignee ||
               userIdentifier === creator ||
               involvedList.includes(userIdentifier)
@@ -175,7 +178,7 @@ if (Meteor.isServer) {
         v1: unitName,
         f2: 'keywords',
         o2: 'nowords',
-        v2: 'inspection_report',
+        v2: REPORT_KEYWORD,
         f3: 'OP',
         j3: 'OR',
         f4: 'cc',
@@ -197,7 +200,7 @@ if (Meteor.isServer) {
       return caseItem => {
         const { selectedUnit, assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
         return (
-          selectedUnit === unitName && !(keywords && keywords.includes('inspection_report')) && (
+          selectedUnit === unitName && !(keywords && keywords.includes(REPORT_KEYWORD)) && (
             userIdentifier === assignee ||
             userIdentifier === creator ||
             involvedList.includes(userIdentifier)
