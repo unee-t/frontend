@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
 import { createContainer } from 'meteor/react-meteor-data'
-import { push } from 'react-router-redux'
+import { push, goBack } from 'react-router-redux'
 import { Route, Link } from 'react-router-dom'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
@@ -13,10 +13,9 @@ import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
-import UnitMetaData from '../../api/unit-meta-data'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
-// import CreateReportDialog from '../dialogs/create-report-dialog'
+import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
@@ -115,15 +114,16 @@ class Unit extends Component {
         color: 'var(--bondi-blue)',
         href: `/case/new?unit=${unitId}`,
         icon: 'add'
+      },
+      {
+        color: 'var(--bondi-blue)',
+        href: `${rootMatch.url}/${viewsOrder[1]}/new`,
+        icon: 'add'
       }
-      // {
-      //   color: 'var(--bondi-blue)',
-      //   href: `${rootMatch.url}/${viewsOrder[1]}/new`,
-      //   icon: 'add'
-      // }
     ]
 
-    const unitName = unitItem.metaData.displayName || unitItem.name
+    const metaData = unitItem.metaData() || {}
+    const unitName = metaData.displayName || unitItem.name
 
     return (
       <div className='full-height flex flex-column'>
@@ -206,13 +206,13 @@ class Unit extends Component {
                         You have no inspection reports yet
                       </div>
                     </div>
-                    {/* <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
+                    <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
                         show={!!match}
                         onDismissed={() => dispatch(goBack())}
                         unitName={unitItem.name}
                       />
-                    )} /> */}
+                    )} />
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
@@ -223,10 +223,10 @@ class Unit extends Component {
                         {infoItemMembers('Unit group', unitItem.classification)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Unit type', unitItem.metaData.unitType)}
+                        {infoItemMembers('Unit type', metaData.unitType)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Additional description', unitItem.metaData.moreInfo || unitItem.description)}
+                        {infoItemMembers('Additional description', metaData.moreInfo || unitItem.description)}
                       </div>
                     </div>
                     <div className='mt2 bg-white card-shadow-1 pa3'>
@@ -234,20 +234,20 @@ class Unit extends Component {
                         ADDRESS
                       </div>
                       <div className='mt1'>
-                        {infoItemMembers('Address', unitItem.metaData.streetAddress)}
+                        {infoItemMembers('Address', metaData.streetAddress)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('City', unitItem.metaData.city)}
+                        {infoItemMembers('City', metaData.city)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Country', unitItem.metaData.country)}
+                        {infoItemMembers('Country', metaData.country)}
                       </div>
                       <div className='mt3 flex'>
                         <div className='flex-grow'>
-                          {infoItemMembers('State', unitItem.metaData.state)}
+                          {infoItemMembers('State', metaData.state)}
                         </div>
                         <div className='flex-grow'>
-                          {infoItemMembers('Zip / Postal code', unitItem.metaData.zipCode)}
+                          {infoItemMembers('Zip / Postal code', metaData.zipCode)}
                         </div>
                       </div>
                     </div>
@@ -310,9 +310,6 @@ export default connect(
   const unitItem = unitHandle.ready() ? Units.findOne({id: parseInt(unitId)}) : null
   let casesHandle
   if (unitItem) {
-    Object.assign(unitItem, {
-      metaData: UnitMetaData.findOne({bzId: unitItem.id}) || {}
-    })
     casesHandle = Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
       onStop: error => {
         casesError = error

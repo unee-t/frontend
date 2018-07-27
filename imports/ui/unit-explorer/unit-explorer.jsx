@@ -10,7 +10,6 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
-import UnitMetaData from '../../api/unit-meta-data'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 
 class UnitExplorer extends Component {
@@ -30,28 +29,32 @@ class UnitExplorer extends Component {
                   <div className='f6 i silver ba b--moon-gray mt2 pa2 tc br1'>
                     You have no units managed with Unee-T yet
                   </div>
-                ) : unitList.map(({ id, name, description, metaData }) => (
-                  <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
-                    <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
-                      <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                      <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                        <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                        <div className='flex'>
-                          <div className='ti1 ellipsis flex-grow'>{metaData.moreInfo || description}&nbsp;</div>
-                          <div
-                            onClick={evt => {
-                              evt.stopPropagation()
-                              dispatch(push(`/case/new?unit=${id}`))
-                            }}
-                            className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                          >
-                            Add case
+                ) : unitList.map(unitItem => {
+                  const { id, name, description } = unitItem
+                  const metaData = unitItem.metaData() || {}
+                  return (
+                    <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => dispatch(push(`/unit/${id}`))}>
+                      <div className='mt2 ba b--moon-gray br1 w-100 flex items-center pa2'>
+                        <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                        <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                          <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                          <div className='flex'>
+                            <div className='ti1 ellipsis flex-grow'>{metaData.moreInfo || description}&nbsp;</div>
+                            <div
+                              onClick={evt => {
+                                evt.stopPropagation()
+                                dispatch(push(`/case/new?unit=${id}`))
+                              }}
+                              className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                            >
+                              Add case
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </MenuItem>
-                ))}
+                    </MenuItem>
+                  )
+                })}
               </div>
             </div>
             <div className='absolute bottom-2 right-2'>
@@ -85,9 +88,7 @@ export default connect(
       }
     })
     return {
-      unitList: Units.find().fetch().map(unit => Object.assign({}, unit, {
-        metaData: UnitMetaData.findOne({bzId: unit.id}) || {}
-      })),
+      unitList: Units.find().fetch(),
       isLoading: !unitsHandle.ready(),
       unitsError
     }
