@@ -1,7 +1,7 @@
 version: '2'
 services:
     meteor:
-      image: ulexus/meteor
+      image: 812644853088.dkr.ecr.ap-southeast-1.amazonaws.com/meteor:latest
       ports:
        - "8080:3000"
       environment:
