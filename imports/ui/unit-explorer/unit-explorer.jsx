@@ -20,11 +20,10 @@ class UnitsByRoles extends Component {
     const { unitsByRoles, showAddBtn, handleUnitClicked, handleAddCaseClicked, administrate } = this.props
     return (
       <div>
-        {unitsByRoles.length === 0 ? (undefined) : (
+        {(unitsByRoles.length !== 0) && (
           <div className='bb b--black-10 bg-very-light-gray f6 fw5 mid-gray pv2 pl2'>
             { administrate ? ('Units I Administrate') : ('Units Involved In') }
-          </div>
-        )
+          </div>)
         }
         {
           unitsByRoles.map(({ id, name, description, metaData }) => (
@@ -45,7 +44,8 @@ class UnitsByRoles extends Component {
                 )}
               </div>
             </MenuItem>
-          ))}
+          ))
+        }
       </div>
     )
   }
