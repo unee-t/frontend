@@ -72,32 +72,41 @@ class UnitWizard extends Component {
       state: '',
       zipCode: '',
       country: null,
-      isOccupant: false
+      isOccupant: false,
+      countryValid: null
     }
   }
   createTextStateHandler = stateVarName => evt => this.setState({
     [stateVarName]: evt.target.value
   })
+
   checkIsFormInvalid () {
     return !!mandatoryFields.find(fName => !this.state[fName])
   }
   handleAddClicked = () => {
-    const creationObject = allCreationFields.reduce((all, fieldName) => {
-      all[fieldName] = objectTypeFields.includes(fieldName) ? this.state[fieldName].name : this.state[fieldName]
-      return all
-    }, {})
-    this.props.dispatch(createUnit(creationObject))
+    const countryNameChecker = countries.filter(x => x.name === this.state.country)
+    console.log(countryNameChecker)
+    if (countryNameChecker.length === 0) {
+      this.setState({
+        countryValid: 'Check country name again.'
+      })
+    } else {
+      const creationObject = allCreationFields.reduce((all, fieldName) => {
+        all[fieldName] = objectTypeFields.includes(fieldName) ? this.state[fieldName].name : this.state[fieldName]
+        return all
+      }, {})
+      this.props.dispatch(createUnit(creationObject))
+    }
   }
   handleUpdateInput = (value) => {
     this.setState({
+      searchText: value,
       country: value
     })
   }
-
   handleNewRequest = () => {
     this.setState({
       searchText: ''
-      // country: ''
     })
   }
 
@@ -191,6 +200,7 @@ class UnitWizard extends Component {
                 dataSource={countryList}
                 onUpdateInput={this.handleUpdateInput}
                 searchText={country}
+                errorText={this.state.countryValid}
               />
               <InputRow
                 label='Administrative Region'
