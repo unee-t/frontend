@@ -73,6 +73,7 @@ class UnitWizard extends Component {
       zipCode: '',
       country: null,
       isOccupant: false,
+      searchText: null,
       countryValid: null
     }
   }
@@ -84,30 +85,31 @@ class UnitWizard extends Component {
     return !!mandatoryFields.find(fName => !this.state[fName])
   }
   handleAddClicked = () => {
-    const countryNameChecker = countries.filter(x => x.name === this.state.country)
-    console.log(countryNameChecker)
-    if (countryNameChecker.length === 0) {
-      this.setState({
-        countryValid: 'Check country name again.'
-      })
-    } else {
-      const creationObject = allCreationFields.reduce((all, fieldName) => {
-        all[fieldName] = objectTypeFields.includes(fieldName) ? this.state[fieldName].name : this.state[fieldName]
-        return all
-      }, {})
-      this.props.dispatch(createUnit(creationObject))
-    }
+    const creationObject = allCreationFields.reduce((all, fieldName) => {
+      all[fieldName] = objectTypeFields.includes(fieldName) ? this.state[fieldName].name : this.state[fieldName]
+      return all
+    }, {})
+    this.props.dispatch(createUnit(creationObject))
   }
+
   handleUpdateInput = (value) => {
     this.setState({
-      searchText: value,
-      country: value
+      countryValid: null,
+      searchText: value
     })
   }
   handleNewRequest = () => {
-    this.setState({
-      searchText: ''
-    })
+    const countryNameChecker = countries.filter(x => x.name === this.state.searchText)
+    if (countryNameChecker.length === 0) {
+      this.setState({
+        countryValid: 'Check country name again.',
+        searchText: ''
+      })
+    } else {
+      this.setState({
+        country: this.state.searchText
+      })
+    }
   }
 
   render () {
@@ -199,7 +201,7 @@ class UnitWizard extends Component {
                 onNewRequest={this.handleNewRequest}
                 dataSource={countryList}
                 onUpdateInput={this.handleUpdateInput}
-                searchText={country}
+                searchText={this.state.searchText}
                 errorText={this.state.countryValid}
               />
               <InputRow
