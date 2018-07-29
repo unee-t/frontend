@@ -25,25 +25,48 @@ script:
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/commit/${COMMIT}.tar.gz; fi'
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then aws s3 cp --acl public-read $HOME/frontend.tar.gz s3://unee-t-media/frontend/${TRAVIS_BRANCH}.tar.gz; fi'
 
-# https://docs.travis-ci.com/user/deployment/script/
-deploy:
- - provider: script
-   script: AWS_ACCESS_KEY_ID=$AWS_812644853088_ID AWS_SECRET_ACCESS_KEY=$AWS_812644853088_SECRET bash deploy.sh
-   skip_cleanup: true
-   on:
-     branch: master
- - provider: script
-   # deploy to production, given that it's a tagged commit
-   script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET bash deploy.sh -p
-   skip_cleanup: true
-   on:
-     tags: true
- - provider: script
-   # deploy to demo, given that it's a tagged commit
-   script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET bash deploy.sh -d
-   skip_cleanup: true
-   on:
-     tags: true
+matrix:
+  include:
+  - stage: test and build
+  - stage: deploy master
+    install: skip
+    before_install: skip
+    script: skip
+    deploy: # https://docs.travis-ci.com/user/deployment/script/
+      - provider: script
+        script: AWS_ACCESS_KEY_ID=$AWS_812644853088_ID AWS_SECRET_ACCESS_KEY=$AWS_812644853088_SECRET bash deploy.sh
+        skip_cleanup: true
+        on:
+          branch: master
+  - stage: deploy tags
+    install: skip
+    before_install: skip
+    script: skip
+    deploy:
+      - provider: script
+        # deploy to production, given that it's a tagged commit
+        script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET bash deploy.sh -p
+        skip_cleanup: true
+        on:
+          tags: true
+  - stage: deploy tags
+    install: skip
+    before_install: skip
+    script: skip
+    deploy:
+      - provider: script
+        # deploy to demo, given that it's a tagged commit
+        script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET bash deploy.sh -d
+        skip_cleanup: true
+        on:
+           tags: true
+
+stages:
+  - name: test and build
+  - name: deploy tags
+    if: tag IS present
+  - name: deploy master
+    if: branch = master AND type != pull_request
 
 env:
   global:

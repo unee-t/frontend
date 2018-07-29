@@ -94,13 +94,19 @@ if (Meteor.isServer) {
           factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
             uriTemplate: ids => {
               const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
-              return `/rest/product?${idsQueryParams}&include_fields=${['name,id'].concat(additionalFields).join(',')}`
+              return `/rest/product?${idsQueryParams}&include_fields=${['name,id,is_active'].concat(additionalFields).join(',')}`
             }
           }),
           withMetaData({
             bzId: 1,
             displayName: 1,
-            moreInfo: 1
+            moreInfo: 1,
+            ownerIds: {
+              $elemMatch: {
+                $in: [this.userId]
+              }
+            },
+            disabled: 1
           })
         ).call(this, ids || [])
       }
@@ -211,7 +217,6 @@ Meteor.methods({
         })
         unitBzId = apiResult.data[0].id
         unitBzName = apiResult.data[0].name
-
         console.log(`BZ Unit ${name} was created successfully`)
       } catch (e) {
         console.error({

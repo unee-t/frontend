@@ -12,8 +12,8 @@ import {
   logoButtonStyle
 } from '../components/app-bar.mui-styles'
 
-const RootAppBar = ({ title, onIconClick }) => (
-  <AppBar title={title} titleStyle={titleStyle}
+const RootAppBar = ({ title, onIconClick, shadowless }) => (
+  <AppBar title={title} titleStyle={titleStyle} style={shadowless ? {boxShadow: 'none'} : undefined}
     iconElementLeft={
       <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} onClick={onIconClick}>
         <UneeTIcon />
