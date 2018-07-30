@@ -310,6 +310,8 @@ Meteor.methods({
       normalizedParams.op_sys = 'Unspecified' // NOTE: This might an actual value at a later evolution step of the app
       normalizedParams[caseServerFieldMapping.category] = normalizedParams[caseServerFieldMapping.category] || '---'
       normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
+      normalizedParams[caseServerFieldMapping.priority] = 'P3'
+      normalizedParams[caseServerFieldMapping.severity] = 'Normal'
 
       normalizedParams.api_key = apiKey
       let newCaseId

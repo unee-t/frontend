@@ -45,9 +45,7 @@ class CaseWizard extends Component {
         },
         optional: {
           category: null,
-          subCategory: null,
-          priority: null,
-          severity: null
+          subCategory: null
         }
       },
       needsNewUser: false,
