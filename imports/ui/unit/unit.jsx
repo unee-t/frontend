@@ -11,6 +11,7 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
+import IconButton from 'material-ui/IconButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
 import Reports, { collectionName as reportsCollName } from '../../api/reports'
@@ -195,36 +196,52 @@ class Unit extends Component {
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
-                    {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => (
-                      <div key={id} className='bb b--very-light-gray bg-white pv2'>
-                        <Link to={`/report/${id}/draft`} className='link'>
-                          <MenuItem innerDivStyle={menuItemDivStyle}>
-                            <div className='dib relative flex items-center'>
-                              <FontIcon className='material-icons' color='var(--mid-gray)'>
-                                content_paste
-                              </FontIcon>
-                              <div className='absolute bottom-0 right-0'>
-                                <div className='br-100 bg-white lh-cram'>
-                                  <FontIcon
-                                    className='material-icons'
-                                    color='var(--success-green)'
-                                    style={{fontSize: '0.75rem'}}
-                                  >
-                                    check_circle
+                    {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => {
+                      const isFinalized = status !== 'UNCONFIRMED'
+                      return (
+                        <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
+                          <Link to={`/report/${id}/draft`} className='link flex-grow flex'>
+                            <MenuItem innerDivStyle={menuItemDivStyle}>
+                              <div className='pv2 flex-grow flex items-center'>
+                                <div className='dib relative flex items-center'>
+                                  <FontIcon className='material-icons' color='var(--mid-gray)'>
+                                    content_paste
                                   </FontIcon>
+                                  <div className='absolute bottom-0 right-0'>
+                                    <div className='br-100 bg-white lh-cram'>
+                                      <FontIcon
+                                        className='material-icons'
+                                        color={isFinalized ? 'var(--success-green)' : 'var(--bondi-blue)'}
+                                        style={{fontSize: '0.75rem'}}
+                                      >
+                                        {isFinalized ? 'check_circle' : 'watch_later'}
+                                      </FontIcon>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className='ml3 lh-copy pv1 flex-grow'>
+                                  <div className='mid-gray ellipsis'>{title}</div>
+                                  <div className='silver mt1 f7 ellipsis'>
+                                    Created on {moment(date).format('DD/MM/YYYY')}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div className='ml3 lh-copy pv1 flex-grow'>
-                              <div className='mid-gray ellipsis'>{title}</div>
-                              <div className='silver mt1 f7 ellipsis'>
-                                Created on {moment(date).format('DD/MM/YYYY')}
-                              </div>
-                            </div>
-                          </MenuItem>
-                        </Link>
-                      </div>
-                    )) : (
+                            </MenuItem>
+                          </Link>
+                          {isFinalized && (
+                            <IconButton>
+                              <FontIcon
+                                className='material-icons'
+                                color='var(--mid-gray)'
+                                style={{fontSize: '1.25rem'}}
+                              >
+                                launch
+                              </FontIcon>
+                            </IconButton>
+                          )}
+                        </div>
+                      )
+                    }) : (
                       <div className='mt5 pt3 tc'>
                         <div className='dib relative'>
                           <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
