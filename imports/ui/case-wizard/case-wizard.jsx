@@ -214,56 +214,6 @@ class CaseWizard extends Component {
                 </SelectField>
               </div>
             </div>
-            <div className='flex'>
-              <div className='flex-grow mr2'>
-                <SelectField
-                  floatingLabelText='Priority'
-                  fullWidth
-                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  disabled={inProgress}
-                  value={priority}
-                  onChange={(evt, idx, val) => this.setState({
-                    inputValues: Object.assign({}, inputValues, {
-                      optional: Object.assign({}, optional, {
-                        priority: val
-                      })
-                    })
-                  })}
-                >
-                  {fieldValues.priority.values.map(({name}) => (
-                    <MenuItem key={name} value={name} primaryText={name} />
-                  ))}
-                </SelectField>
-              </div>
-              <div className='flex-grow ml2'>
-                <SelectField
-                  floatingLabelText='Severity'
-                  fullWidth
-                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  disabled={inProgress}
-                  value={severity}
-                  onChange={(evt, idx, val) => this.setState({
-                    inputValues: Object.assign({}, inputValues, {
-                      optional: Object.assign({}, optional, {
-                        severity: val
-                      })
-                    })
-                  })}
-                >
-                  {fieldValues.severity.values.map(({name}) => (
-                    <MenuItem key={name} value={name} primaryText={name} />
-                  ))}
-                </SelectField>
-              </div>
-            </div>
             <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
             <RadioButtonGroup
               name='assignedUnitRole'
