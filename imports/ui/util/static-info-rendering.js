@@ -17,6 +17,16 @@ InfoItemContainer.propTypes = {
   additionalClasses: PropTypes.string
 }
 
+export const InfoItemContainer2 = ({ children, additionalClasses = '' }) => (
+  <div className={'bb b--gray-93 pt2 pb3 ' + additionalClasses}>
+    {children}
+  </div>
+)
+InfoItemContainer2.propTypes = {
+  children: PropTypes.any.isRequired,
+  additionalClasses: PropTypes.string
+}
+
 export const InfoItemRow = ({ label, value }) => (
   <InfoItemContainer>
     {infoItemMembers(label, value)}

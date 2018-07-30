@@ -23,7 +23,7 @@ import { createCase, clearError } from './case-wizard.actions'
 import { placeholderEmailMatcher, roleCanBeOccupantMatcher } from '../../util/matchers'
 import { emailValidator } from '../../util/validators'
 import InputRow from '../components/input-row'
-import { infoItemMembers } from '../util/static-info-rendering'
+import { infoItemMembers, InfoItemContainer2 } from '../util/static-info-rendering'
 
 import {
   textInputFloatingLabelStyle,
@@ -117,7 +117,7 @@ class CaseWizard extends Component {
     const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant } = this.state
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
-    const { category, subCategory, priority, severity } = optional
+    const { category, subCategory } = optional
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
@@ -214,56 +214,16 @@ class CaseWizard extends Component {
                 </SelectField>
               </div>
             </div>
-            <div className='flex'>
-              <div className='flex-grow mr2'>
-                <SelectField
-                  floatingLabelText='Priority'
-                  fullWidth
-                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  disabled={inProgress}
-                  value={priority}
-                  onChange={(evt, idx, val) => this.setState({
-                    inputValues: Object.assign({}, inputValues, {
-                      optional: Object.assign({}, optional, {
-                        priority: val
-                      })
-                    })
-                  })}
-                >
-                  {fieldValues.priority.values.map(({name}) => (
-                    <MenuItem key={name} value={name} primaryText={name} />
-                  ))}
-                </SelectField>
+            <InfoItemContainer2>
+              <div className='flex'>
+                <div className='flex-grow mr3'>
+                  {infoItemMembers('Priority:', 'P3')}
+                </div>
+                <div className='flex-grow'>
+                  {infoItemMembers('Severity:', 'Normal')}
+                </div>
               </div>
-              <div className='flex-grow ml2'>
-                <SelectField
-                  floatingLabelText='Severity'
-                  fullWidth
-                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  disabled={inProgress}
-                  value={severity}
-                  onChange={(evt, idx, val) => this.setState({
-                    inputValues: Object.assign({}, inputValues, {
-                      optional: Object.assign({}, optional, {
-                        severity: val
-                      })
-                    })
-                  })}
-                >
-                  {fieldValues.severity.values.map(({name}) => (
-                    <MenuItem key={name} value={name} primaryText={name} />
-                  ))}
-                </SelectField>
-              </div>
-            </div>
+            </InfoItemContainer2>
             <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
             <RadioButtonGroup
               name='assignedUnitRole'
