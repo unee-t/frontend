@@ -117,7 +117,7 @@ class CaseWizard extends Component {
     const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant } = this.state
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
-    const { category, subCategory, priority, severity } = optional
+    const { category, subCategory } = optional
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
