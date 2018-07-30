@@ -4,7 +4,14 @@ import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { getUnitRoles } from './units'
-import { caseServerFieldMapping, REPORT_KEYWORD, factoryOptions as caseFactoryOpts, idUrlTemplate } from './cases'
+import {
+  caseServerFieldMapping,
+  REPORT_KEYWORD,
+  idUrlTemplate,
+  caseQueryBuilder,
+  associatedCasesQueryExps,
+  factoryOptions as caseFactoryOpts
+} from './cases'
 
 export const collectionName = 'reports'
 const factoryOptions = {
@@ -16,6 +23,37 @@ if (Meteor.isServer) {
   const publicationObj = publicationFactory(factoryOptions)
   Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
     uriTemplate: idUrlTemplate
+  }))
+  Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
+    uriTemplate: () => '/rest/bug',
+    queryBuilder: (subHandle, unitName) => {
+      if (!subHandle.userId) {
+        return {}
+      }
+      const currUser = Meteor.users.findOne(subHandle.userId)
+      const { login: userIdentifier } = currUser.bugzillaCreds
+      return caseQueryBuilder(
+        [
+          {
+            field: 'product',
+            operator: 'equals',
+            value: unitName
+          },
+          {
+            field: 'keywords',
+            operator: 'allwords',
+            value: REPORT_KEYWORD
+          },
+          ...associatedCasesQueryExps(userIdentifier)
+        ],
+        [
+          'product',
+          'summary',
+          'id',
+          'status'
+        ]
+      )
+    }
   }))
 }
 
