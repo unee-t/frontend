@@ -13,6 +13,7 @@ import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
+import Reports, { collectionName as reportsCollName } from '../../api/reports'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
 import CreateReportDialog from '../dialogs/create-report-dialog'
@@ -21,6 +22,7 @@ import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
+import moment from 'moment'
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
@@ -47,7 +49,7 @@ const severityIcons = {
   }
 }
 
-const caseMenuItemDivStyle = {
+const menuItemDivStyle = {
   display: 'flex',
   alignItems: 'center'
 }
@@ -98,7 +100,9 @@ class Unit extends Component {
   }
 
   render () {
-    const { unitItem, isLoading, unitError, casesError, unitUsers, dispatch, match } = this.props
+    const {
+      unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
+    } = this.props
     const { sortedCases, showOpenCases } = this.state
     const { filteredCases } = this
     const openCasesCount = sortedCases.filter(x => !isClosed(x))
@@ -109,6 +113,8 @@ class Unit extends Component {
     if (isLoading) return <Preloader />
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
     if (casesError) return <h1>An error occurred: {casesError.error}</h1>
+    if (reportsError) return <h1>An error occurred: {reportsError.error}</h1>
+
     const fabDescriptors = [
       {
         color: 'var(--bondi-blue)',
@@ -178,7 +184,7 @@ class Unit extends Component {
                           className='link'
                           onClick={() => dispatch(storeBreadcrumb(rootMatch.url))}
                         >
-                          <MenuItem innerDivStyle={caseMenuItemDivStyle}>
+                          <MenuItem innerDivStyle={menuItemDivStyle}>
                             <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
                               {severityIcons[severity].icon}
                             </FontIcon>
@@ -189,23 +195,54 @@ class Unit extends Component {
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
-                    <div className='mt5 pt3 tc'>
-                      <div className='dib relative'>
-                        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
-                          content_paste
-                        </FontIcon>
-                        <div className='absolute bottom-0 right-0 pb1'>
-                          <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
-                            <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
-                              add_circle_outline
-                            </FontIcon>
+                    {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => (
+                      <div key={id} className='bb b--very-light-gray bg-white pv2'>
+                        <Link to={`/report/${id}/draft`} className='link'>
+                          <MenuItem innerDivStyle={menuItemDivStyle}>
+                            <div className='dib relative flex items-center'>
+                              <FontIcon className='material-icons' color='var(--mid-gray)'>
+                                content_paste
+                              </FontIcon>
+                              <div className='absolute bottom-0 right-0'>
+                                <div className='br-100 bg-white lh-cram'>
+                                  <FontIcon
+                                    className='material-icons'
+                                    color='var(--success-green)'
+                                    style={{fontSize: '0.75rem'}}
+                                  >
+                                    check_circle
+                                  </FontIcon>
+                                </div>
+                              </div>
+                            </div>
+                            <div className='ml3 lh-copy pv1 flex-grow'>
+                              <div className='mid-gray ellipsis'>{title}</div>
+                              <div className='silver mt1 f7 ellipsis'>
+                                Created on {moment(date).format('DD/MM/YYYY')}
+                              </div>
+                            </div>
+                          </MenuItem>
+                        </Link>
+                      </div>
+                    )) : (
+                      <div className='mt5 pt3 tc'>
+                        <div className='dib relative'>
+                          <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
+                            content_paste
+                          </FontIcon>
+                          <div className='absolute bottom-0 right-0 pb1'>
+                            <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
+                              <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+                                add_circle_outline
+                              </FontIcon>
+                            </div>
                           </div>
                         </div>
+                        <div className='mid-gray b lh-copy'>
+                          You have no inspection reports yet
+                        </div>
                       </div>
-                      <div className='mid-gray b lh-copy'>
-                        You have no inspection reports yet
-                      </div>
-                    </div>
+                    )}
                     <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
                         show={!!match}
@@ -292,12 +329,14 @@ Unit.propTypes = {
   unitItem: PropTypes.object,
   unitError: PropTypes.object,
   casesError: PropTypes.object,
+  reportsError: PropTypes.object,
   isLoading: PropTypes.bool,
   unitUsers: PropTypes.array,
-  caseList: PropTypes.array
+  caseList: PropTypes.array,
+  reportList: PropTypes.array
 }
 
-let unitError, casesError
+let unitError, casesError, reportsError
 export default connect(
   () => ({})
 )(createContainer((props) => {
@@ -308,18 +347,25 @@ export default connect(
     }
   })
   const unitItem = unitHandle.ready() ? Units.findOne({id: parseInt(unitId)}) : null
-  let casesHandle
+  let casesHandle, reportsHandle
   if (unitItem) {
     casesHandle = Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
       onStop: error => {
         casesError = error
       }
     })
+    reportsHandle = Meteor.subscribe(`${reportsCollName}.byUnitName`, unitItem.name, {
+      onStop: error => {
+        reportsError = error
+      }
+    })
   }
   return {
-    isLoading: !unitHandle.ready() || !casesHandle.ready(),
+    isLoading: !unitHandle.ready() || !casesHandle.ready() || !reportsHandle.ready(),
     unitUsers: unitItem ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
     caseList: unitItem ? Cases.find({selectedUnit: unitItem.name}).fetch() : null,
+    reportList: unitItem ? Reports.find({selectedUnit: unitItem.name}).fetch() : null,
+    reportsError,
     casesError,
     unitError,
     unitItem
