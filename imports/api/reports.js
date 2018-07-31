@@ -50,7 +50,8 @@ if (Meteor.isServer) {
           'product',
           'summary',
           'id',
-          'status'
+          'status',
+          'creation_time'
         ]
       )
     }

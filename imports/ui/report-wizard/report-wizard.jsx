@@ -85,7 +85,7 @@ class ReportWizard extends Component {
               {infoItemMembers('Unit', unitDisplayName)}
             </div>
             <div className='pt1'>
-              {infoItemMembers('Created on', moment().format('DD/MM/YYYY'))}
+              {infoItemMembers('Created on', moment(reportItem.creation_time).format('DD/MM/YYYY'))}
             </div>
             <div className='mt2 pt1'>
               {infoItemLabel('Created by')}
