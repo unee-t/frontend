@@ -371,7 +371,6 @@ Meteor.methods({
         console.log(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
         // TODO: Add real time update handler usage
       } catch (e) {
-        // TODO: adopt this error format for other API errors too
         console.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
