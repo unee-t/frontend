@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { goBack, replace, push } from 'react-router-redux'
+import { goBack, push } from 'react-router-redux'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
@@ -33,25 +33,8 @@ class ReportWizard extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      selectedUnit: null,
       reportTitle: null,
       initDone: false
-    }
-  }
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.preferredUnitId && !nextProps.isLoading && !this.state.initDone) {
-      this.setState({
-        selectedUnit: nextProps.unitList.find(u => u.id === parseInt(nextProps.preferredUnitId)).name,
-        initDone: true
-      })
-    }
-  }
-  componentDidUpdate (prevProps, prevState) {
-    const { dispatch, match, unitList } = this.props
-    const { selectedUnit } = this.state
-    if (prevState.selectedUnit !== selectedUnit) {
-      const unitId = unitList.find(unit => unit.name === selectedUnit).id
-      dispatch(replace(`${match.url}?unit=${unitId}`))
     }
   }
   render () {
