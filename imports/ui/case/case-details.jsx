@@ -123,14 +123,14 @@ class CaseDetails extends Component {
     </InfoItemContainer>
   )
 
-  renderPrioritySeverityLine = () => (
+  renderPrioritySeverityLine = ({priority, severity}) => (
     <InfoItemContainer>
       <div className='flex'>
         <div className='flex-grow'>
-          {infoItemMembers('Priority:', 'P3')}
+          {infoItemMembers('Priority:', priority)}
         </div>
         <div className='flex-grow'>
-          {infoItemMembers('Severity:', 'Normal')}
+          {infoItemMembers('Severity:', severity)}
         </div>
       </div>
     </InfoItemContainer>
@@ -381,7 +381,7 @@ class CaseDetails extends Component {
         {this.renderUnitDescription(unitItem)}
         {this.renderStatusLine(caseItem, cfvDictionary)}
         {this.renderCategoriesLine(caseItem)}
-        {this.renderPrioritySeverityLine()}
+        {this.renderPrioritySeverityLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations)}
         {this.renderPeopleInvolved(
