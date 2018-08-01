@@ -298,7 +298,7 @@ export default withRouter(connect(
   }
 )(createContainer(
   (props) => {
-    const enumFields = ['category', 'subCategory', 'priority', 'severity']
+    const enumFields = ['category', 'subCategory']
     const { unit } = parseQueryString(props.location.search)
     const loadingUnitInfo = !Meteor.subscribe(`${unitsCollName}.byId`, unit).ready()
     const unitIdInt = parseInt(unit)
