@@ -164,10 +164,15 @@ class Unit extends Component {
                       </div>
                     </div>
                     {filteredCases.map(caseItem => (
-                      <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                        dispatch(storeBreadcrumb(rootMatch.url))
-                        dispatch(push(`/case/${caseItem.id}`))
-                      }} />
+                      <CaseMenuItem
+                        key={caseItem.id}
+                        className='ph3'
+                        caseItem={caseItem}
+                        onClick={() => {
+                          dispatch(storeBreadcrumb(rootMatch.url))
+                          dispatch(push(`/case/${caseItem.id}`))
+                        }}
+                      />
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>

@@ -28,11 +28,12 @@ const severityIcons = {
 
 const menuItemDivStyle = {
   display: 'flex',
-  alignItems: 'center'
+  alignItems: 'center',
+  padding: 0
 }
 
-const CaseMenuItem = ({ caseItem: { severity, title }, onClick }) => (
-  <div className='bb b--very-light-gray bg-white'>
+const CaseMenuItem = ({ caseItem: { severity, title }, onClick, className = '' }) => (
+  <div className={'bb b--very-light-gray bg-white ' + className}>
     <MenuItem
       innerDivStyle={menuItemDivStyle}
       onClick={onClick}
@@ -47,7 +48,8 @@ const CaseMenuItem = ({ caseItem: { severity, title }, onClick }) => (
 
 CaseMenuItem.propTypes = {
   caseItem: PropTypes.object.isRequired,
-  onClick: PropTypes.func
+  onClick: PropTypes.func,
+  className: PropTypes.string
 }
 
 export default CaseMenuItem
