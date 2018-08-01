@@ -9,11 +9,14 @@ import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Reports, { collectionName } from '../../api/reports'
+import Cases, { collectionName as casesCollName } from '../../api/cases'
 import InnerAppBar from '../components/inner-app-bar'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { makeMatchingUser } from '../../api/custom-users'
+import CaseMenuItem from '../components/case-menu-item'
+import { storeBreadcrumb } from '../general-actions'
 
 const addIconStyle = {
   fontSize: '1rem',
@@ -38,7 +41,7 @@ class ReportWizard extends Component {
     }
   }
   render () {
-    const { unitItem, reportItem, isLoading, user, dispatch } = this.props
+    const { unitItem, reportItem, isLoading, user, dispatch, childCases, match } = this.props
 
     if (isLoading) {
       return <Preloader />
@@ -76,19 +79,28 @@ class ReportWizard extends Component {
             </div>
           </div>
           <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
-            <div className='b dark-gray lh-copy'>
+            <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
               Would you like to report any issue with the unit?
             </div>
-            {makeCreationButton('Add case', () => dispatch(push(`/case/new?unit=${unitItem.id}`)))}
+            {childCases.map(caseItem => (
+              <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
+                dispatch(storeBreadcrumb(match.url))
+                dispatch(push(`/case/${caseItem.id}`))
+              }} />
+            ))}
+            {makeCreationButton(
+              'Add case',
+              () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
+            )}
           </div>
-          <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
+          {/* <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
             {infoItemLabel('Rooms')}
             <div className='moon-gray f7 mt2'>
               There are no rooms added to this Inspection Report yet. Click
               Add room to begin.
             </div>
             {makeCreationButton('Add room', () => {})}
-          </div>
+          </div> */}
         </div>
       </div>
     )
@@ -99,6 +111,7 @@ ReportWizard.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   unitItem: PropTypes.object,
   reportItem: PropTypes.object,
+  childCases: PropTypes.array,
   user: PropTypes.object
 }
 
@@ -110,13 +123,24 @@ export default connect(
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
     const reportItem = reportHandle.ready() ? Reports.findOne({id: parseInt(reportId)}) : null
     const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
-    let unitHandle
+    let unitHandle, childHandles
     if (reportItem) {
       unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit)
+      childHandles = reportItem.blocks.map(
+        caseId => Meteor.subscribe(`${casesCollName}.byId`, caseId)
+      )
     }
     return {
-      isLoading: !reportHandle.ready() || (unitHandle && !unitHandle.ready()) || !bzLoginHandle.ready(),
+      isLoading: !reportHandle.ready() ||
+        (unitHandle && !unitHandle.ready()) ||
+        !bzLoginHandle.ready() ||
+        childHandles.filter(handle => !handle.ready()).length > 0,
       unitItem: reportItem ? Units.findOne({name: reportItem.selectedUnit}) : null,
+      childCases: reportItem ? Cases.find({
+        id: {
+          $in: reportItem.blocks
+        }
+      }).fetch() : null,
       user: Meteor.user(),
       reportItem
     }
