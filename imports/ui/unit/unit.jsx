@@ -12,6 +12,7 @@ import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import IconButton from 'material-ui/IconButton'
+import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
 import Reports, { collectionName as reportsCollName } from '../../api/reports'
@@ -23,32 +24,17 @@ import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
-import moment from 'moment'
+import CaseMenuItem from '../components/case-menu-item'
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
-const severityIcons = {
-  'DEAL BREAKER!': {
-    icon: 'format_align_justify',
-    color: 'var(--warn-crimson)'
-  },
-  'critical': {
-    icon: 'reorder',
-    color: '#F00000'
-  },
-  'major': {
-    icon: 'dehaze',
-    color: '#FF6701'
-  },
-  'normal': {
-    icon: 'drag_handle',
-    color: '#4A90E2'
-  },
-  'minor': {
-    icon: 'remove',
-    color: '#99CC33'
-  }
-}
+const severityIndex = [
+  'DEAL BREAKER!',
+  'critical',
+  'major',
+  'normal',
+  'minor'
+]
 
 const menuItemDivStyle = {
   display: 'flex',
@@ -91,10 +77,9 @@ class Unit extends Component {
   componentWillReceiveProps (nextProps) {
     const { caseList } = this.props
     if ((!caseList && nextProps.caseList) || (caseList && caseList.length !== nextProps.caseList.length)) {
-      const severityList = Object.keys(severityIcons)
       this.setState({
         sortedCases: nextProps.caseList.slice().sort((a, b) =>
-          severityList.indexOf(a.severity) - severityList.indexOf(b.severity)
+          severityIndex.indexOf(a.severity) - severityIndex.indexOf(b.severity)
         )
       })
     }
@@ -178,21 +163,11 @@ class Unit extends Component {
                         {closedCasesCount.length} Closed
                       </div>
                     </div>
-                    {filteredCases.map(({id, title, severity}) => (
-                      <div key={id} className='bb b--very-light-gray bg-white'>
-                        <Link
-                          to={`/case/${id}`}
-                          className='link'
-                          onClick={() => dispatch(storeBreadcrumb(rootMatch.url))}
-                        >
-                          <MenuItem innerDivStyle={menuItemDivStyle}>
-                            <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
-                              {severityIcons[severity].icon}
-                            </FontIcon>
-                            <span className='bondi-blue pl1 ellipsis'>{title}</span>
-                          </MenuItem>
-                        </Link>
-                      </div>
+                    {filteredCases.map(caseItem => (
+                      <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
+                        dispatch(storeBreadcrumb(rootMatch.url))
+                        dispatch(push(`/case/${caseItem.id}`))
+                      }} />
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
