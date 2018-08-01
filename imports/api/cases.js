@@ -316,7 +316,7 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant }) {
+  [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant, parentReportId }) {
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
@@ -375,10 +375,34 @@ Meteor.methods({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
           args: [params],
+          step: 'post /rest/bug bugzilla API',
           error: e
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
+
+      // Creating dependency on "inspection_report" case
+      if (parentReportId) {
+        const payload = {
+          api_key: apiKey,
+          depends_on: {
+            set: [parentReportId]
+          }
+        }
+        try {
+          callAPI('put', `/rest/bug/${newCaseId}`, payload, false, true)
+        } catch (e) {
+          console.error({
+            user: Meteor.userId(),
+            method: `${collectionName}.insert`,
+            args: [params],
+            step: 'put /rest/bug bugzilla API (creating report dependency)',
+            error: e
+          })
+          throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+        }
+      }
+
       if (newUserEmail) {
         createPendingInvitation(
           newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED
