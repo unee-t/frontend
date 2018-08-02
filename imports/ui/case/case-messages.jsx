@@ -28,6 +28,7 @@ import {
   sendIconStyle,
   addPersonCaseMsg
 } from './case.mui-styles'
+import { TYPE_ASSIGNED } from '../../api/pending-invitations'
 
 import {
   whiteTextInputStyle
@@ -172,15 +173,89 @@ class CaseMessages extends Component {
             // Creating a day label
             listItems.push(this.renderDayLabel(comment, currKey++))
           }
-
           // Creating a message item
           listItems.push(this.renderSingleMessage(comment, currKey++))
           return listItems
         }, [])}
+        {this.renderChatBotMsg()}
+        {this.renderChatBotMsg2()}
+        {this.renderChatBotMsg3()}
       </div>
     )
   }
 
+  renderChatBotMsg () {
+    // const botMsg = []
+    const creationTime = (new Date()).toISOString()
+    const assignee = this.props.pendingInvitations.map(inv => {
+      const { bugzillaCreds: { login }, profile: { name }, emails: [{address: email}] } = inv.inviteeUser()
+      return {
+        name,
+        login,
+        email,
+        role: inv.role,
+        type: inv.type
+      }
+    })
+    const assignedUserRole = assignee.find(u => u.type === TYPE_ASSIGNED).role
+    return (
+      <div className='mb3 mr2'>
+        <div className='mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white'>
+          <span className='bondi-blue f6 pb1'> Unee-T </span>
+          <div className='f5 mr3 pv1'> You've created a new case!
+            The case has been assigned to <span className='fw5'> {assignedUserRole} </span>
+            and we've notified them.
+          </div>
+          <div className={styles.messageTime + ' fr f7'}>
+            {moment(creationTime).format('HH:mm')}
+          </div>
+        </div>
+      </div>
+    )
+  }
+  // border bottom does not stretch entirely to the whole chat msg; 
+  renderChatBotMsg2 () {
+    // const creationTime = (new Date()).toISOString()
+    console.log('show me props', this.props)
+    const caseId = this.props.caseItem._id
+    console.log('caseId', caseId)
+    return (
+      <div className='mb3 mr2'>
+        <div className='mw-60 cf br3 pv2 pl3 pr2 mh2 dib tl bg-white'>
+          <span className='bondi-blue f6 pb1'> Unee-T </span>
+          <div className='bb b--gray-93 pv1'>
+            Would you like to inform someone else about this case?
+          </div>
+          <Link to={`/case/${caseId}/details/invite`} className='link'>
+            <div className='tc bondi-blue pt1'>
+              Invite People
+            </div>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  renderChatBotMsg3 () {
+    return (
+      <div className='mb3 mr2'>
+        <div className='mw-60 cf br3 pv2 pl3 pr2 mh2 dib tl bg-white'>
+          <span className='bondi-blue f6 pb1'> Unee-T </span>
+          <div className='bb b--gray-93 pv1'>
+            <span className='fw5'>Tip: </span> You can also add photos to your case so your correspondents have a
+            better understanding of the case
+          </div>
+          {/* <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} /> */}
+          <div className='tc bondi-blue pt1'>
+            <label>
+              Add Photo
+              <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
+            </label>
+          </div>
+        </div>
+      </div>
+    )
+  }
   renderDayLabel ({creation_time: creationTime}, key) {
     const dayString = formatDayText(creationTime)
     return (
