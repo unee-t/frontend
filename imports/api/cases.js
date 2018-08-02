@@ -381,11 +381,11 @@ Meteor.methods({
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
 
-      // Creating dependency on "inspection_report" case
+      // Creating report's dependency on this case
       if (parentReportId) {
         const payload = {
           api_key: apiKey,
-          depends_on: {
+          blocks: {
             set: [parentReportId]
           }
         }

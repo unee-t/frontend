@@ -126,7 +126,7 @@ export default connect(
     let unitHandle, childHandles
     if (reportItem) {
       unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit)
-      childHandles = reportItem.blocks.map(
+      childHandles = reportItem.depends_on.map(
         caseId => Meteor.subscribe(`${casesCollName}.byId`, caseId)
       )
     }
@@ -138,7 +138,7 @@ export default connect(
       unitItem: reportItem ? Units.findOne({name: reportItem.selectedUnit}) : null,
       childCases: reportItem ? Cases.find({
         id: {
-          $in: reportItem.blocks
+          $in: reportItem.depends_on
         }
       }).fetch() : null,
       user: Meteor.user(),
