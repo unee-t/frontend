@@ -135,7 +135,7 @@ class Unit extends Component {
                 inkBarStyle={{backgroundColor: 'white'}}
               >
                 <Tab label={`CASES (${sortedCases.length})`} value={0} />
-                <Tab label='REPORTS' value={1} />
+                <Tab label={`REPORTS (${reportList.length})`} value={1} />
                 <Tab label='OVERVIEW' value={2} />
               </Tabs>
               <div className='flex-grow flex flex-column overflow-auto'>
