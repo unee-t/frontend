@@ -161,25 +161,25 @@ class CaseMessages extends Component {
     let lastDay = ''
     let currKey = 0
     this.creators = []
+    const listItems = messageList.reduce((listItems, comment) => { // Rendering all starting from the second
+      const currDay = comment['creation_time'].slice(0, 10)
+      // Checking if the day of this message is different than the previous
+      if (currDay !== lastDay) {
+        lastDay = currDay
+        // Creating a day label
+        listItems.push(this.renderDayLabel(comment, currKey++))
+      }
+      // Creating a message item
+      listItems.push(this.renderSingleMessage(comment, currKey++))
+      return listItems
+    }, [])
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
-        {messageList.reduce((listItems, comment) => { // Rendering all starting from the second
-          const currDay = comment['creation_time'].slice(0, 10)
-
-          // Checking if the day of this message is different than the previous
-          if (currDay !== lastDay) {
-            lastDay = currDay
-
-            // Creating a day label
-            listItems.push(this.renderDayLabel(comment, currKey++))
-          }
-          // Creating a message item
-          listItems.push(this.renderSingleMessage(comment, currKey++))
-          return listItems
-        }, [])}
+        {listItems.slice(0, 2)}
         {this.renderChatBotMsg()}
         {this.renderChatBotMsg2()}
         {this.renderChatBotMsg3()}
+        {listItems.slice(2)}
       </div>
     )
   }
@@ -213,9 +213,8 @@ class CaseMessages extends Component {
       </div>
     )
   }
-  // border bottom does not stretch entirely to the whole chat msg; 
+
   renderChatBotMsg2 () {
-    // const creationTime = (new Date()).toISOString()
     console.log('show me props', this.props)
     const caseId = this.props.caseItem._id
     console.log('caseId', caseId)
@@ -223,7 +222,7 @@ class CaseMessages extends Component {
       <div className='mb3 mr2'>
         <div className='mw-60 cf br3 pv2 pl3 pr2 mh2 dib tl bg-white'>
           <span className='bondi-blue f6 pb1'> Unee-T </span>
-          <div className='bb b--gray-93 pv1'>
+          <div className='bb b--gray-93 pv1 f5 mr3'>
             Would you like to inform someone else about this case?
           </div>
           <Link to={`/case/${caseId}/details/invite`} className='link'>
@@ -241,8 +240,8 @@ class CaseMessages extends Component {
       <div className='mb3 mr2'>
         <div className='mw-60 cf br3 pv2 pl3 pr2 mh2 dib tl bg-white'>
           <span className='bondi-blue f6 pb1'> Unee-T </span>
-          <div className='bb b--gray-93 pv1'>
-            <span className='fw5'>Tip: </span> You can also add photos to your case so your correspondents have a
+          <div className='bb b--gray-93 pv1 f5 mr3'>
+            <span className='fw5'>Tip: </span> You can also add photos 🖼️ to your case so your correspondents have a
             better understanding of the case
           </div>
           {/* <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} /> */}
@@ -299,6 +298,7 @@ class CaseMessages extends Component {
         { !isSelf ? (
           <div className={themes.creatorText + ' f6 ellipsis'}>{creatorText}</div>
         ) : ''}
+        {/* <span className='bondi-blue f6 pb1'> You </span> */}
         <span className='f5 mr3'>{text}</span>
         <div className={styles.messageTime + ' fr f7'}>
           {moment(creationTime).format('HH:mm')}
