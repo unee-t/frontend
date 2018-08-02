@@ -74,7 +74,7 @@ class Unit extends Component {
   handleStatusClicked (value) {
     this.setState({ showOpenCases: value })
   }
-  
+
   handleAssignedClicked () {
     this.setState({ assignedToMe: !this.state.assignedToMe })
   }
@@ -155,7 +155,7 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
                       <div
-                        className={'f6 fw5 ph2' + (showOpenCases ? 'mid-gray' : 'silver')}
+                        className={'f6 fw5 ph2 ' + (showOpenCases ? 'mid-gray' : 'silver')}
                         onClick={() => this.handleStatusClicked(true)}
                       >
                         Open
