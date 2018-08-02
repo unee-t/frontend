@@ -180,9 +180,9 @@ class Unit extends Component {
                       const isFinalized = status !== 'UNCONFIRMED'
                       return (
                         <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
-                          <Link to={`/report/${id}/draft`} className='link flex-grow flex'>
+                          <Link to={`/report/${id}/draft`} className='link flex-grow relative w-100'>
                             <MenuItem innerDivStyle={menuItemDivStyle}>
-                              <div className='pv2 flex-grow flex items-center'>
+                              <div className='pv2 flex-grow flex items-center w-100'>
                                 <div className='dib relative flex items-center'>
                                   <FontIcon className='material-icons' color='var(--mid-gray)'>
                                     content_paste
@@ -199,7 +199,7 @@ class Unit extends Component {
                                     </div>
                                   </div>
                                 </div>
-                                <div className='ml3 lh-copy pv1 flex-grow'>
+                                <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
                                   <div className='mid-gray ellipsis'>{title}</div>
                                   <div className='silver mt1 f7 ellipsis'>
                                     Created on {moment(date).format('DD/MM/YYYY')}
