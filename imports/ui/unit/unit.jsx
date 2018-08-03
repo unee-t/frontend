@@ -58,27 +58,25 @@ class Unit extends Component {
     super(...arguments)
     this.state = {
       showOpenCases: true,
-      sortedCases: []
+      sortedCases: [],
+      assignedToMe: false
     }
   }
 
   get filteredCases () {
-    const { showOpenCases, sortedCases } = this.state
-    const openCases = sortedCases.filter(x => !isClosed(x))
-    const closedCases = sortedCases.filter(x => isClosed(x))
-    if (showOpenCases) {
-      return openCases
-    } else {
-      return closedCases
-    }
+    const { showOpenCases, sortedCases, assignedToMe } = this.state
+    const openFilter = showOpenCases ? x => !isClosed(x) : x => isClosed(x)
+    const assignedFilter = assignedToMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+    const filteredCases = sortedCases.filter(caseItem => openFilter(caseItem) && assignedFilter(caseItem))
+    return filteredCases
   }
 
-  handleOpenClicked = () => {
-    this.setState({ showOpenCases: true })
+  handleStatusClicked (value) {
+    this.setState({ showOpenCases: value })
   }
 
-  handleClosedClicked = () => {
-    this.setState({ showOpenCases: false })
+  handleAssignedClicked () {
+    this.setState({ assignedToMe: !this.state.assignedToMe })
   }
 
   handleChange = val => {
@@ -100,10 +98,8 @@ class Unit extends Component {
 
   render () {
     const { unitItem, isLoading, unitError, casesError, unitUsers, dispatch, match } = this.props
-    const { sortedCases, showOpenCases } = this.state
+    const { sortedCases, showOpenCases, assignedToMe } = this.state
     const { filteredCases } = this
-    const openCasesCount = sortedCases.filter(x => !isClosed(x))
-    const closedCasesCount = sortedCases.filter(x => isClosed(x))
     const rootMatch = match
     const { unitId } = match.params
 
@@ -159,16 +155,22 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
                       <div
-                        className={'f6 fw5 ' + (showOpenCases ? 'mid-gray' : 'silver')}
-                        onClick={this.handleOpenClicked}
+                        className={'f6 fw5 ph2 ' + (showOpenCases ? 'mid-gray' : 'silver')}
+                        onClick={() => this.handleStatusClicked(true)}
                       >
-                        {openCasesCount.length} Open
+                        Open
                       </div>
                       <div
-                        className={'f6 fw5 ml2 ' + (showOpenCases ? 'silver' : 'mid-gray')}
-                        onClick={this.handleClosedClicked}
+                        className={'f6 fw5 ml4 ph2 ' + (!showOpenCases ? 'mid-gray' : 'silver')}
+                        onClick={() => this.handleStatusClicked(false)}
                       >
-                        {closedCasesCount.length} Closed
+                        Closed
+                      </div>
+                      <div
+                        onClick={() => this.handleAssignedClicked()}
+                        className={'f6 fw5 ml4 ph2 ' + (assignedToMe ? 'mid-gray' : 'silver')}
+                      >
+                        Assigned To Me
                       </div>
                     </div>
                     {filteredCases.map(({id, title, severity}) => (
@@ -323,6 +325,7 @@ export default connect(
     isLoading: !unitHandle.ready() || !casesHandle.ready(),
     unitUsers: unitItem ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
     caseList: unitItem ? Cases.find({selectedUnit: unitItem.name}).fetch() : null,
+    currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
     casesError,
     unitError,
     unitItem
