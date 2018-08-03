@@ -28,8 +28,6 @@ import {
   sendIconStyle,
   addPersonCaseMsg
 } from './case.mui-styles'
-import { TYPE_ASSIGNED } from '../../api/pending-invitations'
-
 import {
   whiteTextInputStyle
 } from '../components/form-controls.mui-styles'
@@ -197,17 +195,7 @@ class CaseMessages extends Component {
 
   assigneeChatBot () {
     const creationTime = (new Date()).toISOString()
-    const assignee = this.props.pendingInvitations.map(inv => {
-      const { bugzillaCreds: { login }, profile: { name }, emails: [{address: email}] } = inv.inviteeUser()
-      return {
-        name,
-        login,
-        email,
-        role: inv.role,
-        type: inv.type
-      }
-    })
-    const assignedUserRole = assignee.find(u => u.type === TYPE_ASSIGNED).role
+    const assignedUserRole = this.props.caseItem.assignedUnitRole
     return (
       <div>
         <div className='f5 mr3 pv1'>

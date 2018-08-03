@@ -103,7 +103,7 @@ export class Case extends Component {
             <Switch>
               <Route exact path={match.url} render={() => (
                 <CaseMessages
-                  {...{caseItem, comments, attachmentUploads, pendingInvitations, userBzLogin}}
+                  {...{caseItem, comments, attachmentUploads, userBzLogin}}
                   onCreateComment={text => dispatch(createComment(text, caseId))}
                   onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
                   onRetryAttachment={process => dispatch(retryAttachment(process))}
