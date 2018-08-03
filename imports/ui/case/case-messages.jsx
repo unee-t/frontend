@@ -284,7 +284,6 @@ class CaseMessages extends Component {
         { !isSelf ? (
           <div className={themes.creatorText + ' f6 ellipsis'}>{creatorText}</div>
         ) : ''}
-        {/* <span className='bondi-blue f6 pb1'> You </span> */}
         <span className='f5 mr3'>{text}</span>
         <div className={styles.messageTime + ' fr f7'}>
           {moment(creationTime).format('HH:mm')}
