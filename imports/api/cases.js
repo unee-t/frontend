@@ -189,7 +189,7 @@ if (Meteor.isServer) {
         v6: userIdentifier,
         list_id: '8',
         query_format: 'advanced',
-        include_fields: 'product,summary,id,status,severity'
+        include_fields: 'product,summary,id,status,severity, assigned_to'
       }
     },
     addedMatcherFactory: strQuery => {
