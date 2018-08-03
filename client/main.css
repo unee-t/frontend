@@ -265,6 +265,9 @@
 .justify-space {
   justify-content: space-between;
 }
+.justify-end {
+  justify-content: flex-end;
+}
 
 /* Functional CSS additions */
 .ellipsis {

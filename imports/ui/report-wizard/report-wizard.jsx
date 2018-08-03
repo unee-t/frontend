@@ -4,9 +4,11 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, push } from 'react-router-redux'
+import { Route } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
+import RaisedButton from 'material-ui/RaisedButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Reports, { collectionName } from '../../api/reports'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
@@ -16,7 +18,9 @@ import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
+import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { storeBreadcrumb } from '../general-actions'
+import { finalizeReport } from './report-wizard.actions'
 
 const addIconStyle = {
   fontSize: '1rem',
@@ -62,7 +66,7 @@ class ReportWizard extends Component {
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
-        <div className='flex-grow bg-very-light-gray overflow-auto'>
+        <div className='flex-grow bg-very-light-gray flex flex-column overflow-auto'>
           <div className='bg-white card-shadow-1 pa3'>
             <div>
               {infoItemMembers('Report title', reportItem.title)}
@@ -101,7 +105,36 @@ class ReportWizard extends Component {
             </div>
             {makeCreationButton('Add room', () => {})}
           </div> */}
+
+          {/* temp */}
+          <div className='flex-grow' />
+
+          <div className='bg-white ph3 pb3 pt4 mt2 tr'>
+            <div className='dib flex justify-end'>
+              <RaisedButton
+                primary
+                onClick={() => dispatch(push(`${match.url}/confirm`))}
+              >
+                <span className='white mh4'>
+                  Complete
+                </span>
+              </RaisedButton>
+            </div>
+          </div>
         </div>
+        <Route exact path={`${match.url}/confirm`} children={({ match }) => (
+          <ConfirmationDialog
+            show={!!match}
+            title='Are you sure it is complete?'
+            onConfirm={() => dispatch(finalizeReport(reportItem.id))}
+            onCancel={() => dispatch(goBack())}
+          >
+            <div className='near-black'>
+              You will not be able to make any further changes to this version of the report
+            </div>
+          </ConfirmationDialog>
+        )} />
+
       </div>
     )
   }
