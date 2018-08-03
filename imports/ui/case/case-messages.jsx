@@ -47,10 +47,15 @@ const additionalSubHeader = (label, info, onClick, lastIndex, colorName) => (
 
 function ChatBotUI (props) {
   return (
-    <div className='mb3 mr2'>
-      <div className='mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white'>
+    <div className='flex flex-column mb3 mr2'>
+      <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (props.link ? '√br--top bb b--gray-93' : '')}>
         <span className='bondi-blue f6 pb1'> Unee-T </span>
-        {props.msg}
+        <div className='pv1 f5 mr3'>
+          {props.msg}
+        </div>
+      </div>
+      <div className='mw-60 cf br3 br--bottom pl3 pr2 mh2 dib tl bg-white'>
+        {props.link}
       </div>
     </div>
   )
@@ -185,24 +190,28 @@ class CaseMessages extends Component {
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
         {listItems.slice(0, 2)}
-        <ChatBotUI msg={this.assigneeChatBot()} />
-        <ChatBotUI msg={this.inviteChatBot()} />
-        <ChatBotUI msg={this.photoChatBot()} />
+        <ChatBotUI msg={this.assigneeBot()} />
+        <ChatBotUI
+          msg='Would you like to inform someone else about this case?'
+          link={this.inviteBot()} />
+        <ChatBotUI
+          msg={[<span className='fw5'>Tip: </span>,
+            'You can also add photos to your case so your correspondents have a better understanding of the case'
+          ]}
+          link={this.photoBot()} />
         {listItems.slice(2)}
       </div>
     )
   }
 
-  assigneeChatBot () {
+  assigneeBot () {
     const creationTime = (new Date()).toISOString()
     const assignedUserRole = this.props.caseItem.assignedUnitRole
     return (
       <div>
-        <div className='f5 mr3 pv1'>
           You've created a new case!
           The case has been assigned to <span className='fw5'> {assignedUserRole} </span>
           and we've notified them.
-        </div>
         <div className={styles.messageTime + ' fr f7'}>
           {moment(creationTime).format('HH:mm')}
         </div>
@@ -210,38 +219,28 @@ class CaseMessages extends Component {
     )
   }
 
-  inviteChatBot () {
+  inviteBot () {
     const caseId = this.props.caseItem._id
     return (
-      <div className='pv1 f5 mr3'>
-        <div className='bb b--gray-93'>
-          Would you like to inform someone else about this case?
+      <Link to={`/case/${caseId}/details/invite`} className='link'>
+        <div className='tc bondi-blue pv2'>
+        Invite People
         </div>
-        <Link to={`/case/${caseId}/details/invite`} className='link'>
-          <div className='tc bondi-blue pt1'>
-            Invite People
-          </div>
-        </Link>
+      </Link>
+    )
+  }
+
+  photoBot () {
+    return (
+      <div className='tc bondi-blue pv2'>
+        <label>
+          Add Photo
+          <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
+        </label>
       </div>
     )
   }
 
-  photoChatBot () {
-    return (
-      <div className='pv1 f5 mr3'>
-        <div className='bb b--gray-93'>
-          <span className='fw5'>Tip: </span> You can also add photos 🖼️ to your case so your correspondents have a
-          better understanding of the case
-        </div>
-        <div className='tc bondi-blue pt1'>
-          <label>
-            Add Photo
-            <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
-          </label>
-        </div>
-      </div>
-    )
-  }
   renderDayLabel ({creation_time: creationTime}, key) {
     const dayString = formatDayText(creationTime)
     return (
