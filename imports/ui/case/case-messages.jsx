@@ -48,7 +48,7 @@ const additionalSubHeader = (label, info, onClick, lastIndex, colorName) => (
 function ChatBotUI (props) {
   return (
     <div className='flex flex-column mb3 mr2'>
-      <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (props.link ? '√br--top bb b--gray-93' : '')}>
+      <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (props.link ? 'br--top bb b--gray-93' : '')}>
         <span className='bondi-blue f6 pb1'> Unee-T </span>
         <div className='pv1 f5 mr3'>
           {props.msg}
