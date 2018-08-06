@@ -2,6 +2,12 @@ import React, { Component } from 'react'
 import moment from 'moment'
 import styles from './case.mss'
 import { Link } from 'react-router-dom'
+import { UneeTIcon } from '../components/unee-t-icons'
+import IconButton from 'material-ui/IconButton'
+import {
+  logoIconStyle,
+  logoButtonStyle
+} from '../components/app-bar.mui-styles'
 
 export default class ChatBotUI extends Component {
   assigneeBot () {
@@ -54,15 +60,20 @@ export default class ChatBotUI extends Component {
       <div>
         { isCurrentUserCreator &&
       chatbotMsg.map((msg) =>
-        <div className='flex flex-column mb3 mr2' key={msg.id} >
-          <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (msg.link ? 'br--top bb b--gray-93' : '')}>
-            <span className='bondi-blue f6 pb1'> Unee-T </span>
-            <div className='pv1 f5 mr3'>
-              {msg.msg}
+        <div className='inline-flex items-end mb3' key={msg.id} >
+          <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} >
+            <UneeTIcon className='ml2 mb2 ' isDarkType style={{width: '3rem', height: '3rem'}} />
+          </IconButton>
+          <div className='flex flex-column mr2' >
+            <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (msg.link ? 'br--top bb b--gray-93' : '')}>
+              <span className='bondi-blue f6 pb1'> Unee-T </span>
+              <div className='pv1 f5 mr3'>
+                {msg.msg}
+              </div>
             </div>
-          </div>
-          <div className='mw-60 cf br3 br--bottom pl3 pr2 mh2 dib tl bg-white'>
-            {msg.link}
+            <div className='mw-60 cf br3 br--bottom pl3 pr2 mh2 dib tl bg-white'>
+              {msg.link}
+            </div>
           </div>
         </div>
       )
