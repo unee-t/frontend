@@ -190,16 +190,39 @@ class CaseMessages extends Component {
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
         {listItems.slice(0, 2)}
-        <ChatBotUI msg={this.assigneeBot()} />
-        <ChatBotUI
-          msg='Would you like to inform someone else about this case?'
-          link={this.inviteBot()} />
-        <ChatBotUI
-          msg={[<span className='fw5'>Tip: </span>,
-            'You can also add photos to your case so your correspondents have a better understanding of the case'
-          ]}
-          link={this.photoBot()} />
+        {this.chatbot()}
         {listItems.slice(2)}
+      </div>
+    )
+  }
+
+  chatbot () {
+    const isCurrentUserCreator = this.props.caseItem.creator === this.props.userBzLogin
+    const chatbotMsg = [
+      {id: 1, msg: this.assigneeBot(), link: null},
+      {id: 2, msg: 'Would you like to inform someone else about this case?', link: this.inviteBot()},
+      {id: 3,
+        msg: <span><span className='fw5'>Tip: </span> You can also add photos to your case so your correspondents have a better understanding of the case</span>,
+        link: this.photoBot()
+      }
+    ]
+    return (
+      <div>
+        { isCurrentUserCreator &&
+        chatbotMsg.map((msg) =>
+          <div className='flex flex-column mb3 mr2' key={msg.id} >
+            <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (msg.link ? 'br--top bb b--gray-93' : '')}>
+              <span className='bondi-blue f6 pb1'> Unee-T </span>
+              <div className='pv1 f5 mr3'>
+                {msg.msg}
+              </div>
+            </div>
+            <div className='mw-60 cf br3 br--bottom pl3 pr2 mh2 dib tl bg-white'>
+              {msg.link}
+            </div>
+          </div>
+        )
+        }
       </div>
     )
   }
@@ -372,7 +395,7 @@ class CaseMessages extends Component {
       </div>
     )
   }
-}
+};
 
 CaseMessages.propTypes = {
   caseItem: PropTypes.object.isRequired,
