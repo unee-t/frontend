@@ -62,7 +62,7 @@ export default class ChatBotUI extends Component {
       chatbotMsg.map((msg) =>
         <div className='inline-flex items-end mb3' key={msg.id} >
           <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} >
-            <UneeTIcon className='ml2 mb2 ' isDarkType style={{width: '3rem', height: '3rem'}} />
+            <UneeTIcon className='ml2 ' isDarkType style={{width: '3rem', height: '3rem'}} />
           </IconButton>
           <div className='flex flex-column mr2' >
             <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (msg.link ? 'br--top bb b--gray-93' : '')}>
