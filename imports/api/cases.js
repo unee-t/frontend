@@ -240,7 +240,8 @@ if (Meteor.isServer) {
           'summary',
           'id',
           'status',
-          'severity'
+          'severity',
+          'assigned_to'
         ]
       )
     },

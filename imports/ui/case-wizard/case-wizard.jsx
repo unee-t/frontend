@@ -46,9 +46,7 @@ class CaseWizard extends Component {
         },
         optional: {
           category: null,
-          subCategory: null,
-          priority: null,
-          severity: null
+          subCategory: null
         }
       },
       needsNewUser: false,
@@ -116,7 +114,7 @@ class CaseWizard extends Component {
     const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant } = this.state
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
-    const { category, subCategory, priority, severity } = optional
+    const { category, subCategory } = optional
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
@@ -218,56 +216,6 @@ class CaseWizard extends Component {
                 </SelectField>
               </div>
             </div>
-            <div className='flex'>
-              <div className='flex-grow mr2'>
-                <SelectField
-                  floatingLabelText='Priority'
-                  fullWidth
-                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  disabled={inProgress}
-                  value={priority}
-                  onChange={(evt, idx, val) => this.setState({
-                    inputValues: Object.assign({}, inputValues, {
-                      optional: Object.assign({}, optional, {
-                        priority: val
-                      })
-                    })
-                  })}
-                >
-                  {fieldValues.priority.values.map(({name}) => (
-                    <MenuItem key={name} value={name} primaryText={name} />
-                  ))}
-                </SelectField>
-              </div>
-              <div className='flex-grow ml2'>
-                <SelectField
-                  floatingLabelText='Severity'
-                  fullWidth
-                  floatingLabelShrinkStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  disabled={inProgress}
-                  value={severity}
-                  onChange={(evt, idx, val) => this.setState({
-                    inputValues: Object.assign({}, inputValues, {
-                      optional: Object.assign({}, optional, {
-                        severity: val
-                      })
-                    })
-                  })}
-                >
-                  {fieldValues.severity.values.map(({name}) => (
-                    <MenuItem key={name} value={name} primaryText={name} />
-                  ))}
-                </SelectField>
-              </div>
-            </div>
             <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
             <RadioButtonGroup
               name='assignedUnitRole'
@@ -353,7 +301,7 @@ export default withRouter(connect(
   }
 )(createContainer(
   (props) => {
-    const enumFields = ['category', 'subCategory', 'priority', 'severity']
+    const enumFields = ['category', 'subCategory']
     const { unit: unitId, report: reportId } = parseQueryString(props.location.search)
     const unitIdInt = parseInt(unitId)
     const unitHandle = Meteor.subscribe(`${unitsCollName}.byIdWithRoles`, unitIdInt)
