@@ -15,9 +15,7 @@ export default class ChatBotUI extends Component {
     const assignedUserRole = this.props.caseItem.assignedUnitRole
     return (
       <div>
-          You've created a new case!
-          The case has been assigned to <span className='fw5'> {assignedUserRole} </span>
-          and we've notified them.
+          You've created a new case! The case has been assigned to <span className='fw5'> {assignedUserRole} </span>and we've notified them.
         <div className={styles.messageTime + ' fr f7'}>
           {moment(creationTime).format('HH:mm')}
         </div>

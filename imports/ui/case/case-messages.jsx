@@ -318,7 +318,7 @@ class CaseMessages extends Component {
       </div>
     )
   }
-};
+}
 
 CaseMessages.propTypes = {
   caseItem: PropTypes.object.isRequired,
