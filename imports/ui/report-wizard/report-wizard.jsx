@@ -3,14 +3,14 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { goBack, push } from 'react-router-redux'
+import { goBack, push, replace } from 'react-router-redux'
 import { Route } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
-import Reports, { collectionName } from '../../api/reports'
+import Reports, { collectionName, REPORT_DRAFT_STATUS, REPORT_FINAL_STATUS } from '../../api/reports'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
 import InnerAppBar from '../components/inner-app-bar'
 import Preloader from '../preloader/preloader'
@@ -44,12 +44,28 @@ class ReportWizard extends Component {
       initDone: false
     }
   }
+  componentDidUpdate (prevProps) {
+    const { isLoading, match, reportItem, dispatch } = this.props
+    if (!isLoading && prevProps.isLoading !== isLoading) {
+      const { viewMode } = match.params
+      let enforcedViewMode
+      if (reportItem.status === REPORT_DRAFT_STATUS && viewMode !== 'draft') {
+        enforcedViewMode = 'draft'
+      } else if (reportItem.status === REPORT_FINAL_STATUS && viewMode !== 'review') {
+        enforcedViewMode = 'review'
+      }
+      if (enforcedViewMode) {
+        dispatch(replace(match.url.replace(viewMode, enforcedViewMode)))
+      }
+    }
+  }
   render () {
     const { unitItem, reportItem, isLoading, user, dispatch, childCases, match } = this.props
 
     if (isLoading) {
       return <Preloader />
     }
+    const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     const memberIdMatcher = ({ id }) => id === user._id
     const unitDisplayName = (unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name
     const matchingMongoRole = unitItem.rolesData().find(
@@ -82,21 +98,26 @@ class ReportWizard extends Component {
               {userInfoItem(userInfo)}
             </div>
           </div>
-          <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
-            <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
-              Would you like to report any issue with the unit?
+          {(isDraft || (!isDraft && childCases.length > 0)) && ( // Show only if draft or final but with cases
+            <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
+              <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
+                {isDraft
+                  ? 'Would you like to report any issue with the unit?'
+                  : 'Cases related to this report'
+                }
+              </div>
+              {childCases.map(caseItem => (
+                <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
+                  dispatch(storeBreadcrumb(match.url))
+                  dispatch(push(`/case/${caseItem.id}`))
+                }} />
+              ))}
+              {isDraft && makeCreationButton(
+                'Add case',
+                () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
+              )}
             </div>
-            {childCases.map(caseItem => (
-              <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                dispatch(storeBreadcrumb(match.url))
-                dispatch(push(`/case/${caseItem.id}`))
-              }} />
-            ))}
-            {makeCreationButton(
-              'Add case',
-              () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
-            )}
-          </div>
+          )}
           {/* <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
             {infoItemLabel('Rooms')}
             <div className='moon-gray f7 mt2'>
@@ -110,31 +131,45 @@ class ReportWizard extends Component {
           <div className='flex-grow' />
 
           <div className='bg-white ph3 pb3 pt4 mt2 tr'>
-            <div className='dib flex justify-end'>
-              <RaisedButton
-                primary
-                onClick={() => dispatch(push(`${match.url}/confirm`))}
-              >
-                <span className='white mh4'>
-                  Complete
-                </span>
-              </RaisedButton>
+            <div className='dib flex justify-end items-center'>
+              {isDraft ? (
+                <RaisedButton
+                  primary
+                  onClick={() => dispatch(push(`${match.url}/confirm`))}
+                >
+                  <span className='white mh4'>
+                    Complete
+                  </span>
+                </RaisedButton>
+              ) : [
+                (
+                  <div key='text' className='f5 i moon-gray'>
+                    This report has been finalized
+                  </div>
+                ),
+                (
+                  <FontIcon key='icon' className='material-icons ml2' color='var(--success-green)'>
+                    check_circle
+                  </FontIcon>
+                )
+              ]}
             </div>
           </div>
         </div>
-        <Route exact path={`${match.url}/confirm`} children={({ match }) => (
-          <ConfirmationDialog
-            show={!!match}
-            title='Are you sure it is complete?'
-            onConfirm={() => dispatch(finalizeReport(reportItem.id))}
-            onCancel={() => dispatch(goBack())}
-          >
-            <div className='near-black'>
-              You will not be able to make any further changes to this version of the report
-            </div>
-          </ConfirmationDialog>
-        )} />
-
+        {isDraft && (
+          <Route exact path={`${match.url}/confirm`} children={({ match }) => (
+            <ConfirmationDialog
+              show={!!match}
+              title='Are you sure it is complete?'
+              onConfirm={() => dispatch(finalizeReport(reportItem.id))}
+              onCancel={() => dispatch(goBack())}
+            >
+              <div className='near-black'>
+                You will not be able to make any further changes to this version of the report
+              </div>
+            </ConfirmationDialog>
+          )} />
+        )}
       </div>
     )
   }

@@ -43,7 +43,7 @@ class App extends Component {
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
-`             <Route path='/report/:reportId/draft' component={ReportWizard} />
+`             <Route path='/report/:reportId/:viewMode' component={ReportWizard} />
               <Route exact path='/case/new' component={CaseWizard} />
               <Route path='/case' component={CaseMaster} />
               <Redirect to='/case' />

@@ -20,8 +20,8 @@ const factoryOptions = {
   dataResolver: caseFactoryOpts.dataResolver
 }
 
-const REPORT_DRAFT_STATUS = 'UNCONFIRMED'
-const REPORT_FINAL_STATUS = 'CONFIRMED'
+export const REPORT_DRAFT_STATUS = 'UNCONFIRMED'
+export const REPORT_FINAL_STATUS = 'CONFIRMED'
 
 let publicationObj
 if (Meteor.isServer) {

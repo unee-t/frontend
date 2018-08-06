@@ -178,9 +178,10 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => {
                       const isFinalized = status !== 'UNCONFIRMED'
+                      const viewMode = isFinalized ? 'review' : 'draft'
                       return (
                         <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
-                          <Link to={`/report/${id}/draft`} className='link flex-grow relative w-100'>
+                          <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
                             <MenuItem innerDivStyle={menuItemDivStyle}>
                               <div className='pv2 flex-grow flex items-center w-100'>
                                 <div className='dib relative flex items-center'>
