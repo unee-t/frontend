@@ -11,7 +11,7 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
-import IconButton from 'material-ui/IconButton'
+// import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
@@ -211,7 +211,7 @@ class Unit extends Component {
                               </div>
                             </MenuItem>
                           </Link>
-                          {isFinalized && (
+                          {/* isFinalized && (
                             <IconButton>
                               <FontIcon
                                 className='material-icons'
@@ -221,7 +221,7 @@ class Unit extends Component {
                                 launch
                               </FontIcon>
                             </IconButton>
-                          )}
+                          ) */}
                         </div>
                       )
                     }) : (
