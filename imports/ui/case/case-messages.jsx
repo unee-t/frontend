@@ -176,14 +176,13 @@ class CaseMessages extends Component {
     }, [])
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
-        {listItems}
-        { listItems.slice(2).length === 0 && (
-          <ChatBotUI
-            caseItem={this.props.caseItem}
-            userBzLogin={this.props.userBzLogin}
-            handleFileSelection={this.handleFileSelection}
-          />
-        ) }
+        { listItems.slice(0, 2)}
+        <ChatBotUI
+          caseItem={this.props.caseItem}
+          userBzLogin={this.props.userBzLogin}
+          handleFileSelection={this.handleFileSelection}
+        />
+        {listItems.slice(2)}
       </div>
     )
   }
