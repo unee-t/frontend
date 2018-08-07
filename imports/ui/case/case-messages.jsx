@@ -32,6 +32,8 @@ import {
 import {
   whiteTextInputStyle
 } from '../components/form-controls.mui-styles'
+import ChatBotUI from './chatbot-ui'
+
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
 const additionalSubHeader = (label, info, onClick, lastIndex, colorName) => (
@@ -151,6 +153,7 @@ class CaseMessages extends Component {
   }
 
   renderMessages (comments, uploads) {
+    const isCurrentUserCreator = this.props.caseItem.creator === this.props.userBzLogin
     const messageList = comments.concat(uploads.map(process => ({
       'creation_time': (new Date()).toISOString(),
       creator: this.props.userBzLogin,
@@ -160,23 +163,29 @@ class CaseMessages extends Component {
     let lastDay = ''
     let currKey = 0
     this.creators = []
+    const listItems = messageList.reduce((listItems, comment) => { // Rendering all starting from the second
+      const currDay = comment['creation_time'].slice(0, 10)
+      // Checking if the day of this message is different than the previous
+      if (currDay !== lastDay) {
+        lastDay = currDay
+        // Creating a day label
+        listItems.push(this.renderDayLabel(comment, currKey++))
+      }
+      // Creating a message item
+      listItems.push(this.renderSingleMessage(comment, currKey++))
+      return listItems
+    }, [])
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
-        {messageList.reduce((listItems, comment) => { // Rendering all starting from the second
-          const currDay = comment['creation_time'].slice(0, 10)
-
-          // Checking if the day of this message is different than the previous
-          if (currDay !== lastDay) {
-            lastDay = currDay
-
-            // Creating a day label
-            listItems.push(this.renderDayLabel(comment, currKey++))
-          }
-
-          // Creating a message item
-          listItems.push(this.renderSingleMessage(comment, currKey++))
-          return listItems
-        }, [])}
+        { listItems.slice(0, 2)}
+        { isCurrentUserCreator &&
+          <ChatBotUI
+            caseItem={this.props.caseItem}
+            handleFileSelection={this.handleFileSelection}
+            onCreateAttachment={this.props.onCreateAttachment}
+          />
+        }
+        {listItems.slice(2)}
       </div>
     )
   }
