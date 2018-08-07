@@ -89,7 +89,7 @@ export class SignupPage extends Component {
             {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
               <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
                 onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
-                errorText={errorTexts[identifier]}
+                errorText={errorTexts[identifier] || this.props.showSignupError}
               />
             ))}
             <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
@@ -120,5 +120,5 @@ export class SignupPage extends Component {
 SignupPage.propTypes = {}
 
 export default connect(
-  (state) => ({}) // map redux state to props
+  ({showSignupError}) => ({showSignupError}) // map redux state to props
 )(createContainer(() => ({}), SignupPage)) // map meteor state to props
