@@ -153,6 +153,7 @@ class CaseMessages extends Component {
   }
 
   renderMessages (comments, uploads) {
+    const isCurrentUserCreator = this.props.caseItem.creator === this.props.userBzLogin
     const messageList = comments.concat(uploads.map(process => ({
       'creation_time': (new Date()).toISOString(),
       creator: this.props.userBzLogin,
@@ -177,11 +178,13 @@ class CaseMessages extends Component {
     return (
       <div className={[styles.messagesContainer, 'flex-grow', 'overflow-auto'].join(' ')} ref='messages'>
         { listItems.slice(0, 2)}
-        <ChatBotUI
-          caseItem={this.props.caseItem}
-          userBzLogin={this.props.userBzLogin}
-          handleFileSelection={this.handleFileSelection}
-        />
+        { isCurrentUserCreator &&
+          <ChatBotUI
+            caseItem={this.props.caseItem}
+            handleFileSelection={this.handleFileSelection}
+            onCreateAttachment={this.props.onCreateAttachment}
+          />
+        }
         {listItems.slice(2)}
       </div>
     )
