@@ -40,6 +40,8 @@ export const caseServerFieldMapping = {
   resolution: 'resolution'
 }
 
+export const REPORT_KEYWORD = 'inspection_report'
+
 export const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
 
 export const caseClientFieldMapping = Object.assign(
@@ -65,6 +67,58 @@ export const getCaseUsers = (() => {
   })
 })()
 
+export const caseQueryBuilder = (expressions, fields) => {
+  let currOp = 0
+  const expObject = (function translate (expArr) {
+    return expArr.reduce((all, { field, operator, value }) => {
+      currOp++
+      if (['OR', 'AND'].includes(operator)) {
+        all['f' + currOp] = 'OP'
+        if (operator === 'OR') {
+          all['j' + currOp] = operator
+        }
+        Object.assign(all, translate(value))
+        currOp++
+        all['f' + currOp] = 'CP'
+      } else {
+        all['f' + currOp] = field
+        all['o' + currOp] = operator
+        all['v' + currOp] = value
+      }
+      return all
+    }, {})
+  })(expressions)
+  return {
+    list_id: '78',
+    query_format: 'advanced',
+    include_fields: fields.join(','),
+    ...expObject
+  }
+}
+
+export const associatedCasesQueryExps = userIdentifier => [
+  {
+    operator: 'OR',
+    value: [
+      {
+        field: 'assigned_to',
+        operator: 'equals',
+        value: userIdentifier
+      },
+      {
+        field: 'cc',
+        operator: 'substring',
+        value: userIdentifier
+      },
+      {
+        field: 'reporter',
+        operator: 'equals',
+        value: userIdentifier
+      }
+    ]
+  }
+]
+
 const denormalizeUser = ({login, name, email}) => ({
   name: login,
   real_name: name,
@@ -81,13 +135,14 @@ export const factoryOptions = {
   collectionName,
   dataResolver: data => data.bugs.map(transformCaseForClient)
 }
+export const idUrlTemplate = caseId => `/rest/bug/${caseId}`
 
 export let reloadCaseFields
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
   reloadCaseFields = (caseId, fieldNames) => {
-    const caseData = bugzillaApi.callAPI('get', `/rest/bug/${caseId}`, {}, true, true)
+    const caseData = bugzillaApi.callAPI('get', idUrlTemplate(caseId), {}, true, true)
     const caseItem = transformCaseForClient(caseData.data.bugs[0])
     const fields = Object.keys(caseItem).reduce((all, key) => {
       if (fieldNames.includes(key)) {
@@ -101,10 +156,17 @@ if (Meteor.isServer) {
 
   Meteor.publish(`${collectionName}.byId`, associationFactory(
     publicationObj.publishById({
-      uriTemplate: caseId => `/rest/bug/${caseId}`
+      uriTemplate: idUrlTemplate
     }),
     withUsers(caseItem => _.flatten(Object.values(getCaseUsers(caseItem))).map(u => u.login))
   ))
+
+  const noReportsExp = {
+    field: 'keywords',
+    operator: 'nowords',
+    value: REPORT_KEYWORD
+  }
+
   // TODO: Add tests for this
   Meteor.publish(`${collectionName}.associatedWithMe`, associationFactory(
     publicationObj.publishByCustomQuery({
@@ -115,32 +177,26 @@ if (Meteor.isServer) {
         }
         const currUser = Meteor.users.findOne(subHandle.userId)
         const { login: userIdentifier } = currUser.bugzillaCreds
-        return {
-          f1: 'keywords',
-          o1: 'nowords',
-          v1: 'inspection_report',
-          f2: 'OP',
-          j2: 'OR',
-          f3: 'assigned_to',
-          o3: 'equals',
-          v3: userIdentifier,
-          f4: 'cc',
-          o4: 'substring',
-          v4: userIdentifier,
-          f5: 'reporter',
-          o5: 'equals',
-          v5: userIdentifier,
-          list_id: '78',
-          query_format: 'advanced',
-          include_fields: 'product,summary,id,status,assigned_to'
-        }
+        return caseQueryBuilder(
+          [
+            noReportsExp,
+            ...associatedCasesQueryExps(userIdentifier)
+          ],
+          [
+            'product',
+            'summary',
+            'id',
+            'status',
+            'assigned_to'
+          ]
+        )
       },
       addedMatcherFactory: strQuery => {
         const { v1: userIdentifier } = JSON.parse(strQuery)
         return caseItem => {
           const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
           return (
-            !(keywords && keywords.includes('inspection_report')) && (
+            !(keywords && keywords.includes(REPORT_KEYWORD)) && (
               userIdentifier === assignee ||
               userIdentifier === creator ||
               involvedList.includes(userIdentifier)
@@ -169,35 +225,32 @@ if (Meteor.isServer) {
       }
       const currUser = Meteor.users.findOne(subHandle.userId)
       const { login: userIdentifier } = currUser.bugzillaCreds
-      return {
-        f1: 'product',
-        o1: 'equals',
-        v1: unitName,
-        f2: 'keywords',
-        o2: 'nowords',
-        v2: 'inspection_report',
-        f3: 'OP',
-        j3: 'OR',
-        f4: 'cc',
-        o4: 'substring',
-        v4: userIdentifier,
-        f5: 'reporter',
-        o5: 'equals',
-        v5: userIdentifier,
-        f6: 'assigned_to',
-        o6: 'equals',
-        v6: userIdentifier,
-        list_id: '8',
-        query_format: 'advanced',
-        include_fields: 'product,summary,id,status,severity, assigned_to'
-      }
+      return caseQueryBuilder(
+        [
+          {
+            field: 'product',
+            operator: 'equals',
+            value: unitName
+          },
+          noReportsExp,
+          ...associatedCasesQueryExps(userIdentifier)
+        ],
+        [
+          'product',
+          'summary',
+          'id',
+          'status',
+          'severity',
+          'assigned_to'
+        ]
+      )
     },
     addedMatcherFactory: strQuery => {
       const { v1: unitName, v3: userIdentifier } = JSON.parse(strQuery)
       return caseItem => {
         const { selectedUnit, assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
         return (
-          selectedUnit === unitName && !(keywords && keywords.includes('inspection_report')) && (
+          selectedUnit === unitName && !(keywords && keywords.includes(REPORT_KEYWORD)) && (
             userIdentifier === assignee ||
             userIdentifier === creator ||
             involvedList.includes(userIdentifier)
@@ -264,7 +317,7 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant }) {
+  [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant, parentReportId }) {
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
@@ -319,15 +372,38 @@ Meteor.methods({
         console.log(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
         // TODO: Add real time update handler usage
       } catch (e) {
-        // TODO: adopt this error format for other API errors too
         console.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
           args: [params],
+          step: 'post /rest/bug bugzilla API',
           error: e
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
+
+      // Creating report's dependency on this case
+      if (parentReportId) {
+        const payload = {
+          api_key: apiKey,
+          blocks: {
+            set: [parentReportId]
+          }
+        }
+        try {
+          callAPI('put', `/rest/bug/${newCaseId}`, payload, false, true)
+        } catch (e) {
+          console.error({
+            user: Meteor.userId(),
+            method: `${collectionName}.insert`,
+            args: [params],
+            step: 'put /rest/bug bugzilla API (creating report dependency)',
+            error: e
+          })
+          throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+        }
+      }
+
       if (newUserEmail) {
         createPendingInvitation(
           newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED

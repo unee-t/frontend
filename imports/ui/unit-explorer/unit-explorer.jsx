@@ -10,7 +10,6 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
-import UnitMetaData from '../../api/unit-meta-data'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
@@ -26,25 +25,32 @@ class UnitsByRoles extends Component {
           </div>)
         }
         {
-          unitsByRoles.map(({ id, name, description, metaData }) => (
-            <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => handleUnitClicked(id)} >
-              <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
-                <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                  <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
-                  <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
-                </div>
-                { showAddBtn && (
-                  <div
-                    onClick={(evt) => { evt.stopPropagation(); handleAddCaseClicked(id) }}
-                    className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
-                  >
-                    Add case
+          unitsByRoles.map(unitItem => {
+            const { id, name, description } = unitItem
+            const metaData = unitItem.metaData() || {}
+            return (
+              <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => handleUnitClicked(id)} >
+                <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                  <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
+                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                    <div className='ti1 ellipsis'>{metaData.displayName || name}</div>
+                    <div className='ti1 ellipsis silver'>{ metaData.moreInfo || description}&nbsp;</div>
                   </div>
-                )}
-              </div>
-            </MenuItem>
-          ))
+                  { showAddBtn && (
+                    <div
+                      onClick={evt => {
+                        evt.stopPropagation()
+                        handleAddCaseClicked(id)
+                      }}
+                      className='f6 ellipsis ml3 pl1 mv1 bondi-blue fw5 no-shrink'
+                    >
+                      Add case
+                    </div>
+                  )}
+                </div>
+              </MenuItem>
+            )
+          })
         }
       </div>
     )
@@ -188,7 +194,8 @@ FilteredUnitsList.propTypes = {
 UnitExplorer.propTypes = {
   unitList: PropTypes.array,
   isLoading: PropTypes.bool,
-  unitsError: PropTypes.object
+  unitsError: PropTypes.object,
+  currentUserId: PropTypes.string
 }
 
 let unitsError
@@ -202,9 +209,7 @@ export default connect(
       }
     })
     return {
-      unitList: Units.find().fetch().map(unit => Object.assign({}, unit, {
-        metaData: UnitMetaData.findOne({bzId: unit.id}) || {}
-      })),
+      unitList: Units.find().fetch(),
       isLoading: !unitsHandle.ready(),
       currentUserId: Meteor.userId(),
       unitsError

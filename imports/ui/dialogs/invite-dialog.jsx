@@ -13,10 +13,7 @@ import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
 import { possibleRoles } from '../../api/unit-roles-data'
 
-import {
-  modalCustomContentStyle,
-  inviteSuccessIconStyle
-} from './invite-dialog.mui-styles'
+import { inviteSuccessIconStyle } from './invite-dialog.mui-styles'
 
 import {
   textInputFloatingLabelStyle,
@@ -29,7 +26,8 @@ import {
 import {
   modalTitleStyle,
   closeDialogButtonStyle,
-  modalBodyStyle
+  modalBodyStyle,
+  modalCustomContentStyle
 } from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'

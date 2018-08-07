@@ -19,3 +19,11 @@ export const closeDialogButtonStyle = {
   color: '#777',
   fontSize: 21
 }
+
+export const modalCustomContentStyle = {
+  width: '90%',
+  maxWidth: 'none',
+  padding: '0.5rem',
+  fontFamily: 'Roboto, sans-serif',
+  transform: 'translate(0, 0px)'
+}
