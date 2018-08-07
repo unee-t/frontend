@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
 import { createContainer } from 'meteor/react-meteor-data'
-import { push } from 'react-router-redux'
+import { push, goBack } from 'react-router-redux'
 import { Route, Link } from 'react-router-dom'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
@@ -11,44 +11,32 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
+// import IconButton from 'material-ui/IconButton'
+import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
-import UnitMetaData from '../../api/unit-meta-data'
+import Reports, { collectionName as reportsCollName } from '../../api/reports'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
-// import CreateReportDialog from '../dialogs/create-report-dialog'
+import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
+import CaseMenuItem from '../components/case-menu-item'
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
-const severityIcons = {
-  'DEAL BREAKER!': {
-    icon: 'format_align_justify',
-    color: 'var(--warn-crimson)'
-  },
-  'critical': {
-    icon: 'reorder',
-    color: '#F00000'
-  },
-  'major': {
-    icon: 'dehaze',
-    color: '#FF6701'
-  },
-  'normal': {
-    icon: 'drag_handle',
-    color: '#4A90E2'
-  },
-  'minor': {
-    icon: 'remove',
-    color: '#99CC33'
-  }
-}
+const severityIndex = [
+  'DEAL BREAKER!',
+  'critical',
+  'major',
+  'normal',
+  'minor'
+]
 
-const caseMenuItemDivStyle = {
+const menuItemDivStyle = {
   display: 'flex',
   alignItems: 'center'
 }
@@ -87,17 +75,18 @@ class Unit extends Component {
   componentWillReceiveProps (nextProps) {
     const { caseList } = this.props
     if ((!caseList && nextProps.caseList) || (caseList && caseList.length !== nextProps.caseList.length)) {
-      const severityList = Object.keys(severityIcons)
       this.setState({
         sortedCases: nextProps.caseList.slice().sort((a, b) =>
-          severityList.indexOf(a.severity) - severityList.indexOf(b.severity)
+          severityIndex.indexOf(a.severity) - severityIndex.indexOf(b.severity)
         )
       })
     }
   }
 
   render () {
-    const { unitItem, isLoading, unitError, casesError, unitUsers, dispatch, match } = this.props
+    const {
+      unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
+    } = this.props
     const { sortedCases, showOpenCases, assignedToMe } = this.state
     const { filteredCases } = this
     const rootMatch = match
@@ -106,20 +95,23 @@ class Unit extends Component {
     if (isLoading) return <Preloader />
     if (unitError) return <h1>An error occurred: {unitError.error}</h1>
     if (casesError) return <h1>An error occurred: {casesError.error}</h1>
+    if (reportsError) return <h1>An error occurred: {reportsError.error}</h1>
+
     const fabDescriptors = [
       {
         color: 'var(--bondi-blue)',
         href: `/case/new?unit=${unitId}`,
         icon: 'add'
+      },
+      {
+        color: 'var(--bondi-blue)',
+        href: `${rootMatch.url}/${viewsOrder[1]}/new`,
+        icon: 'add'
       }
-      // {
-      //   color: 'var(--bondi-blue)',
-      //   href: `${rootMatch.url}/${viewsOrder[1]}/new`,
-      //   icon: 'add'
-      // }
     ]
 
-    const unitName = unitItem.metaData.displayName || unitItem.name
+    const metaData = unitItem.metaData() || {}
+    const unitName = metaData.displayName || unitItem.name
 
     return (
       <div className='full-height flex flex-column'>
@@ -139,7 +131,7 @@ class Unit extends Component {
                 inkBarStyle={{backgroundColor: 'white'}}
               >
                 <Tab label={`CASES (${sortedCases.length})`} value={0} />
-                <Tab label='REPORTS' value={1} />
+                <Tab label={`REPORTS (${reportList.length})`} value={1} />
                 <Tab label='OVERVIEW' value={2} />
               </Tabs>
               <div className='flex-grow flex flex-column overflow-auto'>
@@ -173,48 +165,91 @@ class Unit extends Component {
                         Assigned To Me
                       </div>
                     </div>
-                    {filteredCases.map(({id, title, severity}) => (
-                      <div key={id} className='bb b--very-light-gray bg-white'>
-                        <Link
-                          to={`/case/${id}`}
-                          className='link'
-                          onClick={() => dispatch(storeBreadcrumb(rootMatch.url))}
-                        >
-                          <MenuItem innerDivStyle={caseMenuItemDivStyle}>
-                            <FontIcon className='material-icons mr2' color={severityIcons[severity].color}>
-                              {severityIcons[severity].icon}
-                            </FontIcon>
-                            <span className='bondi-blue pl1 ellipsis'>{title}</span>
-                          </MenuItem>
-                        </Link>
-                      </div>
+                    {filteredCases.map(caseItem => (
+                      <CaseMenuItem
+                        key={caseItem.id}
+                        className='ph3'
+                        caseItem={caseItem}
+                        onClick={() => {
+                          dispatch(storeBreadcrumb(rootMatch.url))
+                          dispatch(push(`/case/${caseItem.id}`))
+                        }}
+                      />
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
-                    <div className='mt5 pt3 tc'>
-                      <div className='dib relative'>
-                        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
-                          content_paste
-                        </FontIcon>
-                        <div className='absolute bottom-0 right-0 pb1'>
-                          <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
-                            <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
-                              add_circle_outline
-                            </FontIcon>
+                    {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => {
+                      const isFinalized = status !== 'UNCONFIRMED'
+                      const viewMode = isFinalized ? 'review' : 'draft'
+                      return (
+                        <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
+                          <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
+                            <MenuItem innerDivStyle={menuItemDivStyle}>
+                              <div className='pv2 flex-grow flex items-center w-100'>
+                                <div className='dib relative flex items-center'>
+                                  <FontIcon className='material-icons' color='var(--mid-gray)'>
+                                    content_paste
+                                  </FontIcon>
+                                  <div className='absolute bottom-0 right-0'>
+                                    <div className='br-100 bg-white lh-cram'>
+                                      <FontIcon
+                                        className='material-icons'
+                                        color={isFinalized ? 'var(--success-green)' : 'var(--bondi-blue)'}
+                                        style={{fontSize: '0.75rem'}}
+                                      >
+                                        {isFinalized ? 'check_circle' : 'watch_later'}
+                                      </FontIcon>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
+                                  <div className='mid-gray ellipsis'>{title}</div>
+                                  <div className='silver mt1 f7 ellipsis'>
+                                    Created on {moment(date).format('DD/MM/YYYY')}
+                                  </div>
+                                </div>
+                              </div>
+                            </MenuItem>
+                          </Link>
+                          {/* isFinalized && (
+                            <IconButton>
+                              <FontIcon
+                                className='material-icons'
+                                color='var(--mid-gray)'
+                                style={{fontSize: '1.25rem'}}
+                              >
+                                launch
+                              </FontIcon>
+                            </IconButton>
+                          ) */}
+                        </div>
+                      )
+                    }) : (
+                      <div className='mt5 pt3 tc'>
+                        <div className='dib relative'>
+                          <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
+                            content_paste
+                          </FontIcon>
+                          <div className='absolute bottom-0 right-0 pb1'>
+                            <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
+                              <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+                                add_circle_outline
+                              </FontIcon>
+                            </div>
                           </div>
                         </div>
+                        <div className='mid-gray b lh-copy'>
+                          You have no inspection reports yet
+                        </div>
                       </div>
-                      <div className='mid-gray b lh-copy'>
-                        You have no inspection reports yet
-                      </div>
-                    </div>
-                    {/* <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
+                    )}
+                    <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
                         show={!!match}
                         onDismissed={() => dispatch(goBack())}
                         unitName={unitItem.name}
                       />
-                    )} /> */}
+                    )} />
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     <div className='bg-white card-shadow-1 pa3'>
@@ -225,10 +260,10 @@ class Unit extends Component {
                         {infoItemMembers('Unit group', unitItem.classification)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Unit type', unitItem.metaData.unitType)}
+                        {infoItemMembers('Unit type', metaData.unitType)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Additional description', unitItem.metaData.moreInfo || unitItem.description)}
+                        {infoItemMembers('Additional description', metaData.moreInfo || unitItem.description)}
                       </div>
                     </div>
                     <div className='mt2 bg-white card-shadow-1 pa3'>
@@ -236,20 +271,20 @@ class Unit extends Component {
                         ADDRESS
                       </div>
                       <div className='mt1'>
-                        {infoItemMembers('Address', unitItem.metaData.streetAddress)}
+                        {infoItemMembers('Address', metaData.streetAddress)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('City', unitItem.metaData.city)}
+                        {infoItemMembers('City', metaData.city)}
                       </div>
                       <div className='mt3'>
-                        {infoItemMembers('Country', unitItem.metaData.country)}
+                        {infoItemMembers('Country', metaData.country)}
                       </div>
                       <div className='mt3 flex'>
                         <div className='flex-grow'>
-                          {infoItemMembers('State', unitItem.metaData.state)}
+                          {infoItemMembers('State', metaData.state)}
                         </div>
                         <div className='flex-grow'>
-                          {infoItemMembers('Zip / Postal code', unitItem.metaData.zipCode)}
+                          {infoItemMembers('Zip / Postal code', metaData.zipCode)}
                         </div>
                       </div>
                     </div>
@@ -294,12 +329,14 @@ Unit.propTypes = {
   unitItem: PropTypes.object,
   unitError: PropTypes.object,
   casesError: PropTypes.object,
+  reportsError: PropTypes.object,
   isLoading: PropTypes.bool,
   unitUsers: PropTypes.array,
-  caseList: PropTypes.array
+  caseList: PropTypes.array,
+  reportList: PropTypes.array
 }
 
-let unitError, casesError
+let unitError, casesError, reportsError
 export default connect(
   () => ({})
 )(createContainer((props) => {
@@ -310,22 +347,26 @@ export default connect(
     }
   })
   const unitItem = unitHandle.ready() ? Units.findOne({id: parseInt(unitId)}) : null
-  let casesHandle
+  let casesHandle, reportsHandle
   if (unitItem) {
-    Object.assign(unitItem, {
-      metaData: UnitMetaData.findOne({bzId: unitItem.id}) || {}
-    })
     casesHandle = Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
       onStop: error => {
         casesError = error
       }
     })
+    reportsHandle = Meteor.subscribe(`${reportsCollName}.byUnitName`, unitItem.name, {
+      onStop: error => {
+        reportsError = error
+      }
+    })
   }
   return {
-    isLoading: !unitHandle.ready() || !casesHandle.ready(),
+    isLoading: !unitHandle.ready() || !casesHandle.ready() || !reportsHandle.ready(),
     unitUsers: unitItem ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
     caseList: unitItem ? Cases.find({selectedUnit: unitItem.name}).fetch() : null,
+    reportList: unitItem ? Reports.find({selectedUnit: unitItem.name}).fetch() : null,
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
+    reportsError,
     casesError,
     unitError,
     unitItem
