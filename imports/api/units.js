@@ -101,6 +101,7 @@ if (Meteor.isServer) {
             bzId: 1,
             displayName: 1,
             moreInfo: 1,
+            unitType: 1,
             ownerIds: {
               $elemMatch: {
                 $in: [this.userId]
