@@ -82,7 +82,7 @@ class ReportWizard extends Component {
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
-        <div className='flex-grow bg-very-light-gray flex flex-column overflow-auto'>
+        <div className='flex-grow bg-very-light-gray flex flex-column overflow-auto pb2'>
           <div className='bg-white card-shadow-1 pa3'>
             <div>
               {infoItemMembers('Report title', reportItem.title)}
@@ -126,34 +126,30 @@ class ReportWizard extends Component {
             </div>
             {makeCreationButton('Add room', () => {})}
           </div> */}
-
-          {/* temp */}
-          <div className='flex-grow' />
-
-          <div className='bg-white ph3 pb3 pt4 mt2 tr'>
-            <div className='dib flex justify-end items-center'>
-              {isDraft ? (
-                <RaisedButton
-                  primary
-                  onClick={() => dispatch(push(`${match.url}/confirm`))}
-                >
-                  <span className='white mh4'>
-                    Complete
-                  </span>
-                </RaisedButton>
-              ) : [
-                (
-                  <div key='text' className='f5 i moon-gray'>
-                    This report has been finalized
-                  </div>
-                ),
-                (
-                  <FontIcon key='icon' className='material-icons ml2' color='var(--success-green)'>
-                    check_circle
-                  </FontIcon>
-                )
-              ]}
-            </div>
+        </div>
+        <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
+          <div className='dib flex justify-end items-center'>
+            {isDraft ? (
+              <RaisedButton
+                primary
+                onClick={() => dispatch(push(`${match.url}/confirm`))}
+              >
+                <span className='white mh4'>
+                  Complete
+                </span>
+              </RaisedButton>
+            ) : [
+              (
+                <div key='text' className='f5 i moon-gray'>
+                  This report has been finalized
+                </div>
+              ),
+              (
+                <FontIcon key='icon' className='material-icons ml2' color='var(--success-green)'>
+                  check_circle
+                </FontIcon>
+              )
+            ]}
           </div>
         </div>
         {isDraft && (
