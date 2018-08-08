@@ -75,6 +75,9 @@ export class SignupPage extends Component {
   }
   render () {
     const { info, errorTexts, termsAgreement } = this.state
+    const { showSignupError } = this.props
+    const emailError = (<span> 'Email already exists in Unee-T. You can <Link className='link dim b' to='/forgot-pass' style={{color: 'rgb(244, 67, 54)'}}> reset your password </Link> if needed.</span>)
+
     return (
       <LoginLayout subHeading='Sign up for a free account!'
         footerContent={
@@ -89,7 +92,7 @@ export class SignupPage extends Component {
             {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
               <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
                 onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
-                errorText={errorTexts[identifier] || this.props.showSignupError}
+                errorText={errorTexts[identifier] || showSignupError.includes('Email') ? (emailError) : (showSignupError)}
               />
             ))}
             <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
