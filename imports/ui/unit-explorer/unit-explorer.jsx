@@ -116,7 +116,9 @@ export default connect(
       }
     })
     return {
-      unitList: Units.find().fetch(),
+      unitList: Units.find().fetch().map(unit => Object.assign({}, unit, {
+        metaData: unit.metaData()
+      })),
       isLoading: !unitsHandle.ready(),
       currentUserId: Meteor.userId(),
       unitsError

@@ -354,7 +354,9 @@ let Units
 if (Meteor.isClient) {
   Units = new Mongo.Collection(collectionName)
   Units.helpers({
-    metaData: () => UnitMetaData.findOne({bzId: this.id}),
+    metaData () {
+      return UnitMetaData.findOne({bzId: this.id})
+    },
     rolesData: () => UnitRolesData.find({unitBzId: this.id}).fetch()
   })
 }
