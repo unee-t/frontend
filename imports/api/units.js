@@ -7,7 +7,7 @@ import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
 import UnitMetaData, { unitTypes, collectionName as unitMetaCollName } from './unit-meta-data'
-import UnitRolesData, { possibleRoles } from './unit-roles-data'
+import UnitRolesData, { possibleRoles, collectionName as unitRolesCollName } from './unit-roles-data'
 import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
 
@@ -27,16 +27,18 @@ const makeInvitationMatcher = unitItem => ({
   }
 })
 
-const withMetaData = fields => withDocs({
-  cursorMaker: publishedItem => {
-    return UnitMetaData.find({
-      bzId: publishedItem.id
+const unitAssocHelper = (coll, collName, idFieldName) => fields => withDocs({
+  cursorMaker: publishedItem =>
+    coll.find({
+      [idFieldName]: publishedItem.id
     }, {
       fields
-    })
-  },
-  collectionName: unitMetaCollName
+    }),
+  collectionName: collName
 })
+
+const withMetaData = unitAssocHelper(UnitMetaData, unitMetaCollName, 'bzId')
+const withRolesData = unitAssocHelper(UnitRolesData, unitRolesCollName, 'unitBzId')
 
 export const getUnitRoles = unit => {
   const invMatcher = makeInvitationMatcher(unit)
@@ -111,52 +113,74 @@ if (Meteor.isServer) {
         ).call(this, ids || [])
       }
     })
-
-  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder, metaDataFields }) => {
+  const makeUnitPublisherWithAssocs = ({ funcName, uriBuilder, assocFuncs }) => {
     Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
       factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
         uriTemplate: uriBuilder
       }),
-      withUsers(
-        unitItem => getUnitRoles(unitItem).map(u => u.login),
-        // Should rely both on completed invitations and unit information (which is why the "$or" is there)
-        (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
-        (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
-      ),
-      withMetaData(metaDataFields || {
-        ownerIds: 0
-      })
+      ...assocFuncs
     ))
   }
+
+  const makeUnitWithUsersPublisher = ({ funcName, uriBuilder, metaDataFields }) => {
+    makeUnitPublisherWithAssocs({
+      assocFuncs: [
+        withUsers(
+          unitItem => getUnitRoles(unitItem).map(u => u.login),
+          // Should rely both on completed invitations and unit information (which is why the "$or" is there)
+          (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
+          (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
+        ),
+        withMetaData(metaDataFields || {
+          ownerIds: 0
+        })
+      ],
+      funcName,
+      uriBuilder
+    })
+  }
+  const nameUriBuilderBuilder = (extParams = {}) => unitName => ({
+    url: '/rest/product',
+    params: {
+      names: unitName,
+      ...extParams
+    }
+  })
+  const idUriBuilderBuilder = (extParams = {}) => unitId => ({
+    url: '/rest/product',
+    params: {
+      ids: unitId,
+      ...extParams
+    }
+  })
   makeUnitWithUsersPublisher({
     funcName: 'byNameWithUsers',
-    uriBuilder: unitName => ({
-      url: '/rest/product',
-      params: {names: unitName}
-    })
+    uriBuilder: nameUriBuilderBuilder()
   })
   makeUnitWithUsersPublisher({
     funcName: 'byIdWithUsers',
-    uriBuilder: unitId => ({
-      url: '/rest/product',
-      params: {ids: unitId}
-    })
+    uriBuilder: idUriBuilderBuilder()
   })
 
-  // TODO: make this join the roles data as well, so dependency on 'components' can be removed
-  makeUnitWithUsersPublisher({
-    funcName: 'byId',
-    uriBuilder: unitId => ({
-      url: '/rest/product',
-      params: {
-        ids: unitId,
-        include_fields: 'name,id,components'
-      }
-    }),
-    metaDataFields: {
+  const unitRolesAssocFuncs = [
+    withMetaData({
       bzId: 1,
       displayName: 1
-    }
+    }),
+    withRolesData({})
+  ]
+  const rolesFieldsParams = {
+    include_fields: 'name,id,components' // 'components' is only added as a fallback in case the roles are missing
+  }
+  makeUnitPublisherWithAssocs({
+    funcName: 'byIdWithRoles',
+    uriBuilder: idUriBuilderBuilder(rolesFieldsParams),
+    assocFuncs: unitRolesAssocFuncs
+  })
+  makeUnitPublisherWithAssocs({
+    funcName: 'byNameWithRoles',
+    uriBuilder: nameUriBuilderBuilder(rolesFieldsParams),
+    assocFuncs: unitRolesAssocFuncs
   })
 
   // TODO: remove this if it doesn't get reused by other UI components
@@ -328,5 +352,9 @@ Meteor.methods({
 let Units
 if (Meteor.isClient) {
   Units = new Mongo.Collection(collectionName)
+  Units.helpers({
+    metaData: () => UnitMetaData.findOne({bzId: this.id}),
+    rolesData: () => UnitRolesData.find({unitBzId: this.id}).fetch()
+  })
 }
 export default Units

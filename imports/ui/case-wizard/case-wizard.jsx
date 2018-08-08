@@ -12,6 +12,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import { RadioButton, RadioButtonGroup } from 'material-ui/RadioButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import CaseFieldValues, { collectionName as fieldValsCollName } from '../../api/case-field-values'
+import Reports, { collectionName as reportsCollName } from '../../api/reports'
 import UnitMetaData from '../../api/unit-meta-data'
 import Checkbox from 'material-ui/Checkbox'
 import { parseQueryString } from '../../util/parsers'
@@ -90,7 +91,8 @@ class CaseWizard extends Component {
           optional
         ),
         newUserEmail,
-        newUserIsOccupant
+        newUserIsOccupant,
+        this.props.reportItem
       ))
     }
   }
@@ -105,11 +107,8 @@ class CaseWizard extends Component {
   }
 
   render () {
-    const {
-      loadingUnitInfo, loadingUserEmail, loadingFieldValues, fieldValues,
-      unitItem, userBzLogin, dispatch, error, inProgress
-    } = this.props
-    if (loadingUnitInfo || loadingUserEmail || loadingFieldValues) {
+    const { isLoading, fieldValues, unitItem, userBzLogin, dispatch, error, inProgress, reportItem } = this.props
+    if (isLoading) {
       return <Preloader />
     }
     const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant } = this.state
@@ -122,6 +121,11 @@ class CaseWizard extends Component {
         <form onSubmit={this.handleSubmit}>
           <div className='overflow-auto flex-grow pa3' ref='scrollPane'>
             {infoItemMembers('Unit', unitItem.displayName || unitItem.name)}
+            {reportItem && (
+              <div className='mt2 pt1'>
+                {infoItemMembers('Report', reportItem.title)}
+              </div>
+            )}
             <TextField
               floatingLabelText='Case title *'
               floatingLabelShrinkStyle={textInputFloatingLabelStyle}
@@ -276,15 +280,14 @@ class CaseWizard extends Component {
 }
 
 CaseWizard.propTypes = {
-  loadingUnitInfo: PropTypes.bool.isRequired,
-  loadingUserEmail: PropTypes.bool.isRequired,
-  loadingFieldValues: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired,
   inProgress: PropTypes.bool.isRequired,
   error: PropTypes.string,
   unitItem: PropTypes.object,
   userBzLogin: PropTypes.string,
   fieldValues: PropTypes.object,
-  preferredUnitId: PropTypes.string
+  preferredUnitId: PropTypes.string,
+  reportItem: PropTypes.object
 }
 
 export default withRouter(connect(
@@ -299,20 +302,25 @@ export default withRouter(connect(
 )(createContainer(
   (props) => {
     const enumFields = ['category', 'subCategory']
-    const { unit } = parseQueryString(props.location.search)
-    const loadingUnitInfo = !Meteor.subscribe(`${unitsCollName}.byId`, unit).ready()
-    const unitIdInt = parseInt(unit)
+    const { unit: unitId, report: reportId } = parseQueryString(props.location.search)
+    const unitIdInt = parseInt(unitId)
+    const unitHandle = Meteor.subscribe(`${unitsCollName}.byIdWithRoles`, unitIdInt)
     const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
+    const reportIdInt = parseInt(reportId)
+    const reportHandle = reportId && Meteor.subscribe(`${reportsCollName}.byId`, reportIdInt)
+    const loadingUnitInfo = !unitHandle.ready()
+    const loadingUserEmail = !bzLoginHandle.ready()
+    const loadingFieldValues = enumFields
+      .map(name => Meteor.subscribe(`${fieldValsCollName}.fetchByName`, name))
+      .filter(handle => !handle.ready()).length > 0
+    const loadingReport = reportHandle && !reportHandle.ready()
     return ({
-      loadingUnitInfo,
-      loadingUserEmail: !bzLoginHandle.ready(),
-      loadingFieldValues: enumFields
-        .map(name => Meteor.subscribe(`${fieldValsCollName}.fetchByName`, name))
-        .filter(handle => !handle.ready()).length > 0,
-      unitItem: !loadingUnitInfo
+      isLoading: loadingUnitInfo || loadingUserEmail || loadingFieldValues || loadingReport,
+      unitItem: unitHandle.ready()
         ? Object.assign(Units.findOne({id: unitIdInt}), UnitMetaData.findOne({bzId: unitIdInt}))
         : null,
       userBzLogin: bzLoginHandle.ready() ? Meteor.user().bugzillaCreds.login : null,
+      reportItem: Reports.findOne({id: reportIdInt}),
       fieldValues: enumFields.reduce((all, name) => {
         all[name] = CaseFieldValues.findOne({name})
         return all

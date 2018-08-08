@@ -273,11 +273,11 @@ const MobileHeader = props => {
   const { caseItem, comments, dispatch, userBzLogin, ancestorPath } = props.contentProps
   const { match } = props
   const handleBack = () => {
-    const { push } = routerRedux
+    const { replace } = routerRedux
     if (match.isExact && ancestorPath) {
-      dispatch(push(ancestorPath))
+      dispatch(replace(ancestorPath))
     } else {
-      dispatch(push(props.location.pathname.split('/').slice(0, -1).join('/')))
+      dispatch(replace(props.location.pathname.split('/').slice(0, -1).join('/')))
     }
   }
   return (
