@@ -17,7 +17,7 @@ export default class UnitsByRoles extends Component {
           unitsByRoles.map(({ id, name, description, metaData }) => (
             <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => handleUnitClicked(id)} >
               <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                { ['House', 'Apartment/Flat', 'Condominium', 'Apartment Block'].includes(metaData.unitType) ? (
+                { ['House', 'Apartment/Flat', 'Villa', 'Condominium', 'Apartment Block'].includes(metaData.unitType) ? (
                   <FontIcon className='material-icons' color='var(--semi-dark-gray)'>home</FontIcon>
                 ) : (
                   <FontIcon className='material-icons' color='var(--semi-dark-gray)'>business</FontIcon>

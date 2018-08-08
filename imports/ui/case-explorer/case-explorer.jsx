@@ -171,7 +171,7 @@ class CaseExplorer extends Component {
                 <div key={unitTitle}>
                   <div className='flex items-center h3 bt b--light-gray bg-white'
                     onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
-                    { ['House', 'Apartment/Flat', 'Condominium', 'Apartment Block'].includes(unitType) ? (
+                    { ['House', 'Apartment/Flat', 'Villa', 'Condominium', 'Apartment Block'].includes(unitType) ? (
                       <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
                     ) : (
                       <FontIcon className='material-icons mh3' style={unitIconsStyle}>business</FontIcon>
