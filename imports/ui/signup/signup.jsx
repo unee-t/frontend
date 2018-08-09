@@ -95,7 +95,11 @@ export class SignupPage extends Component {
                   errorText={errorTexts[identifier] || showSignupError.includes('Email') ? ('Email already exists in Unee-T.') : (showSignupError)}
                 />
               ))}
-              {showSignupError.includes('Email') && (<div className='f7 absolute bottom-0 left-2 error-red'> You can <Link className='link dim b error-red' to='/forgot-pass'> reset your password </Link> if needed.</div>)}
+              {showSignupError.includes('Email') &&
+              (<div className='f7 absolute bottom-0 left-2 error-red'>
+                You can <Link className='link dim b error-red' to='/forgot-pass'>
+                reset your password </Link> if needed.
+              </div>)}
             </div>
             <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
           </fieldset>
