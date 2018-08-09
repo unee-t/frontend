@@ -75,6 +75,8 @@ export class SignupPage extends Component {
   }
   render () {
     const { info, errorTexts, termsAgreement } = this.state
+    const { showSignupError } = this.props
+
     return (
       <LoginLayout subHeading='Sign up for a free account!'
         footerContent={
@@ -86,12 +88,19 @@ export class SignupPage extends Component {
       >
         <form className='measure center' onSubmit={this.handleSubmit}>
           <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
-            {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
-              <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
-                onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
-                errorText={errorTexts[identifier]}
-              />
-            ))}
+            <div className='relative'>
+              {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
+                <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
+                  onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
+                  errorText={errorTexts[identifier] || showSignupError.includes('Email') ? ('Email already exists in Unee-T.') : (showSignupError)}
+                />
+              ))}
+              {showSignupError.includes('Email') &&
+              (<div className='f7 absolute bottom-0 left-2 error-red'>
+                You can <Link className='link dim b error-red' to='/forgot-pass'>
+                reset your password </Link> if needed.
+              </div>)}
+            </div>
             <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
           </fieldset>
           <div className='f7 gray mt3 lh-copy'>
@@ -120,5 +129,5 @@ export class SignupPage extends Component {
 SignupPage.propTypes = {}
 
 export default connect(
-  (state) => ({}) // map redux state to props
+  ({showSignupError}) => ({showSignupError}) // map redux state to props
 )(createContainer(() => ({}), SignupPage)) // map meteor state to props
