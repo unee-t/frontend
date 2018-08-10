@@ -14,6 +14,9 @@
   --success-green: #99cc33
 }
 
+.error-red {
+  color: #f44336
+}
 /* Tachyons fixes, overrides and additions */
 .b--transparent {
   border-color: transparent;

@@ -1,6 +1,7 @@
 // import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import routerRedux from 'react-router-redux'
+export const SIGNUP_ERROR = 'signup_error'
 
 export function submitSignupInfo (info) {
   const { push } = routerRedux
@@ -11,8 +12,14 @@ export function submitSignupInfo (info) {
       profile: {
       }
     }, (err) => {
-      if (err) return console.error(err)
-      dispatch(push('/unit'))
+      if (err) {
+        dispatch({
+          type: SIGNUP_ERROR,
+          value: err
+        })
+      } else {
+        dispatch(push('/unit'))
+      }
     })
   }
 }
