@@ -46,12 +46,7 @@ export default class UnitTypeIcon extends Component {
           {icon.icon}
         </FontIcon>
     }
-
-    return (
-      <div>
-        {unitTypeIcon}
-      </div>
-    )
+    return (unitTypeIcon)
   }
 }
 
