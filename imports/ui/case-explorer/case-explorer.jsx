@@ -14,10 +14,8 @@ import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { storeBreadcrumb } from '../general-actions'
+import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import { CaseList } from '../case-explorer/case-list'
-import {
-  unitIconsStyle
-} from './case-explorer.mui-styles'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -94,10 +92,10 @@ class CaseExplorer extends Component {
       // Building a unit dictionary to group the cases together
       const unitsDict = caseList.reduce((dict, caseItem) => {
         if (openFilter(caseItem) && assignedFilter(caseItem)) { // Filtering only the cases that match the selection
-          const { selectedUnit: unitTitle, selectedUnitBzId: bzId } = caseItem
+          const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType } = caseItem
 
           // Pulling the existing or creating a new dictionary entry if none
-          const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId}
+          const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId, unitType}
           const caseIdStr = caseItem.id.toString()
 
           // Adding the latest update time to the case for easier sorting later
@@ -113,13 +111,14 @@ class CaseExplorer extends Component {
 
       // Creating a case grouping *array* from the unit dictionary
       return Object.keys(unitsDict).reduce((all, unitTitle) => {
-        const { bzId, cases } = unitsDict[unitTitle]
+        const { bzId, cases, unitType } = unitsDict[unitTitle]
 
         // Sorting cases within a unit by the order descending order of last update
         cases.sort((a, b) => b.latestUpdate - a.latestUpdate)
         all.push({
           latestCaseUpdate: cases[0].latestUpdate, // The first case has to be latest due to the previous sort
           hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts), // true if any case has unreads
+          unitType,
           unitTitle,
           bzId,
           cases
@@ -164,13 +163,13 @@ class CaseExplorer extends Component {
             </div>
           </div>
           {!isLoading && caseGrouping.length
-            ? caseGrouping.map(({ unitTitle, bzId, hasUnread, cases: unitCases }) => {
+            ? caseGrouping.map(({ unitTitle, bzId, unitType, hasUnread, cases: unitCases }) => {
               const isExpanded = expandedUnits.includes(unitTitle)
               return (
                 <div key={unitTitle}>
                   <div className='flex items-center h3 bt b--light-gray bg-white'
                     onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
-                    <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
+                    <UnitTypeIcon iconInCaseExplorer={unitType} />
                     <div className='flex-grow ellipsis mid-gray mr4'>
                       {unitTitle}
                       <div className='flex justify-space'>
@@ -257,6 +256,7 @@ const connectedWrapper = connect(
   const notifsHandle = Meteor.subscribe(`${notifCollName}.myUpdates`)
   return {
     caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
+      unitType: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).unitType,
       selectedUnitBzId: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).bzId
     })),
     allNotifications: notifsHandle.ready() ? CaseNotifications.find().fetch() : [],
