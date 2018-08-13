@@ -103,6 +103,7 @@ if (Meteor.isServer) {
             bzId: 1,
             displayName: 1,
             moreInfo: 1,
+            unitType: 1,
             ownerIds: {
               $elemMatch: {
                 $in: [this.userId]
@@ -353,8 +354,12 @@ let Units
 if (Meteor.isClient) {
   Units = new Mongo.Collection(collectionName)
   Units.helpers({
-    metaData: () => UnitMetaData.findOne({bzId: this.id}),
-    rolesData: () => UnitRolesData.find({unitBzId: this.id}).fetch()
+    metaData () {
+      return UnitMetaData.findOne({bzId: this.id})
+    },
+    rolesData () {
+      return UnitRolesData.find({unitBzId: this.id}).fetch()
+    }
   })
 }
 export default Units

@@ -211,7 +211,8 @@ if (Meteor.isServer) {
           bzName: publishedItem.selectedUnit
         }, {
           bzId: 1,
-          bzName: 1
+          bzName: 1,
+          unitType: 1
         })
       },
       collectionName: unitMetaCollName
