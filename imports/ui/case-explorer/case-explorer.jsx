@@ -14,10 +14,8 @@ import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { storeBreadcrumb } from '../general-actions'
+import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import { CaseList } from '../case-explorer/case-list'
-import {
-  unitIconsStyle
-} from './case-explorer.mui-styles'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -171,11 +169,7 @@ class CaseExplorer extends Component {
                 <div key={unitTitle}>
                   <div className='flex items-center h3 bt b--light-gray bg-white'
                     onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
-                    { ['House', 'Apartment/Flat', 'Villa', 'Condominium', 'Apartment Block'].includes(unitType) ? (
-                      <FontIcon className='material-icons mh3' style={unitIconsStyle}>home</FontIcon>
-                    ) : (
-                      <FontIcon className='material-icons mh3' style={unitIconsStyle}>business</FontIcon>
-                    )}
+                    <UnitTypeIcon iconInCaseExplorer={unitType} />
                     <div className='flex-grow ellipsis mid-gray mr4'>
                       {unitTitle}
                       <div className='flex justify-space'>
