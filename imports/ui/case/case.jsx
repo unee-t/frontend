@@ -40,7 +40,8 @@ export class Case extends Component {
         loadingCase !== this.props.loadingCase ||
         loadingComments !== this.props.loadingComments ||
         loadingUnit !== this.props.loadingUnit ||
-        loadingPendingInvitations !== this.props.loadingPendingInvitations
+        loadingPendingInvitations !== this.props.loadingPendingInvitations ||
+        !_.isEqual(comments, this.props.comments)
       )
     ) {
       this.props.dispatchLoadingResult({caseItem, comments, dispatch, userBzLogin, ancestorPath})
