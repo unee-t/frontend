@@ -357,7 +357,9 @@ if (Meteor.isClient) {
     metaData () {
       return UnitMetaData.findOne({bzId: this.id})
     },
-    rolesData: () => UnitRolesData.find({unitBzId: this.id}).fetch()
+    rolesData () {
+      return UnitRolesData.find({unitBzId: this.id}).fetch()
+    }
   })
 }
 export default Units
