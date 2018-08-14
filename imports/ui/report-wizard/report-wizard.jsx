@@ -128,15 +128,17 @@ class ReportWizard extends Component {
             </div>
             {makeCreationButton('Add room', () => {})}
           </div> */}
-          <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
-            <EditableItem
-              label='Additional Comments'
-              disabled={!isDraft}
-              initialValue={reportItem.additionalComments}
-              onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-              isMultiLine
-            />
-          </div>
+          {(isDraft || reportItem.additionalComments) && (
+            <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
+              <EditableItem
+                label='Additional Comments'
+                disabled={!isDraft}
+                initialValue={reportItem.additionalComments}
+                onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                isMultiLine
+              />
+            </div>
+          )}
         </div>
         <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
           <div className='dib flex justify-end items-center'>
