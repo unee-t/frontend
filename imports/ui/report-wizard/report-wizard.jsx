@@ -18,6 +18,7 @@ import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
+import EditableItem from '../components/editable-item'
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { storeBreadcrumb } from '../general-actions'
 import { finalizeReport } from './report-wizard.actions'
@@ -65,6 +66,7 @@ class ReportWizard extends Component {
     if (isLoading) {
       return <Preloader />
     }
+
     const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     const memberIdMatcher = ({ id }) => id === user._id
     const unitDisplayName = (unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name
@@ -126,6 +128,15 @@ class ReportWizard extends Component {
             </div>
             {makeCreationButton('Add room', () => {})}
           </div> */}
+          <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
+            <EditableItem
+              label='Additional Comments'
+              disabled={!isDraft}
+              initialValue={reportItem.additionalComments}
+              onEdit={val => {}}
+              isMultiLine
+            />
+          </div>
         </div>
         <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
           <div className='dib flex justify-end items-center'>
