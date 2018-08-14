@@ -21,7 +21,7 @@ import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { storeBreadcrumb } from '../general-actions'
-import { finalizeReport } from './report-wizard.actions'
+import { finalizeReport, editReportField } from './report-wizard.actions'
 
 const addIconStyle = {
   fontSize: '1rem',
@@ -133,7 +133,7 @@ class ReportWizard extends Component {
               label='Additional Comments'
               disabled={!isDraft}
               initialValue={reportItem.additionalComments}
-              onEdit={val => {}}
+              onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
               isMultiLine
             />
           </div>
