@@ -37,7 +37,8 @@ export const caseServerFieldMapping = {
   creator: 'creator',
   creatorDetail: 'creator_detail',
   status: 'status',
-  resolution: 'resolution'
+  resolution: 'resolution',
+  additionalComments: 'whiteboard'
 }
 
 export const REPORT_KEYWORD = 'inspection_report'
