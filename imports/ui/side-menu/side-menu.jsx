@@ -80,6 +80,11 @@ user: ${user.emails[0].address}`
           iconName: 'card_travel',
           text: 'Cases'
         })}
+        {this.routeDrawerItem('/report', {
+          href: '/report',
+          iconName: 'assignment',
+          text: 'Report'
+        })}
         <Divider />
         {this.linkDrawerItem({
           href: 'mailto:support@unee-t.com?subject=' + window.location.href + '&body=' + encodeURIComponent(supportEmailBody),
