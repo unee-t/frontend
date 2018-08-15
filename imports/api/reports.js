@@ -52,7 +52,8 @@ if (Meteor.isServer) {
           'summary',
           'id',
           'status',
-          'creation_time'
+          'creation_time',
+          'assigned_to'
         ]
       )
     }

@@ -12,7 +12,7 @@ import Reports, { collectionName } from '../../api/reports'
 import UnitMetaData from '../../api/unit-meta-data'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
-import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
+import Units, { collectionName as unitsCollName } from '../../api/units'
 import {
   unitIconsStyle
 } from '../case-explorer/case-explorer.mui-styles'
@@ -48,23 +48,26 @@ class ReportExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      showOpen: true,
-      assignedToMe: false
+      draftStatus: true,
+      createdByMe: false
     }
   }
 
   handleStatusClicked (value) {
-    this.setState({ showOpen: value })
+    this.setState({ draftStatus: value })
   }
 
   handleAssignedClicked () {
-    this.setState({ assignedToMe: !this.state.assignedToMe })
+    this.setState({ createdByMe: !this.state.createdByMe })
   }
 
   render () {
-    const { isLoading, dispatch, reportList } = this.props
-    const { showOpen, assignedToMe } = this.state
-    console.log('props', this.props.reportList)
+    const { isLoading, dispatch, reportList, currentUser } = this.props
+    const { draftStatus, createdByMe } = this.state
+    const statusFilter = draftStatus ? report => report.status === 'UNCONFIRMED' : report => report.status === 'CONFIRMED'
+    const creatorFilter = createdByMe ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
+    const filteredReports = reportList.filter(x => statusFilter(x) && creatorFilter(x))
+
     if (isLoading) return <Preloader />
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -74,25 +77,25 @@ class ReportExplorer extends Component {
             <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
               <div
                 onClick={() => this.handleStatusClicked(true)}
-                className={'f6 fw5 ph2 ' + (showOpen ? 'mid-gray' : 'silver')}
+                className={'f6 fw5 ph2 ' + (draftStatus ? 'mid-gray' : 'silver')}
               >
-                Open
+                Draft
               </div>
               <div
                 onClick={() => this.handleStatusClicked(false)}
-                className={'f6 fw5 ml4 ph2 ' + (!showOpen ? 'mid-gray' : 'silver')}
+                className={'f6 fw5 ml4 ph2 ' + (!draftStatus ? 'mid-gray' : 'silver')}
               >
-                Closed
+                Finalized
               </div>
               <div
                 onClick={() => this.handleAssignedClicked()}
-                className={'f6 fw5 ml4 ph2 ' + (assignedToMe ? 'mid-gray' : 'silver')}
+                className={'f6 fw5 ml4 ph2 ' + (createdByMe ? 'mid-gray' : 'silver')}
               >
-                Assigned To Me
+                Created By Me
               </div>
             </div>
-            {reportList.length
-              ? reportList.map(({ selectedUnit }) => {
+            {filteredReports.length
+              ? filteredReports.map(({ selectedUnit }) => {
                 return (
                   <div key={selectedUnit}>
                     <div className='flex items-center h3 bt b--light-gray bg-white'>
@@ -149,9 +152,7 @@ export default connect(
   })
   return {
     reportList: Reports.find().fetch().map(reportItem => Object.assign({}, reportItem, {
-      // selectedUnitBzId: (UnitMetaData.findOne({bzName: reportItem.selectedUnit}) || {}).bzId
       unitHandle: Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit)
-      // unitFind: Units.find().fetch(),
     })),
     isLoading: !reportsHandle.ready(),
     unitMetaData: UnitMetaData.find().fetch(),
