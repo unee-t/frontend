@@ -8,10 +8,11 @@ import RootAppBar from '../components/root-app-bar'
 import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
-import Reports from '../../api/reports'
+import Reports, { collectionName } from '../../api/reports'
 import UnitMetaData from '../../api/unit-meta-data'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
+import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import {
   unitIconsStyle
 } from '../case-explorer/case-explorer.mui-styles'
@@ -63,8 +64,7 @@ class ReportExplorer extends Component {
   render () {
     const { isLoading, dispatch, reportList } = this.props
     const { showOpen, assignedToMe } = this.state
-    // const assignedFilter = assignedToMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
-
+    console.log('props', this.props.reportList)
     if (isLoading) return <Preloader />
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -92,25 +92,24 @@ class ReportExplorer extends Component {
               </div>
             </div>
             {reportList.length
-              ? reportList.map(({ unitTitle, bzId, unitType, hasUnread, cases: unitReports }) => {
-                // const isExpanded = expandedUnits.includes(unitTitle)
+              ? reportList.map(({ selectedUnit }) => {
                 return (
-                  <div key={unitTitle}>
+                  <div key={selectedUnit}>
                     <div className='flex items-center h3 bt b--light-gray bg-white'>
                       <FontIcon className={'material-icons mh3'} color='var(--semi-dark-gray)' style={unitIconsStyle}>
                         home
                       </FontIcon>
                       <div className='flex-grow ellipsis mid-gray mr4'>
-                        {unitTitle}
+                        {selectedUnit}
                         <div className='flex justify-space'>
                           <div className={'f6 silver mt1'}>
-                            { unitReports.length } report
+                            report
                           </div>
-                          {bzId && (
+                          {(
                             <div className='no-shrink flex items-center'>
                               <Link
                                 className='f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5'
-                                to={`/report/new?unit=${bzId}`}>
+                                to={`/report/new?unit=`}>
                                 Add report
                               </Link>
                             </div>
@@ -143,11 +142,20 @@ let reportsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
+  const reportsHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, {
+    onStop: (error) => {
+      reportsError = error
+    }
+  })
   return {
     reportList: Reports.find().fetch().map(reportItem => Object.assign({}, reportItem, {
-      unitType: (UnitMetaData.findOne({bzName: reportItem.selectedUnit}) || {}).unitType,
-      selectedUnitBzId: (UnitMetaData.findOne({bzName: reportItem.selectedUnit}) || {}).bzId
+      // selectedUnitBzId: (UnitMetaData.findOne({bzName: reportItem.selectedUnit}) || {}).bzId
+      unitHandle: Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit)
+      // unitFind: Units.find().fetch(),
     })),
+    isLoading: !reportsHandle.ready(),
+    unitMetaData: UnitMetaData.find().fetch(),
+    unitFind: Units.find().fetch(),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
     reportsError
   }
