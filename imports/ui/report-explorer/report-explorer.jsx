@@ -7,9 +7,9 @@ import { Link } from 'react-router-dom'
 import RootAppBar from '../components/root-app-bar'
 import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
+import memoizeOne from 'memoize-one'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Reports, { collectionName } from '../../api/reports'
-import UnitMetaData from '../../api/unit-meta-data'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName as unitsCollName } from '../../api/units'
@@ -61,13 +61,43 @@ class ReportExplorer extends Component {
     this.setState({ createdByMe: !this.state.createdByMe })
   }
 
+  makeReportGrouping = memoizeOne(
+    (reportList, draftStatus, createdByMe) => {
+      const statusFilter = draftStatus ? report => report.status === 'UNCONFIRMED' : report => report.status === 'CONFIRMED'
+      const creatorFilter = createdByMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+      var unitDict = reportList.reduce((dict, reportItem) => {
+        if (statusFilter(reportItem) && creatorFilter(reportItem)) {
+          const { selectedUnit: unitTitle, unitList } = reportItem
+          const metaData = (unitList === undefined || unitList[0] === undefined) ? 'not_listed' : unitList[0].metaData
+          const unitType = metaData === undefined ? 'not_listed' : metaData.unitType
+          const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType}
+          unitDesc.reports.push(reportItem)
+        }
+        return dict
+      }, {})
+
+      return Object.keys(unitDict).reduce((all, unitTitle) => {
+        const { reports, unitType } = unitDict[unitTitle]
+        all.push({
+          unitTitle,
+          unitType,
+          reports
+        })
+        return all
+      }, [])
+    }
+  )
+
   render () {
     const { isLoading, dispatch, reportList, currentUser } = this.props
     const { draftStatus, createdByMe } = this.state
     const statusFilter = draftStatus ? report => report.status === 'UNCONFIRMED' : report => report.status === 'CONFIRMED'
     const creatorFilter = createdByMe ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
     const filteredReports = reportList.filter(x => statusFilter(x) && creatorFilter(x))
-
+    // console.log('hey props',this.props)
+    // console.log('report List', reportList)
+    const reportGrouping = this.makeReportGrouping(reportList, draftStatus, createdByMe)
+    console.log('report grouping', reportGrouping)
     if (isLoading) return <Preloader />
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -95,7 +125,7 @@ class ReportExplorer extends Component {
               </div>
             </div>
             {filteredReports.length
-              ? filteredReports.map(({ selectedUnit }) => {
+              ? filteredReports.map(({ selectedUnit, unitType }) => {
                 return (
                   <div key={selectedUnit}>
                     <div className='flex items-center h3 bt b--light-gray bg-white'>
@@ -142,6 +172,7 @@ ReportExplorer.propTypes = {
 }
 
 let reportsError
+let unitsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
@@ -150,14 +181,20 @@ export default connect(
       reportsError = error
     }
   })
+  // const  = Meteor.subscribe(`${collectionName}.forBrowsing`)
   return {
     reportList: Reports.find().fetch().map(reportItem => Object.assign({}, reportItem, {
-      unitHandle: Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit)
+      unitHandle: Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit),
+      unitList: Units.find({name: reportItem.selectedUnit}).fetch().map(unit => Object.assign({}, unit, {
+        metaData: unit.metaData()
+      }))
     })),
     isLoading: !reportsHandle.ready(),
-    unitMetaData: UnitMetaData.find().fetch(),
-    unitFind: Units.find().fetch(),
+    units: Units.find().fetch().map(unit => Object.assign({}, unit, {
+      metaData: unit.metaData()
+    })),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
-    reportsError
+    reportsError,
+    unitsError
   }
 }, ReportExplorer))
