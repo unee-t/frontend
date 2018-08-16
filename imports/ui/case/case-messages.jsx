@@ -1,24 +1,23 @@
-/* global FileReader */
-
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
+import { Link } from 'react-router-dom'
 import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FlatButton from 'material-ui/FlatButton'
+import TextField from 'material-ui/TextField'
 import ContentAdd from 'material-ui/svg-icons/content/add'
 import CircularProgress from 'material-ui/CircularProgress'
 import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
-import TextField from 'material-ui/TextField'
+import { imageInputEventHandler } from '../util/dom-api'
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
 import colors from '../../mui-theme/colors'
-import { Link } from 'react-router-dom'
 import {
   subheaderStyle,
   infoIconStyle,
@@ -97,15 +96,16 @@ class CaseMessages extends Component {
     this.props.onRetryAttachment(process)
   }
 
-  handleFileSelection (evt) {
-    evt.persist()
-    const file = evt.target.files[0]
-    const reader = new FileReader()
-    reader.onload = (evt) => {
-      this.props.onCreateAttachment(evt.target.result, file)
-    }
-    reader.readAsDataURL(file)
-  }
+  // handleFileSelection (evt) {
+  //   evt.persist()
+  //   const file = evt.target.files[0]
+  //   const reader = new FileReader()
+  //   reader.onload = (evt) => {
+  //     this.props.onCreateAttachment(evt.target.result, file)
+  //   }
+  //   reader.readAsDataURL(file)
+  // }
+  // handleFileSelection = evt => ima
 
   render () {
     const { caseItem, comments, attachmentUploads } = this.props
@@ -181,7 +181,7 @@ class CaseMessages extends Component {
         { isCurrentUserCreator &&
           <ChatBotUI
             caseItem={this.props.caseItem}
-            handleFileSelection={this.handleFileSelection}
+            handleFileSelection={imageInputEventHandler(this.props.onCreateAttachment)}
             onCreateAttachment={this.props.onCreateAttachment}
           />
         }
@@ -293,7 +293,7 @@ class CaseMessages extends Component {
         <IconButton style={attachmentButtonStyle}>
           <label>
             <ContentAdd color={colors.main} />
-            <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
+            <input type='file' className='dn' onChange={imageInputEventHandler(this.props.onCreateAttachment)} />
           </label>
         </IconButton>
         <inviteUserIcon />
