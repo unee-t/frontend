@@ -130,13 +130,18 @@ class ReportWizard extends Component {
           </div> */}
           {(isDraft || reportItem.additionalComments) && (
             <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
-              <EditableItem
-                label='Additional Comments'
-                disabled={!isDraft}
-                initialValue={reportItem.additionalComments}
-                onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-                isMultiLine
-              />
+              {isDraft ? (
+                <EditableItem
+                  label='Additional Comments'
+                  initialValue={reportItem.additionalComments}
+                  onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                  isMultiLine
+                />
+              ) : (
+                <div className='mt3'>
+                  {infoItemMembers('Additional Comments', reportItem.additionalComments)}
+                </div>
+              )}
             </div>
           )}
         </div>
