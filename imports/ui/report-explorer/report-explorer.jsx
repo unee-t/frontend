@@ -11,45 +11,46 @@ import memoizeOne from 'memoize-one'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import Reports, { collectionName } from '../../api/reports'
 import Preloader from '../preloader/preloader'
-import { setDrawerState } from '../general-actions'
+import { setDrawerState, storeBreadcrumb } from '../general-actions'
+import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import Units, { collectionName as unitsCollName } from '../../api/units'
-import {
-  unitIconsStyle
-} from '../case-explorer/case-explorer.mui-styles'
+import { ItemList } from '../explorer-components/item-list'
+import { NoItemMsg } from '../explorer-components/no-item-msg'
 
-function NoItem (props) {
-  return (
-    <div className='flex-grow flex flex-column items-center justify-center'>
-      <div className='tc'>
-        <div className='dib relative'>
-          <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '6rem'}}>
-            card_travel
-          </FontIcon>
-          <div className='absolute bottom--1 right--1 pb2'>
-            <div className='br-100 pa1 bg-very-light-gray lh-cram'>
-              <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
-                add_circle
-              </FontIcon>
-            </div>
-          </div>
-        </div>
-        <div className='mt3 ph4'>
-          <div className='mid-gray b lh-copy'>
-            <div>There are no {props.item}s that match your current filter combination.</div>
-            <div>Click on the "+" button to select a unit to add a new {props.item}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+// function NoItemMsg (props) {
+//   return (
+//     <div className='flex-grow flex flex-column items-center justify-center'>
+//       <div className='tc'>
+//         <div className='dib relative'>
+//           <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '6rem'}}>
+//             card_travel
+//           </FontIcon>
+//           <div className='absolute bottom--1 right--1 pb2'>
+//             <div className='br-100 pa1 bg-very-light-gray lh-cram'>
+//               <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+//                 add_circle
+//               </FontIcon>
+//             </div>
+//           </div>
+//         </div>
+//         <div className='mt3 ph4'>
+//           <div className='mid-gray b lh-copy'>
+//             <div>There are no {props.item}s that match your current filter combination.</div>
+//             <div>Click on the "+" button to select a unit to add a new {props.item}</div>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   )
+// }
 
 class ReportExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       draftStatus: true,
-      createdByMe: false
+      createdByMe: false,
+      expandedUnits: []
     }
   }
 
@@ -61,6 +62,23 @@ class ReportExplorer extends Component {
     this.setState({ createdByMe: !this.state.createdByMe })
   }
 
+  handleExpandUnit (evt, unitTitle) {
+    evt.preventDefault()
+    const { expandedUnits } = this.state
+    let stateMutation
+    if (expandedUnits.includes(unitTitle)) {
+      console.log('if block')
+      stateMutation = {
+        expandedUnits: expandedUnits.filter(title => title !== unitTitle)
+      }
+    } else {
+      stateMutation = {
+        expandedUnits: expandedUnits.concat([unitTitle])
+      }
+    }
+    this.setState(stateMutation)
+  }
+
   makeReportGrouping = memoizeOne(
     (reportList, draftStatus, createdByMe) => {
       const statusFilter = draftStatus ? report => report.status === 'UNCONFIRMED' : report => report.status === 'CONFIRMED'
@@ -70,17 +88,19 @@ class ReportExplorer extends Component {
           const { selectedUnit: unitTitle, unitList } = reportItem
           const metaData = (unitList === undefined || unitList[0] === undefined) ? 'not_listed' : unitList[0].metaData
           const unitType = metaData === undefined ? 'not_listed' : metaData.unitType
-          const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType}
+          const bzId = metaData === undefined ? 'not_listed' : metaData.bzId
+          const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType, bzId}
           unitDesc.reports.push(reportItem)
         }
         return dict
       }, {})
 
       return Object.keys(unitDict).reduce((all, unitTitle) => {
-        const { reports, unitType } = unitDict[unitTitle]
+        const { reports, unitType, bzId } = unitDict[unitTitle]
         all.push({
           unitTitle,
           unitType,
+          bzId,
           reports
         })
         return all
@@ -89,9 +109,10 @@ class ReportExplorer extends Component {
   )
 
   render () {
-    const { isLoading, dispatch, reportList } = this.props
-    const { draftStatus, createdByMe } = this.state
+    const { isLoading, dispatch, reportList, match } = this.props
+    const { draftStatus, createdByMe, expandedUnits } = this.state
     const reportGrouping = this.makeReportGrouping(reportList, draftStatus, createdByMe)
+
     if (isLoading) return <Preloader />
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -119,13 +140,13 @@ class ReportExplorer extends Component {
               </div>
             </div>
             {reportGrouping.length
-              ? reportGrouping.map(({ unitTitle, reports }) => {
+              ? reportGrouping.map(({ unitTitle, reports, unitType, bzId, reports: unitReports }) => {
+                const isExpanded = expandedUnits.includes(unitTitle)
                 return (
                   <div key={unitTitle}>
-                    <div className='flex items-center h3 bt b--light-gray bg-white'>
-                      <FontIcon className={'material-icons mh3'} color='var(--semi-dark-gray)' style={unitIconsStyle}>
-                        home
-                      </FontIcon>
+                    <div className='flex items-center h3 bt b--light-gray bg-white'
+                      onClick={evt => this.handleExpandUnit(evt, unitTitle)} >
+                      <UnitTypeIcon iconInExplorer={unitType} />
                       <div className='flex-grow ellipsis mid-gray mr4'>
                         {unitTitle}
                         <div className='flex justify-space'>
@@ -136,7 +157,7 @@ class ReportExplorer extends Component {
                             <div className='no-shrink flex items-center'>
                               <Link
                                 className='f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5'
-                                to={`/report/new?unit=`}>
+                                to={`/unit/${bzId}/reports/new`}>
                                 Add report
                               </Link>
                             </div>
@@ -144,10 +165,19 @@ class ReportExplorer extends Component {
                         </div>
                       </div>
                     </div>
+                    {isExpanded && (
+                      <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
+                        <ItemList
+                          allItems={unitReports}
+                          onItemClick={() => dispatch(storeBreadcrumb(match.url))}
+                          name='report'
+                        />
+                      </ul>
+                    )}
                   </div>
                 )
               })
-              : (<NoItem item={'report'} />)
+              : (<NoItemMsg item={'report'} />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>

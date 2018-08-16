@@ -7,7 +7,7 @@ import { isClosed } from '../../api/cases'
 
 import {
   moreIconColor
-} from './case-explorer.mui-styles'
+} from './explorer.mui-styles'
 
 const updateCounter = (iconType, count) => {
   if (!count) return null
@@ -23,25 +23,25 @@ const updateCounter = (iconType, count) => {
   )
 }
 
-export function CaseList ({ allCases, onItemClick }) {
+export function ItemList ({ allItems, onItemClick, name }) {
   return (
     <div>
-      {allCases.map((caseItem, ind) =>
-        <li key={caseItem.id} className='h2-5 bt b--black-10'>
+      {allItems.map((item, ind) =>
+        <li key={item.id} className='h2-5 bt b--black-10'>
           <div className='flex items-center'>
             <Link
               className={
                 'link flex-grow ellipsis ml3 pl1 ' +
-                  (caseItem.unreadCounts ? 'b ' : '') +
-                  (isClosed(caseItem) ? 'silver strike' : 'bondi-blue')
+                  (item.unreadCounts ? 'b ' : '') +
+                  (isClosed(item) ? 'silver strike' : 'bondi-blue')
               }
-              to={`/case/${caseItem.id}`}
+              to={name === 'report' ? (`report/${item.id}/review`) : (`/case/${item.id}`)}
               onClick={onItemClick}
             >
-              {caseItem.title}
+              {item.title}
             </Link>
-            {updateCounter('announcement', caseItem.unreadCounts && caseItem.unreadCounts.messages)}
-            {updateCounter('assignment_late', caseItem.unreadCounts && caseItem.unreadCounts.updates)}
+            {updateCounter('announcement', item.unreadCounts && item.unreadCounts.messages)}
+            {updateCounter('assignment_late', item.unreadCounts && item.unreadCounts.updates)}
             <IconButton>
               <FontIcon className='material-icons' color={moreIconColor}>more_horiz</FontIcon>
             </IconButton>
@@ -52,7 +52,7 @@ export function CaseList ({ allCases, onItemClick }) {
   )
 }
 
-CaseList.propTypes = {
-  allCases: PropTypes.array.isRequired,
+ItemList.propTypes = {
+  allItems: PropTypes.array.isRequired,
   onItemClick: PropTypes.func.isRequired
 }

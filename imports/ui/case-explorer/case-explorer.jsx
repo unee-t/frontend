@@ -15,7 +15,8 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { storeBreadcrumb } from '../general-actions'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
-import { CaseList } from '../case-explorer/case-list'
+import { ItemList } from '../explorer-components/item-list'
+import { NoItemMsg } from '../explorer-components/no-item-msg'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -169,7 +170,7 @@ class CaseExplorer extends Component {
                 <div key={unitTitle}>
                   <div className='flex items-center h3 bt b--light-gray bg-white'
                     onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
-                    <UnitTypeIcon iconInCaseExplorer={unitType} />
+                    <UnitTypeIcon iconInExplorer={unitType} />
                     <div className='flex-grow ellipsis mid-gray mr4'>
                       {unitTitle}
                       <div className='flex justify-space'>
@@ -190,39 +191,17 @@ class CaseExplorer extends Component {
                   </div>
                   {isExpanded && (
                     <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                      <CaseList
-                        allCases={unitCases}
+                      <ItemList
+                        allItems={unitCases}
                         onItemClick={() => dispatch(storeBreadcrumb(match.url))}
+                        name='case'
                       />
                     </ul>
                   )}
                 </div>
               )
             })
-            : (
-              <div className='flex-grow flex flex-column items-center justify-center'>
-                <div className='tc'>
-                  <div className='dib relative'>
-                    <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '6rem'}}>
-                      card_travel
-                    </FontIcon>
-                    <div className='absolute bottom--1 right--1 pb2'>
-                      <div className='br-100 pa1 bg-very-light-gray lh-cram'>
-                        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
-                          add_circle
-                        </FontIcon>
-                      </div>
-                    </div>
-                  </div>
-                  <div className='mt3 ph4'>
-                    <div className='mid-gray b lh-copy'>
-                      <div>There are no cases that match your current filter combination.</div>
-                      <div>Click on the "+" button to select a unit to add a new case</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
+            : (<NoItemMsg item={'case'} />)
           }
         </div>
         <div className='absolute right-1 bottom-2'>

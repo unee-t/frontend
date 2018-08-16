@@ -25,6 +25,7 @@ import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
+import {ReportIcon} from '../report/report-icon'
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
@@ -186,22 +187,7 @@ class Unit extends Component {
                           <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
                             <MenuItem innerDivStyle={menuItemDivStyle}>
                               <div className='pv2 flex-grow flex items-center w-100'>
-                                <div className='dib relative flex items-center'>
-                                  <FontIcon className='material-icons' color='var(--mid-gray)'>
-                                    content_paste
-                                  </FontIcon>
-                                  <div className='absolute bottom-0 right-0'>
-                                    <div className='br-100 bg-white lh-cram'>
-                                      <FontIcon
-                                        className='material-icons'
-                                        color={isFinalized ? 'var(--success-green)' : 'var(--bondi-blue)'}
-                                        style={{fontSize: '0.75rem'}}
-                                      >
-                                        {isFinalized ? 'check_circle' : 'watch_later'}
-                                      </FontIcon>
-                                    </div>
-                                  </div>
-                                </div>
+                                <ReportIcon isFinalized={isFinalized} />
                                 <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
                                   <div className='mid-gray ellipsis'>{title}</div>
                                   <div className='silver mt1 f7 ellipsis'>
