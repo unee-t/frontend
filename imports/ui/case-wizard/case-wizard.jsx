@@ -313,7 +313,7 @@ export default withRouter(connect(
     const loadingFieldValues = enumFields
       .map(name => Meteor.subscribe(`${fieldValsCollName}.fetchByName`, name))
       .filter(handle => !handle.ready()).length > 0
-    const loadingReport = reportHandle && !reportHandle.ready()
+    const loadingReport = !!reportHandle && !reportHandle.ready()
     return ({
       isLoading: loadingUnitInfo || loadingUserEmail || loadingFieldValues || loadingReport,
       unitItem: unitHandle.ready()

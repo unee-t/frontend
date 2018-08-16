@@ -1,17 +1,9 @@
-import { Meteor } from 'meteor/meteor'
-import { filter, debounceTime, distinctUntilChanged, tap, ignoreElements } from 'rxjs/operators'
-
+import debouncedMethodCaller from './base/debounced-method-caller'
 import { EDIT_CASE_FIELD } from '../../ui/case/case.actions'
 import { collectionName } from '../../api/cases'
 
-export const editCaseField = action$ => action$
-  .ofType(EDIT_CASE_FIELD)
-  .pipe(
-    filter(() => !!Meteor.userId()),
-    debounceTime(750),
-    distinctUntilChanged(),
-    tap(
-      ({changeSet, caseId}) => Meteor.call(`${collectionName}.editCaseField`, parseInt(caseId), changeSet)
-    ),
-    ignoreElements()
-  )
+export const editCaseField = debouncedMethodCaller({
+  actionType: EDIT_CASE_FIELD,
+  methodName: `${collectionName}.editCaseField`,
+  argTranslator: ({changeSet, caseId}) => [parseInt(caseId), changeSet]
+})

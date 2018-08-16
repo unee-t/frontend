@@ -30,7 +30,7 @@ export default class EditableItem extends Component {
     this.props.onEdit(value)
   }
   render () {
-    const { label, isMultiLine, selectionList } = this.props
+    const { label, isMultiLine, selectionList, disabled } = this.props
     const { value } = this.state
 
     if (!selectionList) {
@@ -41,6 +41,7 @@ export default class EditableItem extends Component {
           underlineFocusStyle={textInputUnderlineFocusStyle}
           inputStyle={textInputStyle}
           fullWidth
+          disabled={!!disabled}
           multiLine={isMultiLine}
           value={value}
           onChange={({ target: { value } }) => this.handleEdit(value)}
@@ -53,6 +54,7 @@ export default class EditableItem extends Component {
           fullWidth
           floatingLabelShrinkStyle={textInputFloatingLabelStyle}
           labelStyle={textInputStyle}
+          disabled={!!disabled}
           menuStyle={textInputStyle}
           iconStyle={selectInputIconStyle}
           underlineFocusStyle={textInputUnderlineFocusStyle}
@@ -72,5 +74,6 @@ EditableItem.propTypes = {
   onEdit: PropTypes.func.isRequired,
   isMultiLine: PropTypes.bool,
   initialValue: PropTypes.string,
-  selectionList: PropTypes.array
+  selectionList: PropTypes.array,
+  disabled: PropTypes.bool
 }
