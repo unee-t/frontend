@@ -89,15 +89,9 @@ class ReportExplorer extends Component {
   )
 
   render () {
-    const { isLoading, dispatch, reportList, currentUser } = this.props
+    const { isLoading, dispatch, reportList } = this.props
     const { draftStatus, createdByMe } = this.state
-    const statusFilter = draftStatus ? report => report.status === 'UNCONFIRMED' : report => report.status === 'CONFIRMED'
-    const creatorFilter = createdByMe ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
-    const filteredReports = reportList.filter(x => statusFilter(x) && creatorFilter(x))
-    // console.log('hey props',this.props)
-    // console.log('report List', reportList)
     const reportGrouping = this.makeReportGrouping(reportList, draftStatus, createdByMe)
-    console.log('report grouping', reportGrouping)
     if (isLoading) return <Preloader />
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -124,19 +118,19 @@ class ReportExplorer extends Component {
                 Created By Me
               </div>
             </div>
-            {filteredReports.length
-              ? filteredReports.map(({ selectedUnit, unitType }) => {
+            {reportGrouping.length
+              ? reportGrouping.map(({ unitTitle, reports }) => {
                 return (
-                  <div key={selectedUnit}>
+                  <div key={unitTitle}>
                     <div className='flex items-center h3 bt b--light-gray bg-white'>
                       <FontIcon className={'material-icons mh3'} color='var(--semi-dark-gray)' style={unitIconsStyle}>
                         home
                       </FontIcon>
                       <div className='flex-grow ellipsis mid-gray mr4'>
-                        {selectedUnit}
+                        {unitTitle}
                         <div className='flex justify-space'>
                           <div className={'f6 silver mt1'}>
-                            report
+                            {reports.length} report{ reports.length > 1 && 's'}
                           </div>
                           {(
                             <div className='no-shrink flex items-center'>
