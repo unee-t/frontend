@@ -11,6 +11,7 @@ import {
   idUrlTemplate,
   caseQueryBuilder,
   associatedCasesQueryExps,
+  fieldEditMethodMaker,
   factoryOptions as caseFactoryOpts
 } from './cases'
 
@@ -91,6 +92,11 @@ if (Meteor.isServer) {
       )
     }
   }))
+}
+
+let Reports
+if (Meteor.isClient) {
+  Reports = new Mongo.Collection(collectionName)
 }
 
 Meteor.methods({
@@ -245,12 +251,13 @@ Meteor.methods({
         reportItem
       })
     }
-  }
+  },
+  [`${collectionName}.editReportField`]: fieldEditMethodMaker({
+    clientCollection: Reports,
+    editableFields: ['additionalComments'],
+    methodName: `${collectionName}.editReportField`,
+    publicationObj
+  })
 })
-
-let Reports
-if (Meteor.isClient) {
-  Reports = new Mongo.Collection(collectionName)
-}
 
 export default Reports
