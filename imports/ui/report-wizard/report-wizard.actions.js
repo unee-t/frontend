@@ -4,6 +4,7 @@ export const CREATE_REPORT_SUCCESS = 'create_report_success'
 export const CREATE_REPORT_INITIATED = 'create_report_initiated'
 export const FINALIZE_REPORT = 'finalize_report'
 export const EDIT_REPORT_FIELD = 'edit_report_field'
+export const ADD_ATTACHMENT = 'add_attachment_to_report'
 
 export function createReport (unit, title) {
   return {
@@ -25,5 +26,14 @@ export function editReportField (reportId, changeSet) {
     type: EDIT_REPORT_FIELD,
     reportId,
     changeSet
+  }
+}
+
+export function addAttachment (reportId, preview, file) {
+  return {
+    type: ADD_ATTACHMENT,
+    reportId,
+    preview,
+    file
   }
 }

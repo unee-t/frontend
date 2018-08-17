@@ -8,7 +8,7 @@ import {
 
 const actionTypes = [COMPLETED, ERROR, PROGRESS, UPLOADING]
 
-export default function caseAttachmentUploads (state = {}, action) {
+export default function attachmentUploads (state = {}, action) {
   if (actionTypes.includes(action.type)) {
     const { caseId, processId, preview, percent, file } = action
     const idStr = caseId.toString()
