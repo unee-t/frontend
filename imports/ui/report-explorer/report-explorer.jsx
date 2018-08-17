@@ -48,7 +48,7 @@ class ReportExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      draftStatus: true,
+      draftStatus: false,
       createdByMe: false,
       expandedUnits: []
     }
@@ -121,16 +121,16 @@ class ReportExplorer extends Component {
           <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
             <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
               <div
-                onClick={() => this.handleStatusClicked(true)}
-                className={'f6 fw5 ph2 ' + (draftStatus ? 'mid-gray' : 'silver')}
-              >
-                Draft
-              </div>
-              <div
                 onClick={() => this.handleStatusClicked(false)}
-                className={'f6 fw5 ml4 ph2 ' + (!draftStatus ? 'mid-gray' : 'silver')}
+                className={'f6 fw5 ph2 ' + (!draftStatus ? 'mid-gray' : 'silver')}
               >
                 Finalized
+              </div>
+              <div
+                onClick={() => this.handleStatusClicked(true)}
+                className={'f6 fw5 ph2 ml4 ' + (draftStatus ? 'mid-gray' : 'silver')}
+              >
+                Draft
               </div>
               <div
                 onClick={() => this.handleAssignedClicked()}
