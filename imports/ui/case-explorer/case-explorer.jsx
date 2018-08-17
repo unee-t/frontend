@@ -3,20 +3,17 @@ import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
-import { withRouter, Link } from 'react-router-dom'
-import { push } from 'react-router-redux'
-import FontIcon from 'material-ui/FontIcon'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
+import { withRouter } from 'react-router-dom'
 import memoizeOne from 'memoize-one'
 import Cases, { collectionName, isClosed } from '../../api/cases'
 import CaseNotifications, { collectionName as notifCollName } from '../../api/case-notifications'
 import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
-import { storeBreadcrumb } from '../general-actions'
-import UnitTypeIcon from '../unit-explorer/unit-type-icon'
-import { ItemList } from '../explorer-components/item-list'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
+import { FilterRow } from '../explorer-components/filter-row'
+import { ItemRow } from '../explorer-components/item-row'
+import { UnitBtn } from '../explorer-components/unit-btn'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -24,20 +21,20 @@ class CaseExplorer extends Component {
     this.state = {
       caseId: '',
       expandedUnits: [],
-      showOpen: true,
-      assignedToMe: false
+      filterStatus: true,
+      myInvolvement: false
     }
   }
 
-  handleStatusClicked (value) {
-    this.setState({ showOpen: value })
+  handleStatusClicked = (value) => {
+    this.setState({ filterStatus: value })
   }
 
-  handleAssignedClicked () {
-    this.setState({ assignedToMe: !this.state.assignedToMe })
+  handleAssignedClicked = () => {
+    this.setState({ myInvolvement: !this.state.myInvolvement })
   }
 
-  handleExpandUnit (evt, unitTitle) {
+  handleExpandUnit = (evt, unitTitle) => {
     evt.preventDefault()
     const { expandedUnits } = this.state
     let stateMutation
@@ -83,9 +80,9 @@ class CaseExplorer extends Component {
     (a, b) => a.length === b.length
   )
   makeCaseGrouping = memoizeOne(
-    (caseList, showOpen, onlyAssigned, allNotifs, unreadNotifs) => {
-      const openFilter = showOpen ? x => !isClosed(x) : x => isClosed(x)
-      const assignedFilter = onlyAssigned ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+    (caseList, filterStatus, myInvolvement, allNotifs, unreadNotifs) => {
+      const openFilter = filterStatus ? x => !isClosed(x) : x => isClosed(x)
+      const assignedFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
 
       const caseUpdateTimeDict = this.makeCaseUpdateTimeDict(allNotifs)
       const caseUnreadDict = this.makeCaseUnreadDict(unreadNotifs)
@@ -137,78 +134,38 @@ class CaseExplorer extends Component {
   )
   render () {
     const { isLoading, dispatch, match, caseList, allNotifications, unreadNotifications } = this.props
-    const { showOpen, expandedUnits, assignedToMe } = this.state
+    const { filterStatus, expandedUnits, myInvolvement } = this.state
     if (isLoading) return <Preloader />
-    const caseGrouping = this.makeCaseGrouping(caseList, showOpen, assignedToMe, allNotifications, unreadNotifications)
+    const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
-          <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
-            <div
-              onClick={() => this.handleStatusClicked(true)}
-              className={'f6 fw5 ph2 ' + (showOpen ? 'mid-gray' : 'silver')}
-            >
-              Open
-            </div>
-            <div
-              onClick={() => this.handleStatusClicked(false)}
-              className={'f6 fw5 ml4 ph2 ' + (!showOpen ? 'mid-gray' : 'silver')}
-            >
-              Closed
-            </div>
-            <div
-              onClick={() => this.handleAssignedClicked()}
-              className={'f6 fw5 ml4 ph2 ' + (assignedToMe ? 'mid-gray' : 'silver')}
-            >
-              Assigned To Me
-            </div>
-          </div>
+          <FilterRow
+            filterStatus={filterStatus}
+            myInvolvement={myInvolvement}
+            handleAssignedClicked={this.handleAssignedClicked}
+            handleStatusClicked={this.handleStatusClicked}
+            filterType={['Open', 'Closed', 'Assigned To Me']}
+          />
           {!isLoading && caseGrouping.length
             ? caseGrouping.map(({ unitTitle, bzId, unitType, hasUnread, cases: unitCases }) => {
-              const isExpanded = expandedUnits.includes(unitTitle)
               return (
-                <div key={unitTitle}>
-                  <div className='flex items-center h3 bt b--light-gray bg-white'
-                    onClick={evt => this.handleExpandUnit(evt, unitTitle)}>
-                    <UnitTypeIcon iconInExplorer={unitType} />
-                    <div className='flex-grow ellipsis mid-gray mr4'>
-                      {unitTitle}
-                      <div className='flex justify-space'>
-                        <div className={'f6 silver mt1' + (hasUnread ? ' b' : '')}>
-                          { unitCases.length } cases
-                        </div>
-                        {bzId && (
-                          <div className='no-shrink flex items-center'>
-                            <Link
-                              className='f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5'
-                              to={`/case/new?unit=${bzId}`}>
-                              Add case
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {isExpanded && (
-                    <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                      <ItemList
-                        allItems={unitCases}
-                        onItemClick={() => dispatch(storeBreadcrumb(match.url))}
-                        name='case'
-                      />
-                    </ul>
-                  )}
-                </div>
+                <ItemRow unitTitle={unitTitle}
+                  expandedUnits={expandedUnits}
+                  items={unitCases}
+                  unitType={unitType}
+                  unitItems={unitCases}
+                  handleExpandUnit={this.handleExpandUnit}
+                  bzId={bzId}
+                  dispatch={dispatch}
+                  match={match}
+                />
               )
             })
             : (<NoItemMsg item={'case'} />)
           }
         </div>
-        <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
-            <FontIcon className='material-icons'>add</FontIcon>
-          </FloatingActionButton>
-        </div>
+        <UnitBtn dispatch={dispatch} />
       </div>
     )
   }
