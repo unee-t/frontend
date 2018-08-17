@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
+import IconButton from 'material-ui/IconButton'
 import styles from './case.mss'
 import { Link } from 'react-router-dom'
 import { UneeTIcon } from '../components/unee-t-icons'
-import IconButton from 'material-ui/IconButton'
+import FileInput from '../components/file-input'
 import {
   logoIconStyle,
   logoButtonStyle
@@ -37,12 +38,11 @@ export default class ChatBotUI extends Component {
 
   photoBot () {
     return (
-      <div className='tc bondi-blue pv2'>
-        <label>
+      <FileInput onFileSelected={this.props.handleFileSelection}>
+        <div className='tc bondi-blue pv2'>
           Add Photo
-          <input type='file' className='dn' onChange={this.props.handleFileSelection.bind(this)} />
-        </label>
-      </div>
+        </div>
+      </FileInput>
     )
   }
 

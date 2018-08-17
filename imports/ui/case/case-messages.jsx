@@ -14,6 +14,7 @@ import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
+import FileInput from '../components/file-input'
 import { imageInputEventHandler } from '../util/dom-api'
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
@@ -95,17 +96,6 @@ class CaseMessages extends Component {
 
     this.props.onRetryAttachment(process)
   }
-
-  // handleFileSelection (evt) {
-  //   evt.persist()
-  //   const file = evt.target.files[0]
-  //   const reader = new FileReader()
-  //   reader.onload = (evt) => {
-  //     this.props.onCreateAttachment(evt.target.result, file)
-  //   }
-  //   reader.readAsDataURL(file)
-  // }
-  // handleFileSelection = evt => ima
 
   render () {
     const { caseItem, comments, attachmentUploads } = this.props
@@ -291,10 +281,9 @@ class CaseMessages extends Component {
     return (
       <div className={[styles.inputRow, 'flex items-end overflow-visible'].join(' ')}>
         <IconButton style={attachmentButtonStyle}>
-          <label>
+          <FileInput onFileSelected={imageInputEventHandler(this.props.onCreateAttachment)}>
             <ContentAdd color={colors.main} />
-            <input type='file' className='dn' onChange={imageInputEventHandler(this.props.onCreateAttachment)} />
-          </label>
+          </FileInput>
         </IconButton>
         <inviteUserIcon />
         <div className='flex-grow relative'>
