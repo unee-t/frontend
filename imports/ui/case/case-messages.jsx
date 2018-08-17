@@ -108,7 +108,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderTitle ({ id, priority, nextSteps, solution }) {
+  renderTitle ({ id, nextSteps, solution }) {
     const additionalSubheaders = []
     if (nextSteps) {
       additionalSubheaders.push(
