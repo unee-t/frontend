@@ -6,6 +6,7 @@
   --gray: #777; /* exists in the tachyons palette */
   --silver: #999; /* exists in the tachyons palette */
   --moon-gray: #ccc; /* exists in the tachyons palette */
+  --light-silver: #aaa; /* exists in the tachyons palette */
   --gray-93: #ededed;
   --very-light-gray: #f0f0f0;
   --rad-green: #c9fb65;
@@ -145,6 +146,7 @@
 
 /* custom addition */
 .h2-5 { height: 3rem; }
+.h3-5 { height: 6rem; }
 /* Tachyons Height Scale - end */
 
 /* Tachyons Width Scale - start */
@@ -156,6 +158,7 @@
 
 /* custom addition */
 .w1-5 { width: 1.5rem; }
+.w3-5 { width: 6rem; }
 /* Tachyons Width Scale - end */
 
 
@@ -296,6 +299,10 @@
 
 .flex-column {
   flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 .items-center {

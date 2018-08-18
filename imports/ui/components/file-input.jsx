@@ -9,7 +9,6 @@ const FileInput = props => (
 )
 
 FileInput.propTypes = {
-  children: PropTypes.array.isRequired,
   onFileSelected: PropTypes.func.isRequired
 }
 

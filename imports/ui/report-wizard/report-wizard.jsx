@@ -9,19 +9,27 @@ import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
+import MenuItem from 'material-ui/MenuItem'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Reports, { collectionName, REPORT_DRAFT_STATUS, REPORT_FINAL_STATUS } from '../../api/reports'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
+import Comments, { collectionName as commentsCollName } from '../../api/comments'
 import InnerAppBar from '../components/inner-app-bar'
+import FileInput from '../components/file-input'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
+import { imageInputEventHandler } from '../util/dom-api'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { storeBreadcrumb } from '../general-actions'
-import { finalizeReport, editReportField } from './report-wizard.actions'
+import { finalizeReport, editReportField, addAttachment } from './report-wizard.actions'
+import { attachmentTextMatcher } from '../../util/matchers'
+import { fitDimensions } from '../../util/cloudinary-transformations'
+
+import { resetMenuItemDivStyle } from '../general.mui-styles'
 
 const addIconStyle = {
   fontSize: '1rem',
@@ -61,7 +69,7 @@ class ReportWizard extends Component {
     }
   }
   render () {
-    const { unitItem, reportItem, isLoading, user, dispatch, childCases, match } = this.props
+    const { unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachmentUrls } = this.props
 
     if (isLoading) {
       return <Preloader />
@@ -100,6 +108,38 @@ class ReportWizard extends Component {
               {userInfoItem(userInfo)}
             </div>
           </div>
+          {(isDraft || (!isDraft && attachmentUrls.length > 0)) && (
+            <div className='bg-white card-shadow-1 pa3 mt2'>
+              {infoItemLabel(isDraft ? 'Attach photos:' : 'Photos:')}
+              <div className='flex flex-wrap pt1'>
+                {attachmentUrls.map(url => (
+                  <img
+                    key={url}
+                    className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
+                    src={fitDimensions(url, 96, 96)} alt='X'
+                  />
+                ))}
+                {isDraft && (
+                  <div className='mt2'>
+                    <MenuItem innerDivStyle={resetMenuItemDivStyle}>
+                      <FileInput onFileSelected={imageInputEventHandler(
+                        (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
+                      )}>
+                        <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
+                          <FontIcon className='material-icons' color='var(--light-silver)'>
+                            add_a_photo
+                          </FontIcon>
+                          <div className='light-silver f7 tc mt1'>
+                            Add new
+                          </div>
+                        </div>
+                      </FileInput>
+                    </MenuItem>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {(isDraft || (!isDraft && childCases.length > 0)) && ( // Show only if draft or final but with cases
             <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
               <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
@@ -194,7 +234,8 @@ ReportWizard.propTypes = {
   unitItem: PropTypes.object,
   reportItem: PropTypes.object,
   childCases: PropTypes.array,
-  user: PropTypes.object
+  user: PropTypes.object,
+  attachmentUrls: PropTypes.array
 }
 
 export default connect(
@@ -204,6 +245,7 @@ export default connect(
     const { reportId } = props.match.params
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
     const reportItem = reportHandle.ready() ? Reports.findOne({id: parseInt(reportId)}) : null
+    const commentsHandle = Meteor.subscribe(`${commentsCollName}.byCaseId`, reportId)
     const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
     let unitHandle, childHandles
     if (reportItem) {
@@ -216,6 +258,7 @@ export default connect(
       isLoading: !reportHandle.ready() ||
         (unitHandle && !unitHandle.ready()) ||
         !bzLoginHandle.ready() ||
+        !commentsHandle.ready() ||
         childHandles.filter(handle => !handle.ready()).length > 0,
       unitItem: reportItem ? Units.findOne({name: reportItem.selectedUnit}) : null,
       childCases: reportItem ? Cases.find({
@@ -224,6 +267,12 @@ export default connect(
         }
       }).fetch() : null,
       user: Meteor.user(),
+      attachmentUrls: Comments.find({bug_id: parseInt(reportId)}).fetch().reduce((all, curr) => {
+        if (attachmentTextMatcher(curr.text)) {
+          all.push(curr.text.split('\n')[1])
+        }
+        return all
+      }, []),
       reportItem
     }
   }, ReportWizard)
