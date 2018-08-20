@@ -7,7 +7,7 @@ import RootAppBar from '../components/root-app-bar'
 import memoizeOne from 'memoize-one'
 import Reports, { collectionName } from '../../api/reports'
 import Preloader from '../preloader/preloader'
-import { setDrawerState } from '../general-actions'
+import { setDrawerState, storeBreadcrumb } from '../general-actions'
 import Units, { collectionName as unitsCollName } from '../../api/units'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
@@ -30,6 +30,11 @@ class ReportExplorer extends Component {
 
   handleAssignedClicked = () => {
     this.setState({ myInvolvement: !this.state.myInvolvement })
+  }
+
+  handleOnItemClicked = () => {
+    const { dispatch, match } = this.props
+    dispatch(storeBreadcrumb(match.url))
   }
 
   handleExpandUnit = (evt, unitTitle) => {
@@ -99,6 +104,7 @@ class ReportExplorer extends Component {
                 unitGroupList={reportGrouping}
                 handleExpandUnit={this.handleExpandUnit}
                 expandedUnits={expandedUnits}
+                handleOnItemClicked={this.handleOnItemClicked}
                 name={'report'}
               /> : (<NoItemMsg item={'report'} />)
             }

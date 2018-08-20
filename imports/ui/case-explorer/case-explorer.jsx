@@ -14,6 +14,7 @@ import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
 import { UnitBtn } from '../explorer-components/unit-btn'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
+import { storeBreadcrumb } from '../general-actions'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -32,6 +33,11 @@ class CaseExplorer extends Component {
 
   handleAssignedClicked = () => {
     this.setState({ myInvolvement: !this.state.myInvolvement })
+  }
+
+  handleOnItemClicked = () => {
+    const { dispatch, match } = this.props
+    dispatch(storeBreadcrumb(match.url))
   }
 
   handleExpandUnit = (evt, unitTitle) => {
@@ -151,6 +157,7 @@ class CaseExplorer extends Component {
             ? <UnitGroupList
               unitGroupList={caseGrouping}
               handleExpandUnit={this.handleExpandUnit}
+              handleOnItemClicked={this.handleOnItemClicked}
               expandedUnits={expandedUnits}
               name={'case'}
             /> : (<NoItemMsg item={'case'} />)

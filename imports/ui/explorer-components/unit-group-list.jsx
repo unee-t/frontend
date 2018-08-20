@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
-import { ItemList } from '../explorer-components/item-list'
+import { CaseList } from '../case-explorer/case-list'
+import { ReportList } from '../report-explorer/report-list'
 import { Link } from 'react-router-dom'
-import { storeBreadcrumb } from '../general-actions'
 import PropTypes from 'prop-types'
 
 export function AddGroupLink ({name, bzId}) {
@@ -23,7 +23,7 @@ export function AddGroupLink ({name, bzId}) {
 
 export class UnitGroupList extends Component {
   render () {
-    const { unitGroupList, handleExpandUnit, expandedUnits, name } = this.props
+    const { unitGroupList, handleExpandUnit, expandedUnits, handleOnItemClicked, name } = this.props
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
 
     return (
@@ -49,11 +49,16 @@ export class UnitGroupList extends Component {
             </div>
             {isExpanded(unitTitle) && (
               <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                <ItemList
-                  allItems={unitReports}
-                  onItemClick={() => dispatch(storeBreadcrumb(match.url))}
-                  name='report'
-                />
+                { name === 'case'
+                  ? (<CaseList
+                    allCases={unitCases}
+                    onItemClick={() => handleOnItemClicked()}
+                  />
+                  ) : (<ReportList
+                    allReports={unitReports}
+                    onItemClick={() => handleOnItemClicked()}
+                  />)
+                }
               </ul>
             )}
           </div>
@@ -61,4 +66,12 @@ export class UnitGroupList extends Component {
       </div>
     )
   }
+}
+
+UnitGroupList.propTypes = {
+  unitGroupList: PropTypes.array,
+  expandedUnits: PropTypes.array,
+  name: PropTypes.string,
+  handleExpandUnit: PropTypes.func.isRequired,
+  handleOnItemClicked: PropTypes.func.isRequired
 }
