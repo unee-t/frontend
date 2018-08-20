@@ -30,7 +30,7 @@ class ReportExplorer extends Component {
     this.setState({ filterStatus: value })
   }
 
-  handleAssignedClicked = () => {
+  handleMyInvolvementClicked = () => {
     this.setState({ myInvolvement: !this.state.myInvolvement })
   }
 
@@ -97,7 +97,7 @@ class ReportExplorer extends Component {
             <FilterRow
               filterStatus={filterStatus}
               myInvolvement={myInvolvement}
-              handleAssignedClicked={this.handleAssignedClicked}
+              handleMyInvolvementClicked={this.handleMyInvolvementClicked}
               handleStatusClicked={this.handleStatusClicked}
               filterType={['Finalized', 'Draft', 'Created By Me']}
             />

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 export class FilterRow extends Component {
   render () {
-    const { filterStatus, myInvolvement, handleAssignedClicked, handleStatusClicked, filterType } = this.props
+    const { filterStatus, myInvolvement, handleMyInvolvementClicked, handleStatusClicked, filterType } = this.props
     return (
       <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
         <div
@@ -19,7 +19,7 @@ export class FilterRow extends Component {
           {filterType[1]}
         </div>
         <div
-          onClick={() => handleAssignedClicked()}
+          onClick={() => handleMyInvolvementClicked()}
           className={'f6 fw5 ml4 ph2 ' + (myInvolvement ? 'mid-gray' : 'silver')}
         >
           {filterType[2]}
@@ -33,6 +33,6 @@ FilterRow.propTypes = {
   filterStatus: PropTypes.bool,
   myInvolvement: PropTypes.bool,
   filterType: PropTypes.array,
-  handleAssignedClicked: PropTypes.func.isRequired,
+  handleMyInvolvementClicked: PropTypes.func.isRequired,
   handleStatusClicked: PropTypes.func.isRequired
 }

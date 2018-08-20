@@ -33,7 +33,7 @@ class CaseExplorer extends Component {
     this.setState({ filterStatus: value })
   }
 
-  handleAssignedClicked = () => {
+  handleMyInvolvementClicked = () => {
     this.setState({ myInvolvement: !this.state.myInvolvement })
   }
 
@@ -151,7 +151,7 @@ class CaseExplorer extends Component {
           <FilterRow
             filterStatus={filterStatus}
             myInvolvement={myInvolvement}
-            handleAssignedClicked={this.handleAssignedClicked}
+            handleMyInvolvementClicked={this.handleMyInvolvementClicked}
             handleStatusClicked={this.handleStatusClicked}
             filterType={['Open', 'Closed', 'Assigned To Me']}
           />
