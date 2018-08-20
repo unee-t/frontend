@@ -12,7 +12,9 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
-import { UnitBtn } from '../explorer-components/unit-btn'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
+import FontIcon from 'material-ui/FontIcon'
+import { push } from 'react-router-redux'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 
@@ -163,7 +165,11 @@ class CaseExplorer extends Component {
             /> : (<NoItemMsg item={'case'} />)
           }
         </div>
-        <UnitBtn dispatch={dispatch} />
+        <div className='absolute right-1 bottom-2'>
+          <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
+            <FontIcon className='material-icons'>add</FontIcon>
+          </FloatingActionButton>
+        </div>
       </div>
     )
   }

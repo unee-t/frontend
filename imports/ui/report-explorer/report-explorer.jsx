@@ -12,7 +12,9 @@ import Units, { collectionName as unitsCollName } from '../../api/units'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
-import { UnitBtn } from '../explorer-components/unit-btn'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
+import FontIcon from 'material-ui/FontIcon'
+import { push } from 'react-router-redux'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -109,7 +111,11 @@ class ReportExplorer extends Component {
               /> : (<NoItemMsg item={'report'} />)
             }
           </div>
-          <UnitBtn dispatch={dispatch} />
+          <div className='absolute right-1 bottom-2'>
+            <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
+              <FontIcon className='material-icons'>add</FontIcon>
+            </FloatingActionButton>
+          </div>
         </div>
       </div>
     )
