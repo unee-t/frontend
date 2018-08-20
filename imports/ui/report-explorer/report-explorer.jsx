@@ -11,7 +11,7 @@ import { setDrawerState } from '../general-actions'
 import Units, { collectionName as unitsCollName } from '../../api/units'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
-import { ItemRow } from '../explorer-components/item-row'
+import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { UnitBtn } from '../explorer-components/unit-btn'
 
 class ReportExplorer extends Component {
@@ -78,10 +78,9 @@ class ReportExplorer extends Component {
   )
 
   render () {
-    const { isLoading, dispatch, reportList, match } = this.props
+    const { isLoading, dispatch, reportList } = this.props
     const { filterStatus, myInvolvement, expandedUnits } = this.state
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
-
     if (isLoading) return <Preloader />
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -95,22 +94,13 @@ class ReportExplorer extends Component {
               handleStatusClicked={this.handleStatusClicked}
               filterType={['Finalized', 'Draft', 'Created By Me']}
             />
-            {reportGrouping.length
-              ? reportGrouping.map(({ unitTitle, reports, unitType, bzId, reports: unitReports }) => {
-                return (
-                  <ItemRow unitTitle={unitTitle}
-                    expandedUnits={expandedUnits}
-                    items={reports}
-                    unitType={unitType}
-                    unitItems={unitReports}
-                    handleExpandUnit={this.handleExpandUnit}
-                    bzId={bzId}
-                    dispatch={dispatch}
-                    match={match}
-                  />
-                )
-              })
-              : (<NoItemMsg item={'report'} />)
+            { reportGrouping.length
+              ? <UnitGroupList
+                unitGroupList={reportGrouping}
+                handleExpandUnit={this.handleExpandUnit}
+                expandedUnits={expandedUnits}
+                name={'report'}
+              /> : (<NoItemMsg item={'report'} />)
             }
           </div>
           <UnitBtn dispatch={dispatch} />

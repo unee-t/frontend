@@ -12,8 +12,8 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
-import { ItemRow } from '../explorer-components/item-row'
 import { UnitBtn } from '../explorer-components/unit-btn'
+import { UnitGroupList } from '../explorer-components/unit-group-list'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -147,22 +147,13 @@ class CaseExplorer extends Component {
             handleStatusClicked={this.handleStatusClicked}
             filterType={['Open', 'Closed', 'Assigned To Me']}
           />
-          {!isLoading && caseGrouping.length
-            ? caseGrouping.map(({ unitTitle, bzId, unitType, hasUnread, cases: unitCases }) => {
-              return (
-                <ItemRow unitTitle={unitTitle}
-                  expandedUnits={expandedUnits}
-                  items={unitCases}
-                  unitType={unitType}
-                  unitItems={unitCases}
-                  handleExpandUnit={this.handleExpandUnit}
-                  bzId={bzId}
-                  dispatch={dispatch}
-                  match={match}
-                />
-              )
-            })
-            : (<NoItemMsg item={'case'} />)
+          { !isLoading && caseGrouping.length
+            ? <UnitGroupList
+              unitGroupList={caseGrouping}
+              handleExpandUnit={this.handleExpandUnit}
+              expandedUnits={expandedUnits}
+              name={'case'}
+            /> : (<NoItemMsg item={'case'} />)
           }
         </div>
         <UnitBtn dispatch={dispatch} />
