@@ -9,12 +9,12 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FlatButton from 'material-ui/FlatButton'
 import TextField from 'material-ui/TextField'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-import CircularProgress from 'material-ui/CircularProgress'
 import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
 import FileInput from '../components/file-input'
+import UploadPreloader from '../components/upload-preloader'
 import { imageInputEventHandler } from '../util/dom-api'
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
@@ -23,8 +23,6 @@ import {
   subheaderStyle,
   infoIconStyle,
   attachmentButtonStyle,
-  retryButtonStyle,
-  replayIconColor,
   sendIconStyle,
   addPersonCaseMsg
 } from './case.mui-styles'
@@ -89,12 +87,6 @@ class CaseMessages extends Component {
     this.setState({
       message: ''
     })
-  }
-
-  handleRetryUpload (evt, process) {
-    evt.preventDefault()
-
-    this.props.onRetryAttachment(process)
   }
 
   render () {
@@ -245,31 +237,8 @@ class CaseMessages extends Component {
         <div className='fr f7 white absolute bottom-0 right-0 lh-dbl pr2'>
           {moment(creationTime).format('HH:mm')}
         </div>
-        {!!process && (
-          <div className='w-100 tc'>
-            <div className='relative dib bg-black-20 br-100'>
-              {process.error ? (
-                <IconButton style={retryButtonStyle} onClick={evt => this.handleRetryUpload(evt, process)}>
-                  <FontIcon className='material-icons' color={replayIconColor}>refresh</FontIcon>
-                </IconButton>
-              ) : process.percent ? (
-                <CircularProgress
-                  size={40} thickness={5} mode='determinate' value={process.percent} />
-              ) : (
-                <div className='dib'>
-                  <CircularProgress
-                    size={40} thickness={5} mode='indeterminate' />
-                </div>
-              )}
-            </div>
-            {!!process.errorMessage && (
-              <div className='relative'>
-                <div className='bg-black-30 br-pill f7 white dib ph2'>
-                  {process.errorMessage}
-                </div>
-              </div>
-            )}
-          </div>
+        {process && (
+          <UploadPreloader handleRetryUpload={this.props.onRetryAttachment} process={process} />
         )}
       </div>
     )
