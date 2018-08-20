@@ -10,7 +10,7 @@ import {
 } from './upload-preloader.mui-styles'
 
 const UploadPreloader = ({ process, handleRetryUpload }) => (
-  <div className='z-999 w-100 h-100 flex flex-column items-center justify-center'>
+  <div className='absolute z-999 w-100 h-100 flex flex-column items-center justify-center'>
     <div className='dib h40px w40px bg-black-20 br-100'>
       {process.error ? (
         <IconButton style={retryButtonStyle} onClick={evt => {

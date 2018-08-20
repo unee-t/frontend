@@ -28,6 +28,7 @@ import { storeBreadcrumb } from '../general-actions'
 import { finalizeReport, editReportField, addAttachment } from './report-wizard.actions'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
+import UploadPreloader from '../components/upload-preloader'
 
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 
@@ -69,7 +70,9 @@ class ReportWizard extends Component {
     }
   }
   render () {
-    const { unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachmentUrls } = this.props
+    const {
+      unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachmentUrls, attachmentUploads
+    } = this.props
 
     if (isLoading) {
       return <Preloader />
@@ -118,6 +121,15 @@ class ReportWizard extends Component {
                     className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
                     src={fitDimensions(url, 96, 96)} alt='X'
                   />
+                ))}
+                {attachmentUploads.map(process => (
+                  <div
+                    key={process.processId}
+                    className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
+                  >
+                    <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
+                    <UploadPreloader process={process} handleRetryUpload={() => {}} />
+                  </div>
                 ))}
                 {isDraft && (
                   <div className='mt2'>
@@ -235,11 +247,14 @@ ReportWizard.propTypes = {
   reportItem: PropTypes.object,
   childCases: PropTypes.array,
   user: PropTypes.object,
-  attachmentUrls: PropTypes.array
+  attachmentUrls: PropTypes.array,
+  attachmentUploads: PropTypes.array.isRequired
 }
 
 export default connect(
-  () => ({})
+  ({ attachmentUploads }, props) => ({
+    attachmentUploads: attachmentUploads[props.match.params.reportId.toString()] || []
+  })
 )(
   createContainer(props => {
     const { reportId } = props.match.params
