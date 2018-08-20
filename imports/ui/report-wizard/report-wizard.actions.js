@@ -5,6 +5,7 @@ export const CREATE_REPORT_INITIATED = 'create_report_initiated'
 export const FINALIZE_REPORT = 'finalize_report'
 export const EDIT_REPORT_FIELD = 'edit_report_field'
 export const ADD_ATTACHMENT = 'add_attachment_to_report'
+export const RETRY_ATTACHMENT = 'retry_add_attachment_to_report'
 
 export function createReport (unit, title) {
   return {
@@ -35,5 +36,12 @@ export function addAttachment (reportId, preview, file) {
     reportId,
     preview,
     file
+  }
+}
+
+export function retryAttachment (process) {
+  return {
+    type: RETRY_ATTACHMENT,
+    ...process
   }
 }

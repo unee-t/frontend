@@ -25,7 +25,7 @@ import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { storeBreadcrumb } from '../general-actions'
-import { finalizeReport, editReportField, addAttachment } from './report-wizard.actions'
+import { finalizeReport, editReportField, addAttachment, retryAttachment } from './report-wizard.actions'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
 import UploadPreloader from '../components/upload-preloader'
@@ -128,7 +128,7 @@ class ReportWizard extends Component {
                     className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
                   >
                     <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
-                    <UploadPreloader process={process} handleRetryUpload={() => {}} />
+                    <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
                   </div>
                 ))}
                 {isDraft && (
