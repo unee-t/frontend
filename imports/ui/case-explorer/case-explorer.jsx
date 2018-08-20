@@ -153,7 +153,7 @@ class CaseExplorer extends Component {
             myInvolvement={myInvolvement}
             handleMyInvolvementClicked={this.handleMyInvolvementClicked}
             handleStatusClicked={this.handleStatusClicked}
-            filterType={['Open', 'Closed', 'Assigned To Me']}
+            filterLabels={['Open', 'Closed', 'Assigned To Me']}
           />
           { !isLoading && caseGrouping.length
             ? <UnitGroupList

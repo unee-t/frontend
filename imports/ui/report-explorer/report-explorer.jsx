@@ -99,7 +99,7 @@ class ReportExplorer extends Component {
               myInvolvement={myInvolvement}
               handleMyInvolvementClicked={this.handleMyInvolvementClicked}
               handleStatusClicked={this.handleStatusClicked}
-              filterType={['Finalized', 'Draft', 'Created By Me']}
+              filterLabels={['Finalized', 'Draft', 'Created By Me']}
             />
             { reportGrouping.length
               ? <UnitGroupList
