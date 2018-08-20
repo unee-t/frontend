@@ -88,9 +88,9 @@ class CaseExplorer extends Component {
     (a, b) => a.length === b.length
   )
   makeCaseGrouping = memoizeOne(
-    (caseList, filterStatus, myInvolvement, allNotifs, unreadNotifs) => {
-      const openFilter = filterStatus ? x => !isClosed(x) : x => isClosed(x)
-      const assignedFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+    (caseList, showOpen, onlyAssigned, allNotifs, unreadNotifs) => {
+      const openFilter = showOpen ? x => !isClosed(x) : x => isClosed(x)
+      const assignedFilter = onlyAssigned ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
 
       const caseUpdateTimeDict = this.makeCaseUpdateTimeDict(allNotifs)
       const caseUnreadDict = this.makeCaseUnreadDict(unreadNotifs)
@@ -141,7 +141,7 @@ class CaseExplorer extends Component {
     }
   )
   render () {
-    const { isLoading, dispatch, match, caseList, allNotifications, unreadNotifications } = this.props
+    const { isLoading, dispatch, caseList, allNotifications, unreadNotifications } = this.props
     const { filterStatus, expandedUnits, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
