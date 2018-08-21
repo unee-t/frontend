@@ -88,7 +88,7 @@ class ReportExplorer extends Component {
             { reportGrouping.length
               ? <UnitGroupList
                 unitGroupList={reportGrouping}
-                expandedList={({allItems}) => (
+                expandedListRenderer={({allItems}) => (
                   <ReportList
                     allReports={allItems}
                     onItemClick={this.handleOnItemClicked}

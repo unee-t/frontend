@@ -143,7 +143,7 @@ class CaseExplorer extends Component {
           { !isLoading && caseGrouping.length
             ? <UnitGroupList
               unitGroupList={caseGrouping}
-              expandedList={({allItems}) => (
+              expandedListRenderer={({allItems}) => (
                 <CaseList
                   allCases={allItems}
                   onItemClick={this.handleOnItemClicked}

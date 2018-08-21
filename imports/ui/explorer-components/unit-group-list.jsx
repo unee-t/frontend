@@ -44,7 +44,7 @@ export class UnitGroupList extends Component {
   }
 
   render () {
-    const { unitGroupList, name, expandedList } = this.props
+    const { unitGroupList, name, expandedListRenderer } = this.props
     const { expandedUnits } = this.state
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
     const unitItems = unitGroupList.map(unit => {
@@ -77,7 +77,7 @@ export class UnitGroupList extends Component {
             </div>
             {isExpanded(unitTitle) && (
               <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                {expandedList({
+                {expandedListRenderer({
                   allItems: items
                 })}
               </ul>
@@ -92,6 +92,7 @@ export class UnitGroupList extends Component {
 UnitGroupList.propTypes = {
   unitGroupList: PropTypes.array,
   name: PropTypes.string,
+  expandedListRenderer: PropTypes.func.isRequired,
   handleExpandUnit: PropTypes.func.isRequired,
   handleOnItemClicked: PropTypes.func.isRequired
 }
