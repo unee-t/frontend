@@ -10,9 +10,10 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import Divider from 'material-ui/Divider'
 import { renderAppBarLeft, renderCurrUserAvatar } from '../util/app-bar-utils'
+import {ReportIcon} from '../report/report-icon'
 
 class SideMenu extends Component {
-  linkDrawerItem = ({href, iconName, text, isExternal}, doHighlight = false) => {
+  linkDrawerItem = ({href, iconName, iconRenderer, text, isExternal}, doHighlight = false) => {
     const { dispatch } = this.props
     return (
       <Link className='link' to={href} target={isExternal ? '_blank' : null}>
@@ -20,7 +21,7 @@ class SideMenu extends Component {
           <MenuItem onClick={isExternal ? undefined : () => dispatch(setDrawerState(false))}>
             <div className='flex items-center pv2 mv1'>
               <div className='w1-5 lh-title tc'>
-                <FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>
+                { iconName ? (<FontIcon className='material-icons' color='var(--mid-gray)'>{iconName}</FontIcon>) : (iconRenderer) }
               </div>
               <div className='ml4 mid-gray'>{text}</div>
             </div>
@@ -74,6 +75,11 @@ user: ${user.emails[0].address}`
           href: '/unit',
           iconName: 'location_on',
           text: 'Units'
+        })}
+        {this.routeDrawerItem('/report', {
+          href: '/report',
+          iconRenderer: <ReportIcon isFinalized />,
+          text: 'Report'
         })}
         {this.routeDrawerItem('/case', {
           href: '/case',

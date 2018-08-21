@@ -166,7 +166,8 @@ if (Meteor.isServer) {
   const unitRolesAssocFuncs = [
     withMetaData({
       bzId: 1,
-      displayName: 1
+      displayName: 1,
+      unitType: 1
     }),
     withRolesData({})
   ]
