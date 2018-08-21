@@ -24,7 +24,6 @@ class CaseExplorer extends Component {
     super(...arguments)
     this.state = {
       caseId: '',
-      expandedUnits: [],
       filterStatus: true,
       myInvolvement: false
     }
@@ -43,21 +42,6 @@ class CaseExplorer extends Component {
     dispatch(storeBreadcrumb(match.url))
   }
 
-  handleExpandUnit = (evt, unitTitle) => {
-    evt.preventDefault()
-    const { expandedUnits } = this.state
-    let stateMutation
-    if (expandedUnits.includes(unitTitle)) {
-      stateMutation = {
-        expandedUnits: expandedUnits.filter(title => title !== unitTitle)
-      }
-    } else {
-      stateMutation = {
-        expandedUnits: expandedUnits.concat([unitTitle])
-      }
-    }
-    this.setState(stateMutation)
-  }
   componentWillReceiveProps ({isLoading, casesError, caseList}) {
     if (!isLoading && !casesError && isLoading !== this.props.isLoading) {
       this.props.dispatchLoadingResult({caseList})
@@ -143,7 +127,7 @@ class CaseExplorer extends Component {
   )
   render () {
     const { isLoading, dispatch, caseList, allNotifications, unreadNotifications } = this.props
-    const { filterStatus, expandedUnits, myInvolvement } = this.state
+    const { filterStatus, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
     return (
@@ -159,9 +143,6 @@ class CaseExplorer extends Component {
           { !isLoading && caseGrouping.length
             ? <UnitGroupList
               unitGroupList={caseGrouping}
-              handleExpandUnit={this.handleExpandUnit}
-              handleOnItemClicked={this.handleOnItemClicked}
-              expandedUnits={expandedUnits}
               expandedList={({allItems}) => (
                 <CaseList
                   allCases={allItems}

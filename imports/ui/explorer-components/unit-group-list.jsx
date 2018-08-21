@@ -20,8 +20,32 @@ export function AddGroupLink ({name, bzId}) {
 }
 
 export class UnitGroupList extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      expandedUnits: []
+    }
+  }
+
+  handleExpandUnit (evt, unitTitle) {
+    evt.preventDefault()
+    const { expandedUnits } = this.state
+    let stateMutation
+    if (expandedUnits.includes(unitTitle)) {
+      stateMutation = {
+        expandedUnits: expandedUnits.filter(title => title !== unitTitle)
+      }
+    } else {
+      stateMutation = {
+        expandedUnits: expandedUnits.concat([unitTitle])
+      }
+    }
+    this.setState(stateMutation)
+  }
+
   render () {
-    const { unitGroupList, handleExpandUnit, expandedUnits, name, expandedList } = this.props
+    const { unitGroupList, name, expandedList } = this.props
+    const { expandedUnits } = this.state
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
     const unitItems = unitGroupList.map(unit => {
       const { unitTitle, unitType, bzId, reports, cases, hasUnread } = unit
@@ -38,7 +62,7 @@ export class UnitGroupList extends Component {
         {unitItems.map(({ unitTitle, unitType, bzId, items, hasUnread }) =>
           <div key={unitTitle}>
             <div className='flex items-center h3 bt b--light-gray bg-white'
-              onClick={(evt) => handleExpandUnit(evt, unitTitle)}
+              onClick={evt => this.handleExpandUnit(evt, unitTitle)}
             >
               <UnitTypeIcon iconInExplorer={unitType} />
               <div className='flex-grow ellipsis mid-gray mr4'>
@@ -67,7 +91,6 @@ export class UnitGroupList extends Component {
 
 UnitGroupList.propTypes = {
   unitGroupList: PropTypes.array,
-  expandedUnits: PropTypes.array,
   name: PropTypes.string,
   handleExpandUnit: PropTypes.func.isRequired,
   handleOnItemClicked: PropTypes.func.isRequired

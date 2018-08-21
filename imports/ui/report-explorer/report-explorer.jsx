@@ -22,8 +22,7 @@ class ReportExplorer extends Component {
     super(...arguments)
     this.state = {
       filterStatus: true,
-      myInvolvement: false,
-      expandedUnits: []
+      myInvolvement: false
     }
   }
 
@@ -38,22 +37,6 @@ class ReportExplorer extends Component {
   handleOnItemClicked = () => {
     const { dispatch, match } = this.props
     dispatch(storeBreadcrumb(match.url))
-  }
-
-  handleExpandUnit = (evt, unitTitle) => {
-    evt.preventDefault()
-    const { expandedUnits } = this.state
-    let stateMutation
-    if (expandedUnits.includes(unitTitle)) {
-      stateMutation = {
-        expandedUnits: expandedUnits.filter(title => title !== unitTitle)
-      }
-    } else {
-      stateMutation = {
-        expandedUnits: expandedUnits.concat([unitTitle])
-      }
-    }
-    this.setState(stateMutation)
   }
 
   makeReportGrouping = memoizeOne(
@@ -87,7 +70,7 @@ class ReportExplorer extends Component {
 
   render () {
     const { isLoading, dispatch, reportList } = this.props
-    const { filterStatus, myInvolvement, expandedUnits } = this.state
+    const { filterStatus, myInvolvement } = this.state
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     if (isLoading) return <Preloader />
     return (
@@ -105,8 +88,6 @@ class ReportExplorer extends Component {
             { reportGrouping.length
               ? <UnitGroupList
                 unitGroupList={reportGrouping}
-                handleExpandUnit={this.handleExpandUnit}
-                expandedUnits={expandedUnits}
                 expandedList={({allItems}) => (
                   <ReportList
                     allReports={allItems}
