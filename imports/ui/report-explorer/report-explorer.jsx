@@ -15,6 +15,7 @@ import { UnitGroupList } from '../explorer-components/unit-group-list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FontIcon from 'material-ui/FontIcon'
 import { push } from 'react-router-redux'
+import { ReportList } from '../report-explorer/report-list'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -106,7 +107,12 @@ class ReportExplorer extends Component {
                 unitGroupList={reportGrouping}
                 handleExpandUnit={this.handleExpandUnit}
                 expandedUnits={expandedUnits}
-                handleOnItemClicked={this.handleOnItemClicked}
+                expandedList={({allItems}) => (
+                  <ReportList
+                    allReports={allItems}
+                    onItemClick={this.handleOnItemClicked}
+                  />)
+                }
                 name={'report'}
               /> : (<NoItemMsg item={'report'} />)
             }

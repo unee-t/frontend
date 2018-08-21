@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
-import { CaseList } from '../case-explorer/case-list'
-import { ReportList } from '../report-explorer/report-list'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
@@ -23,12 +21,21 @@ export function AddGroupLink ({name, bzId}) {
 
 export class UnitGroupList extends Component {
   render () {
-    const { unitGroupList, handleExpandUnit, expandedUnits, handleOnItemClicked, name } = this.props
+    const { unitGroupList, handleExpandUnit, expandedUnits, name, expandedList } = this.props
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
-
+    const unitItems = unitGroupList.map(unit => {
+      const { unitTitle, unitType, bzId, reports, cases, hasUnread } = unit
+      return {
+        unitTitle,
+        unitType,
+        bzId,
+        items: reports || cases,
+        hasUnread
+      }
+    })
     return (
       <div>
-        {unitGroupList.map(({ unitTitle, unitType, bzId, reports: unitReports, cases: unitCases, hasUnread }) =>
+        {unitItems.map(({ unitTitle, unitType, bzId, items, hasUnread }) =>
           <div key={unitTitle}>
             <div className='flex items-center h3 bt b--light-gray bg-white'
               onClick={(evt) => handleExpandUnit(evt, unitTitle)}
@@ -38,10 +45,7 @@ export class UnitGroupList extends Component {
                 {unitTitle}
                 <div className='flex justify-space'>
                   <div className={'f6 silver mt1' + (hasUnread ? ' b' : '')}>
-                    {unitReports
-                      ? (<span>{unitReports.length} report{ unitReports.length > 1 && 's'}</span>)
-                      : (<span>{unitCases.length} case{ unitCases.length > 1 && 's'}</span>)
-                    }
+                    <span>{items.length} {name} { items.length > 1 && 's'}</span>
                   </div>
                   <AddGroupLink bzId={bzId} name={name} />
                 </div>
@@ -49,16 +53,9 @@ export class UnitGroupList extends Component {
             </div>
             {isExpanded(unitTitle) && (
               <ul className='list bg-light-gray ma0 pl0 shadow-in-top-1'>
-                { name === 'case'
-                  ? (<CaseList
-                    allCases={unitCases}
-                    onItemClick={() => handleOnItemClicked()}
-                  />
-                  ) : (<ReportList
-                    allReports={unitReports}
-                    onItemClick={() => handleOnItemClicked()}
-                  />)
-                }
+                {expandedList({
+                  allItems: items
+                })}
               </ul>
             )}
           </div>

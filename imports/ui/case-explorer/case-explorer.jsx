@@ -17,6 +17,7 @@ import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
+import { CaseList } from '../case-explorer/case-list'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -161,6 +162,12 @@ class CaseExplorer extends Component {
               handleExpandUnit={this.handleExpandUnit}
               handleOnItemClicked={this.handleOnItemClicked}
               expandedUnits={expandedUnits}
+              expandedList={({allItems}) => (
+                <CaseList
+                  allCases={allItems}
+                  onItemClick={this.handleOnItemClicked}
+                />)
+              }
               name={'case'}
             /> : (<NoItemMsg item={'case'} />)
           }
