@@ -1,5 +1,6 @@
 import React from 'react'
 import FontIcon from 'material-ui/FontIcon'
+import PropTypes from 'prop-types'
 
 export function NoItemMsg ({item}) {
   return (
@@ -26,4 +27,8 @@ export function NoItemMsg ({item}) {
       </div>
     </div>
   )
+}
+
+NoItemMsg.propTypes = {
+  item: PropTypes.string
 }
