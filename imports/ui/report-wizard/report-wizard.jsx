@@ -113,7 +113,7 @@ class ReportWizard extends Component {
           </div>
           {(isDraft || (!isDraft && attachmentUrls.length > 0)) && (
             <div className='bg-white card-shadow-1 pa3 mt2'>
-              {infoItemLabel(isDraft ? 'Attach photos:' : 'Photos:')}
+              {infoItemLabel(isDraft ? 'Attach Photos:' : 'Photos:')}
               <div className='flex flex-wrap pt1'>
                 {attachmentUrls.map(url => (
                   <img
@@ -152,11 +152,27 @@ class ReportWizard extends Component {
               </div>
             </div>
           )}
+          {(isDraft || reportItem.additionalComments) && (
+            <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
+              {isDraft ? (
+                <EditableItem
+                  label='Remarks and Comments'
+                  initialValue={reportItem.additionalComments}
+                  onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                  isMultiLine
+                />
+              ) : (
+                <div className='mt3'>
+                  {infoItemMembers('Remarks and Comments', reportItem.additionalComments)}
+                </div>
+              )}
+            </div>
+          )}
           {(isDraft || (!isDraft && childCases.length > 0)) && ( // Show only if draft or final but with cases
             <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
               <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
                 {isDraft
-                  ? 'Would you like to report any issue with the unit?'
+                  ? 'Is there any defect with the unit to report?'
                   : 'Cases related to this report'
                 }
               </div>
@@ -180,35 +196,34 @@ class ReportWizard extends Component {
             </div>
             {makeCreationButton('Add room', () => {})}
           </div> */}
-          {(isDraft || reportItem.additionalComments) && (
-            <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
-              {isDraft ? (
-                <EditableItem
-                  label='Additional Comments'
-                  initialValue={reportItem.additionalComments}
-                  onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-                  isMultiLine
-                />
-              ) : (
-                <div className='mt3'>
-                  {infoItemMembers('Additional Comments', reportItem.additionalComments)}
-                </div>
-              )}
-            </div>
-          )}
         </div>
         <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
           <div className='dib flex justify-end items-center'>
-            {isDraft ? (
-              <RaisedButton
-                primary
-                onClick={() => dispatch(push(`${match.url}/confirm`))}
-              >
-                <span className='white mh4'>
-                  Complete
-                </span>
-              </RaisedButton>
-            ) : [
+            {isDraft ? [
+              (
+                <RaisedButton
+                  key='save'
+                  secondary
+                  onClick={() => dispatch(goBack())}
+                >
+                  <span className='white mh4'>
+                    Save draft
+                  </span>
+                </RaisedButton>
+              ),
+              (
+                <RaisedButton
+                  className='ml2'
+                  key='confirm'
+                  primary
+                  onClick={() => dispatch(push(`${match.url}/confirm`))}
+                >
+                  <span className='white mh4'>
+                    Complete
+                  </span>
+                </RaisedButton>
+              )
+            ] : [
               (
                 <div key='text' className='f5 i moon-gray'>
                   This report has been finalized
