@@ -23,25 +23,12 @@ const factoryOptions = {
 
 export const REPORT_DRAFT_STATUS = 'UNCONFIRMED'
 export const REPORT_FINAL_STATUS = 'CONFIRMED'
-const queryFields = [
-  'product',
-  'summary',
-  'id',
-  'status',
-  'creation_time'
-]
-const queryBuilder = (userIdentifier, queryFields) =>
-  caseQueryBuilder(
-    [
-      {
-        field: 'keywords',
-        operator: 'allwords',
-        value: REPORT_KEYWORD
-      },
-      ...associatedCasesQueryExps(userIdentifier)
-    ],
-    queryFields
-  )
+const keywords =
+  {
+    field: 'keywords',
+    operator: 'allwords',
+    value: REPORT_KEYWORD
+  }
 
 let publicationObj
 if (Meteor.isServer) {
@@ -58,8 +45,20 @@ if (Meteor.isServer) {
       }
       const currUser = Meteor.users.findOne(subHandle.userId)
       const { login: userIdentifier } = currUser.bugzillaCreds
-      queryFields.push('assigned_to')
-      return queryBuilder(userIdentifier, queryFields)
+      return caseQueryBuilder(
+        [
+          keywords,
+          ...associatedCasesQueryExps(userIdentifier)
+        ],
+        [
+          'product',
+          'summary',
+          'id',
+          'status',
+          'creation_time',
+          'assigned_to'
+        ]
+      )
     }
   }))
 
@@ -71,7 +70,24 @@ if (Meteor.isServer) {
       }
       const currUser = Meteor.users.findOne(subHandle.userId)
       const { login: userIdentifier } = currUser.bugzillaCreds
-      return queryBuilder(userIdentifier, queryFields)
+      return caseQueryBuilder(
+        [
+          {
+            field: 'product',
+            operator: 'equals',
+            value: unitName
+          },
+          keywords,
+          ...associatedCasesQueryExps(userIdentifier)
+        ],
+        [
+          'product',
+          'summary',
+          'id',
+          'status',
+          'creation_time'
+        ]
+      )
     }
   }))
 }
