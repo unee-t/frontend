@@ -44,7 +44,9 @@ class LoginPage extends Component {
   render () {
     const { email, password, emailError } = this.state
     // Internet Explorer 6-11
-    var isIE = /*@cc_on!@*/false || !!document.documentMode
+    var isIE = /*
+                @cc_on!@
+                */false || !!document.documentMode
     return (
       <div>
         { isIE
@@ -92,7 +94,7 @@ class LoginPage extends Component {
             </LoginLayout>
           )
         }
-      </div> 
+      </div>
     )
   }
 }
