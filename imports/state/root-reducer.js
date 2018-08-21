@@ -2,7 +2,7 @@ import { combineReducers } from 'redux'
 import { routerReducer as router } from 'react-router-redux'
 import showLoginError from './reducers/show-login-error'
 import showSignupError from './reducers/show-signup-error'
-import caseAttachmentUploads from './reducers/case-attachment-uploads'
+import attachmentUploads from './reducers/attachment-uploads'
 import invitationState from './reducers/invitation-state'
 import caseCreationState from './reducers/case-creation-state'
 import reportCreationState from './reducers/report-creation-state'
@@ -18,7 +18,7 @@ import genericErrorState from './reducers/generic-error-state'
 const rootReducer = combineReducers({
   showLoginError,
   showSignupError,
-  caseAttachmentUploads,
+  attachmentUploads,
   invitationState,
   caseCreationState,
   invitationLoginState,

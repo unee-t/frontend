@@ -1,30 +1,28 @@
-/* global FileReader */
-
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
+import { Link } from 'react-router-dom'
 import Subheader from 'material-ui/Subheader'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FlatButton from 'material-ui/FlatButton'
+import TextField from 'material-ui/TextField'
 import ContentAdd from 'material-ui/svg-icons/content/add'
-import CircularProgress from 'material-ui/CircularProgress'
 import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
 import { attachmentTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
-import TextField from 'material-ui/TextField'
+import FileInput from '../components/file-input'
+import UploadPreloader from '../components/upload-preloader'
+import { imageInputEventHandler } from '../util/dom-api'
 import styles from './case.mss'
 import themes from '../components/user-themes.mss'
 import colors from '../../mui-theme/colors'
-import { Link } from 'react-router-dom'
 import {
   subheaderStyle,
   infoIconStyle,
   attachmentButtonStyle,
-  retryButtonStyle,
-  replayIconColor,
   sendIconStyle,
   addPersonCaseMsg
 } from './case.mui-styles'
@@ -91,22 +89,6 @@ class CaseMessages extends Component {
     })
   }
 
-  handleRetryUpload (evt, process) {
-    evt.preventDefault()
-
-    this.props.onRetryAttachment(process)
-  }
-
-  handleFileSelection (evt) {
-    evt.persist()
-    const file = evt.target.files[0]
-    const reader = new FileReader()
-    reader.onload = (evt) => {
-      this.props.onCreateAttachment(evt.target.result, file)
-    }
-    reader.readAsDataURL(file)
-  }
-
   render () {
     const { caseItem, comments, attachmentUploads } = this.props
     return (
@@ -118,7 +100,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderTitle ({ id, priority, nextSteps, solution }) {
+  renderTitle ({ id, nextSteps, solution }) {
     const additionalSubheaders = []
     if (nextSteps) {
       additionalSubheaders.push(
@@ -181,7 +163,7 @@ class CaseMessages extends Component {
         { isCurrentUserCreator &&
           <ChatBotUI
             caseItem={this.props.caseItem}
-            handleFileSelection={this.handleFileSelection}
+            handleFileSelection={imageInputEventHandler(this.props.onCreateAttachment)}
             onCreateAttachment={this.props.onCreateAttachment}
           />
         }
@@ -255,31 +237,8 @@ class CaseMessages extends Component {
         <div className='fr f7 white absolute bottom-0 right-0 lh-dbl pr2'>
           {moment(creationTime).format('HH:mm')}
         </div>
-        {!!process && (
-          <div className='w-100 tc'>
-            <div className='relative dib bg-black-20 br-100'>
-              {process.error ? (
-                <IconButton style={retryButtonStyle} onClick={evt => this.handleRetryUpload(evt, process)}>
-                  <FontIcon className='material-icons' color={replayIconColor}>refresh</FontIcon>
-                </IconButton>
-              ) : process.percent ? (
-                <CircularProgress
-                  size={40} thickness={5} mode='determinate' value={process.percent} />
-              ) : (
-                <div className='dib'>
-                  <CircularProgress
-                    size={40} thickness={5} mode='indeterminate' />
-                </div>
-              )}
-            </div>
-            {!!process.errorMessage && (
-              <div className='relative'>
-                <div className='bg-black-30 br-pill f7 white dib ph2'>
-                  {process.errorMessage}
-                </div>
-              </div>
-            )}
-          </div>
+        {process && (
+          <UploadPreloader handleRetryUpload={this.props.onRetryAttachment} process={process} />
         )}
       </div>
     )
@@ -291,10 +250,9 @@ class CaseMessages extends Component {
     return (
       <div className={[styles.inputRow, 'flex items-end overflow-visible'].join(' ')}>
         <IconButton style={attachmentButtonStyle}>
-          <label>
+          <FileInput onFileSelected={imageInputEventHandler(this.props.onCreateAttachment)}>
             <ContentAdd color={colors.main} />
-            <input type='file' className='dn' onChange={this.handleFileSelection.bind(this)} />
-          </label>
+          </FileInput>
         </IconButton>
         <inviteUserIcon />
         <div className='flex-grow relative'>

@@ -6,6 +6,7 @@
   --gray: #777; /* exists in the tachyons palette */
   --silver: #999; /* exists in the tachyons palette */
   --moon-gray: #ccc; /* exists in the tachyons palette */
+  --light-silver: #aaa; /* exists in the tachyons palette */
   --gray-93: #ededed;
   --very-light-gray: #f0f0f0;
   --rad-green: #c9fb65;
@@ -112,6 +113,9 @@
 .shadow-1 {
   box-shadow: 0 0 4px 2px rgba( 0, 0, 0, 0.2 );
 }
+.shadow-2 {
+  box-shadow: 0 0 8px 2px rgba( 0, 0, 0, 0.2 );
+}
 /* Custom Shadows - start */
 .card-shadow-1 {
   box-shadow: 0 2px 4px 0 rgba(0,0,0,0.18);
@@ -144,7 +148,9 @@
 .h5 { height: 16rem; }
 
 /* custom addition */
+.h40px { height: 40px; }
 .h2-5 { height: 3rem; }
+.h3-5 { height: 6rem; }
 /* Tachyons Height Scale - end */
 
 /* Tachyons Width Scale - start */
@@ -156,6 +162,8 @@
 
 /* custom addition */
 .w1-5 { width: 1.5rem; }
+.w40px { width: 40px; }
+.w3-5 { width: 6rem; }
 /* Tachyons Width Scale - end */
 
 
@@ -239,6 +247,30 @@
   min-height: 100vh;
 }
 
+.min-h-100 {
+  min-height: 100%;
+}
+
+.min-w-1 {
+  min-width: 1rem;
+}
+.min-w-2 {
+  min-width: 2rem;
+}
+.min-w-3 {
+  min-width: 4rem;
+}
+.min-w-4 {
+  min-width: 8rem;
+}
+.min-w-5 {
+  min-width: 16rem;
+}
+
+.min-w-100 {
+  min-width: 100%;
+}
+
 .ml-auto {
   margin-left: auto;
 }
@@ -296,6 +328,10 @@
 
 .flex-column {
   flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 .items-center {
@@ -396,3 +432,7 @@
   transition: transform 500ms ease-in-out;
 }
 /* Custom transitions for react-transition-group -end */
+
+.obj-cover{
+  object-fit: cover;
+}

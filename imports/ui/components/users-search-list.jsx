@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import MenuItem from 'material-ui/MenuItem'
 import UserAvatar from './user-avatar'
 
+import { resetMenuItemDivStyle } from '../general.mui-styles'
 import { getColorForUser } from '/imports/util/user.js'
 
 class UsersSearchList extends Component {
@@ -49,7 +50,7 @@ class UsersSearchList extends Component {
                   const extraClasses = userClassNames ? userClassNames(user) : ''
                   const emailId = user.login.split('@')[0]
                   return (
-                    <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={{padding: 0}}>
+                    <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={resetMenuItemDivStyle}>
                       <div className={
                         getColorForUser(user) + ' flex pv2 ph2 lh-title ' + extraClasses
                       }>

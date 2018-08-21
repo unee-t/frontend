@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 import MenuItem from 'material-ui/MenuItem'
 import UnitTypeIcon from './unit-type-icon'
 
+import { resetMenuItemDivStyle } from '../general.mui-styles'
+
 export default class UnitsByRoles extends Component {
   render () {
     const { unitsByRoles, showAddBtn, handleUnitClicked, handleAddCaseClicked, administrate } = this.props
@@ -15,7 +17,7 @@ export default class UnitsByRoles extends Component {
         }
         {
           unitsByRoles.map(({ id, name, description, metaData }) => (
-            <MenuItem key={id} innerDivStyle={{padding: 0}} onClick={() => handleUnitClicked(id)} >
+            <MenuItem key={id} innerDivStyle={resetMenuItemDivStyle} onClick={() => handleUnitClicked(id)} >
               <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
                 <UnitTypeIcon metaData={metaData} />
                 <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
