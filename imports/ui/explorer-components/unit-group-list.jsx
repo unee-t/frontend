@@ -45,7 +45,7 @@ export class UnitGroupList extends Component {
                 {unitTitle}
                 <div className='flex justify-space'>
                   <div className={'f6 silver mt1' + (hasUnread ? ' b' : '')}>
-                    <span>{items.length} {name} { items.length > 1 && 's'}</span>
+                    <span>{items.length} { items.length > 1 ? name + 's' : name }</span>
                   </div>
                   <AddGroupLink bzId={bzId} name={name} />
                 </div>
