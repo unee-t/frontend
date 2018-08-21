@@ -7,6 +7,7 @@ import { goBack, push, replace } from 'react-router-redux'
 import { Route } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
+import IconButton from 'material-ui/IconButton'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
@@ -94,7 +95,11 @@ class ReportWizard extends Component {
     )
     return (
       <div className='full-height flex flex-column'>
-        <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
+        <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} rightIconElement={isDraft ? (
+          <IconButton onClick={() => dispatch(goBack())}>
+            <FontIcon className='material-icons' color='white'>save</FontIcon>
+          </IconButton>
+        ) : null} />
         <div className='flex-grow bg-very-light-gray flex flex-column overflow-auto pb2'>
           <div className='bg-white card-shadow-1 pa3'>
             <div>
@@ -172,8 +177,8 @@ class ReportWizard extends Component {
             <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
               <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
                 {isDraft
-                  ? 'Is there any defect with the unit to report?'
-                  : 'Cases related to this report'
+                  ? 'Is there any defect which needs to be corrected or fixed?'
+                  : 'Defects reported on creation'
                 }
               </div>
               {childCases.map(caseItem => (
@@ -199,31 +204,18 @@ class ReportWizard extends Component {
         </div>
         <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
           <div className='dib flex justify-end items-center'>
-            {isDraft ? [
-              (
-                <RaisedButton
-                  key='save'
-                  secondary
-                  onClick={() => dispatch(goBack())}
-                >
-                  <span className='white mh4'>
-                    Save draft
-                  </span>
-                </RaisedButton>
-              ),
-              (
-                <RaisedButton
-                  className='ml2'
-                  key='confirm'
-                  primary
-                  onClick={() => dispatch(push(`${match.url}/confirm`))}
-                >
-                  <span className='white mh4'>
-                    Complete
-                  </span>
-                </RaisedButton>
-              )
-            ] : [
+            {isDraft ? (
+              <RaisedButton
+                className='ml2'
+                key='confirm'
+                primary
+                onClick={() => dispatch(push(`${match.url}/confirm`))}
+              >
+                <span className='white mh4'>
+                  Complete
+                </span>
+              </RaisedButton>
+            ) : [
               (
                 <div key='text' className='f5 i moon-gray'>
                   This report has been finalized
