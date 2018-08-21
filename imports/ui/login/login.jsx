@@ -9,8 +9,9 @@ import { emailValidator } from '../../util/validators'
 import InputRow from '../components/input-row'
 import PasswordInput from '../components/password-input'
 import LoginLayout from '../layouts/login-layout'
+import { BrowserSupportMsg } from './browser-support-msg'
 
-export class LoginPage extends Component {
+class LoginPage extends Component {
   constructor () {
     super(...arguments)
     this.state = {
@@ -42,47 +43,56 @@ export class LoginPage extends Component {
   }
   render () {
     const { email, password, emailError } = this.state
+    // Internet Explorer 6-11
+    var isIE = /*@cc_on!@*/false || !!document.documentMode
     return (
-      <LoginLayout subHeading='Please login to continue' footerContent={
-        <div>
-          Don't have an account?&nbsp;
-          <Link className='link dim b white' to='/signup'>Sign up for one here</Link>
-          <br />
-          It's FREE!
-        </div>
-      }>
-        <form onSubmit={this.handleSubmit}>
-          <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
-            <InputRow label='Email' inpType='email'
-              value={email}
-              errorText={emailError}
-              onChange={this.handleEmailChanged}
-            />
-            <PasswordInput
-              value={password}
-              onChange={evt => this.setState({password: evt.target.value})}
-            />
-          </fieldset>
-          { this.props.showLoginError && (
-            <div className='tc pv1 warn-crimson'>
-              <small>Email or password do not match</small>
-            </div>
-          )}
-          <div className='flex mt3 items-center'>
-            <div className='flex-grow lh-copy tl'>
-              <Link
-                to={'/forgot-pass' + (email ? `?email=${encodeURIComponent(email)}` : '')}
-                className='f6 link dim bondi-blue'
-              >
-                Forgot password?
-              </Link>
-            </div>
-            <RaisedButton label='Login' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
-              disabled={!password || !email || emailError}
-            />
-          </div>
-        </form>
-      </LoginLayout>
+      <div>
+        { isIE
+          ? (<BrowserSupportMsg />
+          ) : (
+            <LoginLayout subHeading='Please login to continue' footerContent={
+              <div>
+                Don't have an account?&nbsp;
+                <Link className='link dim b white' to='/signup'>Sign up for one here</Link>
+                <br />
+                It's FREE!
+              </div>
+            }>
+              <form onSubmit={this.handleSubmit}>
+                <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
+                  <InputRow label='Email' inpType='email'
+                    value={email}
+                    errorText={emailError}
+                    onChange={this.handleEmailChanged}
+                  />
+                  <PasswordInput
+                    value={password}
+                    onChange={evt => this.setState({password: evt.target.value})}
+                  />
+                </fieldset>
+                { this.props.showLoginError && (
+                  <div className='tc pv1 warn-crimson'>
+                    <small>Email or password do not match</small>
+                  </div>
+                )}
+                <div className='flex mt3 items-center'>
+                  <div className='flex-grow lh-copy tl'>
+                    <Link
+                      to={'/forgot-pass' + (email ? `?email=${encodeURIComponent(email)}` : '')}
+                      className='f6 link dim bondi-blue'
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <RaisedButton label='Login' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
+                    disabled={!password || !email || emailError}
+                  />
+                </div>
+              </form>
+            </LoginLayout>
+          )
+        }
+      </div> 
     )
   }
 }
