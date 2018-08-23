@@ -1,6 +1,34 @@
 import React from 'react'
-// import LoginLayout from '../layouts/login-layout'
-import { UneeTIcon, UneeTLogoText } from '../components/unee-t-icons'
+import PropTypes from 'prop-types'
+
+export const UneeTIcon = ({isDarkType, ...otherProps}) => (
+  <svg {...otherProps} viewBox={isDarkType ? '0 0 119.19 119.33' : '3 3 39 39'}>
+    <use xlinkHref={`/unee-t_logo${isDarkType ? '' : '_reverse'}.svg#icon`} />
+  </svg>
+)
+
+UneeTIcon.propTypes = {
+  isDarkType: PropTypes.bool
+}
+
+const LogoTextStyle = {
+  width: 106,
+  height: 27
+}
+export const UneeTLogoText = ({sizeMultiplier, textColor, ...moreProps}) => {
+  const mult = sizeMultiplier || 1
+  const { width, height } = LogoTextStyle
+  return (
+    <svg viewBox='0 0 106 27' {...moreProps}
+      style={{color: textColor || '#FFFFFF', width: width * mult, height: height * mult}}>
+      <use xlinkHref='/unee-t_wordmark.svg#logo-text' />
+    </svg>
+  )
+}
+UneeTLogoText.propTypes = {
+  textColor: PropTypes.string,
+  sizeMultiplier: PropTypes.number
+}
 
 const browserTypes = [
   {icon: <i className='fab fa-chrome f2' />, name: 'Chrome'},
@@ -25,7 +53,7 @@ export function BrowserSupportMsg () {
       <main className='measure-narrow center tc'>
         <div className='bg-white br3 pv4 ph3'>
           <div className='flex items-center justify-center pb1'>
-            <UneeTLogoText sizeMultiplier={1.7} textColor='var(--bondi-blue)' />
+            <UneeTLogoText sizeMultiplier={1.7} textColor='#0095b6' />
             <UneeTIcon className='ml2' isDarkType style={{width: '3rem', height: '3rem'}} />
           </div>
           <h3 className='f4 fw3 ph0 mh0 mt3 pt2 tc mid-gray'>The smarter way to manage issues in your units</h3>
