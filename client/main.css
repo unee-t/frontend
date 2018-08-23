@@ -12,7 +12,9 @@
   --rad-green: #c9fb65;
   --bondi-blue: #0095b6;
   --warn-crimson: #ab0530;
-  --success-green: #99cc33
+  --success-green: #99cc33;
+  --warn-pale-red: #FDCDD1;
+  --warn-plain-red: #C0000C;
 }
 
 .error-red {
@@ -49,6 +51,10 @@
 
 .bondi-blue {
   color: var(--bondi-blue);
+}
+
+.warn-plain-red {
+  color: var(--warn-plain-red);
 }
 
 .moon-gray {
@@ -96,6 +102,10 @@
 
 .bg-rad-green {
   background-color: var(--rad-green);
+}
+
+.bg-warn-pale-red {
+  background-color: var(--warn-pale-red);
 }
 
 .bg-bondi-blue {
