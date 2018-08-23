@@ -44,6 +44,7 @@ class LoginPage extends Component {
   render () {
     const { email, password, emailError } = this.state
     // Internet Explorer 6-11
+    // var isChrome = !!window.chrome && !!window.chrome.webstore
     var isIE = /*
                 @cc_on!@
                 */false || !!document.documentMode
