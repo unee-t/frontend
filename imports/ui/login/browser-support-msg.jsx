@@ -21,7 +21,7 @@ const supportedBrowsers = browserTypes.map((browser, i) =>
 
 export function BrowserSupportMsg () {
   return (
-    <div className='w-100 bg-bondi-blue min-h-100vh pt5 roboto'>
+    <div className='w-100 min-h-100vh pt5 roboto' style={{backgroundColor: '#0095b6'}}>
       <main className='measure-narrow center tc'>
         <div className='bg-white br3 pv4 ph3'>
           <div className='flex items-center justify-center pb1'>
