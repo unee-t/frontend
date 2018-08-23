@@ -23,6 +23,12 @@ const factoryOptions = {
 
 export const REPORT_DRAFT_STATUS = 'UNCONFIRMED'
 export const REPORT_FINAL_STATUS = 'CONFIRMED'
+const keywords =
+  {
+    field: 'keywords',
+    operator: 'allwords',
+    value: REPORT_KEYWORD
+  }
 
 let publicationObj
 if (Meteor.isServer) {
@@ -30,6 +36,32 @@ if (Meteor.isServer) {
   Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
     uriTemplate: idUrlTemplate
   }))
+
+  Meteor.publish(`${collectionName}.associatedWithMe`, publicationObj.publishByCustomQuery({
+    uriTemplate: () => '/rest/bug',
+    queryBuilder: subHandle => {
+      if (!subHandle.userId) {
+        return {}
+      }
+      const currUser = Meteor.users.findOne(subHandle.userId)
+      const { login: userIdentifier } = currUser.bugzillaCreds
+      return caseQueryBuilder(
+        [
+          keywords,
+          ...associatedCasesQueryExps(userIdentifier)
+        ],
+        [
+          'product',
+          'summary',
+          'id',
+          'status',
+          'creation_time',
+          'assigned_to'
+        ]
+      )
+    }
+  }))
+
   Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
     queryBuilder: (subHandle, unitName) => {
@@ -45,11 +77,7 @@ if (Meteor.isServer) {
             operator: 'equals',
             value: unitName
           },
-          {
-            field: 'keywords',
-            operator: 'allwords',
-            value: REPORT_KEYWORD
-          },
+          keywords,
           ...associatedCasesQueryExps(userIdentifier)
         ],
         [

@@ -21,7 +21,7 @@ if (Meteor.isServer) {
   const associationFactory = makeAssociationFactory(collectionName)
   publicationObj = publicationFactory(factoryOptions)
   Meteor.publish(
-    'caseComments',
+    `${collectionName}.byCaseId`,
     associationFactory(
       publicationObj.publishById({
         uriTemplate: caseId => `/rest/bug/${caseId}/comment`,

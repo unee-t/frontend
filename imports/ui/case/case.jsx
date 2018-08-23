@@ -10,7 +10,7 @@ import moment from 'moment'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/cases'
-import Comments from '../../api/comments'
+import Comments, { collectionName as commentsCollName } from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import PendingInvitations, { collectionName as inviteCollName } from '../../api/pending-invitations'
 import CaseFieldValues, { collectionName as cfvCollName } from '../../api/case-field-values'
@@ -191,7 +191,7 @@ const CaseContainer = createContainer(props => {
       caseError = error
     }
   })
-  const commentsHandle = Meteor.subscribe('caseComments', caseId, {
+  const commentsHandle = Meteor.subscribe(`${commentsCollName}.byCaseId`, caseId, {
     onStop: error => {
       commentsError = error
     }
@@ -253,7 +253,7 @@ const CaseContainer = createContainer(props => {
 const connectedWrapper = withRouter(connect(
   (
     {
-      caseAttachmentUploads,
+      attachmentUploads,
       invitationState,
       invitationLoginState: { showWelcomeMessage, invitedByDetails },
       caseUsersState,
@@ -261,7 +261,7 @@ const connectedWrapper = withRouter(connect(
     },
     props
   ) => ({
-    attachmentUploads: caseAttachmentUploads[props.match.params.caseId.toString()] || [],
+    attachmentUploads: attachmentUploads[props.match.params.caseId.toString()] || [],
     invitationState,
     invitedByDetails,
     caseUsersState,
