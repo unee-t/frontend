@@ -11,7 +11,7 @@ import PasswordInput from '../components/password-input'
 import LoginLayout from '../layouts/login-layout'
 import { BrowserSupportMsg } from './browser-support-msg'
 
-class LoginPage extends Component {
+export class LoginPage extends Component {
   constructor () {
     super(...arguments)
     this.state = {
@@ -43,8 +43,6 @@ class LoginPage extends Component {
   }
   render () {
     const { email, password, emailError } = this.state
-    // Internet Explorer 6-11
-    // var isChrome = !!window.chrome && !!window.chrome.webstore
     var isIE = /*
                 @cc_on!@
                 */false || !!document.documentMode
