@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-
 export const UneeTIcon = ({isDarkType, ...otherProps}) => (
   <svg {...otherProps} viewBox={isDarkType ? '0 0 119.19 119.33' : '3 3 39 39'}>
     <use xlinkHref={`/unee-t_logo${isDarkType ? '' : '_reverse'}.svg#icon`} />
@@ -54,7 +53,9 @@ export function BrowserSupportMsg () {
         <div className='bg-white br3 pv4 ph3'>
           <div className='flex items-center justify-center pb1'>
             <UneeTLogoText sizeMultiplier={1.7} textColor='#0095b6' />
-            <UneeTIcon className='ml2' isDarkType style={{width: '3rem', height: '3rem'}} />
+            <div style={{width: '3rem', height: '3rem'}}>
+              <UneeTIcon className='ml2' isDarkType style={{maxWidth: '100%', maxHeight: '100%'}} />
+            </div>
           </div>
           <h3 className='f4 fw3 ph0 mh0 mt3 pt2 tc mid-gray'>The smarter way to manage issues in your units</h3>
           <div className='silver f6'>
