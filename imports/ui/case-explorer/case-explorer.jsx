@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
+import UnverifiedWarning from '../components/unverified-warning.jsx'
 import { withRouter } from 'react-router-dom'
 import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
@@ -132,6 +133,7 @@ class CaseExplorer extends Component {
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
+        <UnverifiedWarning />
         <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
           <FilterRow
             filterStatus={filterStatus}

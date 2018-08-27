@@ -92,7 +92,5 @@ export class UnitGroupList extends Component {
 UnitGroupList.propTypes = {
   unitGroupList: PropTypes.array,
   name: PropTypes.string,
-  expandedListRenderer: PropTypes.func.isRequired,
-  handleExpandUnit: PropTypes.func.isRequired,
-  handleOnItemClicked: PropTypes.func.isRequired
+  expandedListRenderer: PropTypes.func.isRequired
 }
