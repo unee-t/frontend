@@ -108,6 +108,11 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized')
     }
     if (Meteor.isServer) {
+      const errorTemplate = {
+        user: Meteor.userId(),
+        method: `${collectionName}.insert`,
+        args: [params]
+      }
       const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(Meteor.userId())
       const { callAPI } = bugzillaApi
 
@@ -117,7 +122,11 @@ Meteor.methods({
         const unitResult = callAPI('get', requestUrl, {api_key: apiKey}, false, true)
         unitItem = unitResult.data.products[0]
       } catch (e) {
-        console.error(e)
+        console.error({
+          step: 'get /rest/product/...',
+          error: e,
+          ...errorTemplate
+        })
         throw new Meteor.Error('API error')
       }
       const currUser = Meteor.user()
@@ -126,7 +135,13 @@ Meteor.methods({
       const currUserRole = getUnitRoles(unitItem).find(role => role.login === currUser.bugzillaCreds.login)
 
       if (!currUserRole) {
-        throw new Meteor.Error('not-authorized: The user must have a role in this unit')
+        const errorMsg = 'not-authorized: The user must have a role in this unit'
+        console.error({
+          step: 'user auth check',
+          error: errorMsg,
+          ...errorTemplate
+        })
+        throw new Meteor.Error(errorMsg)
       }
 
       console.log('Creating report', params)
@@ -155,10 +170,9 @@ Meteor.methods({
         // TODO: Add real time update handler usage
       } catch (e) {
         console.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.insert`,
-          args: [params],
-          error: e
+          step: 'post /rest/bug/...',
+          error: e,
+          ...errorTemplate
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
