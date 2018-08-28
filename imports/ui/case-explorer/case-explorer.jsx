@@ -134,7 +134,7 @@ class CaseExplorer extends Component {
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <UnverifiedWarning />
-        <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray'>
+        <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
           <FilterRow
             filterStatus={filterStatus}
             myInvolvement={myInvolvement}
