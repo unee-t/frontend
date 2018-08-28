@@ -24,6 +24,7 @@ import ErrorDialog from './dialogs/error-dialog'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
 import { genericErrorCleared } from './general-actions'
+import { BrowserSupportMsg } from './login/browser-support-msg'
 
 class App extends Component {
   componentWillMount () {
@@ -33,8 +34,12 @@ class App extends Component {
   render () {
     const { userLoggedIn, errors, dispatch } = this.props
     const firstError = errors.length ? errors[0] : ''
+    var isIE = /*
+    @cc_on!@
+    */false || !!document.documentMode
     return (
       <div className='roboto'>
+        {isIE && <BrowserSupportMsg />}
         {userLoggedIn ? (
           <div>
             <Switch>
