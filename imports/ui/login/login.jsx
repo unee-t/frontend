@@ -9,7 +9,6 @@ import { emailValidator } from '../../util/validators'
 import InputRow from '../components/input-row'
 import PasswordInput from '../components/password-input'
 import LoginLayout from '../layouts/login-layout'
-import { BrowserSupportMsg } from './browser-support-msg'
 
 export class LoginPage extends Component {
   constructor () {
