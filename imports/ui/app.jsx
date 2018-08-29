@@ -24,6 +24,7 @@ import ErrorDialog from './dialogs/error-dialog'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
 import { genericErrorCleared } from './general-actions'
+import { BrowserSupportMsg } from './login/browser-support-msg'
 
 class App extends Component {
   componentWillMount () {
@@ -33,42 +34,48 @@ class App extends Component {
   render () {
     const { userLoggedIn, errors, dispatch } = this.props
     const firstError = errors.length ? errors[0] : ''
+    var isIE = /*
+    @cc_on!@
+    */false || !!document.documentMode
     return (
       <div className='roboto'>
-        {userLoggedIn ? (
-          <div>
-            <Switch>
-              <Route exact path='/unit/new' component={UnitWizard} />
-              <Route path='/unit/:unitId' component={Unit} />
-              <Route exact path='/unit' component={UnitExplorer} />
-              <Route exact path='/dashboard' component={Dashboard} />
-              <Route exact path='/invitation' component={InvitationLogin} />
-              <Route exact path='/notification-settings' component={NotificationSettings} />
-`             <Route path='/report/:reportId/:viewMode' component={ReportWizard} />
-`             <Route path='/report' component={ReportExplorer} />
-              <Route exact path='/case/new' component={CaseWizard} />
-              <Route path='/case' component={CaseMaster} />
-              <Redirect to='/case' />
-            </Switch>
-            <SideMenu />
-            <ErrorDialog
-              show={!!firstError}
-              text={firstError}
-              onDismissed={() => dispatch(genericErrorCleared(0))}
-            />
-          </div>
+        {isIE ? (<BrowserSupportMsg />
         ) : (
-          <div>
-            <Switch>
-              <Route exact path='/' component={LoginPage} />
-              <Route exact path='/signup' component={SignupPage} />
-              <Route exact path='/invitation' component={InvitationLogin} />
-              <Route exact path='/forgot-pass' component={ForgotPass} />
-              <Route exact path='/reset-pass' component={ResetPass} />
-              <Redirect to='/' />
-            </Switch>
-            <ResetLinkSuccessDialog />
-          </div>
+          userLoggedIn ? (
+            <div>
+              <Switch>
+                <Route exact path='/unit/new' component={UnitWizard} />
+                <Route path='/unit/:unitId' component={Unit} />
+                <Route exact path='/unit' component={UnitExplorer} />
+                <Route exact path='/dashboard' component={Dashboard} />
+                <Route exact path='/invitation' component={InvitationLogin} />
+                <Route exact path='/notification-settings' component={NotificationSettings} />
+`               <Route path='/report/:reportId/:viewMode' component={ReportWizard} />
+`               <Route path='/report' component={ReportExplorer} />
+                <Route exact path='/case/new' component={CaseWizard} />
+                <Route path='/case' component={CaseMaster} />
+                <Redirect to='/case' />
+              </Switch>
+              <SideMenu />
+              <ErrorDialog
+                show={!!firstError}
+                text={firstError}
+                onDismissed={() => dispatch(genericErrorCleared(0))}
+              />
+            </div>
+          ) : (
+            <div>
+              <Switch>
+                <Route exact path='/' component={LoginPage} />
+                <Route exact path='/signup' component={SignupPage} />
+                <Route exact path='/invitation' component={InvitationLogin} />
+                <Route exact path='/forgot-pass' component={ForgotPass} />
+                <Route exact path='/reset-pass' component={ResetPass} />
+                <Redirect to='/' />
+              </Switch>
+              <ResetLinkSuccessDialog />
+            </div>
+          )
         )}
       </div>
     )
