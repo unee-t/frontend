@@ -299,7 +299,7 @@ Meteor.methods({
       } catch (e) {
         console.error({
           ...errorLogParams,
-          step: 'Fetch main report object (get /rest/bug/:reportId)',
+          step: `Fetch main report object (get /rest/bug/${reportId})`,
           error: e
         })
         throw new Meteor.Error('API error')
