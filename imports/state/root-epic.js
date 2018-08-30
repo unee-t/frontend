@@ -14,7 +14,7 @@ import { editCaseField } from './epics/edit-case-field'
 import { forgotPass } from './epics/forgot-pass'
 import { checkPassReset } from './epics/check-pass-reset'
 import { resetPass } from './epics/reset-pass'
-import { resendVerification } from './epics/resend-verification'
+import { unverifiedWarning } from './epics/unverified-warning'
 import { createReport } from './epics/create-report'
 import { changeNotificationSetting } from './epics/change-notification-setting'
 import { createUnit } from './epics/create-unit'
@@ -40,7 +40,7 @@ export const rootEpic = combineEpics(
   forgotPass,
   checkPassReset,
   resetPass,
-  resendVerification,
+  unverifiedWarning,
   changeNotificationSetting,
   createUnit,
   createReport,
