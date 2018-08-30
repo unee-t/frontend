@@ -24,3 +24,7 @@ export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync
   const httpCall = HTTP.call(method, base + endpoint, options, callback)
   return returnedPromise || httpCall
 }
+
+export default {
+  callAPI
+}
