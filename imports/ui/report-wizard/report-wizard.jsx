@@ -204,18 +204,31 @@ class ReportWizard extends Component {
         </div>
         <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
           <div className='dib flex justify-end items-center'>
-            {isDraft ? (
-              <RaisedButton
-                className='ml2'
-                key='confirm'
-                primary
-                onClick={() => dispatch(push(`${match.url}/confirm`))}
-              >
-                <span className='white mh4'>
-                  Complete
-                </span>
-              </RaisedButton>
-            ) : [
+            {isDraft ? [
+              (
+                <RaisedButton
+                  className='ml2'
+                  key='preview'
+                  onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
+                >
+                  <span className='bondi-blue mh4'>
+                    Preview
+                  </span>
+                </RaisedButton>
+              ),
+              (
+                <RaisedButton
+                  className='ml2'
+                  key='confirm'
+                  primary
+                  onClick={() => dispatch(push(`${match.url}/confirm`))}
+                >
+                  <span className='white mh4'>
+                    Complete
+                  </span>
+                </RaisedButton>
+              )
+            ] : [
               (
                 <div key='text' className='f5 i moon-gray'>
                   This report has been finalized
