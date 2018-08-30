@@ -40,7 +40,7 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
     try {
       const comments = bugzillaApi
         .callAPI('get', `/rest/bug/${treeNode.id}/comment`, {api_key: apiKey}, false, true)
-        .data.bugs[reportItem.id.toString()].comments
+        .data.bugs[treeNode.id.toString()].comments
       imageAttachments = comments.reduce((all, comment) => {
         if (attachmentTextMatcher(comment.text)) {
           all.push(comment.text.split('\n')[1])
@@ -321,7 +321,7 @@ Meteor.methods({
       const storedSnapshot = ReportSnapshots.findOne({'reportItem.id': reportId})
       let reportBlob
       if (reportItem.status === REPORT_DRAFT_STATUS || !storedSnapshot) {
-        populateReportDependees(reportItem, apiKey)
+        populateReportDependees(reportItem, apiKey, errorLogParams)
         reportBlob = reportItem
         if (reportItem.status !== REPORT_DRAFT_STATUS) {
           console.log(`No stored snapshot was found for finalized report ${reportId} while creating preview. Creating one as fallback`)
