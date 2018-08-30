@@ -1,10 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
+import { HTTP } from 'meteor/http'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { getUnitRoles } from './units'
 import ReportSnapshots from './report-snapshots'
+import { attachmentTextMatcher } from '../util/matchers'
+import UnitRolesData from './unit-roles-data'
+import UnitMetaData from './unit-meta-data'
 import {
   caseServerFieldMapping,
   REPORT_KEYWORD,
@@ -29,6 +33,54 @@ const keywords =
     operator: 'allwords',
     value: REPORT_KEYWORD
   }
+
+const populateReportDependees = (reportItem, apiKey, logData) => {
+  return (function addDependees (treeNode) {
+    let imageAttachments
+    try {
+      const comments = bugzillaApi
+        .callAPI('get', `/rest/bug/${treeNode.id}/comment`, {api_key: apiKey}, false, true)
+        .data.bugs[reportItem.id.toString()].comments
+      imageAttachments = comments.reduce((all, comment) => {
+        if (attachmentTextMatcher(comment.text)) {
+          all.push(comment.text.split('\n')[1])
+        }
+        return all
+      }, [])
+    } catch (e) {
+      console.error({
+        ...logData,
+        step: `Fetch report dependee's comments (get /rest/bug/${treeNode.id}/comments)`,
+        error: e
+      })
+      throw new Meteor.Error('API error')
+    }
+    const dependees = treeNode.depends_on.map(id => {
+      let dependee
+      try {
+        dependee = bugById(id, apiKey)
+      } catch (e) {
+        console.error({
+          ...logData,
+          step: `Fetch report dependee entity (get /rest/bug/:${id})`,
+          error: e
+        })
+        throw new Meteor.Error('API error')
+      }
+      addDependees(dependee)
+      return dependee
+    })
+    const dependencies = dependees.reduce((all, dependee) => {
+      if (dependee.keywords.length === 0) { // is a case
+        all.cases = all.cases || []
+        all.cases.push(dependee)
+      }
+      // TODO: enhance for other report entities later
+      return all
+    }, {})
+    Object.assign(treeNode, {dependencies, imageAttachments})
+  })(reportItem)
+}
 
 let publicationObj
 if (Meteor.isServer) {
@@ -96,6 +148,8 @@ let Reports
 if (Meteor.isClient) {
   Reports = new Mongo.Collection(collectionName)
 }
+
+const bugById = (id, apiKey) => bugzillaApi.callAPI('get', `/rest/bug/${id}`, {api_key: apiKey}, false, true).data.bugs[0]
 
 Meteor.methods({
   [`${collectionName}.insert`] (params) {
@@ -176,13 +230,12 @@ Meteor.methods({
         }
       })
     } else { // is server
-      const {bugzillaCreds: {apiKey}} = Meteor.users.findOne(Meteor.userId())
+      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(Meteor.userId())
       const {callAPI} = bugzillaApi
-      const bugById = id => callAPI('get', `/rest/bug/${id}`, {api_key: apiKey}, false, true).data.bugs[0]
 
       let reportItem
       try {
-        reportItem = bugById(reportId)
+        reportItem = bugById(reportId, apiKey)
       } catch (e) {
         console.error({
           user: Meteor.userId(),
@@ -214,40 +267,156 @@ Meteor.methods({
       }
       publicationObj.handleChanged(reportId, {status: REPORT_FINAL_STATUS})
 
-      ;(function addDependees (treeNode) {
-        const dependees = treeNode.depends_on.map(id => {
-          let dependee
-          try {
-            dependee = bugById(id)
-          } catch (e) {
-            console.error({
-              user: Meteor.userId(),
-              method: `${collectionName}.finalize`,
-              step: `Fetch report dependee entity (get /rest/bug/:${id})`,
-              args: [reportId],
-              error: e
-            })
-            throw new Meteor.Error('API error')
-          }
-          addDependees(dependee)
-          return dependee
-        })
-        const dependencies = dependees.reduce((all, dependee) => {
-          if (dependee.keywords.length === 0) { // is a case
-            all.cases = all.cases || []
-            all.cases.push(dependee)
-          }
-          // TODO: enhance for other report entities later
-          return all
-        }, {})
-        Object.assign(treeNode, {dependencies})
-      })(reportItem)
+      populateReportDependees(reportItem, apiKey, {
+        user: Meteor.userId(),
+        method: `${collectionName}.finalize`,
+        args: [reportId]
+      })
 
       ReportSnapshots.insert({
         createdAt: new Date(),
         createdByUser: Meteor.userId(),
         reportItem
       })
+    }
+  },
+  [`${collectionName}.makePreview`] (reportId) {
+    check(reportId, Number)
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('not-authorized')
+    }
+    if (Meteor.isServer) {
+      const errorLogParams = {
+        user: Meteor.userId(),
+        method: `${collectionName}.makePreview`,
+        args: [reportId]
+      }
+      const currUser = Meteor.user()
+      const { bugzillaCreds: { apiKey } } = currUser
+      let reportItem
+      try {
+        reportItem = bugById(reportId, apiKey)
+      } catch (e) {
+        console.error({
+          ...errorLogParams,
+          step: 'Fetch main report object (get /rest/bug/:reportId)',
+          error: e
+        })
+        throw new Meteor.Error('API error')
+      }
+      let unit
+      try {
+        unit = bugzillaApi
+          .callAPI('get', `/rest/product?names=${reportItem.product}`, {api_key: apiKey}, false, true).data.products[0]
+      } catch (e) {
+        console.error({
+          ...errorLogParams,
+          step: `Fetch report's unit (get /rest/product?names=${reportItem.product})`,
+          error: e
+        })
+        throw new Meteor.Error('API error')
+      }
+      const unitMetaData = UnitMetaData.findOne({bzId: unit.id})
+      const unitRolesData = UnitRolesData.find({unitBzId: unit.id}).fetch()
+      const storedSnapshot = ReportSnapshots.findOne({'reportItem.id': reportId})
+      let reportBlob
+      if (reportItem.status === REPORT_DRAFT_STATUS || !storedSnapshot) {
+        populateReportDependees(reportItem, apiKey)
+        reportBlob = reportItem
+        if (reportItem.status !== REPORT_DRAFT_STATUS) {
+          console.log(`No stored snapshot was found for finalized report ${reportId} while creating preview. Creating one as fallback`)
+          ReportSnapshots.insert({
+            createdAt: new Date(),
+            createdByUser: Meteor.userId(),
+            reportItem: reportBlob
+          })
+        }
+      } else {
+        reportBlob = storedSnapshot.reportItem
+      }
+      const reportCreator = Meteor.users.findOne({'bugzillaCreds.login': reportBlob.creator})
+      const makeSignObj = user => {
+        const userRoleObj = unitRolesData.length && unitRolesData.find(roleItem => roleItem.members.includes(user._id))
+        const roleText = userRoleObj ? userRoleObj.roleType : 'Administrator'
+        return {
+          name: user.profile.name || user.emails[0].address.split('@')[0],
+          role: roleText,
+          email: user.emails[0].address,
+          data_uri: ''
+        }
+      }
+      const generationPayload = {
+        id: reportBlob.id.toString(),
+        template: '',
+        date: (new Date()).toISOString(),
+        signatures: [
+          makeSignObj(reportCreator)
+        ].concat(reportBlob.cc.reduce((all, loginName) => {
+          const ccUser = Meteor.users.findOne({'bugzillaCreds.login': loginName})
+          if (ccUser) {
+            all.push(makeSignObj(ccUser))
+          }
+          return all
+        }, [])),
+        unit: {
+          information: unitMetaData ? {
+            name: unitMetaData.displayName,
+            type: unitMetaData.unitType,
+            address: unitMetaData.streetAddress,
+            postcode: unitMetaData.zipCode,
+            city: unitMetaData.city,
+            state: unitMetaData.state,
+            country: unitMetaData.country,
+            description: unitMetaData.moreInfo
+          } : {
+            name: unit.name,
+            type: 'Unspecified',
+            address: 'N/A',
+            postcode: '',
+            city: 'N/A',
+            state: 'N/A',
+            country: 'N/A',
+            description: ''
+          }
+        },
+        report: {
+          name: reportBlob.summary,
+          creator: reportCreator.profile.name || reportCreator.emails[0].address.split('@')[0],
+          description: '', // TODO: find what this should be mapped to
+          images: reportBlob.imageAttachments,
+          cases: reportBlob.dependencies.cases ? reportBlob.dependencies.cases.map(caseItem => ({
+            title: caseItem.summary,
+            images: caseItem.imageAttachments,
+            category: caseItem.rep_platform,
+            status: caseItem.status,
+            details: '' // TODO: find what this should be mapped to
+          })) : [],
+          inventory: [],
+          rooms: [],
+          comments: reportBlob.whiteboard
+        }
+      }
+      const { PDFGEN_LAMBDA_URL, API_ACCESS_TOKEN } = process.env
+      let response
+      try {
+        response = HTTP.call('POST', PDFGEN_LAMBDA_URL, {
+          data: generationPayload,
+          headers: {
+            Authorization: `Bearer ${API_ACCESS_TOKEN}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      } catch (e) {
+        console.error({
+          ...errorLogParams,
+          step: `Calling PdfGen Lambda`,
+          error: e
+        })
+        throw new Meteor.Error('Export service error')
+      }
+      return {
+        url: response.data.HTML
+      }
     }
   },
   [`${collectionName}.editReportField`]: fieldEditMethodMaker({
