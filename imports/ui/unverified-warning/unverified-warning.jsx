@@ -6,13 +6,6 @@ import { Meteor } from 'meteor/meteor'
 import { resendVerification } from './unverified-warning.actions'
 
 class UnverifiedWarning extends React.Component {
-  // constructor (props) {
-  //   super(props)
-  //   this.state = {
-  //     resendStatus: 'Resend Email Verification'
-  //   }
-  // }
-
   handleResendClicked = () => {
     const { dispatch } = this.props
     dispatch(resendVerification())

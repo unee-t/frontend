@@ -9,7 +9,7 @@ import 'rxjs/add/operator/filter'
 export const unverifiedWarning = (action$, store) =>
   action$.ofType(RESEND_VERIFICATION)
     .filter(() => store.getState().resendVerificationState)
-    .switchMap(({email}) => {
+    .switchMap(() => {
       const meteorResult$ = new Subject()
       Meteor.call('resendEmail', (err, result) => {
         if (err) {

@@ -150,15 +150,8 @@ Meteor.methods({
     })
   },
   'resendEmail': function () {
-    Accounts.sendVerificationEmail(Meteor.userId())
+    if (Meteor.isServer) {
+      Accounts.sendVerificationEmail(Meteor.userId())
+    }
   }
-  // 'sendVerificationEmail': function (userId, email) {
-  //   Accounts.sendVerificationEmail(userId, email, function (error) {
-  //     if (!error) {
-  //       console.log('Verfication email sent')
-  //     } else {
-  //       console.log(error)
-  //     }
-  //   })
-  // }
 })
