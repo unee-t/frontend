@@ -67,7 +67,7 @@ class UnitExplorer extends Component {
               onChangeIndex={this.handleChange}
             >
               {/* tab 1 */}
-              <div className='flex-grow bb b--very-light-gray bg-white'>
+              <div className='flex-grow bb b--very-light-gray bg-white pb6'>
                 <FilteredUnitsList
                   filteredUnits={activeUnits}
                   currentUserId={currentUserId}
@@ -78,7 +78,7 @@ class UnitExplorer extends Component {
                 />
               </div>
               {/* tab 2 */}
-              <div className='flex-grow bb b--very-light-gray bg-white'>
+              <div className='flex-grow bb b--very-light-gray bg-white pb6'>
                 <FilteredUnitsList
                   filteredUnits={disabledUnits}
                   currentUserId={currentUserId}

@@ -25,6 +25,7 @@ import ErrorDialog from './dialogs/error-dialog'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
 import { genericErrorCleared } from './general-actions'
+import { BrowserSupportMsg } from './login/browser-support-msg'
 
 class App extends Component {
   componentWillMount () {
@@ -34,9 +35,13 @@ class App extends Component {
   render () {
     const { userLoggedIn, errors, dispatch } = this.props
     const firstError = errors.length ? errors[0] : ''
+    var isIE = /*
+    @cc_on!@
+    */false || !!document.documentMode
     return (
       <div className='roboto'>
-        {userLoggedIn ? (
+        {isIE ? (<BrowserSupportMsg />
+        ) : (userLoggedIn ? (
           <div>
             <Switch>
               <Route exact path='/unit/new' component={UnitWizard} />
@@ -46,7 +51,7 @@ class App extends Component {
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
               <Route exact path='/report/:reportId/preview' component={ReportPreview} />
-`             <Route path='/report/:reportId/:viewMode' component={ReportWizard} />
+`             <Routepath='/report/:reportId/:viewMode' component={ReportWizard} />
 `             <Route path='/report' component={ReportExplorer} />
               <Route exact path='/case/new' component={CaseWizard} />
               <Route path='/case' component={CaseMaster} />
@@ -70,7 +75,7 @@ class App extends Component {
               <Redirect to='/' />
             </Switch>
             <ResetLinkSuccessDialog />
-          </div>
+          </div>)
         )}
       </div>
     )
