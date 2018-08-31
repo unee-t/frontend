@@ -36,12 +36,13 @@ const keywords =
 
 const populateReportDependees = (reportItem, apiKey, logData) => {
   return (function addDependees (treeNode) {
-    let imageAttachments
+    let imageAttachments, caseDetails
     try {
       const comments = bugzillaApi
         .callAPI('get', `/rest/bug/${treeNode.id}/comment`, {api_key: apiKey}, false, true)
         .data.bugs[treeNode.id.toString()].comments
-      imageAttachments = comments.reduce((all, comment) => {
+      caseDetails = comments[0].text
+      imageAttachments = comments.slice(1).reduce((all, comment) => {
         if (attachmentTextMatcher(comment.text)) {
           all.push(comment.text.split('\n')[1])
         }
@@ -78,7 +79,7 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
       // TODO: enhance for other report entities later
       return all
     }, {})
-    Object.assign(treeNode, {dependencies, imageAttachments})
+    Object.assign(treeNode, {dependencies, imageAttachments, caseDetails})
   })(reportItem)
 }
 
@@ -374,7 +375,7 @@ Meteor.methods({
         }, [])),
         unit: {
           information: unitMetaData ? {
-            name: unitMetaData.displayName,
+            name: unitMetaData.displayName || unitMetaData.bzName,
             type: unitMetaData.unitType,
             address: unitMetaData.streetAddress,
             postcode: unitMetaData.zipCode,
@@ -396,14 +397,14 @@ Meteor.methods({
         report: {
           name: reportBlob.summary,
           creator: reportCreator.profile.name || reportCreator.emails[0].address.split('@')[0],
-          description: '', // TODO: find what this should be mapped to
+          description: reportBlob.caseDetails,
           images: reportBlob.imageAttachments,
           cases: reportBlob.dependencies.cases ? reportBlob.dependencies.cases.map(caseItem => ({
             title: caseItem.summary,
             images: caseItem.imageAttachments,
             category: caseItem.rep_platform,
             status: caseItem.status,
-            details: '' // TODO: find what this should be mapped to
+            details: caseItem.caseDetails
           })) : [],
           inventory: [],
           rooms: [],
