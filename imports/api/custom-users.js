@@ -151,7 +151,11 @@ Meteor.methods({
   },
   'resendEmail': function () {
     if (Meteor.isServer) {
-      Accounts.sendVerificationEmail(Meteor.userId())
+      try {
+        Accounts.sendVerificationEmail(Meteor.userId())
+      } catch (e) {
+        throw new Meteor.Error('HEYY Meteor Error: ', e)
+      }
     }
   }
 })
