@@ -51,7 +51,7 @@ class App extends Component {
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
               <Route exact path='/report/:reportId/preview' component={ReportPreview} />
-`             <Routepath='/report/:reportId/:viewMode' component={ReportWizard} />
+`             <Route path='/report/:reportId/:viewMode' component={ReportWizard} />
 `             <Route path='/report' component={ReportExplorer} />
               <Route exact path='/case/new' component={CaseWizard} />
               <Route path='/case' component={CaseMaster} />
