@@ -19,6 +19,7 @@ services:
        - INVITE_LAMBDA_URL=${INVITE_LAMBDA_URL}
        - APIENROLL_LAMBDA_URL=${APIENROLL_LAMBDA_URL}
        - UNIT_CREATE_LAMBDA_URL=${UNIT_CREATE_LAMBDA_URL}
+       - PDFGEN_LAMBDA_URL=${PDFGEN_LAMBDA_URL}
       logging:
             driver: awslogs
             options:
