@@ -7,8 +7,8 @@ import { resendVerification } from './unverified-warning.actions'
 
 class UnverifiedWarning extends React.Component {
   handleResendClicked = () => {
-    const { dispatch } = this.props
-    dispatch(resendVerification())
+    const { dispatch, email } = this.props
+    dispatch(resendVerification(email))
   }
 
   render () {
