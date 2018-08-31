@@ -11,7 +11,7 @@ export const unverifiedWarning = (action$, store) =>
     .filter(() => store.getState().resendVerificationState)
     .switchMap(() => {
       const meteorResult$ = new Subject()
-      Meteor.call('resendEmail', (err, result) => {
+      Meteor.call('resendEmail', Meteor.userId(), (err, result) => {
         if (err) {
           meteorResult$.next({
             type: RESEND_ERROR,
