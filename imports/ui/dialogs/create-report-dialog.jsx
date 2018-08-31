@@ -7,8 +7,9 @@ import RaisedButton from 'material-ui/RaisedButton'
 import CircularProgress from 'material-ui/CircularProgress'
 import FontIcon from 'material-ui/FontIcon'
 import InputRow from '../components/input-row'
+import ErrorDialog from '../dialogs/error-dialog'
 import { modalTitleStyle, closeDialogButtonStyle } from './generic-dialog.mui-styles'
-import { createReport } from '../report-wizard/report-wizard.actions'
+import { createReport, clearReportCreateError } from '../report-wizard/report-wizard.actions'
 
 class CreateReportDialog extends Component {
   constructor () {
@@ -31,7 +32,7 @@ class CreateReportDialog extends Component {
     this.props.dispatch(createReport(unitName, reportTitle))
   }
   render () {
-    const { show, onDismissed, inProgress } = this.props
+    const { show, onDismissed, inProgress, error, dispatch } = this.props
     const { reportTitle } = this.state
     return (
       <Dialog
@@ -70,6 +71,10 @@ class CreateReportDialog extends Component {
             </RaisedButton>
           </div>
         </form>
+        <ErrorDialog show={!!error} text={error} onDismissed={() => {
+          dispatch(clearReportCreateError())
+          onDismissed()
+        }} />
       </Dialog>
     )
   }
@@ -79,9 +84,11 @@ CreateReportDialog.propTypes = {
   show: PropTypes.bool.isRequired,
   onDismissed: PropTypes.func.isRequired,
   unitName: PropTypes.string.isRequired,
-  inProgress: PropTypes.bool.isRequired
+  inProgress: PropTypes.bool.isRequired,
+  error: PropTypes.string
 }
 
 export default connect(({ reportCreationState }) => ({
-  inProgress: !!reportCreationState.inProgress
+  inProgress: !!reportCreationState.inProgress,
+  error: reportCreationState.error || ''
 }))(createContainer(() => ({}), CreateReportDialog))
