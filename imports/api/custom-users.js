@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
-import { check } from 'meteor/check'
 
 import AccessInvitations from './access-invitations'
 
@@ -150,17 +149,9 @@ Meteor.methods({
       }
     })
   },
-  'resendEmail': function (userId) {
+  'resendEmail': function () {
     if (Meteor.isServer) {
-      try {
-        check(userId, String)
-        return Accounts.sendVerificationEmail(userId)
-      } catch (e) {
-        let userId = Meteor.userId()
-        if (userId) {
-          return Accounts.sendVerificationEmail(userId)
-        }
-      }
+      return Accounts.sendVerificationEmail(Meteor.userId())
     }
   }
 })

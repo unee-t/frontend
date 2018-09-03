@@ -13,18 +13,18 @@ class UnverifiedWarning extends React.Component {
 
   render () {
     const { isUserVerified, email, resendSuccess } = this.props
-    const notification = resendSuccess && ' Email has been sent.'
+    const notification = resendSuccess ? ' The email has been sent.' : 'Resend Email Verification'
     return !isUserVerified ? (
-      <div className='bg-warn-pale-red card-shadow-1 tc pt2 pb3 warn-plain-red'>
-        <div className='f6 fw5'>Verify your email address</div>
-        <p className='f7 mb0 mt2'>
-          Your email address {email} has not been verified yet.
-          Confirm your email to receive updates on your cases.
-          <span className='underline' onClick={() => this.handleResendClicked()}>
-            Resend Email Verification
-          </span>
+      <div className='bg-warn-pale-red card-shadow-1 tc pv2 warn-plain-red f7'>
+        {/* <div className='f6 fw5'>Verify your email address</div> */}
+        <div className='mb0 mt2'>
+          <span className='fw6'>Your email address {email} has not been verified yet. </span>
+           Please check your email for the verification email.
+        </div>
+        <div className={'mt2 ' + (!resendSuccess ? 'underline' : '')}
+          onClick={() => this.handleResendClicked()}>
           {notification}
-        </p>
+        </div>
       </div>
     ) : null
   }
