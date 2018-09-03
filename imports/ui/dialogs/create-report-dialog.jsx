@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
+import moment from 'moment'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -11,11 +12,16 @@ import ErrorDialog from '../dialogs/error-dialog'
 import { modalTitleStyle, closeDialogButtonStyle } from './generic-dialog.mui-styles'
 import { createReport, clearReportCreateError } from '../report-wizard/report-wizard.actions'
 
+function creationTime () {
+  const creationTime = (new Date()).toISOString()
+  return moment(creationTime).format('DD-MM-YYYY')
+}
+
 class CreateReportDialog extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      reportTitle: ''
+      reportTitle: `${creationTime()} ${this.props.unitName}`
     }
   }
   componentDidUpdate (prevProps) {
