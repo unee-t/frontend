@@ -4,6 +4,7 @@ export BUGZILLA_URL=https://demo.dashboard.unee-t.com
 export INVITE_LAMBDA_URL=https://invite.demo.unee-t.com
 export UNIT_CREATE_LAMBDA_URL=https://unit.demo.unee-t.com/create
 export APIENROLL_LAMBDA_URL=https://apienroll.demo.unee-t.com
+export PDFGEN_LAMBDA_URL=https://pdfgen.demo.unee-t.com
 export MONGO_PASSWORD=$(aws --profile uneet-demo ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
 export MONGO_CONNECT=$(aws --profile uneet-demo ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
 # couldinary.demo@unee-t.com

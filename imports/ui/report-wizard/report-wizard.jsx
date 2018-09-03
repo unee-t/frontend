@@ -202,12 +202,18 @@ class ReportWizard extends Component {
             {makeCreationButton('Add room', () => {})}
           </div> */}
         </div>
-        <div className='bg-white ph3 pb3 pt4 tr scroll-shadow-1 z-999'>
-          <div className='dib flex justify-end items-center'>
-            {isDraft ? (
+        <div className='bg-white tr scroll-shadow-1 z-999'>
+          {isDraft ? (
+            <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
+              <RaisedButton
+                onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
+              >
+                <span className='bondi-blue mh4'>
+                  Preview
+                </span>
+              </RaisedButton>
               <RaisedButton
                 className='ml2'
-                key='confirm'
                 primary
                 onClick={() => dispatch(push(`${match.url}/confirm`))}
               >
@@ -215,19 +221,29 @@ class ReportWizard extends Component {
                   Complete
                 </span>
               </RaisedButton>
-            ) : [
-              (
+            </div>
+          ) : (
+            <div className='dib ph3 pb3 pt2'>
+              <div className='flex justify-end items-center'>
                 <div key='text' className='f5 i moon-gray'>
                   This report has been finalized
                 </div>
-              ),
-              (
                 <FontIcon key='icon' className='material-icons ml2' color='var(--success-green)'>
                   check_circle
                 </FontIcon>
-              )
-            ]}
-          </div>
+              </div>
+              <div className='tr mt2'>
+                <RaisedButton
+                  primary
+                  onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
+                >
+                  <span className='white mh4'>
+                    Preview & Endorse
+                  </span>
+                </RaisedButton>
+              </div>
+            </div>
+          )}
         </div>
         {isDraft && (
           <Route exact path={`${match.url}/confirm`} children={({ match }) => (

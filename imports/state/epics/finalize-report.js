@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Subject } from 'rxjs/Subject'
-import { go } from 'react-router-redux'
+import { push } from 'react-router-redux'
 import { of } from 'rxjs/observable/of'
 import { merge } from 'rxjs/observable/merge'
 import { collectionName } from '../../api/reports'
@@ -24,7 +24,7 @@ export const finalizeReport = action$ =>
         meteorResult$.complete()
       })
       return merge(
-        of(go(-2)),
+        of(push(`/report/${reportId}/preview`)),
         meteorResult$
       )
     })
