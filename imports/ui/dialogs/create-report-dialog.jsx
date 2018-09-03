@@ -14,7 +14,7 @@ import { createReport, clearReportCreateError } from '../report-wizard/report-wi
 
 function creationTime () {
   const creationTime = (new Date()).toISOString()
-  return moment(creationTime).format('DD-MM-YYYY')
+  return moment(creationTime).format('DD-MMM-YYYY')
 }
 
 class CreateReportDialog extends Component {
