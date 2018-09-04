@@ -115,6 +115,7 @@ class CaseWizard extends Component {
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
     const { category, subCategory } = optional
+    const defaultValue = unitItem && unitItem.components.find(({default_assigned_to: assignedTo}) => assignedTo === userBzLogin).name
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
@@ -220,7 +221,7 @@ class CaseWizard extends Component {
             <RadioButtonGroup
               name='assignedUnitRole'
               onChange={this.handleRoleChanged}
-              valueSelected={assignedUnitRole}
+              valueSelected={assignedUnitRole || defaultValue}
             >
               {
                 unitItem.components
