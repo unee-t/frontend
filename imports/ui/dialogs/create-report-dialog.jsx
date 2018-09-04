@@ -77,7 +77,6 @@ class CreateReportDialog extends Component {
               backgroundColor='var(--bondi-blue)'
               type='submit'
               onClick={() => this.populateTitle()}
-              
             >
               {inProgress ? (
                 <div className='absolute top-0 right-0 bottom-0 left-0'>
