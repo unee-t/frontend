@@ -12,16 +12,11 @@ import ErrorDialog from '../dialogs/error-dialog'
 import { modalTitleStyle, closeDialogButtonStyle } from './generic-dialog.mui-styles'
 import { createReport, clearReportCreateError } from '../report-wizard/report-wizard.actions'
 
-function creationTime () {
-  const creationTime = (new Date()).toISOString()
-  return moment(creationTime).format('DD/MM/YYYY')
-}
-
 class CreateReportDialog extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      reportTitle: `${creationTime()} ${this.props.unitName}`
+      reportTitle: ''
     }
   }
   componentDidUpdate (prevProps) {
@@ -31,12 +26,26 @@ class CreateReportDialog extends Component {
       }
     }, 300)
   }
+
+  creationTime () {
+    const creationTime = (new Date()).toISOString()
+    return moment(creationTime).format('DD/MM/YYYY')
+  }
+
+  populateTitle = () => {
+    const { reportTitle } = this.state
+    if (reportTitle === '') {
+      this.setState({reportTitle: `${this.creationTime()} ${this.props.unitName}`})
+    }
+  }
+
   handleSubmit = evt => {
     evt.preventDefault()
     const { reportTitle } = this.state
     const { unitName } = this.props
     this.props.dispatch(createReport(unitName, reportTitle))
   }
+
   render () {
     const { show, onDismissed, inProgress, error, dispatch } = this.props
     const { reportTitle } = this.state
@@ -54,7 +63,11 @@ class CreateReportDialog extends Component {
           </button>
         )}
         <form onSubmit={this.handleSubmit}>
-          <InputRow label='Report title' value={reportTitle}
+          <InputRow
+            label='Report title'
+            value={reportTitle}
+            isMultiLine
+            placeholder={`${this.creationTime()} ${this.props.unitName}`}
             onChange={(evt, val) => this.setState({reportTitle: val})}
             inpRef={el => { this.titleInputEl = el }}
             disabled={inProgress}
@@ -62,8 +75,9 @@ class CreateReportDialog extends Component {
           <div className='tr mt2'>
             <RaisedButton
               backgroundColor='var(--bondi-blue)'
-              disabled={!reportTitle || reportTitle.length === 0 || inProgress}
               type='submit'
+              onClick={() => this.populateTitle()}
+              
             >
               {inProgress ? (
                 <div className='absolute top-0 right-0 bottom-0 left-0'>
