@@ -65,6 +65,7 @@ class CreateReportDialog extends Component {
         <form onSubmit={this.handleSubmit}>
           <InputRow
             label='Report title'
+            isFloatingLabelFixed
             value={reportTitle}
             isMultiLine
             placeholder={`${this.creationTime()} ${this.props.unitName}`}
