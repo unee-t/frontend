@@ -62,6 +62,18 @@ class CaseWizard extends Component {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
     }
+    const { unitItem, userBzLogin } = this.props
+    const { inputValues } = this.state
+    if (unitItem && prevProps.unitItem === null) {
+      const defaultValue = unitItem.components.find(({default_assigned_to: assignedTo}) => assignedTo === userBzLogin).name
+      this.setState({
+        inputValues: Object.assign({}, inputValues, {
+          mandatory: Object.assign({}, inputValues.mandatory, {
+            assignedUnitRole: defaultValue
+          })
+        })
+      })
+    }
   }
 
   handleRoleChanged = (evt, val) => {
