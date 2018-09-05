@@ -16,7 +16,6 @@ class UnverifiedWarning extends React.Component {
     const notification = resendSuccess ? ' The email has been sent.' : 'Resend Email Verification'
     return !isUserVerified ? (
       <div className='bg-warn-pale-red card-shadow-1 tc pv2 warn-plain-red f7'>
-        {/* <div className='f6 fw5'>Verify your email address</div> */}
         <div className='mb0 mt2'>
           <span className='fw6'>Your email address {email} has not been verified yet. </span>
            Please check your email for the verification email.
@@ -39,8 +38,7 @@ UnverifiedWarning.propTypes = {
 
 export default connect(
   ({resendVerificationState}) => ({
-    resendSuccess: resendVerificationState.resendSuccess,
-    resendError: resendVerificationState.error
+    resendSuccess: resendVerificationState.resendSuccess
   }) // Redux store to props
 )(createContainer(
   () => {
