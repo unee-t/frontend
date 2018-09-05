@@ -41,10 +41,10 @@ class CaseWizard extends Component {
       inputValues: {
         mandatory: {
           title: '',
-          details: '',
           assignedUnitRole: null
         },
         optional: {
+          details: '',
           category: null,
           subCategory: null
         }
@@ -96,6 +96,9 @@ class CaseWizard extends Component {
     evt.preventDefault()
     if (!this.checkFormInvalid()) {
       const { inputValues: { mandatory, optional }, newUserEmail, newUserIsOccupant } = this.state
+      if (optional.details === '') {
+        optional.details = mandatory.title
+      }
       this.props.dispatch(createCase(
         Object.assign(
           {},
@@ -155,7 +158,7 @@ class CaseWizard extends Component {
               })}
             />
             <TextField
-              floatingLabelText='Details *'
+              floatingLabelText='Details'
               floatingLabelShrinkStyle={textInputFloatingLabelStyle}
               underlineFocusStyle={textInputUnderlineFocusStyle}
               textareaStyle={textInputStyle}
@@ -166,7 +169,7 @@ class CaseWizard extends Component {
               value={details}
               onChange={evt => this.setState({
                 inputValues: Object.assign({}, inputValues, {
-                  mandatory: Object.assign({}, mandatory, {
+                  optional: Object.assign({}, optional, {
                     details: evt.target.value
                   })
                 })
