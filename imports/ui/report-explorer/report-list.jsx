@@ -14,15 +14,12 @@ export function ReportList ({ allReports, onItemClick }) {
         <li key={reportItem.id} className='h2-5 bt b--black-10'>
           <div className='flex items-center'>
             <Link
-              className={'link flex-grow ellipsis ml3 pl1 bondi-blue'}
+              className={'link flex-grow ellipsis ml3 pl1 pv3 bondi-blue'}
               to={`report/${reportItem.id}/review`}
               onClick={onItemClick}
             >
               {reportItem.title}
             </Link>
-            <IconButton>
-              <FontIcon className='material-icons' color={moreIconColor}>more_horiz</FontIcon>
-            </IconButton>
           </div>
         </li>
       )}
