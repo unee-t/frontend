@@ -3,18 +3,27 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
+import { resendVerification } from './unverified-warning.actions'
 
 class UnverifiedWarning extends React.Component {
+  handleResendClicked = () => {
+    const { dispatch, email } = this.props
+    dispatch(resendVerification(email))
+  }
+
   render () {
-    const { isUserVerified, email } = this.props
+    const { isUserVerified, email, resendSuccess } = this.props
+    const notification = resendSuccess ? ' The email has been sent.' : 'Resend Email Verification'
     return !isUserVerified ? (
-      <div className='bg-warn-pale-red card-shadow-1 tc pt2 pb3 warn-plain-red'>
-        <div className='f6 fw5'>Verify your email address</div>
-        <p className='f7 mb0 mt2'>
-          Your email address {email} has not been verified yet.
-          Confirm your email to receive updates on your cases.
-          <a>Resend email verification</a>.
-        </p>
+      <div className='bg-warn-pale-red card-shadow-1 tc pv2 warn-plain-red f7'>
+        <div className='mb0 mt2'>
+          <span className='fw6'>Your email address {email} has not been verified yet. </span>
+           Please check your email for the verification email.
+        </div>
+        <div className={'mt2 ' + (!resendSuccess ? 'underline' : '')}
+          onClick={() => this.handleResendClicked()}>
+          {notification}
+        </div>
       </div>
     ) : null
   }
@@ -22,12 +31,15 @@ class UnverifiedWarning extends React.Component {
 
 UnverifiedWarning.propTypes = {
   isUserVerified: PropTypes.bool.isRequired,
-  email: PropTypes.string.isRequired
+  email: PropTypes.string.isRequired,
+  resendSuccess: PropTypes.bool
 
 }
 
 export default connect(
-  () => ({}) // Redux store to props
+  ({resendVerificationState}) => ({
+    resendSuccess: resendVerificationState.resendSuccess
+  }) // Redux store to props
 )(createContainer(
   () => {
     return {

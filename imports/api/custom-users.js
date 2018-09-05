@@ -148,5 +148,10 @@ Meteor.methods({
         [`notificationSettings.${settingName}`]: !!isOn
       }
     })
+  },
+  'resendEmail': function () {
+    if (Meteor.isServer) {
+      return Accounts.sendVerificationEmail(Meteor.userId())
+    }
   }
 })
