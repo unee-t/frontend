@@ -62,6 +62,18 @@ class CaseWizard extends Component {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
     }
+    const { unitItem, userBzLogin } = this.props
+    const { inputValues } = this.state
+    if (unitItem && prevProps.unitItem === null) {
+      const defaultValue = unitItem.components.find(({default_assigned_to: assignedTo}) => assignedTo === userBzLogin).name
+      this.setState({
+        inputValues: Object.assign({}, inputValues, {
+          mandatory: Object.assign({}, inputValues.mandatory, {
+            assignedUnitRole: defaultValue
+          })
+        })
+      })
+    }
   }
 
   handleRoleChanged = (evt, val) => {
@@ -115,7 +127,6 @@ class CaseWizard extends Component {
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
     const { category, subCategory } = optional
-    const defaultValue = unitItem && unitItem.components.find(({default_assigned_to: assignedTo}) => assignedTo === userBzLogin).name
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
@@ -221,7 +232,7 @@ class CaseWizard extends Component {
             <RadioButtonGroup
               name='assignedUnitRole'
               onChange={this.handleRoleChanged}
-              valueSelected={assignedUnitRole || defaultValue}
+              valueSelected={assignedUnitRole}
             >
               {
                 unitItem.components
