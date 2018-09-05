@@ -96,12 +96,12 @@ if (Meteor.isClient) {
       expect(findLabel(comp, moment(closePastDate).format('MMMM DD'))).to.have.lengthOf(1)
     })
 
-    it('should render a day label with as "{month name} {date}, {year}" for anything over a year ago', () => {
+    it('should render a day label with as "{year}-{month}-{day}" for anything over a year ago', () => {
       const pastDate = new Date(Date.now() - 366 * 24 * 36e5) // 366 days ago
 
       const comp = shallow(<CaseMessages caseItem={caseItem} comments={[generateComment(pastDate.getTime())]} {...emptyParams} />)
 
-      expect(findLabel(comp, moment(pastDate).format('MMMM DD, YYYY'))).to.have.lengthOf(1)
+      expect(findLabel(comp, moment(pastDate).format('YYYY-MM-DD'))).to.have.lengthOf(1)
     })
 
     it('should render a self made comment right aligned and with no creator label', () => {
