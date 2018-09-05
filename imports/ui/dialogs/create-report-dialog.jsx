@@ -27,23 +27,21 @@ class CreateReportDialog extends Component {
     }, 300)
   }
 
-  creationTime () {
-    const creationTime = (new Date()).toISOString()
-    return moment(creationTime).format('DD/MM/YYYY')
-  }
-
-  populateTitle = () => {
-    const { reportTitle } = this.state
-    if (reportTitle === '') {
-      this.setState({reportTitle: `${this.creationTime()} ${this.props.unitName}`})
-    }
+  placeholder () {
+    const { unitName } = this.props
+    const creationTime = moment().format('DD/MM/YYYY')
+    return `${creationTime} ${unitName}`
   }
 
   handleSubmit = evt => {
     evt.preventDefault()
     const { reportTitle } = this.state
-    const { unitName } = this.props
-    this.props.dispatch(createReport(unitName, reportTitle))
+    const { unitName, dispatch } = this.props
+    if (reportTitle === '') {
+      dispatch(createReport(unitName, this.placeholder()))
+    } else {
+      dispatch(createReport(unitName, reportTitle))
+    }
   }
 
   render () {
@@ -68,7 +66,7 @@ class CreateReportDialog extends Component {
             isFloatingLabelFixed
             value={reportTitle}
             isMultiLine
-            placeholder={`${this.creationTime()} ${this.props.unitName}`}
+            placeholder={this.placeholder()}
             onChange={(evt, val) => this.setState({reportTitle: val})}
             inpRef={el => { this.titleInputEl = el }}
             disabled={inProgress}
@@ -77,7 +75,6 @@ class CreateReportDialog extends Component {
             <RaisedButton
               backgroundColor='var(--bondi-blue)'
               type='submit'
-              onClick={() => this.populateTitle()}
             >
               {inProgress ? (
                 <div className='absolute top-0 right-0 bottom-0 left-0'>
