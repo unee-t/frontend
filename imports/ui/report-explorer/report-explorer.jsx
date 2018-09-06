@@ -43,7 +43,7 @@ class ReportExplorer extends Component {
     (reportList, filterStatus, myInvolvement) => {
       const statusFilter = filterStatus ? report => report.status === 'CONFIRMED' : report => report.status === 'UNCONFIRMED'
       const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
-      var unitDict = reportList.reduce((dict, reportItem) => {
+      const unitDict = reportList.reduce((dict, reportItem) => {
         if (statusFilter(reportItem) && creatorFilter(reportItem)) {
           const { selectedUnit: unitTitle, unitList } = reportItem
           const metaData = (unitList === undefined || unitList[0] === undefined) ? 'not_listed' : unitList[0].metaData
@@ -71,8 +71,8 @@ class ReportExplorer extends Component {
   render () {
     const { isLoading, dispatch, reportList } = this.props
     const { filterStatus, myInvolvement } = this.state
-    const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     if (isLoading) return <Preloader />
+    const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar title='My Reports' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
