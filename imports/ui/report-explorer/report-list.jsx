@@ -1,11 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import IconButton from 'material-ui/IconButton'
-import FontIcon from 'material-ui/FontIcon'
-import {
-  moreIconColor
-} from '../case-explorer/case-explorer.mui-styles'
 
 export function ReportList ({ allReports, onItemClick }) {
   return (
