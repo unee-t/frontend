@@ -191,7 +191,7 @@ class Unit extends Component {
                                 <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
                                   <div className='mid-gray ellipsis'>{title}</div>
                                   <div className='silver mt1 f7 ellipsis'>
-                                    Created on {moment(date).format('DD/MM/YYYY')}
+                                    Created on {moment(date).format('YYYY-MM-DD')}
                                   </div>
                                 </div>
                               </div>

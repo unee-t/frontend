@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
+import moment from 'moment'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -25,12 +26,24 @@ class CreateReportDialog extends Component {
       }
     }, 300)
   }
+
+  placeholder () {
+    const { unitName } = this.props
+    const creationTime = moment().format('DD/MM/YYYY')
+    return `${creationTime} ${unitName}`
+  }
+
   handleSubmit = evt => {
     evt.preventDefault()
     const { reportTitle } = this.state
-    const { unitName } = this.props
-    this.props.dispatch(createReport(unitName, reportTitle))
+    const { unitName, dispatch } = this.props
+    if (reportTitle === '') {
+      dispatch(createReport(unitName, this.placeholder()))
+    } else {
+      dispatch(createReport(unitName, reportTitle))
+    }
   }
+
   render () {
     const { show, onDismissed, inProgress, error, dispatch } = this.props
     const { reportTitle } = this.state
@@ -48,7 +61,12 @@ class CreateReportDialog extends Component {
           </button>
         )}
         <form onSubmit={this.handleSubmit}>
-          <InputRow label='Report title' value={reportTitle}
+          <InputRow
+            label='Report title'
+            isFloatingLabelFixed
+            value={reportTitle}
+            isMultiLine
+            placeholder={this.placeholder()}
             onChange={(evt, val) => this.setState({reportTitle: val})}
             inpRef={el => { this.titleInputEl = el }}
             disabled={inProgress}
@@ -56,7 +74,6 @@ class CreateReportDialog extends Component {
           <div className='tr mt2'>
             <RaisedButton
               backgroundColor='var(--bondi-blue)'
-              disabled={!reportTitle || reportTitle.length === 0 || inProgress}
               type='submit'
             >
               {inProgress ? (

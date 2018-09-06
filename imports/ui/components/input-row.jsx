@@ -9,11 +9,12 @@ import {
 
 export default class InputRow extends Component {
   render () {
-    const { inpType, inpRef, label, placeholder, errorText, disabled, value, onChange, isMultiLine } = this.props
+    const { inpType, inpRef, label, isFloatingLabelFixed, placeholder, errorText, disabled, value, onChange, isMultiLine } = this.props
     const type = inpType || 'text'
     return (
       <TextField
         floatingLabelText={label}
+        floatingLabelFixed={!!isFloatingLabelFixed}
         floatingLabelShrinkStyle={textInputFloatingLabelStyle}
         underlineFocusStyle={textInputUnderlineFocusStyle}
         inputStyle={textInputStyle}

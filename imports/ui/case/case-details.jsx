@@ -345,7 +345,7 @@ class CaseDetails extends Component {
           />
           {solutionDeadline && (
             <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(solutionDeadline).format('D MMM YYYY, h:mm')} hrs
+              Deadline: {moment(solutionDeadline).format('YYYY-MM-DD, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
@@ -358,7 +358,7 @@ class CaseDetails extends Component {
           />
           {solutionDeadline && (
             <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(nextStepsBy).format('D MMM YYYY, h:mm')} hrs
+              Deadline: {moment(nextStepsBy).format('YYYY-MM-DD, h:mm')} hrs
             </div>
           )}
         </InfoItemContainer>
