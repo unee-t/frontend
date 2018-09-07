@@ -42,16 +42,23 @@ const withRolesData = unitAssocHelper(UnitRolesData, unitRolesCollName, 'unitBzI
 
 export const getUnitRoles = unit => {
   // Resolving roles via the newer mongo collection
-  const roleUsers = UnitRolesData.find({unitBzId: unit.id}).fetch().reduce((all, roleObj) => {
+  const roleDocs = UnitRolesData.find({unitBzId: unit.id}).fetch()
+
+  // Prefetching all user docs to optimize query performance (single query vs one for each user)
+  const userIds = roleDocs.reduce((all, roleObj) => all.concat(roleObj.members.map(mem => mem.id)), [])
+  const userDocs = Meteor.users.find({_id: {$in: userIds}})
+
+  // Constructing the user role objects array similar to the way it is done from BZ's product components below
+  const roleUsers = roleDocs.reduce((all, roleObj) => {
     roleObj.members.forEach(memberDesc => {
-      const user = Meteor.users.findOne(memberDesc.id)
-      if (user) { // checking in case client side code is running this and users are hidden
-        all.push({
-          login: user.bugzillaCreds.login,
-          role: roleObj.roleType,
-          isOccupant: memberDesc.isOccupant
-        })
-      }
+
+      // Using the prefetched array to find the user doc
+      const user = userDocs.find(doc => doc._id === memberDesc.id)
+      all.push({
+        login: user.bugzillaCreds.login,
+        role: roleObj.roleType,
+        isOccupant: memberDesc.isOccupant
+      })
     })
     return all
   }, [])
