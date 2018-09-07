@@ -45,8 +45,7 @@ class ReportExplorer extends Component {
       const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (statusFilter(reportItem) && creatorFilter(reportItem)) {
-          const { selectedUnit: unitTitle } = reportItem
-          const metaData = reportItem.unitMetaData()
+          const { selectedUnit: unitTitle, unitMetaData: metaData } = reportItem
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
           const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType, bzId}
@@ -123,7 +122,10 @@ export default connect(
     }
   })
   return {
-    reportList: Reports.find().fetch(),
+    reportList: Reports.find().fetch().map(report => ({
+      unitMetaData: report.unitMetaData(),
+      ...report
+    })),
     isLoading: !reportsHandle.ready(),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
     reportsError
