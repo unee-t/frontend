@@ -44,17 +44,18 @@ class ReportExplorer extends Component {
       const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (statusFilter(reportItem) && creatorFilter(reportItem)) {
-          const { selectedUnit: unitTitle, unitMetaData: metaData } = reportItem
+          const { selectedUnit: unitBzName, unitMetaData: metaData } = reportItem
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
-          const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType, bzId}
+          const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
+          const unitDesc = dict[unitBzName] = dict[unitBzName] || {reports: [], unitType, bzId, unitTitle}
           unitDesc.reports.push(reportItem)
         }
         return dict
       }, {})
 
-      return Object.keys(unitDict).reduce((all, unitTitle) => {
-        const { reports, unitType, bzId } = unitDict[unitTitle]
+      return Object.keys(unitDict).reduce((all, unitBzName) => {
+        const { reports, unitType, bzId, unitTitle } = unitDict[unitBzName]
         all.push({
           unitTitle,
           unitType,
