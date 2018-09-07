@@ -51,7 +51,6 @@ export const getUnitRoles = unit => {
   // Constructing the user role objects array similar to the way it is done from BZ's product components below
   const roleUsers = roleDocs.reduce((all, roleObj) => {
     roleObj.members.forEach(memberDesc => {
-
       // Using the prefetched array to find the user doc
       const user = userDocs.find(doc => doc._id === memberDesc.id)
       all.push({
