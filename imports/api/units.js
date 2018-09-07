@@ -41,6 +41,26 @@ const withMetaData = unitAssocHelper(UnitMetaData, unitMetaCollName, 'bzId')
 const withRolesData = unitAssocHelper(UnitRolesData, unitRolesCollName, 'unitBzId')
 
 export const getUnitRoles = unit => {
+  // Resolving roles via the newer mongo collection
+  const roleUsers = UnitRolesData.find({unitBzId: unit.id}).fetch().reduce((all, roleObj) => {
+    roleObj.members.forEach(memberDesc => {
+      const user = Meteor.users.findOne(memberDesc.id)
+      if (user) { // checking in case client side code is running this and users are hidden
+        all.push({
+          login: user.bugzillaCreds.login,
+          role: roleObj.roleType,
+          isOccupant: memberDesc.isOccupant
+        })
+      }
+    })
+    return all
+  }, [])
+
+  if (roleUsers.length) {
+    return roleUsers
+  }
+
+  // Legacy method used as fallback
   const invMatcher = makeInvitationMatcher(unit)
   invMatcher.receivedInvites.$elemMatch.done = true
   return _.uniqBy(
@@ -60,7 +80,7 @@ export const getUnitRoles = unit => {
         }, invMatcher)
       } : {}
     ).fetch()
-    // Mapping the users to the same interface as the first half of the array
+      // Mapping the users to the same interface as the first half of the array
       .map(({ receivedInvites: [{ role, isOccupant }], bugzillaCreds: { login } }) => ({
         login,
         role,
