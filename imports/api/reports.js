@@ -7,8 +7,9 @@ import publicationFactory from './base/rest-resource-factory'
 import { getUnitRoles } from './units'
 import ReportSnapshots from './report-snapshots'
 import { attachmentTextMatcher } from '../util/matchers'
+import { makeAssociationFactory, withDocs } from './base/associations-helper'
 import UnitRolesData from './unit-roles-data'
-import UnitMetaData from './unit-meta-data'
+import UnitMetaData, { collectionName as unitMetaCollName} from './unit-meta-data'
 import {
   caseServerFieldMapping,
   REPORT_KEYWORD,
@@ -86,34 +87,49 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
 let publicationObj
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
+  const associationFactory = makeAssociationFactory(collectionName)
   Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
     uriTemplate: idUrlTemplate
   }))
 
-  Meteor.publish(`${collectionName}.associatedWithMe`, publicationObj.publishByCustomQuery({
-    uriTemplate: () => '/rest/bug',
-    queryBuilder: subHandle => {
-      if (!subHandle.userId) {
-        return {}
+  Meteor.publish(`${collectionName}.associatedWithMe`, associationFactory(
+    publicationObj.publishByCustomQuery({
+      uriTemplate: () => '/rest/bug',
+      queryBuilder: subHandle => {
+        if (!subHandle.userId) {
+          return {}
+        }
+        const currUser = Meteor.users.findOne(subHandle.userId)
+        const { login: userIdentifier } = currUser.bugzillaCreds
+        return caseQueryBuilder(
+          [
+            keywords,
+            ...associatedCasesQueryExps(userIdentifier)
+          ],
+          [
+            'product',
+            'summary',
+            'id',
+            'status',
+            'creation_time',
+            'assigned_to'
+          ]
+        )
       }
-      const currUser = Meteor.users.findOne(subHandle.userId)
-      const { login: userIdentifier } = currUser.bugzillaCreds
-      return caseQueryBuilder(
-        [
-          keywords,
-          ...associatedCasesQueryExps(userIdentifier)
-        ],
-        [
-          'product',
-          'summary',
-          'id',
-          'status',
-          'creation_time',
-          'assigned_to'
-        ]
-      )
-    }
-  }))
+    }),
+    withDocs({
+      cursorMaker: publishedItem => {
+        return UnitMetaData.find({
+          bzName: publishedItem.selectedUnit
+        }, {
+          bzId: 1,
+          bzName: 1,
+          unitType: 1
+        })
+      },
+      collectionName: unitMetaCollName
+    })
+  ))
 
   Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
     uriTemplate: () => '/rest/bug',
@@ -148,6 +164,11 @@ if (Meteor.isServer) {
 let Reports
 if (Meteor.isClient) {
   Reports = new Mongo.Collection(collectionName)
+  Reports.helpers({
+    unitMetaData () {
+      return UnitMetaData.findOne({bzName: this.selectedUnit})
+    }
+  })
 }
 
 const bugById = (id, apiKey) => bugzillaApi.callAPI('get', `/rest/bug/${id}`, {api_key: apiKey}, false, true).data.bugs[0]

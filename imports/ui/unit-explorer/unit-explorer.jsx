@@ -41,10 +41,10 @@ class UnitExplorer extends Component {
 
   render () {
     const { isLoading, unitList, dispatch, currentUserId } = this.props
-    const activeUnits = unitList.filter(unitItem => unitItem.metaData && !unitItem.metaData.disabled)
-    const disabledUnits = unitList.filter(unitItem => unitItem.metaData && unitItem.metaData.disabled)
 
     if (isLoading) return <Preloader />
+    const activeUnits = unitList.filter(unitItem => unitItem.metaData && !unitItem.metaData.disabled)
+    const disabledUnits = unitList.filter(unitItem => unitItem.metaData && unitItem.metaData.disabled)
 
     return (
       <div className='flex flex-column flex-grow full-height'>

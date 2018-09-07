@@ -8,7 +8,6 @@ import memoizeOne from 'memoize-one'
 import Reports, { collectionName } from '../../api/reports'
 import Preloader from '../preloader/preloader'
 import { setDrawerState, storeBreadcrumb } from '../general-actions'
-import Units, { collectionName as unitsCollName } from '../../api/units'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
@@ -43,36 +42,27 @@ class ReportExplorer extends Component {
     (reportList, filterStatus, myInvolvement) => {
       const statusFilter = filterStatus ? report => report.status === 'CONFIRMED' : report => report.status === 'UNCONFIRMED'
       const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
-      var unitDict = reportList.reduce((dict, reportItem) => {
+      const unitDict = reportList.reduce((dict, reportItem) => {
         if (statusFilter(reportItem) && creatorFilter(reportItem)) {
-          const { selectedUnit: unitTitle, unitList } = reportItem
-          const metaData = (unitList === undefined || unitList[0] === undefined) ? 'not_listed' : unitList[0].metaData
-          const unitType = metaData === undefined ? 'not_listed' : metaData.unitType
-          const bzId = metaData === undefined ? 'not_listed' : metaData.bzId
-          const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType, bzId}
-          unitDesc.reports.push(reportItem)
+          const { selectedUnit: unitBzName, unitMetaData: metaData } = reportItem
+          const unitType = metaData ? metaData.unitType : 'not_listed'
+          const bzId = metaData ? metaData.bzId : 'not_listed'
+          const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
+          const unitDesc = dict[unitBzName] = dict[unitBzName] || {items: [], unitType, bzId, unitTitle}
+          unitDesc.items.push(reportItem)
         }
         return dict
       }, {})
 
-      return Object.keys(unitDict).reduce((all, unitTitle) => {
-        const { reports, unitType, bzId } = unitDict[unitTitle]
-        all.push({
-          unitTitle,
-          unitType,
-          bzId,
-          reports
-        })
-        return all
-      }, [])
+      return Object.values(unitDict)
     }
   )
 
   render () {
     const { isLoading, dispatch, reportList } = this.props
     const { filterStatus, myInvolvement } = this.state
-    const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     if (isLoading) return <Preloader />
+    const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar title='My Reports' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
@@ -114,7 +104,6 @@ ReportExplorer.propTypes = {
 }
 
 let reportsError
-let unitsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
@@ -124,18 +113,12 @@ export default connect(
     }
   })
   return {
-    reportList: Reports.find().fetch().map(reportItem => Object.assign({}, reportItem, {
-      unitHandle: Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit),
-      unitList: Units.find({name: reportItem.selectedUnit}).fetch().map(unit => Object.assign({}, unit, {
-        metaData: unit.metaData()
-      }))
+    reportList: Reports.find().fetch().map(report => ({
+      unitMetaData: report.unitMetaData(),
+      ...report
     })),
     isLoading: !reportsHandle.ready(),
-    units: Units.find().fetch().map(unit => Object.assign({}, unit, {
-      metaData: unit.metaData()
-    })),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
-    reportsError,
-    unitsError
+    reportsError
   }
 }, ReportExplorer))
