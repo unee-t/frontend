@@ -110,10 +110,10 @@ class CaseExplorer extends Component {
         all.push({
           latestCaseUpdate: cases[0].latestUpdate, // The first case has to be latest due to the previous sort
           hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts), // true if any case has unreads
+          items: cases,
           unitType,
           unitTitle,
-          bzId,
-          cases
+          bzId
         })
         return all
       }, []).sort((a, b) => b.latestCaseUpdate - a.latestCaseUpdate) // Sorting by the latest case update for each

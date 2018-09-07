@@ -47,19 +47,9 @@ export class UnitGroupList extends Component {
     const { unitGroupList, name, expandedListRenderer } = this.props
     const { expandedUnits } = this.state
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
-    const unitItems = unitGroupList.map(unit => {
-      const { unitTitle, unitType, bzId, reports, cases, hasUnread } = unit
-      return {
-        unitTitle,
-        unitType,
-        bzId,
-        items: reports || cases,
-        hasUnread
-      }
-    })
     return (
       <div>
-        {unitItems.map(({ unitTitle, unitType, bzId, items, hasUnread }) =>
+        {unitGroupList.map(({ unitTitle, unitType, bzId, items, hasUnread }) =>
           <div key={unitTitle}>
             <div className='flex items-center h3 bt b--light-gray bg-white'
               onClick={evt => this.handleExpandUnit(evt, unitTitle)}

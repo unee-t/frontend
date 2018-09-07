@@ -48,22 +48,13 @@ class ReportExplorer extends Component {
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
           const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
-          const unitDesc = dict[unitBzName] = dict[unitBzName] || {reports: [], unitType, bzId, unitTitle}
-          unitDesc.reports.push(reportItem)
+          const unitDesc = dict[unitBzName] = dict[unitBzName] || {items: [], unitType, bzId, unitTitle}
+          unitDesc.items.push(reportItem)
         }
         return dict
       }, {})
 
-      return Object.keys(unitDict).reduce((all, unitBzName) => {
-        const { reports, unitType, bzId, unitTitle } = unitDict[unitBzName]
-        all.push({
-          unitTitle,
-          unitType,
-          bzId,
-          reports
-        })
-        return all
-      }, [])
+      return Object.values(unitDict)
     }
   )
 
