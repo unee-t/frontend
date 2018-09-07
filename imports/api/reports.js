@@ -207,7 +207,6 @@ Meteor.methods({
       }
       const currUser = Meteor.user()
 
-      // TODO: use UnitRolesData over this, and then this as a fallback
       const currUserRole = getUnitRoles(unitItem).find(role => role.login === currUser.bugzillaCreds.login)
 
       if (!currUserRole) {
