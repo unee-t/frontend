@@ -45,10 +45,10 @@ class ReportExplorer extends Component {
       const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (statusFilter(reportItem) && creatorFilter(reportItem)) {
-          const { selectedUnit: unitTitle, unitList } = reportItem
-          const metaData = (unitList === undefined || unitList[0] === undefined) ? 'not_listed' : unitList[0].metaData
-          const unitType = metaData === undefined ? 'not_listed' : metaData.unitType
-          const bzId = metaData === undefined ? 'not_listed' : metaData.bzId
+          const { selectedUnit: unitTitle } = reportItem
+          const metaData = reportItem.unitMetaData()
+          const unitType = metaData ? metaData.unitType : 'not_listed'
+          const bzId = metaData ? metaData.bzId : 'not_listed'
           const unitDesc = dict[unitTitle] = dict[unitTitle] || {reports: [], unitType, bzId}
           unitDesc.reports.push(reportItem)
         }
@@ -114,7 +114,6 @@ ReportExplorer.propTypes = {
 }
 
 let reportsError
-let unitsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
@@ -124,18 +123,9 @@ export default connect(
     }
   })
   return {
-    reportList: Reports.find().fetch().map(reportItem => Object.assign({}, reportItem, {
-      unitHandle: Meteor.subscribe(`${unitsCollName}.byNameWithRoles`, reportItem.selectedUnit),
-      unitList: Units.find({name: reportItem.selectedUnit}).fetch().map(unit => Object.assign({}, unit, {
-        metaData: unit.metaData()
-      }))
-    })),
+    reportList: Reports.find().fetch(),
     isLoading: !reportsHandle.ready(),
-    units: Units.find().fetch().map(unit => Object.assign({}, unit, {
-      metaData: unit.metaData()
-    })),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
-    reportsError,
-    unitsError
+    reportsError
   }
 }, ReportExplorer))
