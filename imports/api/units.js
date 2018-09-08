@@ -46,7 +46,7 @@ export const getUnitRoles = unit => {
 
   // Prefetching all user docs to optimize query performance (single query vs one for each user)
   const userIds = roleDocs.reduce((all, roleObj) => all.concat(roleObj.members.map(mem => mem.id)), [])
-  const userDocs = Meteor.users.find({_id: {$in: userIds}})
+  const userDocs = Meteor.users.find({_id: {$in: userIds}}).fetch()
 
   // Constructing the user role objects array similar to the way it is done from BZ's product components below
   const roleUsers = roleDocs.reduce((all, roleObj) => {
@@ -160,6 +160,11 @@ if (Meteor.isServer) {
         ),
         withMetaData(metaDataFields || {
           ownerIds: 0
+        }),
+        withRolesData({
+          unitBzId: 1,
+          roleType: 1,
+          members: 1
         })
       ],
       funcName,
