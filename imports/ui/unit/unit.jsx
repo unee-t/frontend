@@ -127,6 +127,19 @@ class Unit extends Component {
     ))
   }
 
+  reportSortMenu (reportSort) {
+    const timestamp = ['Date Created', 'Date Updated']
+    return timestamp.map((name) => (
+      <MenuItem
+        key={name}
+        insetChildren
+        checked={reportSort && reportSort.indexOf(name) > -1}
+        value={name}
+        primaryText={name}
+      />
+    ))
+  }
+
   filteredReportItems () {
     const { reportList, currentUser } = this.props
     const { reportStatus } = this.state
@@ -162,7 +175,7 @@ class Unit extends Component {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe, reportStatus } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, reportStatus, reportSort } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -255,14 +268,24 @@ class Unit extends Component {
                   <div className='flex-grow bg-very-light-gray'>
                     {reportList.length ? (
                       <div>
-                        <SelectField
-                          multiple
-                          hintText='View: All Reports'
-                          value={reportStatus}
-                          onChange={this.handleReportFilterClicked}
-                        >
-                          {this.reportFilterMenu(reportStatus)}
-                        </SelectField>
+                        <div className='flex flex-grow'>
+                          <SelectField
+                            multiple
+                            hintText='View: All Reports'
+                            value={reportStatus}
+                            onChange={this.handleReportFilterClicked}
+                          >
+                            {this.reportFilterMenu(reportStatus)}
+                          </SelectField>
+                          <SelectField
+                            multiple
+                            hintText='Sort by'
+                            value={reportSort}
+                            onChange={this.handleReportFilterClicked}
+                          >
+                            {this.reportSortMenu(reportSort)}
+                          </SelectField>
+                        </div> 
                         {this.filteredReportItems()}
                       </div>
                     ) : (
