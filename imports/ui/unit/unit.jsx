@@ -26,6 +26,29 @@ import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
 import {ReportIcon} from '../report/report-icon'
+import SelectField from 'material-ui/SelectField'
+
+function NoInspectionReport () {
+  return (
+    <div className='mt5 pt3 tc'>
+      <div className='dib relative'>
+        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
+          content_paste
+        </FontIcon>
+        <div className='absolute bottom-0 right-0 pb1'>
+          <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
+            <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+              add_circle_outline
+            </FontIcon>
+          </div>
+        </div>
+      </div>
+      <div className='mid-gray b lh-copy'>
+        You have no inspection reports yet
+      </div>
+    </div>
+  )
+}
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
@@ -48,7 +71,9 @@ class Unit extends Component {
     this.state = {
       showOpenCases: true,
       sortedCases: [],
-      assignedToMe: false
+      assignedToMe: false,
+      reportStatus: []
+
     }
   }
 
@@ -83,12 +108,61 @@ class Unit extends Component {
       })
     }
   }
+  handleReportFilterClicked = (event, index, reportStatus) => {
+    this.setState({
+      reportStatus: reportStatus
+    })
+  }
+
+  reportFilterMenu (reportStatus) {
+    const status = ['Draft', 'Finalized', 'Created By Me']
+    return status.map((name) => (
+      <MenuItem
+        key={name}
+        insetChildren
+        checked={reportStatus && reportStatus.indexOf(name) > -1}
+        value={name}
+        primaryText={name}
+      />
+    ))
+  }
+
+  filteredReportItems () {
+    const { reportList, currentUser } = this.props
+    const { reportStatus } = this.state
+    const statusFilter = reportStatus.includes('Finalized') ? report => report.status === 'CONFIRMED'
+      : reportStatus.includes('Draft') ? report => report.status === 'UNCONFIRMED' : report => true
+    const creatorFilter = reportStatus.includes('Created By Me') ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
+    const filteredReports = reportList.filter(reportItem => statusFilter(reportItem) && creatorFilter(reportItem))
+
+    return filteredReports.map(({ id, title, status, creation_time: date }) => {
+      const isFinalized = status !== 'UNCONFIRMED'
+      const viewMode = isFinalized ? 'review' : 'draft'
+      return (
+        <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
+          <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
+            <MenuItem innerDivStyle={menuItemDivStyle}>
+              <div className='pv2 flex-grow flex items-center w-100'>
+                <ReportIcon isFinalized={isFinalized} />
+                <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
+                  <div className='mid-gray ellipsis'>{title}</div>
+                  <div className='silver mt1 f7 ellipsis'>
+                    Created on {moment(date).format('YYYY-MM-DD')}
+                  </div>
+                </div>
+              </div>
+            </MenuItem>
+          </Link>
+        </div>
+      )
+    })
+  }
 
   render () {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, reportStatus } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -179,55 +253,20 @@ class Unit extends Component {
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
-                    {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => {
-                      const isFinalized = status !== 'UNCONFIRMED'
-                      const viewMode = isFinalized ? 'review' : 'draft'
-                      return (
-                        <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
-                          <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
-                            <MenuItem innerDivStyle={menuItemDivStyle}>
-                              <div className='pv2 flex-grow flex items-center w-100'>
-                                <ReportIcon isFinalized={isFinalized} />
-                                <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
-                                  <div className='mid-gray ellipsis'>{title}</div>
-                                  <div className='silver mt1 f7 ellipsis'>
-                                    Created on {moment(date).format('YYYY-MM-DD')}
-                                  </div>
-                                </div>
-                              </div>
-                            </MenuItem>
-                          </Link>
-                          {/* isFinalized && (
-                            <IconButton>
-                              <FontIcon
-                                className='material-icons'
-                                color='var(--mid-gray)'
-                                style={{fontSize: '1.25rem'}}
-                              >
-                                launch
-                              </FontIcon>
-                            </IconButton>
-                          ) */}
-                        </div>
-                      )
-                    }) : (
-                      <div className='mt5 pt3 tc'>
-                        <div className='dib relative'>
-                          <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
-                            content_paste
-                          </FontIcon>
-                          <div className='absolute bottom-0 right-0 pb1'>
-                            <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
-                              <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
-                                add_circle_outline
-                              </FontIcon>
-                            </div>
-                          </div>
-                        </div>
-                        <div className='mid-gray b lh-copy'>
-                          You have no inspection reports yet
-                        </div>
+                    {reportList.length ? (
+                      <div>
+                        <SelectField
+                          multiple
+                          hintText='View: All Reports'
+                          value={reportStatus}
+                          onChange={this.handleReportFilterClicked}
+                        >
+                          {this.reportFilterMenu(reportStatus)}
+                        </SelectField>
+                        {this.filteredReportItems()}
                       </div>
+                    ) : (
+                      <NoInspectionReport />
                     )}
                     <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
