@@ -40,3 +40,7 @@ export const sortBoxInputStyle = {
   left: '20',
   fontSize: '0.9rem'
 }
+
+export const selectedItemStyle = {
+  color: 'var(--bondi-blue)'
+}

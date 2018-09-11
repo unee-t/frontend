@@ -30,7 +30,8 @@ import SelectField from 'material-ui/SelectField'
 import {
   selectInputIconStyle,
   noUnderline,
-  sortBoxInputStyle
+  sortBoxInputStyle,
+  selectedItemStyle
 } from '../components/form-controls.mui-styles'
 
 function NoInspectionReport () {
@@ -290,6 +291,8 @@ class Unit extends Component {
                             underlineStyle={noUnderline}
                             hintStyle={sortBoxInputStyle}
                             iconStyle={selectInputIconStyle}
+                            labelStyle={sortBoxInputStyle}
+                            selectedMenuItemStyle={selectedItemStyle}
                           >
                             {this.reportFilterMenu(reportStatus)}
                           </SelectField>
@@ -301,6 +304,8 @@ class Unit extends Component {
                             underlineStyle={noUnderline}
                             hintStyle={sortBoxInputStyle}
                             iconStyle={selectInputIconStyle}
+                            labelStyle={sortBoxInputStyle}
+                            selectedMenuItemStyle={selectedItemStyle}
                           >
                             {this.reportAssignedMenu(reportAssigned)}
                           </SelectField>
