@@ -8,7 +8,7 @@ import CircularProgress from 'material-ui/CircularProgress'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 
-import Reports, { collectionName, REPORT_FINAL_STATUS } from '../../api/reports'
+import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import InnerAppBar from '../components/inner-app-bar'
 import Preloader from '../preloader/preloader'
 import { generateHTMLPreview } from './report-preview.actions'
@@ -24,7 +24,7 @@ class ReportPreview extends Component {
       return <Preloader />
     }
 
-    const isFinal = reportItem.status === REPORT_FINAL_STATUS
+    const isFinal = reportItem.status !== REPORT_DRAFT_STATUS
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />

@@ -12,7 +12,7 @@ import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
-import Reports, { collectionName, REPORT_DRAFT_STATUS, REPORT_FINAL_STATUS } from '../../api/reports'
+import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
 import Comments, { collectionName as commentsCollName } from '../../api/comments'
 import InnerAppBar from '../components/inner-app-bar'
@@ -62,7 +62,7 @@ class ReportWizard extends Component {
       let enforcedViewMode
       if (reportItem.status === REPORT_DRAFT_STATUS && viewMode !== 'draft') {
         enforcedViewMode = 'draft'
-      } else if (reportItem.status === REPORT_FINAL_STATUS && viewMode !== 'review') {
+      } else if (reportItem.status !== REPORT_DRAFT_STATUS && viewMode !== 'review') {
         enforcedViewMode = 'review'
       }
       if (enforcedViewMode) {

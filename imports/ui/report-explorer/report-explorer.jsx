@@ -5,7 +5,7 @@ import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import RootAppBar from '../components/root-app-bar'
 import memoizeOne from 'memoize-one'
-import Reports, { collectionName } from '../../api/reports'
+import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import Preloader from '../preloader/preloader'
 import { setDrawerState, storeBreadcrumb } from '../general-actions'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
@@ -40,7 +40,9 @@ class ReportExplorer extends Component {
 
   makeReportGrouping = memoizeOne(
     (reportList, filterStatus, myInvolvement) => {
-      const statusFilter = filterStatus ? report => report.status === 'CONFIRMED' : report => report.status === 'UNCONFIRMED'
+      const statusFilter = filterStatus
+        ? report => report.status !== REPORT_DRAFT_STATUS
+        : report => report.status === REPORT_DRAFT_STATUS
       const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (statusFilter(reportItem) && creatorFilter(reportItem)) {
