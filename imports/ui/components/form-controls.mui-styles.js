@@ -30,3 +30,13 @@ export const whiteTextInputStyle = {
   outline: '0',
   width: '100%'
 }
+
+export const noUnderline = {
+  display: 'none'
+}
+
+export const sortBoxInputStyle = {
+  color: 'var(--mid-gray)',
+  left: '20',
+  fontSize: '0.9rem'
+}

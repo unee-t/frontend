@@ -27,6 +27,11 @@ import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
 import {ReportIcon} from '../report/report-icon'
 import SelectField from 'material-ui/SelectField'
+import {
+  selectInputIconStyle,
+  noUnderline,
+  sortBoxInputStyle
+} from '../components/form-controls.mui-styles'
 
 function NoInspectionReport () {
   return (
@@ -72,7 +77,8 @@ class Unit extends Component {
       showOpenCases: true,
       sortedCases: [],
       assignedToMe: false,
-      reportStatus: []
+      reportStatus: [],
+      reportAssigned: []
 
     }
   }
@@ -114,8 +120,14 @@ class Unit extends Component {
     })
   }
 
+  handleReportAssignedClicked = (event, index, reportAssigned) => {
+    this.setState({
+      reportAssigned: reportAssigned
+    })
+  }
+
   reportFilterMenu (reportStatus) {
-    const status = ['Draft', 'Finalized', 'Created By Me']
+    const status = ['Draft', 'Finalized']
     return status.map((name) => (
       <MenuItem
         key={name}
@@ -127,27 +139,27 @@ class Unit extends Component {
     ))
   }
 
-  reportSortMenu (reportSort) {
-    const timestamp = ['Date Created', 'Date Updated']
-    return timestamp.map((name) => (
+  reportAssignedMenu (reportAssigned) {
+    const assignee = ['Created By Me']
+    return assignee.map((assigned) => (
       <MenuItem
-        key={name}
+        key={assigned}
         insetChildren
-        checked={reportSort && reportSort.indexOf(name) > -1}
-        value={name}
-        primaryText={name}
+        checked={reportAssigned && reportAssigned.indexOf(assigned) > -1}
+        value={assigned}
+        primaryText={assigned}
       />
     ))
   }
 
   filteredReportItems () {
     const { reportList, currentUser } = this.props
-    const { reportStatus } = this.state
-    const statusFilter = reportStatus.includes('Finalized') ? report => report.status === 'CONFIRMED'
-      : reportStatus.includes('Draft') ? report => report.status === 'UNCONFIRMED' : report => true
-    const creatorFilter = reportStatus.includes('Created By Me') ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
+    const { reportStatus, reportAssigned } = this.state
+    const statusFilter = reportStatus.length === 2 ? report => true
+      : reportStatus.includes('Draft') ? report => report.status === 'UNCONFIRMED'
+        : reportStatus.includes('Finalized') ? report => report.status === 'CONFIRMED' : report => true
+    const creatorFilter = reportAssigned.includes('Created By Me') ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
     const filteredReports = reportList.filter(reportItem => statusFilter(reportItem) && creatorFilter(reportItem))
-
     return filteredReports.map(({ id, title, status, creation_time: date }) => {
       const isFinalized = status !== 'UNCONFIRMED'
       const viewMode = isFinalized ? 'review' : 'draft'
@@ -175,7 +187,7 @@ class Unit extends Component {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe, reportStatus, reportSort } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, reportStatus, reportAssigned } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -274,18 +286,25 @@ class Unit extends Component {
                             hintText='View: All Reports'
                             value={reportStatus}
                             onChange={this.handleReportFilterClicked}
+                            autoWidth
+                            underlineStyle={noUnderline}
+                            hintStyle={sortBoxInputStyle}
+                            iconStyle={selectInputIconStyle}
                           >
                             {this.reportFilterMenu(reportStatus)}
                           </SelectField>
                           <SelectField
                             multiple
-                            hintText='Sort by'
-                            value={reportSort}
-                            onChange={this.handleReportFilterClicked}
+                            hintText='Sort by: Assignee'
+                            value={reportAssigned}
+                            onChange={this.handleReportAssignedClicked}
+                            underlineStyle={noUnderline}
+                            hintStyle={sortBoxInputStyle}
+                            iconStyle={selectInputIconStyle}
                           >
-                            {this.reportSortMenu(reportSort)}
+                            {this.reportAssignedMenu(reportAssigned)}
                           </SelectField>
-                        </div> 
+                        </div>
                         {this.filteredReportItems()}
                       </div>
                     ) : (
