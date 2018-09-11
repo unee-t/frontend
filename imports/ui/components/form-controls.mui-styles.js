@@ -37,7 +37,7 @@ export const noUnderline = {
 
 export const sortBoxInputStyle = {
   color: 'var(--mid-gray)',
-  left: '20',
+  left: '20px',
   fontSize: '0.9rem'
 }
 

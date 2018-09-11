@@ -11,7 +11,6 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
-// import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
@@ -79,7 +78,7 @@ class Unit extends Component {
       sortedCases: [],
       assignedToMe: false,
       reportStatus: [],
-      reportAssigned: []
+      sortedReports: null
 
     }
   }
@@ -87,7 +86,7 @@ class Unit extends Component {
   get filteredCases () {
     const { showOpenCases, sortedCases, assignedToMe } = this.state
     const openFilter = showOpenCases ? x => !isClosed(x) : x => isClosed(x)
-    const assignedFilter = assignedToMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+    const assignedFilter = assignedToMe ? x => x.dateAdded === this.props.currentUser.bugzillaCreds.login : x => true
     const filteredCases = sortedCases.filter(caseItem => openFilter(caseItem) && assignedFilter(caseItem))
     return filteredCases
   }
@@ -121,14 +120,14 @@ class Unit extends Component {
     })
   }
 
-  handleReportAssignedClicked = (event, index, reportAssigned) => {
+  handleReportSortClicked = (event, index, value) => {
     this.setState({
-      reportAssigned: reportAssigned
+      sortedReports: value
     })
   }
 
   reportFilterMenu (reportStatus) {
-    const status = ['Draft', 'Finalized']
+    const status = ['Draft', 'Finalized', 'Created By Me']
     return status.map((name) => (
       <MenuItem
         key={name}
@@ -140,28 +139,32 @@ class Unit extends Component {
     ))
   }
 
-  reportAssignedMenu (reportAssigned) {
-    const assignee = ['Created By Me']
-    return assignee.map((assigned) => (
+  reportSortMenu (sortedReports) {
+    const dateAdded = ['Newest', 'Oldest']
+    return dateAdded.map((elem, index) => (
       <MenuItem
-        key={assigned}
-        insetChildren
-        checked={reportAssigned && reportAssigned.indexOf(assigned) > -1}
-        value={assigned}
-        primaryText={assigned}
+        key={elem}
+        value={index}
+        primaryText={elem}
       />
     ))
   }
 
   filteredReportItems () {
     const { reportList, currentUser } = this.props
-    const { reportStatus, reportAssigned } = this.state
-    const statusFilter = reportStatus.length === 2 ? report => true
+    const { reportStatus, sortedReports } = this.state
+    const statusFilter = reportStatus.length === 3 || (reportStatus.includes('Draft') && reportStatus.includes('Finalized')) ? report => true
       : reportStatus.includes('Draft') ? report => report.status === 'UNCONFIRMED'
         : reportStatus.includes('Finalized') ? report => report.status === 'CONFIRMED' : report => true
-    const creatorFilter = reportAssigned.includes('Created By Me') ? x => x.assignee === currentUser.bugzillaCreds.login : x => true
-    const filteredReports = reportList.filter(reportItem => statusFilter(reportItem) && creatorFilter(reportItem))
-    return filteredReports.map(({ id, title, status, creation_time: date }) => {
+    const creatorFilter = reportStatus.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
+    const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem) && statusFilter(reportItem))
+      .sort(function newest (a, b) {
+        var dateA = new Date(a.creation_time)
+        var dateB = new Date(b.creation_time)
+        return dateB - dateA
+      })
+    const reportItems = sortedReports === 1 ? filteredReports.reverse() : filteredReports
+    return reportItems.map(({ id, title, status, creation_time: date }) => {
       const isFinalized = status !== 'UNCONFIRMED'
       const viewMode = isFinalized ? 'review' : 'draft'
       return (
@@ -188,7 +191,7 @@ class Unit extends Component {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe, reportStatus, reportAssigned } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, reportStatus, sortedReports } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -297,17 +300,16 @@ class Unit extends Component {
                             {this.reportFilterMenu(reportStatus)}
                           </SelectField>
                           <SelectField
-                            multiple
-                            hintText='Sort by: Assignee'
-                            value={reportAssigned}
-                            onChange={this.handleReportAssignedClicked}
+                            hintText='Sort by: Date Added'
+                            value={sortedReports}
+                            onChange={this.handleReportSortClicked}
                             underlineStyle={noUnderline}
                             hintStyle={sortBoxInputStyle}
                             iconStyle={selectInputIconStyle}
                             labelStyle={sortBoxInputStyle}
                             selectedMenuItemStyle={selectedItemStyle}
                           >
-                            {this.reportAssignedMenu(reportAssigned)}
+                            {this.reportSortMenu(sortedReports)}
                           </SelectField>
                         </div>
                         {this.filteredReportItems()}
