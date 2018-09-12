@@ -140,7 +140,7 @@ class Unit extends Component {
   }
 
   reportSortMenu (sortedReports) {
-    const dateAdded = ['Newest', 'Oldest']
+    const dateAdded = ['Newest', 'Oldest', 'Name (A to Z)', 'Name (Z to A)']
     return dateAdded.map((elem, index) => (
       <MenuItem
         key={elem}
@@ -151,7 +151,6 @@ class Unit extends Component {
   }
 
   filteredReportItems () {
-    // check report status REPORT_DRAFT_STATUS
     const { reportList, currentUser } = this.props
     const { reportStatus, sortedReports } = this.state
     const statusFilter = reportStatus.length === 3 || (reportStatus.includes('Draft') && reportStatus.includes('Finalized')) ? report => true
@@ -159,13 +158,32 @@ class Unit extends Component {
         : reportStatus.includes('Finalized') ? report => report.status === 'CONFIRMED' : report => true
     const creatorFilter = reportStatus.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
     const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem) && statusFilter(reportItem))
-      .sort(function newest (a, b) {
-        var dateA = new Date(a.creation_time)
-        var dateB = new Date(b.creation_time)
-        return dateB - dateA
+      .sort((a, b) => {
+        const dateA = new Date(a.creation_time)
+        const dateB = new Date(b.creation_time)
+        const nameA = a.title.toUpperCase()
+        const nameB = b.title.toUpperCase()
+        if (sortedReports === 0) {
+          return dateB - dateA
+        } else if (sortedReports === 1) {
+          return dateA - dateB
+        } else if (sortedReports === 2) {
+          if (nameA < nameB) {
+            return -1
+          } else if (nameA > nameB) {
+            return 1
+          }
+          return 0
+        } else if (sortedReports === 3) {
+          if (nameA > nameB) {
+            return -1
+          } else if (nameA < nameB) {
+            return 1
+          }
+          return 0
+        }
       })
-    const reportItems = sortedReports === 1 ? filteredReports.reverse() : filteredReports
-    return reportItems.map(({ id, title, status, creation_time: date }) => {
+    return filteredReports.map(({ id, title, status, creation_time: date }) => {
       const isFinalized = status !== REPORT_DRAFT_STATUS
       const viewMode = isFinalized ? 'review' : 'draft'
       return (
