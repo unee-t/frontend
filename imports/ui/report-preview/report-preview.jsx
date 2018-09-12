@@ -41,8 +41,7 @@ class ReportPreview extends Component {
                 <RaisedButton
                   primary
                   fullWidth
-                  disabled
-                  onClick={() => dispatch(push(`/report/${reportItem.id}/endorse`))}
+                  onClick={() => dispatch(push(`/report/${reportItem.id}/sign`))}
                 >
                   <span className='white mh4'>
                     Sign Report
