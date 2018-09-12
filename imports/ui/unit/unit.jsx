@@ -14,7 +14,7 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
-import Reports, { collectionName as reportsCollName } from '../../api/reports'
+import Reports, { collectionName as reportsCollName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
 import CreateReportDialog from '../dialogs/create-report-dialog'
@@ -151,6 +151,7 @@ class Unit extends Component {
   }
 
   filteredReportItems () {
+    // check report status REPORT_DRAFT_STATUS
     const { reportList, currentUser } = this.props
     const { reportStatus, sortedReports } = this.state
     const statusFilter = reportStatus.length === 3 || (reportStatus.includes('Draft') && reportStatus.includes('Finalized')) ? report => true
@@ -165,7 +166,7 @@ class Unit extends Component {
       })
     const reportItems = sortedReports === 1 ? filteredReports.reverse() : filteredReports
     return reportItems.map(({ id, title, status, creation_time: date }) => {
-      const isFinalized = status !== 'UNCONFIRMED'
+      const isFinalized = status !== REPORT_DRAFT_STATUS
       const viewMode = isFinalized ? 'review' : 'draft'
       return (
         <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
