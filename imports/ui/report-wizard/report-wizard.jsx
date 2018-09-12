@@ -104,12 +104,14 @@ class ReportWizard extends Component {
             {infoItemMembers('Unit', unitDisplayName)}
           </div>
           {(isDraft || reportItem.additionalComments) && (isDraft ? (
-            <EditableItem
-              label='Remarks and Comments'
-              initialValue={reportItem.additionalComments}
-              onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-              isMultiLine
-            />
+            <div>
+              <EditableItem
+                label='Remarks and Comments'
+                initialValue={reportItem.additionalComments}
+                onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                isMultiLine
+              />
+            </div>
           ) : (
             <div className='mt3'>
               {infoItemMembers('Remarks and Comments', reportItem.additionalComments)}
