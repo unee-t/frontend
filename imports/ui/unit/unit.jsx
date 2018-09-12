@@ -77,8 +77,8 @@ class Unit extends Component {
       showOpenCases: true,
       sortedCases: [],
       assignedToMe: false,
-      reportStatus: [],
-      sortedReports: null
+      statusFilterValues: [],
+      sortCriterionIndex: null
 
     }
   }
@@ -86,7 +86,7 @@ class Unit extends Component {
   get filteredCases () {
     const { showOpenCases, sortedCases, assignedToMe } = this.state
     const openFilter = showOpenCases ? x => !isClosed(x) : x => isClosed(x)
-    const assignedFilter = assignedToMe ? x => x.dateAdded === this.props.currentUser.bugzillaCreds.login : x => true
+    const assignedFilter = assignedToMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
     const filteredCases = sortedCases.filter(caseItem => openFilter(caseItem) && assignedFilter(caseItem))
     return filteredCases
   }
@@ -114,32 +114,32 @@ class Unit extends Component {
       })
     }
   }
-  handleReportFilterClicked = (event, index, reportStatus) => {
+  handleReportFilterClicked = (event, index, statusFilterValues) => {
     this.setState({
-      reportStatus: reportStatus
+      statusFilterValues: statusFilterValues
     })
   }
 
   handleReportSortClicked = (event, index, value) => {
     this.setState({
-      sortedReports: value
+      sortCriterionIndex: value
     })
   }
 
-  reportFilterMenu (reportStatus) {
+  reportFilterMenu (statusFilterValues) {
     const status = ['Draft', 'Finalized', 'Created By Me']
     return status.map((name) => (
       <MenuItem
         key={name}
         insetChildren
-        checked={reportStatus && reportStatus.indexOf(name) > -1}
+        checked={statusFilterValues && statusFilterValues.indexOf(name) > -1}
         value={name}
         primaryText={name}
       />
     ))
   }
 
-  reportSortMenu (sortedReports) {
+  reportSortMenu (sortCriterionIndex) {
     const dateAdded = ['Newest', 'Oldest', 'Name (A to Z)', 'Name (Z to A)']
     return dateAdded.map((elem, index) => (
       <MenuItem
@@ -152,29 +152,39 @@ class Unit extends Component {
 
   filteredReportItems () {
     const { reportList, currentUser } = this.props
-    const { reportStatus, sortedReports } = this.state
-    const statusFilter = reportStatus.length === 3 || (reportStatus.includes('Draft') && reportStatus.includes('Finalized')) ? report => true
-      : reportStatus.includes('Draft') ? report => report.status === 'UNCONFIRMED'
-        : reportStatus.includes('Finalized') ? report => report.status === 'CONFIRMED' : report => true
-    const creatorFilter = reportStatus.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
+    const { statusFilterValues, sortCriterionIndex } = this.state
+    const statusFilter = statusFilterValues.length === 3 || (statusFilterValues.includes('Draft') && statusFilterValues.includes('Finalized')) ? report => true
+      : statusFilterValues.includes('Draft') ? report => report.status === REPORT_DRAFT_STATUS
+        : statusFilterValues.includes('Finalized') ? report => report.status !== REPORT_DRAFT_STATUS : report => true
+    const creatorFilter = statusFilterValues.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
     const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem) && statusFilter(reportItem))
       .sort((a, b) => {
-        const dateA = new Date(a.creation_time)
-        const dateB = new Date(b.creation_time)
+        const dateA = Date.parse(a.creation_time)
+        const dateB = Date.parse(b.creation_time)
         const nameA = a.title.toUpperCase()
         const nameB = b.title.toUpperCase()
-        if (sortedReports === 0) {
-          return dateB - dateA
-        } else if (sortedReports === 1) {
-          return dateA - dateB
-        } else if (sortedReports === 2) {
+        if (sortCriterionIndex === 0) {
+          if (dateA < dateB) {
+            return 1
+          } else if (dateA > dateB) {
+            return -1
+          }
+          return 0
+        } else if (sortCriterionIndex === 1) {
+          if (dateA < dateB) {
+            return -1
+          } else if (dateA > dateB) {
+            return 1
+          }
+          return 0
+        } else if (sortCriterionIndex === 2) {
           if (nameA < nameB) {
             return -1
           } else if (nameA > nameB) {
             return 1
           }
           return 0
-        } else if (sortedReports === 3) {
+        } else if (sortCriterionIndex === 3) {
           if (nameA > nameB) {
             return -1
           } else if (nameA < nameB) {
@@ -210,7 +220,7 @@ class Unit extends Component {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe, reportStatus, sortedReports } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, statusFilterValues, sortCriterionIndex } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -307,7 +317,7 @@ class Unit extends Component {
                           <SelectField
                             multiple
                             hintText='View: All Reports'
-                            value={reportStatus}
+                            value={statusFilterValues}
                             onChange={this.handleReportFilterClicked}
                             autoWidth
                             underlineStyle={noUnderline}
@@ -316,11 +326,11 @@ class Unit extends Component {
                             labelStyle={sortBoxInputStyle}
                             selectedMenuItemStyle={selectedItemStyle}
                           >
-                            {this.reportFilterMenu(reportStatus)}
+                            {this.reportFilterMenu(statusFilterValues)}
                           </SelectField>
                           <SelectField
                             hintText='Sort by: Date Added'
-                            value={sortedReports}
+                            value={sortCriterionIndex}
                             onChange={this.handleReportSortClicked}
                             underlineStyle={noUnderline}
                             hintStyle={sortBoxInputStyle}
@@ -328,7 +338,7 @@ class Unit extends Component {
                             labelStyle={sortBoxInputStyle}
                             selectedMenuItemStyle={selectedItemStyle}
                           >
-                            {this.reportSortMenu(sortedReports)}
+                            {this.reportSortMenu(sortCriterionIndex)}
                           </SelectField>
                         </div>
                         {this.filteredReportItems()}
