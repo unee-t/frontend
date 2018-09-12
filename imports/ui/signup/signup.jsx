@@ -92,7 +92,7 @@ export class SignupPage extends Component {
               {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
                 <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
                   onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
-                  errorText={errorTexts[identifier] || showSignupError.includes('Email') ? ('Email already exists in Unee-T.') : (showSignupError)}
+                  errorText={errorTexts[identifier] || showSignupError}
                 />
               ))}
               {showSignupError.includes('Email') &&
