@@ -7,7 +7,6 @@ import { goBack, push, replace } from 'react-router-redux'
 import { Route } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
-import IconButton from 'material-ui/IconButton'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
@@ -95,29 +94,30 @@ class ReportWizard extends Component {
     )
     return (
       <div className='full-height flex flex-column'>
-        <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} rightIconElement={isDraft ? (
-          <IconButton onClick={() => dispatch(goBack())}>
-            <FontIcon className='material-icons' color='white'>save</FontIcon>
-          </IconButton>
-        ) : null} />
-        <div className='flex-grow bg-very-light-gray flex flex-column overflow-auto pb2'>
-          <div className='bg-white card-shadow-1 pa3'>
-            <div>
-              {infoItemMembers('Report title', reportItem.title)}
-            </div>
-            <div>
-              {infoItemMembers('Unit', unitDisplayName)}
-            </div>
-            <div className='pt1'>
-              {infoItemMembers('Created on', moment(reportItem.creation_time).format('YYYY-MM-DD'))}
-            </div>
-            <div className='mt2 pt1'>
-              {infoItemLabel('Created by')}
-              {userInfoItem(userInfo)}
-            </div>
+        <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
+        <div className='flex-grow bg-white flex flex-column overflow-auto pa3'>
+          <div>
+            {infoItemMembers('Report title', reportItem.title)}
           </div>
+          <div>
+            {infoItemMembers('Unit', unitDisplayName)}
+          </div>
+          {(isDraft || reportItem.additionalComments) && (isDraft ? (
+            <div>
+              <EditableItem
+                label='Remarks and Comments'
+                initialValue={reportItem.additionalComments}
+                onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                isMultiLine
+              />
+            </div>
+          ) : (
+            <div className='mt3'>
+              {infoItemMembers('Remarks and Comments', reportItem.additionalComments)}
+            </div>
+          ))}
           {(isDraft || (!isDraft && attachmentUrls.length > 0)) && (
-            <div className='bg-white card-shadow-1 pa3 mt2'>
+            <div className='mt3'>
               {infoItemLabel(isDraft ? 'Attach Photos:' : 'Photos:')}
               <div className='flex flex-wrap pt1'>
                 {attachmentUrls.map(url => (
@@ -157,24 +157,8 @@ class ReportWizard extends Component {
               </div>
             </div>
           )}
-          {(isDraft || reportItem.additionalComments) && (
-            <div className='bg-white card-shadow-1 ph3 pb2 mt2'>
-              {isDraft ? (
-                <EditableItem
-                  label='Remarks and Comments'
-                  initialValue={reportItem.additionalComments}
-                  onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-                  isMultiLine
-                />
-              ) : (
-                <div className='mt3'>
-                  {infoItemMembers('Remarks and Comments', reportItem.additionalComments)}
-                </div>
-              )}
-            </div>
-          )}
           {(isDraft || (!isDraft && childCases.length > 0)) && ( // Show only if draft or final but with cases
-            <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
+            <div className='pv2 mt2'>
               <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
                 {isDraft
                   ? 'Is there any defect which needs to be corrected or fixed?'
@@ -193,7 +177,7 @@ class ReportWizard extends Component {
               )}
             </div>
           )}
-          {/* <div className='bg-white card-shadow-1 ph3 pv2 mt2'>
+          {/* <div className='ph3 pv2 mt2'>
             {infoItemLabel('Rooms')}
             <div className='moon-gray f7 mt2'>
               There are no rooms added to this Inspection Report yet. Click
@@ -201,26 +185,35 @@ class ReportWizard extends Component {
             </div>
             {makeCreationButton('Add room', () => {})}
           </div> */}
+          <div className='mt2 pt1'>
+            {infoItemLabel('Created by')}
+            {userInfoItem(userInfo, null, () => moment(reportItem.creation_time).format('YYYY-MM-DD'))}
+          </div>
         </div>
         <div className='bg-white tr scroll-shadow-1 z-999'>
           {isDraft ? (
             <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
-              <RaisedButton
-                onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
-              >
-                <span className='bondi-blue mh4'>
-                  Preview
-                </span>
-              </RaisedButton>
-              <RaisedButton
-                className='ml2'
-                primary
-                onClick={() => dispatch(push(`${match.url}/confirm`))}
-              >
-                <span className='white mh4'>
-                  Complete
-                </span>
-              </RaisedButton>
+              <div className='flex-grow'>
+                <RaisedButton
+                  fullWidth
+                  onClick={() => dispatch(goBack())}
+                >
+                  <span className='bondi-blue mh4'>
+                    Save Draft
+                  </span>
+                </RaisedButton>
+              </div>
+              <div className='flex-grow ml2'>
+                <RaisedButton
+                  primary
+                  fullWidth
+                  onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
+                >
+                  <span className='white mh4'>
+                    Preview
+                  </span>
+                </RaisedButton>
+              </div>
             </div>
           ) : (
             <div className='dib ph3 pb3 pt2'>

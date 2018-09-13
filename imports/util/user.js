@@ -17,7 +17,7 @@ export const getColorForUser = (user) => (
   themes[ rolesColorDict[ user.role && user.role.trim() ] || rolesColorDict[ 'default' ] ]
 )
 
-export const userInfoItem = (user, rightRenderer) => {
+export const userInfoItem = (user, rightRenderer, subInfoRenderer) => {
   const colorForUser = getColorForUser(user)
 
   return (
@@ -25,8 +25,12 @@ export const userInfoItem = (user, rightRenderer) => {
       <UserAvatar user={user} />
       <div className='ml2 pl1 flex-grow overflow-hidden'>
         <div className='mid-gray ellipsis'>{user.name || user.login.split('@')[0]}</div>
-        <div className='mt1 f7 gray ellipsis'>
+        <div className='f7 gray ellipsis lh-copy'>
           {user.role ? (user.role + (user.isOccupant ? ' (Occupant)' : '')) : 'Administrator'}
+          {subInfoRenderer && (
+            <br />
+          )}
+          {subInfoRenderer && subInfoRenderer(user)}
         </div>
       </div>
       {rightRenderer && rightRenderer(user)}
