@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { goBack } from 'react-router-redux'
@@ -40,11 +39,16 @@ class ReportSignage extends Component {
             {reportItem.title}.pdf
           </div>
           <div className='ml2 pl1'>
-            <Link
+            <a
               className='link bondi-blue fw5 f6'
-              to={`/report/${reportItem.id}/preview`}>
+              href={`/report/${reportItem.id}/preview`}
+              onClick={evt => {
+                evt.preventDefault()
+                dispatch(goBack())
+              }}
+            >
               Preview
-            </Link>
+            </a>
           </div>
         </div>
         <div className='mt3 gray f6 lh-title'>
@@ -63,9 +67,9 @@ class ReportSignage extends Component {
               all.push(
                 <div key={ind} className={all.length !== 0 ? 'mt3' : ''}>
                   {userInfoItem(userRoleDef, () => (
-                    <Link className='link bondi-blue f6 ml2 fw5 pr1' to='/'>
-                      Sign
-                    </Link>
+                    <a className='link bondi-blue f6 ml2 fw5 pr1'>
+                      Sign Report
+                    </a>
                   ))}
                 </div>
               )
@@ -75,7 +79,7 @@ class ReportSignage extends Component {
         </div>
         <div className='mt3'>
           <RaisedButton primary fullWidth disabled>
-            <span className='f4 white'>Done</span>
+            <span className='f4 white'>Finalize Report</span>
           </RaisedButton>
         </div>
       </div>
