@@ -70,6 +70,36 @@ const menuItemDivStyle = {
   alignItems: 'center'
 }
 
+const SORT_BY = {
+  DATE_ASCENDING: 0,
+  DATE_DESCENDING: 1,
+  NAME_ASCENDING: 2,
+  NAME_DESCENDING: 3
+}
+
+const sorters = {
+  [SORT_BY.DATE_ASCENDING]: (a, b) => {
+    const dateA = Date.parse(a.creation_time)
+    const dateB = Date.parse(b.creation_time)
+    return dateB - dateA
+  },
+  [SORT_BY.DATE_DESCENDING]: (a, b) => {
+    const dateA = Date.parse(a.creation_time)
+    const dateB = Date.parse(b.creation_time)
+    return dateA - dateB
+  },
+  [SORT_BY.NAME_ASCENDING]: (a, b) => {
+    const nameA = a.title
+    const nameB = b.title
+    return nameA.localeCompare(nameB)
+  },
+  [SORT_BY.NAME_DESCENDING]: (a, b) => {
+    const nameA = a.title
+    const nameB = b.title
+    return nameB.localeCompare(nameA)
+  }
+}
+
 class Unit extends Component {
   constructor () {
     super(...arguments)
@@ -78,8 +108,7 @@ class Unit extends Component {
       sortedCases: [],
       assignedToMe: false,
       statusFilterValues: [],
-      sortCriterionIndex: null
-
+      sortBy: null
     }
   }
 
@@ -122,7 +151,7 @@ class Unit extends Component {
 
   handleReportSortClicked = (event, index, value) => {
     this.setState({
-      sortCriterionIndex: value
+      sortBy: value
     })
   }
 
@@ -139,60 +168,31 @@ class Unit extends Component {
     ))
   }
 
-  reportSortMenu (sortCriterionIndex) {
-    const dateAdded = ['Newest', 'Oldest', 'Name (A to Z)', 'Name (Z to A)']
-    return dateAdded.map((elem, index) => (
+  reportSortMenu (sortBy) {
+    const labels = new Map([
+      [SORT_BY.DATE_ASCENDING, 'Newest'],
+      [SORT_BY.DATE_DESCENDING, 'Oldest'],
+      [SORT_BY.NAME_ASCENDING, 'Name (A to Z)'],
+      [SORT_BY.NAME_DESCENDING, 'Name (Z to A)']
+    ])
+    return Array.from(labels).map(([sortBy, label], index) => (
       <MenuItem
-        key={elem}
-        value={index}
-        primaryText={elem}
+        key={sortBy}
+        value={sortBy}
+        primaryText={label}
       />
     ))
   }
 
   filteredReportItems () {
     const { reportList, currentUser } = this.props
-    const { statusFilterValues, sortCriterionIndex } = this.state
+    const { statusFilterValues, sortBy } = this.state
     const statusFilter = statusFilterValues.length === 3 || (statusFilterValues.includes('Draft') && statusFilterValues.includes('Finalized')) ? report => true
       : statusFilterValues.includes('Draft') ? report => report.status === REPORT_DRAFT_STATUS
         : statusFilterValues.includes('Finalized') ? report => report.status !== REPORT_DRAFT_STATUS : report => true
     const creatorFilter = statusFilterValues.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
     const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem) && statusFilter(reportItem))
-      .sort((a, b) => {
-        const dateA = Date.parse(a.creation_time)
-        const dateB = Date.parse(b.creation_time)
-        const nameA = a.title.toUpperCase()
-        const nameB = b.title.toUpperCase()
-        if (sortCriterionIndex === 0) {
-          if (dateA < dateB) {
-            return 1
-          } else if (dateA > dateB) {
-            return -1
-          }
-          return 0
-        } else if (sortCriterionIndex === 1) {
-          if (dateA < dateB) {
-            return -1
-          } else if (dateA > dateB) {
-            return 1
-          }
-          return 0
-        } else if (sortCriterionIndex === 2) {
-          if (nameA < nameB) {
-            return -1
-          } else if (nameA > nameB) {
-            return 1
-          }
-          return 0
-        } else if (sortCriterionIndex === 3) {
-          if (nameA > nameB) {
-            return -1
-          } else if (nameA < nameB) {
-            return 1
-          }
-          return 0
-        }
-      })
+      .sort(sorters[sortBy])
     return filteredReports.map(({ id, title, status, creation_time: date }) => {
       const isFinalized = status !== REPORT_DRAFT_STATUS
       const viewMode = isFinalized ? 'review' : 'draft'
@@ -220,7 +220,7 @@ class Unit extends Component {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe, statusFilterValues, sortCriterionIndex } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, statusFilterValues, sortBy } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -330,7 +330,7 @@ class Unit extends Component {
                           </SelectField>
                           <SelectField
                             hintText='Sort by: Date Added'
-                            value={sortCriterionIndex}
+                            value={sortBy}
                             onChange={this.handleReportSortClicked}
                             underlineStyle={noUnderline}
                             hintStyle={sortBoxInputStyle}
@@ -338,7 +338,7 @@ class Unit extends Component {
                             labelStyle={sortBoxInputStyle}
                             selectedMenuItemStyle={selectedItemStyle}
                           >
-                            {this.reportSortMenu(sortCriterionIndex)}
+                            {this.reportSortMenu(sortBy)}
                           </SelectField>
                         </div>
                         {this.filteredReportItems()}
