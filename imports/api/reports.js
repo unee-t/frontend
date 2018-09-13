@@ -393,7 +393,7 @@ Meteor.methods({
         date: (new Date()).toISOString(),
         signatures: [
           makeSignObj(reportCreator)
-        ].concat(reportBlob.cc.reduce((all, loginName) => {
+        ].concat(Object.keys(signatureMap).reduce((all, loginName) => {
           const ccUser = Meteor.users.findOne({'bugzillaCreds.login': loginName})
           if (ccUser) {
             all.push(makeSignObj(ccUser))
