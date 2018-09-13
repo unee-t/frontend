@@ -14,14 +14,24 @@ import Preloader from '../preloader/preloader'
 import { infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { placeholderEmailMatcher } from '../../util/matchers'
+import SignDialog from '../dialogs/sign-dialog'
 
 const docIconStyle = {
   fontSize: '40px'
 }
 
 class ReportSignage extends Component {
+  constructor () {
+    super(...arguments)
+    this.state = {
+      chosenUser: null,
+      dialogOpen: false,
+      signatureMap: {}
+    }
+  }
   render () {
     const { dispatch, reportItem, isLoading, isLoadingRoles, unitRoles } = this.props
+    const { chosenUser, dialogOpen, signatureMap } = this.state
     if (isLoading) return <Preloader />
 
     return <div className='full-height flex flex-column'>
@@ -66,8 +76,13 @@ class ReportSignage extends Component {
             if (!placeholderEmailMatcher(userRoleDef.login)) {
               all.push(
                 <div key={ind} className={all.length !== 0 ? 'mt3' : ''}>
-                  {userInfoItem(userRoleDef, () => (
-                    <a className='link bondi-blue f6 ml2 fw5 pr1'>
+                  {userInfoItem(userRoleDef, () => signatureMap[userRoleDef.login] ? (
+                    <img className='w3 h-100' src={signatureMap[userRoleDef.login]} />
+                  ) : (
+                    <a
+                      className='link bondi-blue f6 ml2 fw5 pr1'
+                      onClick={() => this.setState({chosenUser: userRoleDef, dialogOpen: true})}
+                    >
                       Sign Report
                     </a>
                   ))}
@@ -78,11 +93,23 @@ class ReportSignage extends Component {
           }, [])}
         </div>
         <div className='mt3'>
-          <RaisedButton primary fullWidth disabled>
+          <RaisedButton primary fullWidth disabled={Object.keys(signatureMap).length === 0}>
             <span className='f4 white'>Finalize Report</span>
           </RaisedButton>
         </div>
       </div>
+      <SignDialog
+        open={dialogOpen}
+        signingUser={chosenUser}
+        onClose={() => this.setState({dialogOpen: false})}
+        onSignSubmit={signImgUri => this.setState({
+          signatureMap: {
+            ...signatureMap,
+            [chosenUser.login]: signImgUri
+          },
+          dialogOpen: false
+        })}
+      />
     </div>
   }
 }
