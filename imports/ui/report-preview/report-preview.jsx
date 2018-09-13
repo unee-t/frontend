@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, push } from 'react-router-redux'
 import CircularProgress from 'material-ui/CircularProgress'
-import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 
 import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
@@ -24,7 +23,7 @@ class ReportPreview extends Component {
       return <Preloader />
     }
 
-    const isFinal = reportItem.status !== REPORT_DRAFT_STATUS
+    const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
@@ -37,21 +36,35 @@ class ReportPreview extends Component {
             <iframe className='bn flex-grow' src={previewUrl} />
           )}
           <div className='bg-white scroll-shadow-2 pa3 tc z-999'>
-            <RaisedButton
-              primary
-              fullWidth
-              disabled
-              onClick={() => dispatch(push(`/report/${reportItem.id}/endorse`))}
-            >
-              <span className='white mh4'>
-                Sign Report
-              </span>
-            </RaisedButton>
-            <div className='mt3'>
-              <a className='link bondi-blue' onClick={() => dispatch(goBack())}>
-                Continue editing report
-              </a>
-            </div>
+            {isDraft ? (
+              <div>
+                <RaisedButton
+                  primary
+                  fullWidth
+                  disabled
+                  onClick={() => dispatch(push(`/report/${reportItem.id}/endorse`))}
+                >
+                  <span className='white mh4'>
+                    Sign Report
+                  </span>
+                </RaisedButton>
+                <div className='mt3'>
+                  <a className='link bondi-blue' onClick={() => dispatch(goBack())}>
+                    Continue editing report
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <RaisedButton
+                primary
+                fullWidth
+                disabled
+              >
+                <span className='white mh4'>
+                  Share report
+                </span>
+              </RaisedButton>
+            )}
           </div>
         </div>
       </div>
