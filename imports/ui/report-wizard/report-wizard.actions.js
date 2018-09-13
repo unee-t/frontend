@@ -16,10 +16,11 @@ export function createReport (unit, title) {
   }
 }
 
-export function finalizeReport (reportId) {
+export function finalizeReport (reportId, signatureMap) {
   return {
     type: FINALIZE_REPORT,
-    reportId
+    reportId,
+    signatureMap
   }
 }
 
