@@ -161,7 +161,7 @@ class Unit extends Component {
       <MenuItem
         key={name}
         insetChildren
-        checked={statusFilterValues && statusFilterValues === {name}}
+        checked={statusFilterValues && statusFilterValues.indexOf(name) > -1}
         value={name}
         primaryText={name}
       />
@@ -169,12 +169,12 @@ class Unit extends Component {
   }
 
   reportSortMenu (sortBy) {
-    const labels = new Map([
+    const labels = [
       [SORT_BY.DATE_ASCENDING, 'Newest'],
       [SORT_BY.DATE_DESCENDING, 'Oldest'],
       [SORT_BY.NAME_ASCENDING, 'Name (A to Z)'],
       [SORT_BY.NAME_DESCENDING, 'Name (Z to A)']
-    ])
+    ]
     return Array.from(labels).map(([sortBy, label], index) => (
       <MenuItem
         key={sortBy}
