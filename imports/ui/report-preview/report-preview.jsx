@@ -36,36 +36,23 @@ class ReportPreview extends Component {
           ) : previewUrl && (
             <iframe className='bn flex-grow' src={previewUrl} />
           )}
-          {isFinal && (
-            <div className='bg-white scroll-shadow-1 pa3 tc'>
-              <div className='flex items-center justify-center'>
-                <FontIcon className='material-icons' color='var(--success-green)' style={{fontSize: '2rem'}}>
-                  check_circle
-                </FontIcon>
-                <h3 className='fw5 lh-solid ml1 dark-gray ma0'>Report Complete</h3>
-              </div>
-              <div className='dark-gray lh-title mt2'>
-                Report <span className='fw7'>{reportItem.title}</span> is complete. <br />
-                Would you like to endorse the report?
-              </div>
-              <div className='mt3'>
-                <RaisedButton
-                  primary
-                  disabled
-                  onClick={() => dispatch(push(`/report/${reportItem.id}/endorse`))}
-                >
-                  <span className='white mh4'>
-                    Endorse Report
-                  </span>
-                </RaisedButton>
-              </div>
-              <div className='mt2'>
-                <a className='link bondi-blue fw5' onClick={() => dispatch(goBack())}>
-                  No thanks, I'll do it later
-                </a>
-              </div>
+          <div className='bg-white scroll-shadow-2 pa3 tc z-999'>
+            <RaisedButton
+              primary
+              fullWidth
+              disabled
+              onClick={() => dispatch(push(`/report/${reportItem.id}/endorse`))}
+            >
+              <span className='white mh4'>
+                Sign Report
+              </span>
+            </RaisedButton>
+            <div className='mt3'>
+              <a className='link bondi-blue' onClick={() => dispatch(goBack())}>
+                Continue editing report
+              </a>
             </div>
-          )}
+          </div>
         </div>
       </div>
     )
