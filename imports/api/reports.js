@@ -395,7 +395,7 @@ Meteor.methods({
           makeSignObj(reportCreator)
         ].concat(Object.keys(signatureMap).reduce((all, loginName) => {
           const ccUser = Meteor.users.findOne({'bugzillaCreds.login': loginName})
-          if (ccUser) {
+          if (ccUser && ccUser._id !== reportCreator._id) {
             all.push(makeSignObj(ccUser))
           }
           return all
