@@ -132,7 +132,7 @@ class Unit extends Component {
       <MenuItem
         key={name}
         insetChildren
-        checked={statusFilterValues && statusFilterValues.indexOf(name) > -1}
+        checked={statusFilterValues && statusFilterValues === {name}}
         value={name}
         primaryText={name}
       />
