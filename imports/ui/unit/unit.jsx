@@ -175,7 +175,7 @@ class Unit extends Component {
       [SORT_BY.NAME_ASCENDING, 'Name (A to Z)'],
       [SORT_BY.NAME_DESCENDING, 'Name (Z to A)']
     ]
-    return Array.from(labels).map(([sortBy, label], index) => (
+    return labels.map(([sortBy, label], index) => (
       <MenuItem
         key={sortBy}
         value={sortBy}
