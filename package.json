@@ -38,7 +38,8 @@
     "redux-logger": "^3.0.6",
     "redux-observable": "^0.17.0",
     "redux-thunk": "^2.2.0",
-    "rxjs": "^5.5.5"
+    "rxjs": "^5.5.5",
+    "signature_pad": "^3.0.0-beta.3"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
