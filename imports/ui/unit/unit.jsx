@@ -11,7 +11,6 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
-// import IconButton from 'material-ui/IconButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
@@ -26,6 +25,35 @@ import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
 import {ReportIcon} from '../report/report-icon'
+import SelectField from 'material-ui/SelectField'
+import {
+  selectInputIconStyle,
+  noUnderline,
+  sortBoxInputStyle,
+  selectedItemStyle
+} from '../components/form-controls.mui-styles'
+
+function NoInspectionReport () {
+  return (
+    <div className='mt5 pt3 tc'>
+      <div className='dib relative'>
+        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
+          content_paste
+        </FontIcon>
+        <div className='absolute bottom-0 right-0 pb1'>
+          <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
+            <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+              add_circle_outline
+            </FontIcon>
+          </div>
+        </div>
+      </div>
+      <div className='mid-gray b lh-copy'>
+        You have no inspection reports yet
+      </div>
+    </div>
+  )
+}
 
 const viewsOrder = ['cases', 'reports', 'overview']
 
@@ -42,13 +70,45 @@ const menuItemDivStyle = {
   alignItems: 'center'
 }
 
+const SORT_BY = {
+  DATE_ASCENDING: 0,
+  DATE_DESCENDING: 1,
+  NAME_ASCENDING: 2,
+  NAME_DESCENDING: 3
+}
+
+const sorters = {
+  [SORT_BY.DATE_ASCENDING]: (a, b) => {
+    const dateA = Date.parse(a.creation_time)
+    const dateB = Date.parse(b.creation_time)
+    return dateB - dateA
+  },
+  [SORT_BY.DATE_DESCENDING]: (a, b) => {
+    const dateA = Date.parse(a.creation_time)
+    const dateB = Date.parse(b.creation_time)
+    return dateA - dateB
+  },
+  [SORT_BY.NAME_ASCENDING]: (a, b) => {
+    const nameA = a.title
+    const nameB = b.title
+    return nameA.localeCompare(nameB)
+  },
+  [SORT_BY.NAME_DESCENDING]: (a, b) => {
+    const nameA = a.title
+    const nameB = b.title
+    return nameB.localeCompare(nameA)
+  }
+}
+
 class Unit extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       showOpenCases: true,
       sortedCases: [],
-      assignedToMe: false
+      assignedToMe: false,
+      statusFilterValues: [],
+      sortBy: null
     }
   }
 
@@ -83,12 +143,84 @@ class Unit extends Component {
       })
     }
   }
+  handleReportFilterClicked = (event, index, statusFilterValues) => {
+    this.setState({
+      statusFilterValues: statusFilterValues
+    })
+  }
+
+  handleReportSortClicked = (event, index, value) => {
+    this.setState({
+      sortBy: value
+    })
+  }
+
+  reportFilterMenu (statusFilterValues) {
+    const status = ['Draft', 'Finalized', 'Created By Me']
+    return status.map((name) => (
+      <MenuItem
+        key={name}
+        insetChildren
+        checked={statusFilterValues && statusFilterValues.indexOf(name) > -1}
+        value={name}
+        primaryText={name}
+      />
+    ))
+  }
+
+  reportSortMenu (sortBy) {
+    const labels = [
+      [SORT_BY.DATE_ASCENDING, 'Newest'],
+      [SORT_BY.DATE_DESCENDING, 'Oldest'],
+      [SORT_BY.NAME_ASCENDING, 'Name (A to Z)'],
+      [SORT_BY.NAME_DESCENDING, 'Name (Z to A)']
+    ]
+    return labels.map(([sortBy, label], index) => (
+      <MenuItem
+        key={sortBy}
+        value={sortBy}
+        primaryText={label}
+      />
+    ))
+  }
+
+  filteredReportItems () {
+    const { reportList, currentUser } = this.props
+    const { statusFilterValues, sortBy } = this.state
+    const statusFilter = statusFilterValues.length === 3 || (statusFilterValues.includes('Draft') && statusFilterValues.includes('Finalized')) ? report => true
+      : statusFilterValues.includes('Draft') ? report => report.status === REPORT_DRAFT_STATUS
+        : statusFilterValues.includes('Finalized') ? report => report.status !== REPORT_DRAFT_STATUS : report => true
+    const creatorFilter = statusFilterValues.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
+    const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem) && statusFilter(reportItem))
+      .sort(sorters[sortBy])
+    return filteredReports.map(({ id, title, status, creation_time: date }) => {
+      const isFinalized = status !== REPORT_DRAFT_STATUS
+      const viewMode = isFinalized ? 'review' : 'draft'
+      return (
+        <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
+          <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
+            <MenuItem innerDivStyle={menuItemDivStyle}>
+              <div className='pv2 flex-grow flex items-center w-100'>
+                <ReportIcon isFinalized={isFinalized} />
+                <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
+                  <div className='mid-gray ellipsis'>{title}</div>
+                  <div className='silver mt1 f7 ellipsis'>
+                    Created on {moment(date).format('YYYY-MM-DD')}
+                  </div>
+                </div>
+              </div>
+            </MenuItem>
+          </Link>
+        </div>
+      )
+    })
+  }
 
   render () {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe } = this.state
+    const { sortedCases, showOpenCases, assignedToMe, statusFilterValues, sortBy } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -179,55 +311,40 @@ class Unit extends Component {
                     ))}
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
-                    {reportList.length ? reportList.map(({ id, title, status, creation_time: date }) => {
-                      const isFinalized = status !== REPORT_DRAFT_STATUS
-                      const viewMode = isFinalized ? 'review' : 'draft'
-                      return (
-                        <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
-                          <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>
-                            <MenuItem innerDivStyle={menuItemDivStyle}>
-                              <div className='pv2 flex-grow flex items-center w-100'>
-                                <ReportIcon isFinalized={isFinalized} />
-                                <div className='ml3 lh-copy pv1 flex-grow overflow-hidden'>
-                                  <div className='mid-gray ellipsis'>{title}</div>
-                                  <div className='silver mt1 f7 ellipsis'>
-                                    Created on {moment(date).format('YYYY-MM-DD')}
-                                  </div>
-                                </div>
-                              </div>
-                            </MenuItem>
-                          </Link>
-                          {/* isFinalized && (
-                            <IconButton>
-                              <FontIcon
-                                className='material-icons'
-                                color='var(--mid-gray)'
-                                style={{fontSize: '1.25rem'}}
-                              >
-                                launch
-                              </FontIcon>
-                            </IconButton>
-                          ) */}
+                    {reportList.length ? (
+                      <div>
+                        <div className='flex flex-grow'>
+                          <SelectField
+                            multiple
+                            hintText='View: All Reports'
+                            value={statusFilterValues}
+                            onChange={this.handleReportFilterClicked}
+                            autoWidth
+                            underlineStyle={noUnderline}
+                            hintStyle={sortBoxInputStyle}
+                            iconStyle={selectInputIconStyle}
+                            labelStyle={sortBoxInputStyle}
+                            selectedMenuItemStyle={selectedItemStyle}
+                          >
+                            {this.reportFilterMenu(statusFilterValues)}
+                          </SelectField>
+                          <SelectField
+                            hintText='Sort by: Date Added'
+                            value={sortBy}
+                            onChange={this.handleReportSortClicked}
+                            underlineStyle={noUnderline}
+                            hintStyle={sortBoxInputStyle}
+                            iconStyle={selectInputIconStyle}
+                            labelStyle={sortBoxInputStyle}
+                            selectedMenuItemStyle={selectedItemStyle}
+                          >
+                            {this.reportSortMenu(sortBy)}
+                          </SelectField>
                         </div>
-                      )
-                    }) : (
-                      <div className='mt5 pt3 tc'>
-                        <div className='dib relative'>
-                          <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
-                            content_paste
-                          </FontIcon>
-                          <div className='absolute bottom-0 right-0 pb1'>
-                            <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
-                              <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
-                                add_circle_outline
-                              </FontIcon>
-                            </div>
-                          </div>
-                        </div>
-                        <div className='mid-gray b lh-copy'>
-                          You have no inspection reports yet
-                        </div>
+                        {this.filteredReportItems()}
                       </div>
+                    ) : (
+                      <NoInspectionReport />
                     )}
                     <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
