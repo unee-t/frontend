@@ -255,7 +255,9 @@ Meteor.methods({
       return {newReportId}
     }
   },
-  [`${collectionName}.finalize`] (reportId) {
+  [`${collectionName}.finalize`] (reportId, signatureMap) {
+    check(reportId, Number)
+    check(signatureMap, Object)
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
@@ -312,7 +314,8 @@ Meteor.methods({
       ReportSnapshots.insert({
         createdAt: new Date(),
         createdByUser: Meteor.userId(),
-        reportItem
+        reportItem,
+        signatureMap
       })
     }
   },
@@ -355,7 +358,7 @@ Meteor.methods({
       const unitMetaData = UnitMetaData.findOne({bzId: unit.id})
       const unitRolesData = UnitRolesData.find({unitBzId: unit.id}).fetch()
       const storedSnapshot = ReportSnapshots.findOne({'reportItem.id': reportId})
-      let reportBlob
+      let reportBlob, signatureMap
       if (reportItem.status === REPORT_DRAFT_STATUS || !storedSnapshot) {
         populateReportDependees(reportItem, apiKey, errorLogParams)
         reportBlob = reportItem
@@ -367,18 +370,21 @@ Meteor.methods({
             reportItem: reportBlob
           })
         }
+        signatureMap = {}
       } else {
         reportBlob = storedSnapshot.reportItem
+        signatureMap = storedSnapshot.signatureMap || {}
       }
       const reportCreator = Meteor.users.findOne({'bugzillaCreds.login': reportBlob.creator})
       const makeSignObj = user => {
         const userRoleObj = unitRolesData.length && unitRolesData.find(roleItem => roleItem.members.includes(user._id))
         const roleText = userRoleObj ? userRoleObj.roleType : 'Administrator'
+        const signImgUri = signatureMap[user.bugzillaCreds.login] || ''
         return {
           name: user.profile.name || user.emails[0].address.split('@')[0],
           role: roleText,
           email: user.emails[0].address,
-          data_uri: ''
+          data_uri: signImgUri
         }
       }
       const generationPayload = {

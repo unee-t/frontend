@@ -12,9 +12,9 @@ import 'rxjs/add/operator/mergeMap'
 export const finalizeReport = action$ =>
   action$.ofType(FINALIZE_REPORT)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({ reportId }) => {
+    .mergeMap(({ reportId, signatureMap }) => {
       const meteorResult$ = new Subject()
-      Meteor.call(`${collectionName}.finalize`, parseInt(reportId), err => {
+      Meteor.call(`${collectionName}.finalize`, parseInt(reportId), signatureMap, err => {
         if (err) {
           meteorResult$.next(
             genericErrorOccurred(`Failed to finalize report ${reportId} due to: "${err.error}"`)
