@@ -79,7 +79,7 @@ user: ${user.emails[0].address}`
         {this.routeDrawerItem('/report', {
           href: '/report',
           iconRenderer: <ReportIcon isFinalized />,
-          text: 'Report'
+          text: 'Inspection Reports'
         })}
         {this.routeDrawerItem('/case', {
           href: '/case',
