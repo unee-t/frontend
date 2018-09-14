@@ -51,9 +51,18 @@ class ReportWizard extends Component {
     super(...arguments)
     this.state = {
       reportTitle: null,
+      isEditable: false,
       initDone: false
     }
   }
+  handleSubmit = evt => {
+    evt.preventDefault()
+    const { reportTitle } = this.state
+    const { reportItem, dispatch } = this.props
+    dispatch(editReportField(reportItem.id, {title: reportTitle}))
+    this.setState({isEditable: false})
+  }
+
   componentDidUpdate (prevProps) {
     const { isLoading, match, reportItem, dispatch } = this.props
     if (!isLoading && prevProps.isLoading !== isLoading) {
@@ -68,7 +77,11 @@ class ReportWizard extends Component {
         dispatch(replace(match.url.replace(viewMode, enforcedViewMode)))
       }
     }
+    if ((!prevProps.reportItem && reportItem) || (prevProps.reportItem && prevProps.reportItem.title !== reportItem.title)) {
+      this.setState({reportTitle: reportItem.title})
+    }
   }
+
   render () {
     const {
       unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachmentUrls, attachmentUploads
@@ -77,7 +90,7 @@ class ReportWizard extends Component {
     if (isLoading) {
       return <Preloader />
     }
-
+    const { isEditable, reportTitle } = this.state
     const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     const memberIdMatcher = ({ id }) => id === user._id
     const unitDisplayName = (unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name
@@ -97,7 +110,39 @@ class ReportWizard extends Component {
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
         <div className='flex-grow bg-white flex flex-column overflow-auto pa3'>
           <div>
-            {infoItemMembers('Report title', reportItem.title)}
+            { isEditable ? (
+              <div>
+                <form onSubmit={this.handleSubmit}>
+                  <div className='relative'>
+                    <div className='mt1 f6 bondi-blue'>Edit title</div>
+                    <EditableItem
+                      label=''
+                      name={reportItem.title}
+                      key={reportItem.title}
+                      initialValue={reportTitle}
+                      onEdit={val => this.setState({reportTitle: val})}
+                    />
+                    <div className='absolute right-0 tl f6 bondi-blue fw5'>
+                      <FlatButton onClick={() => this.setState({isEditable: false, reportTitle: reportItem.title})} style={{minWidth: '50px'}}>
+                        <span className='silver'> Cancel</span>
+                      </FlatButton>
+                      <FlatButton type='submit' style={{minWidth: '50px'}} disabled={!reportTitle}>
+                        <span className={(reportTitle ? 'bondi-blue' : 'silver')} >
+                          Save
+                        </span>
+                      </FlatButton>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className='relative'>
+                {infoItemMembers('Report title', reportTitle)}
+                <div className='absolute bottom-1 right-0 tl'>
+                  <FontIcon className='material-icons' color='var(--silver)' onClick={() => this.setState({isEditable: true})}>create</FontIcon>
+                </div>
+              </div>
+            )}
           </div>
           <div>
             {infoItemMembers('Unit', unitDisplayName)}

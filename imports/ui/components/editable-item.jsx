@@ -30,12 +30,13 @@ export default class EditableItem extends Component {
     this.props.onEdit(value)
   }
   render () {
-    const { label, isMultiLine, selectionList, disabled } = this.props
+    const { label, isMultiLine, selectionList, disabled, name } = this.props
     const { value } = this.state
 
     if (!selectionList) {
       return (
         <TextField
+          id={name}
           floatingLabelText={label}
           floatingLabelShrinkStyle={textInputFloatingLabelStyle}
           underlineFocusStyle={textInputUnderlineFocusStyle}
