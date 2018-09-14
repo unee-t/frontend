@@ -83,7 +83,6 @@ class ReportWizard extends Component {
     }
 
     const { isEditable, reportTitle } = this.state
-    const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     const memberIdMatcher = ({ id }) => id === user._id
     const unitDisplayName = (unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name
     const matchingMongoRole = unitItem.rolesData().find(
