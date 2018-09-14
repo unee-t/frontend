@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
+import { REPORT_DRAFT_STATUS } from '../../api/reports'
 
 export function ReportList ({ allReports, onItemClick }) {
   return (
@@ -10,7 +11,7 @@ export function ReportList ({ allReports, onItemClick }) {
           <div className='flex items-center'>
             <Link
               className={'link flex-grow ellipsis ml3 pl1 pv3 bondi-blue'}
-              to={`report/${reportItem.id}/review`}
+              to={`report/${reportItem.id}/${reportItem.status === REPORT_DRAFT_STATUS ? 'draft' : 'preview'}`}
               onClick={onItemClick}
             >
               {reportItem.title}
