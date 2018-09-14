@@ -138,6 +138,10 @@
 .scroll-shadow-1 {
   box-shadow: 0 -4px 4px var(--very-light-gray);
 }
+
+.scroll-shadow-2 {
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.25);
+}
 /* Custom Shadows - end */
 
 /* Tachyons rotations - start */

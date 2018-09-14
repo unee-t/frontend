@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Subject } from 'rxjs/Subject'
-import { push } from 'react-router-redux'
+import { go } from 'react-router-redux'
 import { of } from 'rxjs/observable/of'
 import { merge } from 'rxjs/observable/merge'
 import { collectionName } from '../../api/reports'
@@ -12,9 +12,9 @@ import 'rxjs/add/operator/mergeMap'
 export const finalizeReport = action$ =>
   action$.ofType(FINALIZE_REPORT)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({ reportId }) => {
+    .mergeMap(({ reportId, signatureMap }) => {
       const meteorResult$ = new Subject()
-      Meteor.call(`${collectionName}.finalize`, parseInt(reportId), err => {
+      Meteor.call(`${collectionName}.finalize`, parseInt(reportId), signatureMap, err => {
         if (err) {
           meteorResult$.next(
             genericErrorOccurred(`Failed to finalize report ${reportId} due to: "${err.error}"`)
@@ -24,7 +24,7 @@ export const finalizeReport = action$ =>
         meteorResult$.complete()
       })
       return merge(
-        of(push(`/report/${reportId}/preview`)),
+        of(go(-2)),
         meteorResult$
       )
     })

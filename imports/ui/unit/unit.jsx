@@ -195,7 +195,7 @@ class Unit extends Component {
       .sort(sorters[sortBy])
     return filteredReports.map(({ id, title, status, creation_time: date }) => {
       const isFinalized = status !== REPORT_DRAFT_STATUS
-      const viewMode = isFinalized ? 'review' : 'draft'
+      const viewMode = isFinalized ? 'preview' : 'draft'
       return (
         <div key={id} className='relative bb b--very-light-gray bg-white flex items-center'>
           <Link to={`/report/${id}/${viewMode}`} className='link flex-grow relative w-100'>

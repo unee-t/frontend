@@ -16,6 +16,7 @@ import ForgotPass from './forgot-pass/forgot-pass'
 import UnitWizard from './unit-wizard/unit-wizard'
 import UnitExplorer from './unit-explorer/unit-explorer'
 import ReportExplorer from './report-explorer/report-explorer'
+import ReportSignage from './report-signage/report-signage'
 import NotificationSettings from './notification-settings/notification-settings'
 import Unit from './unit/unit'
 import ReportWizard from './report-wizard/report-wizard'
@@ -51,7 +52,8 @@ class App extends Component {
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
               <Route exact path='/report/:reportId/preview' component={ReportPreview} />
-`             <Route path='/report/:reportId/:viewMode' component={ReportWizard} />
+              <Route exact path='/report/:reportId/sign' component={ReportSignage} />
+`             <Route exact path='/report/:reportId/draft' component={ReportWizard} />
 `             <Route path='/report' component={ReportExplorer} />
               <Route exact path='/case/new' component={CaseWizard} />
               <Route path='/case' component={CaseMaster} />

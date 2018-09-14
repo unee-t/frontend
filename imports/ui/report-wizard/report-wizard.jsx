@@ -3,8 +3,8 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { goBack, push, replace } from 'react-router-redux'
-import { Route } from 'react-router-dom'
+import { goBack, push } from 'react-router-redux'
+import { Redirect } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
@@ -23,9 +23,8 @@ import { imageInputEventHandler } from '../util/dom-api'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
-import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { storeBreadcrumb } from '../general-actions'
-import { finalizeReport, editReportField, addAttachment, retryAttachment } from './report-wizard.actions'
+import { editReportField, addAttachment, retryAttachment } from './report-wizard.actions'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
 import UploadPreloader from '../components/upload-preloader'
@@ -64,19 +63,7 @@ class ReportWizard extends Component {
   }
 
   componentDidUpdate (prevProps) {
-    const { isLoading, match, reportItem, dispatch } = this.props
-    if (!isLoading && prevProps.isLoading !== isLoading) {
-      const { viewMode } = match.params
-      let enforcedViewMode
-      if (reportItem.status === REPORT_DRAFT_STATUS && viewMode !== 'draft') {
-        enforcedViewMode = 'draft'
-      } else if (reportItem.status !== REPORT_DRAFT_STATUS && viewMode !== 'review') {
-        enforcedViewMode = 'review'
-      }
-      if (enforcedViewMode) {
-        dispatch(replace(match.url.replace(viewMode, enforcedViewMode)))
-      }
-    }
+    const { reportItem } = this.props
     if ((!prevProps.reportItem && reportItem) || (prevProps.reportItem && prevProps.reportItem.title !== reportItem.title)) {
       this.setState({reportTitle: reportItem.title})
     }
@@ -90,8 +77,12 @@ class ReportWizard extends Component {
     if (isLoading) {
       return <Preloader />
     }
+
+    if (reportItem.status !== REPORT_DRAFT_STATUS) {
+      return <Redirect to={`/report/${reportItem.id}/preview`} />
+    }
+
     const { isEditable, reportTitle } = this.state
-    const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     const memberIdMatcher = ({ id }) => id === user._id
     const unitDisplayName = (unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name
     const matchingMongoRole = unitItem.rolesData().find(
@@ -147,81 +138,66 @@ class ReportWizard extends Component {
           <div>
             {infoItemMembers('Unit', unitDisplayName)}
           </div>
-          {(isDraft || reportItem.additionalComments) && (isDraft ? (
-            <div>
-              <EditableItem
-                label='Remarks and Comments'
-                initialValue={reportItem.additionalComments}
-                onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-                isMultiLine
-              />
-            </div>
-          ) : (
-            <div className='mt3'>
-              {infoItemMembers('Remarks and Comments', reportItem.additionalComments)}
-            </div>
-          ))}
-          {(isDraft || (!isDraft && attachmentUrls.length > 0)) && (
-            <div className='mt3'>
-              {infoItemLabel(isDraft ? 'Attach Photos:' : 'Photos:')}
-              <div className='flex flex-wrap pt1'>
-                {attachmentUrls.map(url => (
-                  <img
-                    key={url}
-                    className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
-                    src={fitDimensions(url, 96, 96)} alt='X'
-                  />
-                ))}
-                {attachmentUploads.map(process => (
-                  <div
-                    key={process.processId}
-                    className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
-                  >
-                    <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
-                    <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
-                  </div>
-                ))}
-                {isDraft && (
-                  <div className='mt2'>
-                    <MenuItem innerDivStyle={resetMenuItemDivStyle}>
-                      <FileInput onFileSelected={imageInputEventHandler(
-                        (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
-                      )}>
-                        <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
-                          <FontIcon className='material-icons' color='var(--light-silver)'>
-                            add_a_photo
-                          </FontIcon>
-                          <div className='light-silver f7 tc mt1'>
-                            Add new
-                          </div>
-                        </div>
-                      </FileInput>
-                    </MenuItem>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-          {(isDraft || (!isDraft && childCases.length > 0)) && ( // Show only if draft or final but with cases
-            <div className='pv2 mt2'>
-              <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
-                {isDraft
-                  ? 'Is there any defect which needs to be corrected or fixed?'
-                  : 'Defects reported on creation'
-                }
-              </div>
-              {childCases.map(caseItem => (
-                <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                  dispatch(storeBreadcrumb(match.url))
-                  dispatch(push(`/case/${caseItem.id}`))
-                }} />
+          <div>
+            <EditableItem
+              label='Remarks and Comments'
+              initialValue={reportItem.additionalComments}
+              onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+              isMultiLine
+            />
+          </div>
+          <div className='mt3'>
+            {infoItemLabel('Attach Photos:')}
+            <div className='flex flex-wrap pt1'>
+              {attachmentUrls.map(url => (
+                <img
+                  key={url}
+                  className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
+                  src={fitDimensions(url, 96, 96)} alt='X'
+                />
               ))}
-              {isDraft && makeCreationButton(
-                'Add case',
-                () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
-              )}
+              {attachmentUploads.map(process => (
+                <div
+                  key={process.processId}
+                  className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
+                >
+                  <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
+                  <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
+                </div>
+              ))}
+              <div className='mt2'>
+                <MenuItem innerDivStyle={resetMenuItemDivStyle}>
+                  <FileInput onFileSelected={imageInputEventHandler(
+                    (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
+                  )}>
+                    <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
+                      <FontIcon className='material-icons' color='var(--light-silver)'>
+                        add_a_photo
+                      </FontIcon>
+                      <div className='light-silver f7 tc mt1'>
+                        Add new
+                      </div>
+                    </div>
+                  </FileInput>
+                </MenuItem>
+              </div>
             </div>
-          )}
+          </div>
+          <div className='pv2 mt2'>
+            <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
+              Is there any defect which needs to be corrected or fixed?
+            </div>
+            {childCases.map(caseItem => (
+              <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
+                dispatch(storeBreadcrumb(match.url))
+                dispatch(push(`/case/${caseItem.id}`))
+              }} />
+            ))}
+            {makeCreationButton(
+              'Add case',
+              () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
+            )}
+          </div>
           {/* <div className='ph3 pv2 mt2'>
             {infoItemLabel('Rooms')}
             <div className='moon-gray f7 mt2'>
@@ -236,67 +212,30 @@ class ReportWizard extends Component {
           </div>
         </div>
         <div className='bg-white tr scroll-shadow-1 z-999'>
-          {isDraft ? (
-            <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
-              <div className='flex-grow'>
-                <RaisedButton
-                  fullWidth
-                  onClick={() => dispatch(goBack())}
-                >
-                  <span className='bondi-blue mh4'>
-                    Save Draft
-                  </span>
-                </RaisedButton>
-              </div>
-              <div className='flex-grow ml2'>
-                <RaisedButton
-                  primary
-                  fullWidth
-                  onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
-                >
-                  <span className='white mh4'>
-                    Preview
-                  </span>
-                </RaisedButton>
-              </div>
+          <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
+            <div className='flex-grow'>
+              <RaisedButton
+                fullWidth
+                onClick={() => dispatch(goBack())}
+              >
+                <span className='bondi-blue mh4'>
+                  Save Draft
+                </span>
+              </RaisedButton>
             </div>
-          ) : (
-            <div className='dib ph3 pb3 pt2'>
-              <div className='flex justify-end items-center'>
-                <div key='text' className='f5 i moon-gray'>
-                  This report has been finalized
-                </div>
-                <FontIcon key='icon' className='material-icons ml2' color='var(--success-green)'>
-                  check_circle
-                </FontIcon>
-              </div>
-              <div className='tr mt2'>
-                <RaisedButton
-                  primary
-                  onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
-                >
-                  <span className='white mh4'>
-                    Preview & Endorse
-                  </span>
-                </RaisedButton>
-              </div>
+            <div className='flex-grow ml2'>
+              <RaisedButton
+                primary
+                fullWidth
+                onClick={() => dispatch(push(`/report/${reportItem.id}/preview`))}
+              >
+                <span className='white mh4'>
+                  Preview
+                </span>
+              </RaisedButton>
             </div>
-          )}
+          </div>
         </div>
-        {isDraft && (
-          <Route exact path={`${match.url}/confirm`} children={({ match }) => (
-            <ConfirmationDialog
-              show={!!match}
-              title='Are you sure it is complete?'
-              onConfirm={() => dispatch(finalizeReport(reportItem.id))}
-              onCancel={() => dispatch(goBack())}
-            >
-              <div className='near-black'>
-                You will not be able to make any further changes to this version of the report
-              </div>
-            </ConfirmationDialog>
-          )} />
-        )}
       </div>
     )
   }

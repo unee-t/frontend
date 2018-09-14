@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, push } from 'react-router-redux'
 import CircularProgress from 'material-ui/CircularProgress'
-import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 
 import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
@@ -24,7 +23,7 @@ class ReportPreview extends Component {
       return <Preloader />
     }
 
-    const isFinal = reportItem.status !== REPORT_DRAFT_STATUS
+    const isDraft = reportItem.status === REPORT_DRAFT_STATUS
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
@@ -36,36 +35,36 @@ class ReportPreview extends Component {
           ) : previewUrl && (
             <iframe className='bn flex-grow' src={previewUrl} />
           )}
-          {isFinal && (
-            <div className='bg-white scroll-shadow-1 pa3 tc'>
-              <div className='flex items-center justify-center'>
-                <FontIcon className='material-icons' color='var(--success-green)' style={{fontSize: '2rem'}}>
-                  check_circle
-                </FontIcon>
-                <h3 className='fw5 lh-solid ml1 dark-gray ma0'>Report Complete</h3>
-              </div>
-              <div className='dark-gray lh-title mt2'>
-                Report <span className='fw7'>{reportItem.title}</span> is complete. <br />
-                Would you like to endorse the report?
-              </div>
-              <div className='mt3'>
+          <div className='bg-white scroll-shadow-2 pa3 tc z-999'>
+            {isDraft ? (
+              <div>
                 <RaisedButton
                   primary
-                  disabled
-                  onClick={() => dispatch(push(`/report/${reportItem.id}/endorse`))}
+                  fullWidth
+                  onClick={() => dispatch(push(`/report/${reportItem.id}/sign`))}
                 >
                   <span className='white mh4'>
-                    Endorse Report
+                    Sign Report
                   </span>
                 </RaisedButton>
+                <div className='mt3'>
+                  <a className='link bondi-blue' onClick={() => dispatch(goBack())}>
+                    Continue editing report
+                  </a>
+                </div>
               </div>
-              <div className='mt2'>
-                <a className='link bondi-blue fw5' onClick={() => dispatch(goBack())}>
-                  No thanks, I'll do it later
-                </a>
-              </div>
-            </div>
-          )}
+            ) : (
+              <RaisedButton
+                primary
+                fullWidth
+                disabled
+              >
+                <span className='white mh4'>
+                  Share report
+                </span>
+              </RaisedButton>
+            )}
+          </div>
         </div>
       </div>
     )
