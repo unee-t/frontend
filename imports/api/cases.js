@@ -5,6 +5,7 @@ import bugzillaApi from '../util/bugzilla-api'
 import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
+import { serverHelpers } from './units'
 import UnitMetaData, { collectionName as unitMetaCollName } from './unit-meta-data'
 import { emailValidator } from '../util/validators'
 import
@@ -383,9 +384,7 @@ Meteor.methods({
 
       let unitItem
       try {
-        const requestUrl = `/rest/product?names=${encodeURIComponent(params.selectedUnit)}`
-        const unitResult = callAPI('get', requestUrl, {api_key: apiKey}, false, true)
-        unitItem = unitResult.data.products[0]
+        unitItem = serverHelpers.getAPIUnitByName(params.selectedUnit, apiKey)
       } catch (e) {
         console.error(e)
         throw new Meteor.Error('API error')

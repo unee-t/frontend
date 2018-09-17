@@ -4,7 +4,7 @@ import { check } from 'meteor/check'
 import { HTTP } from 'meteor/http'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
-import { getUnitRoles } from './units'
+import { getUnitRoles, serverHelpers } from './units'
 import ReportSnapshots from './report-snapshots'
 import { attachmentTextMatcher } from '../util/matchers'
 import { makeAssociationFactory, withDocs } from './base/associations-helper'
@@ -195,9 +195,7 @@ Meteor.methods({
 
       let unitItem
       try {
-        const requestUrl = `/rest/product?names=${encodeURIComponent(selectedUnit)}`
-        const unitResult = callAPI('get', requestUrl, {api_key: apiKey}, false, true)
-        unitItem = unitResult.data.products[0]
+        unitItem = serverHelpers.getAPIUnitByName(selectedUnit, apiKey)
       } catch (e) {
         console.error({
           step: 'get /rest/product/...',
@@ -345,8 +343,7 @@ Meteor.methods({
       }
       let unit
       try {
-        unit = bugzillaApi
-          .callAPI('get', `/rest/product?names=${reportItem.product}`, {api_key: apiKey}, false, true).data.products[0]
+        unit = serverHelpers.getAPIUnitByName(reportItem.product, apiKey)
       } catch (e) {
         console.error({
           ...errorLogParams,

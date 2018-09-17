@@ -19,6 +19,23 @@ export const factoryOptions = {
   dataResolver: data => data.products
 }
 
+export let serverHelpers
+
+if (Meteor.isServer) {
+  serverHelpers = {
+    getAPIUnitByName (unitName, apiKey) {
+      try {
+        const requestUrl = `/rest/product?names=${encodeURIComponent(unitName)}`
+        const unitResult = callAPI('get', requestUrl, {api_key: apiKey}, false, true)
+        return unitResult.data.products[0]
+      } catch (e) {
+        // Pass through just to highlight this method can throw
+        throw e
+      }
+    }
+  }
+}
+
 const makeInvitationMatcher = unitItem => ({
   receivedInvites: {
     $elemMatch: {
