@@ -39,7 +39,7 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   const emailAddr = assignee.emails[0].address
   const emailProps = {
     to: emailAddr,
-    from: process.env.FROM_EMAIL
+    from: fromEmail
   }
 
   if (responseBugId) {
