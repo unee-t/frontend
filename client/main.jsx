@@ -64,8 +64,6 @@ Accounts.onEmailVerificationLink((token, done) => {
 // Inspired by: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
 function calcCustomVhVar () {
   const vh = window.innerHeight * 0.01
-  console.log('curr vh', vh)
-
   document.documentElement.style.setProperty('--vh', `${vh}px`)
 }
 
