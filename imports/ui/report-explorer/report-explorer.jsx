@@ -13,8 +13,10 @@ import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FontIcon from 'material-ui/FontIcon'
-import { push } from 'react-router-redux'
+import { push, goBack } from 'react-router-redux'
 import { ReportList } from '../report-explorer/report-list'
+import { Route } from 'react-router-dom'
+import SelectUnitDialog from '../dialogs/select-unit-dialog'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -61,10 +63,12 @@ class ReportExplorer extends Component {
   )
 
   render () {
-    const { isLoading, dispatch, reportList } = this.props
+    const { isLoading, dispatch, reportList, match } = this.props
     const { filterStatus, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
+    console.log('report grouping', reportGrouping)
+    console.log('reportList', reportList)
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar title='My Reports' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
@@ -91,9 +95,21 @@ class ReportExplorer extends Component {
             }
           </div>
           <div className='absolute right-1 bottom-2'>
-            <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
+            {/* <FloatingActionButton onClick={() => dispatch(push('/unit'))}> */}
+            <FloatingActionButton onClick={() => dispatch(push(`${match.url}/select-unit`))}>
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
+            <Route
+              exact
+              path={`${match.url}/select-unit`}
+              render={() =>
+                <SelectUnitDialog
+                  show={!!match}
+                  onDismissed={() => dispatch(goBack())}
+                  units={reportGrouping}
+                />
+              }
+            />
           </div>
         </div>
       </div>
