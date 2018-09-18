@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Email } from 'meteor/email'
+import crypto from 'crypto'
 import MessagePayloads from '../message-payloads'
 import CaseNotifications from '../case-notifications'
 import caseAssigneeUpdateTemplate from '../../email-templates/case-assignee-updated'
@@ -29,13 +30,23 @@ function getUserByBZId (idStr) {
   return Meteor.users.findOne({ 'bugzillaCreds.id': parseInt(idStr) })
 }
 
-function sendEmail (assignee, emailContent, notificationId) {
+function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   const emailAddr = assignee.emails[0].address
+  const emailProps = {
+    to: emailAddr,
+    from: process.env.FROM_EMAIL
+  }
+
+  if (responseBugId) {
+    const signature = crypto
+      .createHmac('sha256', process.env.API_ACCESS_TOKEN)
+      .update(responseBugId.toString())
+      .digest('hex')
+    const emailDomain = process.env.FROM_EMAIL.split('@')[1]
+    emailProps.replyTo = `reply+${responseBugId}-${signature}@${emailDomain}`
+  }
   try {
-    Email.send(Object.assign({
-      to: emailAddr,
-      from: process.env.FROM_EMAIL
-    }, emailContent))
+    Email.send(Object.assign(emailProps, emailContent))
     console.log('Sent', emailAddr, 'notification:', notificationId)
   } catch (e) {
     console.error(`An error ${e} occurred while sending an email to ${emailAddr}`)
@@ -170,7 +181,7 @@ export default (req, res) => {
       )
     } else {
       const emailContent = emailTemplateFn(...[recipient, notificationId, settingType].concat(emailTemplateParams))
-      sendEmail(recipient, emailContent, notificationId)
+      sendEmail(recipient, emailContent, notificationId, caseId)
     }
   })
 
