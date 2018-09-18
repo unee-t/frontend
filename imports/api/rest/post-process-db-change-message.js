@@ -30,11 +30,16 @@ function getUserByBZId (idStr) {
   return Meteor.users.findOne({ 'bugzillaCreds.id': parseInt(idStr) })
 }
 
+const fromEmail = process.env.FROM_EMAIL
+const emailDomain = fromEmail.indexOf('<') === -1
+  ? fromEmail.split('@')[1]
+  : fromEmail.match(/<.+@(.+)>/)[1]
+
 function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   const emailAddr = assignee.emails[0].address
   const emailProps = {
     to: emailAddr,
-    from: process.env.FROM_EMAIL
+    from: fromEmail
   }
 
   if (responseBugId) {
@@ -42,7 +47,7 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId) {
       .createHmac('sha256', process.env.API_ACCESS_TOKEN)
       .update(responseBugId.toString())
       .digest('hex')
-    const emailDomain = process.env.FROM_EMAIL.split('@')[1]
+
     emailProps.replyTo = `reply+${responseBugId}-${signature}@${emailDomain}`
   }
   try {
