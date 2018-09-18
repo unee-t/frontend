@@ -47,6 +47,7 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId) {
       .createHmac('sha256', process.env.API_ACCESS_TOKEN)
       .update(responseBugId.toString())
       .digest('hex')
+
     emailProps.replyTo = `reply+${responseBugId}-${signature}@${emailDomain}`
   }
   try {
