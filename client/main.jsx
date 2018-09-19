@@ -7,6 +7,7 @@ import { ConnectedRouter } from 'react-router-redux'
 import { Accounts } from 'meteor/accounts-base'
 
 import { Provider } from 'react-redux'
+import _ from 'lodash'
 import { Store, history } from '../imports/state/store'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import theme from '../imports/mui-theme/unee-t-theme'
@@ -58,3 +59,17 @@ Accounts.onEmailVerificationLink((token, done) => {
     }
   })
 })
+
+// Top level code for mobile viewport full height fix
+// Inspired by: https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
+function calcCustomVhVar () {
+  const vh = window.innerHeight * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+}
+
+window.onload = () => {
+  calcCustomVhVar()
+}
+window.addEventListener('resize', _.throttle(() => {
+  calcCustomVhVar()
+}, 250))
