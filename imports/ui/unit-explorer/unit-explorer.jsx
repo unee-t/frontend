@@ -73,6 +73,7 @@ class UnitExplorer extends Component {
           shadowless
           searchText={searchText}
           onSearchChanged={this.onSearchChanged}
+          showSearch
         />
         <UnverifiedWarning />
         { searchMode ? (

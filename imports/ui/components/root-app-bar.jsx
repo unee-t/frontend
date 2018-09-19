@@ -25,7 +25,7 @@ class RootAppBar extends Component {
   }
 
   render () {
-    const { title, onSearchChanged, placeholder, onIconClick, shadowless, searchText } = this.props
+    const { title, onSearchChanged, placeholder, onIconClick, shadowless, searchText, showSearch } = this.props
     const { searchTextDisplay } = this.state
     return (
       <AppBar
@@ -63,7 +63,7 @@ class RootAppBar extends Component {
         }
         iconElementRight={
           <div>
-            <span className={(searchTextDisplay ? 'dn' : '')}>
+            <span className={((!showSearch || searchTextDisplay) ? 'dn' : '')}>
               <IconButton onClick={() => this.setState({searchTextDisplay: true})}>
                 <FontIcon className='material-icons' color='white'>
                   search
