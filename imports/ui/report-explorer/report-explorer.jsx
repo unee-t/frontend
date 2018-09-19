@@ -67,8 +67,6 @@ class ReportExplorer extends Component {
     const { filterStatus, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
-    console.log('report grouping', reportGrouping)
-    console.log('reportList', reportList)
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar title='My Reports' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
@@ -106,15 +104,8 @@ class ReportExplorer extends Component {
                 <SelectUnitDialog
                   show={!!match}
                   onDismissed={() => dispatch(goBack())}
-                  units={reportGrouping} />
+                />
               )}
-              // render={() =>
-              //   <SelectUnitDialog
-              //     show={!!match}
-              //     onDismissed={() => dispatch(goBack())}
-              //     units={reportGrouping}
-              //   />
-              // }
             />
           </div>
         </div>

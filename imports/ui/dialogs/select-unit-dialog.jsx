@@ -10,12 +10,16 @@ import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 import CreateReportDialog from '../dialogs/create-report-dialog'
-import { Route, Link } from 'react-router-dom'
+import { Route } from 'react-router-dom'
+import { Meteor } from 'meteor/meteor'
+import Units, { collectionName } from '../../api/units'
+import Preloader from '../preloader/preloader'
+import FloatingActionButton from 'material-ui/FloatingActionButton'
 
 class SelectUnitDialog extends Component {
   render () {
-    const { show, onDismissed, inProgress, units, dispatch, match } = this.props
-    console.log('match', match)
+    const { isLoading, show, onDismissed, inProgress, dispatch, match, unitList } = this.props
+    if (isLoading) return <Preloader />
     return (
       <Dialog
         title='Select the unit'
@@ -29,42 +33,38 @@ class SelectUnitDialog extends Component {
             <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
           </button>
         )}
-        <div className='overflow-auto ba b--moon-gray pa2 tc br1'>
-          <div className='pb2'>
-            {units.map(({ unitTitle, unitType, items }) =>
-              <div key={unitTitle}>
-                {/* <Link to={`/unit/${items[0].id}/reports/new`} className='link flex-grow relative w-100'> */}
+        <div className='overflow-auto'>
+          <div className='pb2 ba b--moon-gray pa2 br1'>
+            {unitList.map(({ name, metaData, description, id }) =>
+              <div key={name}>
                 <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                  onClick={() => dispatch(push(`/unit/${items[0].id}/reports/new`))} >
-                  <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                    <UnitTypeIcon unitType={unitType} />
+                  onClick={() => dispatch(push(`/unit/${id}/reports/new`))} >
+                  <div className='bb b--very-light-gray br1 w-100 flex items-center'>
+                    <UnitTypeIcon metaData={metaData} />
                     <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                      <div className='ti1 ellipsis'>{unitTitle}</div>
-                      <div className='ti1 ellipsis silver'>{items[0].unitMetaData && items[0].unitMetaData.moreInfo}&nbsp;</div>
+                      <div className='ti1 ellipsis'>{name}</div>
+                      <div className='ti1 ellipsis silver'>{description}&nbsp;</div>
                     </div>
                   </div>
                 </MenuItem>
-                {/* </Link> */}
-                <Route path={`/unit/${items[0].id}/reports/new`}
-                  // children={({ match }) => (
-                  //   <CreateReportDialog
-                  //     show={!!match}
-                  //     onDismissed={() => dispatch(goBack())}
-                  //     unitName={unitTitle}
-                  //   />
-                  // )} 
+                <Route path={`/unit/${id}/reports/new`}
                   render={() =>
                     <CreateReportDialog
-                      key={items.id}
+                      key={id}
                       show={!!match}
                       onDismissed={() => dispatch(goBack())}
-                      unitName={unitTitle}
+                      unitName={name}
                     />
                   }
                 />
               </div>
             )}
           </div>
+          <FloatingActionButton
+            onClick={() => dispatch(push(`/unit/new`))}
+          >
+            <span> Add a new unit </span>
+          </FloatingActionButton>
         </div>
       </Dialog>
     )
@@ -76,7 +76,21 @@ SelectUnitDialog.propTypes = {
   onDismissed: PropTypes.func.isRequired
 }
 
+let unitsError
 export default connect(({ reportCreationState }) => ({
   inProgress: !!reportCreationState.inProgress,
   error: reportCreationState.error || ''
-}))(createContainer(() => ({}), SelectUnitDialog))
+}))(createContainer(() => {
+  const unitsHandle = Meteor.subscribe(`${collectionName}.forBrowsing`, {
+    onStop: (error) => {
+      unitsError = error
+    }
+  })
+  return {
+    unitList: Units.find().fetch().map(unit => Object.assign({}, unit, {
+      metaData: unit.metaData()
+    })),
+    isLoading: !unitsHandle.ready(),
+    unitsError
+  }
+}, SelectUnitDialog))
