@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import UnitsByRoles from './units-by-roles'
+import FilteredUnits from './filtered-units'
 import PropTypes from 'prop-types'
 
-export default class FilteredUnitsList extends Component {
+export default class FilteredUnitsContainer extends Component {
   render () {
     const { filteredUnits, currentUserId, active, handleAddCaseClicked, handleUnitClicked, showAddBtn } = this.props
     const administratedUnits = filteredUnits.filter(unit => unit.metaData.ownerIds && unit.metaData.ownerIds.includes(currentUserId))
@@ -15,18 +15,19 @@ export default class FilteredUnitsList extends Component {
             { active ? ('You have no units managed with Unee-T yet') : ('You have no disabled units') }
           </div>
         ) : <div>
-          <UnitsByRoles
-            unitsByRoles={administratedUnits}
+          <FilteredUnits
+            filteredUnits={administratedUnits}
             handleAddCaseClicked={handleAddCaseClicked}
             handleUnitClicked={handleUnitClicked}
             showAddBtn={showAddBtn}
-            administrate
+            titleMode={1}
           />
-          <UnitsByRoles
-            unitsByRoles={unitsInvolvedIn}
+          <FilteredUnits
+            filteredUnits={unitsInvolvedIn}
             handleAddCaseClicked={handleAddCaseClicked}
             handleUnitClicked={handleUnitClicked}
             showAddBtn={showAddBtn}
+            titleMode={2}
           />
         </div>
         }
@@ -35,7 +36,7 @@ export default class FilteredUnitsList extends Component {
   }
 }
 
-FilteredUnitsList.propTypes = {
+FilteredUnitsContainer.propTypes = {
   filteredUnits: PropTypes.array,
   currrentUserId: PropTypes.string,
   active: PropTypes.bool,
