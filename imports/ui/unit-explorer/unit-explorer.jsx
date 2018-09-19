@@ -13,13 +13,17 @@ import Units, { collectionName } from '../../api/units'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
-import FilteredUnitsList from './filtered-units-list'
+import FilteredUnitsContainer from './filtered-units-container'
+import FilteredUnits from './filtered-units'
 
 class UnitExplorer extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      slideIndex: 0
+      slideIndex: 0,
+      searchResult: [],
+      searchMode: false,
+      searchText: ''
     }
   }
 
@@ -39,55 +43,82 @@ class UnitExplorer extends Component {
     dispatch(push(`/unit/${id}`))
   }
 
+  onSearchChanged = (searchText) => {
+    this.setState({searchText})
+    if (searchText === '') {
+      this.setState({searchMode: false})
+    } else {
+      this.setState({searchMode: true})
+      const matcher = new RegExp(searchText, 'i')
+      const searchResult = this.props.unitList
+        .filter(unit => !matcher || (unit.name && unit.name.match(matcher)))
+      this.setState({
+        searchResult: searchResult
+      })
+    }
+  }
+
   render () {
     const { isLoading, unitList, dispatch, currentUserId } = this.props
-
+    const { searchResult, searchMode, searchText } = this.state
     if (isLoading) return <Preloader />
     const activeUnits = unitList.filter(unitItem => unitItem.metaData && !unitItem.metaData.disabled)
     const disabledUnits = unitList.filter(unitItem => unitItem.metaData && unitItem.metaData.disabled)
-
     return (
       <div className='flex flex-column flex-grow full-height'>
-        <RootAppBar title='My Units' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
+        <RootAppBar
+          title='My Units'
+          placeholder='Search units...'
+          onIconClick={() => dispatch(setDrawerState(true))}
+          shadowless
+          searchText={searchText}
+          onSearchChanged={this.onSearchChanged}
+        />
         <UnverifiedWarning />
-        <div className='flex-grow flex flex-column overflow-hidden'>
-          <Tabs
-            className='no-shrink'
-            onChange={this.handleChange}
-            value={this.state.slideIndex}
-            inkBarStyle={{backgroundColor: 'white'}}
-          >
-            <Tab label='Active' value={0} />
-            <Tab label='Disabled' value={1} />
-          </Tabs>
-
-          <div className='flex-grow flex flex-column overflow-auto'>
-            <SwipeableViews
-              index={this.state.slideIndex}
-              onChangeIndex={this.handleChange}
+        { searchMode ? (
+          <FilteredUnits filteredUnits={searchResult}
+            titleMode={0}
+            handleUnitClicked={this.handleUnitClicked}
+          />
+        ) : (
+          <div className='flex-grow flex flex-column overflow-hidden'>
+            <Tabs
+              className='no-shrink'
+              onChange={this.handleChange}
+              value={this.state.slideIndex}
+              inkBarStyle={{backgroundColor: 'white'}}
             >
-              {/* tab 1 */}
-              <div className='flex-grow bb b--very-light-gray bg-white pb6'>
-                <FilteredUnitsList
-                  filteredUnits={activeUnits}
-                  currentUserId={currentUserId}
-                  handleUnitClicked={this.handleUnitClicked}
-                  handleAddCaseClicked={this.handleAddCaseClicked}
-                  showAddBtn
-                  active
-                />
-              </div>
-              {/* tab 2 */}
-              <div className='flex-grow bb b--very-light-gray bg-white pb6'>
-                <FilteredUnitsList
-                  filteredUnits={disabledUnits}
-                  currentUserId={currentUserId}
-                  handleUnitClicked={this.handleUnitClicked}
-                />
-              </div>
-            </SwipeableViews>
+              <Tab label='Active' value={0} />
+              <Tab label='Disabled' value={1} />
+            </Tabs>
+            <div className='flex-grow flex flex-column overflow-auto'>
+              <SwipeableViews
+                index={this.state.slideIndex}
+                onChangeIndex={this.handleChange}
+              >
+                {/* tab 1 */}
+                <div className='flex-grow bb b--very-light-gray bg-white pb6'>
+                  <FilteredUnitsContainer
+                    filteredUnits={activeUnits}
+                    currentUserId={currentUserId}
+                    handleUnitClicked={this.handleUnitClicked}
+                    handleAddCaseClicked={this.handleAddCaseClicked}
+                    showAddBtn
+                    active
+                  />
+                </div>
+                {/* tab 2 */}
+                <div className='flex-grow bb b--very-light-gray bg-white pb6'>
+                  <FilteredUnitsContainer
+                    filteredUnits={disabledUnits}
+                    currentUserId={currentUserId}
+                    handleUnitClicked={this.handleUnitClicked}
+                  />
+                </div>
+              </SwipeableViews>
+            </div>
           </div>
-        </div>
+        ) }
         <div className='absolute bottom-2 right-2'>
           <FloatingActionButton
             onClick={() => dispatch(push(`/unit/new`))}

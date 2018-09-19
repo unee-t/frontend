@@ -14,6 +14,9 @@ export const textInputUnderlineFocusStyle = {
 export const selectInputIconStyle = {
   fill: 'var(--mid-gray)'
 }
+export const whiteInput = {
+  color: 'white'
+}
 
 export const whiteTextInputStyle = {
   backgroundColor: '#fff',
