@@ -102,13 +102,19 @@ class ReportExplorer extends Component {
             <Route
               exact
               path={`${match.url}/select-unit`}
-              render={() =>
+              children={({match}) => (
                 <SelectUnitDialog
                   show={!!match}
                   onDismissed={() => dispatch(goBack())}
-                  units={reportGrouping}
-                />
-              }
+                  units={reportGrouping} />
+              )}
+              // render={() =>
+              //   <SelectUnitDialog
+              //     show={!!match}
+              //     onDismissed={() => dispatch(goBack())}
+              //     units={reportGrouping}
+              //   />
+              // }
             />
           </div>
         </div>

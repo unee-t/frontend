@@ -12,7 +12,8 @@ import { resetMenuItemDivStyle } from '../general.mui-styles'
 
 class SelectUnitDialog extends Component {
   render () {
-    const { show, onDismissed, inProgress, units, dispatch } = this.props
+    const { show, onDismissed, inProgress, units, dispatch, match } = this.props
+    console.log('match', match)
     return (
       <Dialog
         title='Select the unit'
@@ -28,25 +29,35 @@ class SelectUnitDialog extends Component {
         )}
         <div className='overflow-scroll ba b--moon-gray mt2 pa2 tc br1 mr3 ml3'>
           {units.map(({ unitTitle, unitType, items }) =>
-            <MenuItem key={unitTitle} innerDivStyle={resetMenuItemDivStyle}
-              onClick={() => dispatch(push(`/unit/${items[0].id}/reports/new`))} >
-              <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
-                {/* <UnitTypeIcon metaData={unitType} /> */}
-                <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                  <div className='ti1 ellipsis'>{unitTitle}</div>
-                  {/* <div className='ti1 ellipsis silver'>{items[0].unitMetaData.moreInfo}&nbsp;</div> */}
+            <div>
+              <MenuItem key={unitTitle} innerDivStyle={resetMenuItemDivStyle}
+                onClick={() => dispatch(push(`/reports/new`))} >
+                <div className='mt2 ph2 bb b--very-light-gray br1 w-100 flex items-center pa2'>
+                  {/* <UnitTypeIcon metaData={unitType} /> */}
+                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                    <div className='ti1 ellipsis'>{unitTitle}</div>
+                    {/* <div className='ti1 ellipsis silver'>{items[0].unitMetaData.moreInfo}&nbsp;</div> */}
+                  </div>
                 </div>
-              </div>
-            </MenuItem>
-
-            // <div key={unitTitle} onClick={() => dispatch(push(`/unit/${items.id}/reports/new`))}>
-            //   <div className='flex h3 bt b--light-gray bg-white'>
-            //     <UnitTypeIcon iconInReport={unitType} />
-            //     <div className='flex-grow mid-gray '>
-            //       {unitTitle}
-            //     </div>
-            //   </div>
-            // </div>
+              </MenuItem>
+              <Route
+              exact
+              path={`${match.url}/select-unit`}
+              children={({match}) => (
+                <SelectUnitDialog
+                  show={!!match}
+                  onDismissed={() => dispatch(goBack())}
+                  units={reportGrouping} />
+              )}
+              // render={() =>
+              //   <SelectUnitDialog
+              //     show={!!match}
+              //     onDismissed={() => dispatch(goBack())}
+              //     units={reportGrouping}
+              //   />
+              // }
+            />
+            </div>
           )}
         </div>
       </Dialog>
