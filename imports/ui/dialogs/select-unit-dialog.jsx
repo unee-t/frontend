@@ -14,7 +14,7 @@ import { Route } from 'react-router-dom'
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import Preloader from '../preloader/preloader'
-import FloatingActionButton from 'material-ui/FloatingActionButton'
+import RaisedButton from 'material-ui/RaisedButton'
 
 class SelectUnitDialog extends Component {
   render () {
@@ -60,11 +60,20 @@ class SelectUnitDialog extends Component {
               </div>
             )}
           </div>
-          <FloatingActionButton
-            onClick={() => dispatch(push(`/unit/new`))}
-          >
+          <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
             <span> Add a new unit </span>
-          </FloatingActionButton>
+          </div>
+          <div className='ph3'>
+            <RaisedButton
+              fullWidth
+              backgroundColor='var(--bondi-blue)'
+              type='submit'
+            >
+              <span className='white f4'>
+                Create Report
+              </span>
+            </RaisedButton>
+          </div>
         </div>
       </Dialog>
     )
