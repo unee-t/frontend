@@ -17,7 +17,7 @@ import Preloader from '../preloader/preloader'
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
 
-class SelectUnitDialog extends Component {
+class UnitSelectDialog extends Component {
   constructor (props) {
     super(props)
     this.state = {
@@ -129,7 +129,7 @@ class SelectUnitDialog extends Component {
   }
 }
 
-SelectUnitDialog.propTypes = {
+UnitSelectDialog.propTypes = {
   show: PropTypes.bool.isRequired,
   onDismissed: PropTypes.func.isRequired
 }
@@ -151,4 +151,4 @@ export default connect(({ reportCreationState }) => ({
     isLoading: !unitsHandle.ready(),
     unitsError
   }
-}, SelectUnitDialog))
+}, UnitSelectDialog))

@@ -16,7 +16,7 @@ import FontIcon from 'material-ui/FontIcon'
 import { push, goBack } from 'react-router-redux'
 import { ReportList } from '../report-explorer/report-list'
 import { Route } from 'react-router-dom'
-import SelectUnitDialog from '../dialogs/select-unit-dialog'
+import UnitSelectDialog from '../dialogs/unit-select-dialog'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -94,14 +94,14 @@ class ReportExplorer extends Component {
           </div>
           <div className='absolute right-1 bottom-2'>
             {/* <FloatingActionButton onClick={() => dispatch(push('/unit'))}> */}
-            <FloatingActionButton onClick={() => dispatch(push(`${match.url}/select-unit`))}>
+            <FloatingActionButton onClick={() => dispatch(push(`${match.url}/unit-select`))}>
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
             <Route
               exact
-              path={`${match.url}/select-unit`}
+              path={`${match.url}/unit-select`}
               children={({match}) => (
-                <SelectUnitDialog
+                <UnitSelectDialog
                   show={!!match}
                   onDismissed={() => dispatch(goBack())}
                 />
