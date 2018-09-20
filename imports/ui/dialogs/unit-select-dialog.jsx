@@ -44,7 +44,7 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { isLoading, show, onDismissed, inProgress, dispatch, match, unitList } = this.props
+    const { isLoading, show, onDismissed, inProgress, dispatch, match, unitList, item } = this.props
     const { searchText, searchMode, searchResult, unitId } = this.state
     const units = searchMode ? searchResult : unitList
     if (isLoading) return <Preloader />
@@ -117,10 +117,14 @@ class UnitSelectDialog extends Component {
             backgroundColor='var(--bondi-blue)'
             type='submit'
             disabled={unitId === null}
-            onClick={() => dispatch(push(`/unit/${unitId}/reports/new`))}
+            onClick={() => item === 'Report'
+              ? (dispatch(push(`/unit/${unitId}/reports/new`))
+              ) : (
+                dispatch(push(`/case/new?unit=${unitId}`))
+              )}
           >
             <span className='white f4'>
-              Create Report
+              Create {item}
             </span>
           </RaisedButton>
         </div>

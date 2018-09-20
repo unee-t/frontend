@@ -93,7 +93,6 @@ class ReportExplorer extends Component {
             }
           </div>
           <div className='absolute right-1 bottom-2'>
-            {/* <FloatingActionButton onClick={() => dispatch(push('/unit'))}> */}
             <FloatingActionButton onClick={() => dispatch(push(`${match.url}/unit-select`))}>
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
@@ -104,6 +103,7 @@ class ReportExplorer extends Component {
                 <UnitSelectDialog
                   show={!!match}
                   onDismissed={() => dispatch(goBack())}
+                  item='Report'
                 />
               )}
             />
