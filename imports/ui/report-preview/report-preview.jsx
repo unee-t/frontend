@@ -27,13 +27,15 @@ class ReportPreview extends Component {
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
-        <div className='flex-grow overflow-auto flex flex-column'>
+        <div className='flex-grow flex flex-column'>
           {previewIsLoading ? (
             <div className='flex-grow flex items-center justify-center'>
               <CircularProgress size={70} thickness={5} />
             </div>
           ) : previewUrl && (
-            <iframe className='bn flex-grow' src={previewUrl} />
+            <div className='flex-grow overflow-auto'>
+              <iframe className='bn w-100 h-100' src={previewUrl} />
+            </div>
           )}
           <div className='bg-white scroll-shadow-2 pa3 tc z-999'>
             {isDraft ? (

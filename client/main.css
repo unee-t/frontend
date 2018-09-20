@@ -448,6 +448,10 @@
 }
 /* Custom transitions for react-transition-group -end */
 
-.obj-cover{
+.obj-cover {
   object-fit: cover;
+}
+
+.overflow-auto {
+  -webkit-overflow-scrolling: touch;
 }
