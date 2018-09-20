@@ -18,8 +18,35 @@ import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
 
 class SelectUnitDialog extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      searchMode: false,
+      searchText: '',
+      searchResult: [],
+      unitId: null
+    }
+  }
+
+  onSearchChanged = (searchText) => {
+    this.setState({searchText})
+    if (searchText === '') {
+      this.setState({searchMode: false})
+    } else {
+      this.setState({searchMode: true})
+      const matcher = new RegExp(searchText, 'i')
+      const searchResult = this.props.unitList
+        .filter(unit => !matcher || (unit.name && unit.name.match(matcher)))
+      this.setState({
+        searchResult: searchResult
+      })
+    }
+  }
+
   render () {
     const { isLoading, show, onDismissed, inProgress, dispatch, match, unitList } = this.props
+    const { searchText, searchMode, searchResult, unitId } = this.state
+    const units = searchMode ? searchResult : unitList
     if (isLoading) return <Preloader />
     return (
       <Dialog
@@ -42,26 +69,24 @@ class SelectUnitDialog extends Component {
           </button>
         )}
         <span className='ba b--moon-gray mv2 br1 pv2'>
+          <span className={(searchMode ? 'dn' : 'mt3 ml3 absolute left-1')}>
+            <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
+              search
+            </FontIcon>
+          </span>
           <TextField
-            hintText={
-              <div>
-                <FontIcon className='material-icons mt2' style={closeDialogButtonStyle}>
-                  search
-                </FontIcon>
-                <span>Unit name</span>
-              </div>
-            }
+            hintText={<span className='ml4 '>Unit names </span>}
             underlineShow={false}
             fullWidth
-            // value={searchText}
-            // onChange={(evt) => onSearchChanged(evt.target.value)}
+            value={searchText}
+            onChange={(evt) => this.onSearchChanged(evt.target.value)}
           />
         </span>
         <div className='pb2 ba b--moon-gray pa2 br1'>
-          {unitList.map(({ name, metaData, description, id }) =>
+          {units.map(({ name, metaData, description, id }) =>
             <div key={name}>
               <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                onClick={() => dispatch(push(`/unit/${id}/reports/new`))} >
+                onClick={() => this.setState({unitId: id})} >
                 <div className='bb b--very-light-gray br1 w-100 flex items-center'>
                   <UnitTypeIcon metaData={metaData} />
                   <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
@@ -91,6 +116,8 @@ class SelectUnitDialog extends Component {
             fullWidth
             backgroundColor='var(--bondi-blue)'
             type='submit'
+            disabled={unitId === null}
+            onClick={() => dispatch(push(`/unit/${unitId}/reports/new`))}
           >
             <span className='white f4'>
               Create Report
