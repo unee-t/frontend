@@ -33,7 +33,7 @@ class ReportPreview extends Component {
               <CircularProgress size={70} thickness={5} />
             </div>
           ) : previewUrl && (
-            <div className='flex-grow overflow-hidden'>
+            <div className='flex-grow overflow-auto'>
               <iframe className='bn w-100 h-100' src={previewUrl} />
             </div>
           )}
