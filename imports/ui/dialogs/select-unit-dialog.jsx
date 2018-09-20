@@ -15,6 +15,7 @@ import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import Preloader from '../preloader/preloader'
 import RaisedButton from 'material-ui/RaisedButton'
+import TextField from 'material-ui/TextField'
 
 class SelectUnitDialog extends Component {
   render () {
@@ -25,6 +26,13 @@ class SelectUnitDialog extends Component {
         title='Select the unit'
         titleStyle={modalTitleStyle}
         open={show}
+        autoDetectWindowHeight
+        autoScrollBodyContent
+        repositionOnUpdate
+        contentStyle={{
+          width: '90%',
+          height: '90%'
+        }}
       >
         {!inProgress && (
           <button onClick={onDismissed}
@@ -33,47 +41,61 @@ class SelectUnitDialog extends Component {
             <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
           </button>
         )}
-        <div className='overflow-auto'>
-          <div className='pb2 ba b--moon-gray pa2 br1'>
-            {unitList.map(({ name, metaData, description, id }) =>
-              <div key={name}>
-                <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                  onClick={() => dispatch(push(`/unit/${id}/reports/new`))} >
-                  <div className='bb b--very-light-gray br1 w-100 flex items-center'>
-                    <UnitTypeIcon metaData={metaData} />
-                    <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                      <div className='ti1 ellipsis'>{name}</div>
-                      <div className='ti1 ellipsis silver'>{description}&nbsp;</div>
-                    </div>
-                  </div>
-                </MenuItem>
-                <Route path={`/unit/${id}/reports/new`}
-                  render={() =>
-                    <CreateReportDialog
-                      key={id}
-                      show={!!match}
-                      onDismissed={() => dispatch(goBack())}
-                      unitName={name}
-                    />
-                  }
-                />
+        <span className='ba b--moon-gray mv2 br1 pv2'>
+          <TextField
+            hintText={
+              <div>
+                <FontIcon className='material-icons mt2' style={closeDialogButtonStyle}>
+                  search
+                </FontIcon>
+                <span>Unit name</span>
               </div>
-            )}
-          </div>
-          <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
-            <span> Add a new unit </span>
-          </div>
-          <div className='ph3'>
-            <RaisedButton
-              fullWidth
-              backgroundColor='var(--bondi-blue)'
-              type='submit'
-            >
-              <span className='white f4'>
-                Create Report
-              </span>
-            </RaisedButton>
-          </div>
+            }
+            underlineShow={false}
+            fullWidth
+            // value={searchText}
+            // onChange={(evt) => onSearchChanged(evt.target.value)}
+          />
+        </span>
+        <div className='pb2 ba b--moon-gray pa2 br1'>
+          {unitList.map(({ name, metaData, description, id }) =>
+            <div key={name}>
+              <MenuItem innerDivStyle={resetMenuItemDivStyle}
+                onClick={() => dispatch(push(`/unit/${id}/reports/new`))} >
+                <div className='bb b--very-light-gray br1 w-100 flex items-center'>
+                  <UnitTypeIcon metaData={metaData} />
+                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
+                    <div className='ti1 ellipsis'>{name}</div>
+                    <div className='ti1 ellipsis silver'>{description}&nbsp;</div>
+                  </div>
+                </div>
+              </MenuItem>
+              <Route path={`/unit/${id}/reports/new`}
+                render={() =>
+                  <CreateReportDialog
+                    key={id}
+                    show={!!match}
+                    onDismissed={() => dispatch(goBack())}
+                    unitName={name}
+                  />
+                }
+              />
+            </div>
+          )}
+        </div>
+        <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
+          <span> Add a new unit </span>
+        </div>
+        <div className='ph3'>
+          <RaisedButton
+            fullWidth
+            backgroundColor='var(--bondi-blue)'
+            type='submit'
+          >
+            <span className='white f4'>
+              Create Report
+            </span>
+          </RaisedButton>
         </div>
       </Dialog>
     )
