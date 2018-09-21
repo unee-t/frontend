@@ -47,67 +47,28 @@ class UnitSelectDialog extends Component {
     const { isLoading, show, onDismissed, inProgress, dispatch, match, unitList, item } = this.props
     const { searchText, searchMode, searchResult, unitId } = this.state
     const units = searchMode ? searchResult : unitList
-    if (isLoading) return <Preloader />
-    return (
-      <Dialog
-        title='Select the unit'
-        titleStyle={modalTitleStyle}
-        open={show}
-        autoDetectWindowHeight
-        autoScrollBodyContent
-        repositionOnUpdate
-        contentStyle={{
-          width: '90%',
-          height: '90%'
-        }}
-      >
-        {!inProgress && (
-          <button onClick={onDismissed}
-            className='button b--none bg-transparent absolute top-1 pt2 right-1 outline-0'
-          >
-            <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
-          </button>
-        )}
-        <span className='ba b--moon-gray mv2 br1 pv2'>
-          <span className={(searchMode ? 'dn' : 'mt3 ml3 absolute left-1')}>
+    const title =
+      <div>
+        <div className='pb1'>Select units</div>
+        <span className='ba b--moon-gray mv1 br1 pv1'>
+          <span className='mt3 ml2 absolute left-1'>
             <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
               search
             </FontIcon>
           </span>
           <TextField
-            hintText={<span className='ml4 '>Unit names </span>}
+            hintText={<span className='ml1 '>Unit names </span>}
             underlineShow={false}
             fullWidth
             value={searchText}
             onChange={(evt) => this.onSearchChanged(evt.target.value)}
+            style={{paddingLeft: '25px'}}
           />
         </span>
-        <div className='pb2 ba b--moon-gray pa2 br1'>
-          {units.map(({ name, metaData, description, id }) =>
-            <div key={name}>
-              <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                onClick={() => this.setState({unitId: id})} >
-                <div className='bb b--very-light-gray br1 w-100 flex items-center'>
-                  <UnitTypeIcon metaData={metaData} />
-                  <div className='ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'>
-                    <div className='ti1 ellipsis'>{name}</div>
-                    <div className='ti1 ellipsis silver'>{description}&nbsp;</div>
-                  </div>
-                </div>
-              </MenuItem>
-              <Route path={`/unit/${id}/reports/new`}
-                render={() =>
-                  <CreateReportDialog
-                    key={id}
-                    show={!!match}
-                    onDismissed={() => dispatch(goBack())}
-                    unitName={name}
-                  />
-                }
-              />
-            </div>
-          )}
-        </div>
+      </div>
+
+    const actions = [
+      <div>
         <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
           <span> Add a new unit </span>
         </div>
@@ -127,6 +88,62 @@ class UnitSelectDialog extends Component {
               Create {item}
             </span>
           </RaisedButton>
+        </div>
+      </div>
+    ]
+    if (isLoading) return <Preloader />
+    return (
+      <Dialog
+        title={title}
+        actions={actions}
+        titleStyle={modalTitleStyle}
+        open={show}
+        autoDetectWindowHeight
+        autoScrollBodyContent
+        repositionOnUpdate
+        contentStyle={{
+          width: '90%',
+          height: '90%'
+        }}
+        bodyStyle={{
+          paddingBottom: '0',
+          borderTop: 'none',
+          borderBottom: 'none'
+        }}
+      >
+        {!inProgress && (
+          <button onClick={onDismissed}
+            className='button b--none bg-transparent absolute top-1 pt2 right-1 outline-0'
+          >
+            <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
+          </button>
+        )}
+        <div className='ba b--moon-gray pa2 br1'>
+          {units.map(({ name, metaData, description, id }) =>
+            <div key={name}>
+              <MenuItem innerDivStyle={resetMenuItemDivStyle}
+                onClick={() => this.setState({unitId: id})} >
+                <div className='bb b--very-light-gray br1 w-100 flex items-center'>
+                  <UnitTypeIcon metaData={metaData} />
+                  <div className={'ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'}>
+                    <div className='ti1 ellipsis'>{name}</div>
+                    <div className='ti1 ellipsis silver'>{description}&nbsp;</div>
+                    {/* HELP: word break & width; fit content; wouldn't work? */}
+                  </div>
+                </div>
+              </MenuItem>
+              <Route path={`/unit/${id}/reports/new`}
+                render={() =>
+                  <CreateReportDialog
+                    key={id}
+                    show={!!match}
+                    onDismissed={() => dispatch(goBack())}
+                    unitName={name}
+                  />
+                }
+              />
+            </div>
+          )}
         </div>
       </Dialog>
     )
