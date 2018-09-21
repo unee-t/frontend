@@ -13,7 +13,6 @@ import CreateReportDialog from '../dialogs/create-report-dialog'
 import { Route } from 'react-router-dom'
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
-import Preloader from '../preloader/preloader'
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
 
@@ -44,14 +43,14 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { isLoading, show, onDismissed, inProgress, dispatch, match, unitList, item } = this.props
+    const { show, onDismissed, inProgress, dispatch, match, unitList, item } = this.props
     const { searchText, searchMode, searchResult, unitId } = this.state
     const units = searchMode ? searchResult : unitList
     const title =
       <div>
         <div className='pb1'>Select units</div>
         <span className='ba b--moon-gray mv1 br1 pv1'>
-          <span className='mt3 ml2 absolute left-1'>
+          <span className='ml2 absolute left-1' style={{marginTop: '0.75rem'}}>
             <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
               search
             </FontIcon>
@@ -62,12 +61,12 @@ class UnitSelectDialog extends Component {
             fullWidth
             value={searchText}
             onChange={(evt) => this.onSearchChanged(evt.target.value)}
-            style={{paddingLeft: '25px'}}
+            style={{paddingLeft: '2rem'}}
           />
         </span>
       </div>
 
-    const actions = [
+    const actions =
       <div>
         <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
           <span> Add a new unit </span>
@@ -90,8 +89,7 @@ class UnitSelectDialog extends Component {
           </RaisedButton>
         </div>
       </div>
-    ]
-    if (isLoading) return <Preloader />
+
     return (
       <Dialog
         title={title}
@@ -122,13 +120,14 @@ class UnitSelectDialog extends Component {
           {units.map(({ name, metaData, description, id }) =>
             <div key={name}>
               <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                onClick={() => this.setState({unitId: id})} >
+                onClick={() => this.setState({unitId: id})}
+                style={{whiteSpace: 'none', backgroundColor: unitId === id ? 'var(--very-light-gray)' : ''}}
+              >
                 <div className='bb b--very-light-gray br1 w-100 flex items-center'>
                   <UnitTypeIcon metaData={metaData} />
-                  <div className={'ml3 mv1 semi-dark-gray lh-copy flex-grow overflow-hidden'}>
-                    <div className='ti1 ellipsis'>{name}</div>
-                    <div className='ti1 ellipsis silver'>{description}&nbsp;</div>
-                    {/* HELP: word break & width; fit content; wouldn't work? */}
+                  <div className={'ml3 mv1 semi-dark-gray lh-copy flex-grow'}>
+                    <div>{name}</div>
+                    <div className='silver'>{description}&nbsp;</div>
                   </div>
                 </div>
               </MenuItem>
@@ -137,7 +136,11 @@ class UnitSelectDialog extends Component {
                   <CreateReportDialog
                     key={id}
                     show={!!match}
-                    onDismissed={() => dispatch(goBack())}
+                    onDismissed={() => item === 'Report'
+                      ? (dispatch(push('/reports'))
+                      ) : (
+                        dispatch(push('/case'))
+                      )}
                     unitName={name}
                   />
                 }
