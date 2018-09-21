@@ -3,14 +3,14 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
-import { push, goBack } from 'react-router-redux'
+import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import { modalTitleStyle, closeDialogButtonStyle } from './generic-dialog.mui-styles'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
-import CreateReportDialog from '../dialogs/create-report-dialog'
-import { Route } from 'react-router-dom'
+// import CreateReportDialog from '../dialogs/create-report-dialog'
+// import { Route } from 'react-router-dom'
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -43,7 +43,7 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { show, onDismissed, inProgress, dispatch, match, unitList, item } = this.props
+    const { show, onDismissed, inProgress, dispatch, unitList, item } = this.props
     const { searchText, searchMode, searchResult, unitId } = this.state
     const units = searchMode ? searchResult : unitList
     const title =
@@ -131,7 +131,7 @@ class UnitSelectDialog extends Component {
                   </div>
                 </div>
               </MenuItem>
-              <Route path={`/unit/${id}/reports/new`}
+              {/* <Route path={`/unit/${id}/reports/new`}
                 render={() =>
                   <CreateReportDialog
                     key={id}
@@ -144,7 +144,7 @@ class UnitSelectDialog extends Component {
                     unitName={name}
                   />
                 }
-              />
+              /> */}
             </div>
           )}
         </div>
