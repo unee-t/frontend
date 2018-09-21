@@ -6,12 +6,12 @@ import UserAvatar from './user-avatar'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 import { getColorForUser } from '/imports/util/user'
 
-const UserSelectionBox = ({ filteredUsers, userStatusRenderer, userClassNames, onUserClick, emptyListMessage }) => (
+const UserSelectionBox = ({ usersList, userStatusRenderer, userClassNames, onUserClick, emptyListMessage }) => (
   <div className='ba b--moon-gray flex-grow h5 overflow-auto'>
     <div className='pb2'>
-      {filteredUsers.length ? (
+      {usersList.length ? (
         <ul className='list mv0 pa0 pt1 min-h-3'>
-          {filteredUsers.map((user, idx) => {
+          {usersList.map((user, idx) => {
             const userStatusComp = userStatusRenderer && userStatusRenderer(user)
             const extraClasses = userClassNames ? userClassNames(user) : ''
             const emailId = user.login.split('@')[0]
@@ -49,7 +49,7 @@ const UserSelectionBox = ({ filteredUsers, userStatusRenderer, userClassNames, o
 )
 
 UserSelectionBox.propTypes = {
-  filteredUsers: PropTypes.array.isRequired,
+  usersList: PropTypes.array.isRequired,
   userStatusRenderer: PropTypes.func,
   userClassNames: PropTypes.func,
   onUserClick: PropTypes.func.isRequired,

@@ -37,7 +37,10 @@ class UsersSearchList extends Component {
             ref={searchInputRef}
           />
         </div>
-        <UserSelectionBox {...{filteredUsers, userStatusRenderer, userClassNames, onUserClick, emptyListMessage}} />
+        <UserSelectionBox
+          {...{userStatusRenderer, userClassNames, onUserClick, emptyListMessage}}
+          usersList={filteredUsers}
+        />
       </div>
     )
   }
