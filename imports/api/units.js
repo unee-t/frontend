@@ -72,6 +72,7 @@ export const getUnitRoles = unit => {
       const user = userDocs.find(doc => doc._id === memberDesc.id)
       all.push({
         login: user.bugzillaCreds.login,
+        name: user.profile.name,
         role: roleObj.roleType,
         isOccupant: memberDesc.isOccupant
       })
