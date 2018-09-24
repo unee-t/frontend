@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import UnverifiedWarning from '../components/unverified-warning'
-import { withRouter } from 'react-router-dom'
+import { withRouter, Route } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
@@ -19,6 +19,7 @@ import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { push, goBack } from 'react-router-redux'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -26,8 +27,7 @@ class CaseExplorer extends Component {
     this.state = {
       caseId: '',
       filterStatus: true,
-      myInvolvement: false,
-      open: false
+      myInvolvement: false
     }
   }
 
@@ -128,8 +128,8 @@ class CaseExplorer extends Component {
     }
   )
   render () {
-    const { isLoading, caseList, allNotifications, unreadNotifications } = this.props
-    const { filterStatus, myInvolvement, open } = this.state
+    const { isLoading, caseList, allNotifications, unreadNotifications, match, dispatch } = this.props
+    const { filterStatus, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
     return (
@@ -157,13 +157,22 @@ class CaseExplorer extends Component {
           }
         </div>
         <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton onClick={() => this.setState({open: true})}>
+          <FloatingActionButton
+            onClick={() => dispatch(push(`${match.url}/unit-select`))}
+          >
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
-          <UnitSelectDialog
-            show={open}
-            onDismissed={() => this.setState({open: false})}
-            item='Case'
+          <Route
+            exact
+            path={`${match.url}/unit-select`}
+            children={({match, location}) => (
+              <UnitSelectDialog
+                show={!!match}
+                onDismissed={() => dispatch(goBack())}
+                item='Case'
+                location={location}
+              />
+            )}
           />
         </div>
       </div>

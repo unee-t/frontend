@@ -79,10 +79,18 @@ class UnitSelectDialog extends Component {
             type='submit'
             disabled={unitId === null}
           >
-            <Link className='white f4' to={{pathname: `/unit/${unitId}/reports/new`,
-              state: { prevPath: this.props.location.pathname }}}>
-              Create {item}
-            </Link>
+            {this.props.item === 'Report' &&
+              <Link className='white f4' to={{pathname: `/unit/${unitId}/reports/new`,
+                state: { prevPath: this.props.location.pathname }}}>
+                Create {item}
+              </Link>
+            }
+            {item === 'Case' &&
+              <Link className='white f4' to={{pathname: `/case/new?unit=${unitId}`,
+                state: { prevPath: this.props.location.pathname }}}>
+                Create {item}
+              </Link>
+            }
           </RaisedButton>
         </div>
       </div>
