@@ -86,7 +86,7 @@ class UnitSelectDialog extends Component {
               </Link>
             }
             {item === 'Case' &&
-              <Link className='white f4' to={{pathname: `/case/new?unit=${unitId}`,
+              <Link className='white f4 link' to={{pathname: `/case/new?unit=${unitId}`,
                 state: { prevPath: this.props.location.pathname }}}>
                 Create {item}
               </Link>
