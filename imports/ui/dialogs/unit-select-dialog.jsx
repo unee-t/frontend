@@ -62,6 +62,7 @@ class UnitSelectDialog extends Component {
             value={searchText}
             onChange={(evt) => this.onSearchChanged(evt.target.value)}
             style={{paddingLeft: '2rem'}}
+            inputStyle={{padding: '0.3rem'}}
           />
         </span>
       </div>
@@ -127,7 +128,6 @@ class UnitSelectDialog extends Component {
                   <UnitTypeIcon metaData={metaData} />
                   <div className={'ml3 mv1 semi-dark-gray lh-copy flex-grow'}>
                     <div>{name}</div>
-                    <div className='silver'>{description}&nbsp;</div>
                   </div>
                 </div>
               </MenuItem>
