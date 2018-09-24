@@ -23,8 +23,7 @@ class ReportExplorer extends Component {
     super(...arguments)
     this.state = {
       filterStatus: true,
-      myInvolvement: false,
-      open: false
+      myInvolvement: false
     }
   }
 
@@ -65,7 +64,7 @@ class ReportExplorer extends Component {
 
   render () {
     const { isLoading, dispatch, reportList, match } = this.props
-    const { filterStatus, myInvolvement, open } = this.state
+    const { filterStatus, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     return (
