@@ -57,7 +57,7 @@ class ReportPreview extends Component {
               <RaisedButton
                 primary
                 fullWidth
-                disabled
+                onClick={() => dispatch(push(`/report/${reportItem.id}/share`))}
               >
                 <span className='white mh4'>
                   Share report
