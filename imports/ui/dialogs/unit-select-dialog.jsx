@@ -127,7 +127,7 @@ class UnitSelectDialog extends Component {
                 <div className='bb b--very-light-gray br1 w-100 flex items-center'>
                   <UnitTypeIcon metaData={metaData} />
                   <div className={'ml3 mv1 semi-dark-gray lh-copy flex-grow'}>
-                    <div>{name}</div>
+                    <div>{(metaData && metaData.displayName) || name}</div>
                   </div>
                 </div>
               </MenuItem>
