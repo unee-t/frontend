@@ -40,6 +40,11 @@ class CaseMaster extends Component {
         exact: true
       },
       {
+        path: '/case/unit-select',
+        RouteComp: CaseExplorer,
+        exact: true
+      },
+      {
         path: '/case/:caseId',
         RouteComp: Case
       }
