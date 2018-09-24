@@ -10,7 +10,7 @@ import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 // import CreateReportDialog from '../dialogs/create-report-dialog'
-// import { Route } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -78,15 +78,11 @@ class UnitSelectDialog extends Component {
             backgroundColor='var(--bondi-blue)'
             type='submit'
             disabled={unitId === null}
-            onClick={() => item === 'Report'
-              ? (dispatch(push(`/unit/${unitId}/reports/new`))
-              ) : (
-                dispatch(push(`/case/new?unit=${unitId}`))
-              )}
           >
-            <span className='white f4'>
+            <Link className='white f4' to={{pathname: `/unit/${unitId}/reports/new`,
+              state: { prevPath: this.props.location.pathname }}}>
               Create {item}
-            </span>
+            </Link>
           </RaisedButton>
         </div>
       </div>
@@ -131,20 +127,6 @@ class UnitSelectDialog extends Component {
                   </div>
                 </div>
               </MenuItem>
-              {/* <Route path={`/unit/${id}/reports/new`}
-                render={() =>
-                  <CreateReportDialog
-                    key={id}
-                    show={!!match}
-                    onDismissed={() => item === 'Report'
-                      ? (dispatch(push('/reports'))
-                      ) : (
-                        dispatch(push('/case'))
-                      )}
-                    unitName={name}
-                  />
-                }
-              /> */}
             </div>
           )}
         </div>

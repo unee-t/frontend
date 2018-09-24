@@ -14,7 +14,9 @@ import { UnitGroupList } from '../explorer-components/unit-group-list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FontIcon from 'material-ui/FontIcon'
 import { ReportList } from '../report-explorer/report-list'
+import { Route } from 'react-router-dom'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { push, goBack } from 'react-router-redux'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -62,7 +64,7 @@ class ReportExplorer extends Component {
   )
 
   render () {
-    const { isLoading, dispatch, reportList } = this.props
+    const { isLoading, dispatch, reportList, match } = this.props
     const { filterStatus, myInvolvement, open } = this.state
     if (isLoading) return <Preloader />
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
@@ -92,13 +94,22 @@ class ReportExplorer extends Component {
             }
           </div>
           <div className='absolute right-1 bottom-2'>
-            <FloatingActionButton onClick={() => this.setState({open: true})}>
+            <FloatingActionButton
+              onClick={() => dispatch(push(`${match.url}/unit-select`))}
+            >
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
-            <UnitSelectDialog
-              show={open}
-              onDismissed={() => this.setState({open: false})}
-              item='Report'
+            <Route
+              exact
+              path={`${match.url}/unit-select`}
+              children={({match, location}) => (
+                <UnitSelectDialog
+                  show={!!match}
+                  onDismissed={() => dispatch(goBack())}
+                  item='Report'
+                  location={location}
+                />
+              )}
             />
           </div>
         </div>
