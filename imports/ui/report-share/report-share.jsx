@@ -38,7 +38,11 @@ class ReportShare extends Component {
               {reportItem.title}
             </div>
             <div className='ml2'>
-              <a className='link pa2 outline-0' href={pdfUrl} target='_blank'>
+              <a
+                className='link pa2 outline-0'
+                href={`/api/report-pdf-download?reportPdfUrl=${encodeURIComponent(pdfUrl)}`}
+                download={`${reportItem.title}.pdf`}
+              >
                 <FontIcon className='material-icons' color='var(--bondi-blue)'>
                   get_app
                 </FontIcon>
