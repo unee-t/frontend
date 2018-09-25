@@ -218,7 +218,7 @@ class Unit extends Component {
 
   render () {
     const {
-      unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match, location
+      unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
     } = this.props
     const { sortedCases, showOpenCases, assignedToMe, statusFilterValues, sortBy } = this.state
     const { filteredCases } = this
@@ -349,7 +349,7 @@ class Unit extends Component {
                     <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog
                         show={!!match}
-                        onDismissed={() => location !== undefined && location.state ? dispatch(push('/report')) : dispatch(goBack())}
+                        onDismissed={() => dispatch(goBack())}
                         unitName={unitItem.name}
                       />
                     )} />

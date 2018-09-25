@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import UnverifiedWarning from '../components/unverified-warning'
-import { withRouter, Route, Link } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
@@ -19,7 +19,6 @@ import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
-import { goBack } from 'react-router-redux'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -27,7 +26,8 @@ class CaseExplorer extends Component {
     this.state = {
       caseId: '',
       filterStatus: true,
-      myInvolvement: false
+      myInvolvement: false,
+      open: false
     }
   }
 
@@ -128,8 +128,8 @@ class CaseExplorer extends Component {
     }
   )
   render () {
-    const { isLoading, caseList, allNotifications, unreadNotifications, dispatch } = this.props
-    const { filterStatus, myInvolvement } = this.state
+    const { isLoading, caseList, allNotifications, unreadNotifications } = this.props
+    const { filterStatus, myInvolvement, open } = this.state
     if (isLoading) return <Preloader />
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
     return (
@@ -157,22 +157,13 @@ class CaseExplorer extends Component {
           }
         </div>
         <div className='absolute right-1 bottom-2'>
-          <Link to={`/case/unit-select`} onClick={() => this.handleOnItemClicked()}>
-            <FloatingActionButton>
-              <FontIcon className='material-icons'>add</FontIcon>
-            </FloatingActionButton>
-          </Link>
-          <Route
-            exact
-            path={`/case/unit-select`}
-            children={({match, location}) => (
-              <UnitSelectDialog
-                show={!!match}
-                onDismissed={() => dispatch(goBack())}
-                item='Case'
-                location={location}
-              />
-            )}
+          <FloatingActionButton onClick={() => this.setState({open: true})}>
+            <FontIcon className='material-icons'>add</FontIcon>
+          </FloatingActionButton>
+          <UnitSelectDialog
+            show={open}
+            onDismissed={() => this.setState({open: false})}
+            item='Case'
           />
         </div>
       </div>

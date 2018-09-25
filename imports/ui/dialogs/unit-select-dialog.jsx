@@ -9,8 +9,7 @@ import { modalTitleStyle, closeDialogButtonStyle } from './generic-dialog.mui-st
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
-// import CreateReportDialog from '../dialogs/create-report-dialog'
-import { Link } from 'react-router-dom'
+
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -78,19 +77,15 @@ class UnitSelectDialog extends Component {
             backgroundColor='var(--bondi-blue)'
             type='submit'
             disabled={unitId === null}
+            onClick={() => item === 'Report'
+              ? (dispatch(push(`/unit/${unitId}/reports/new`))
+              ) : (
+                dispatch(push(`/case/new?unit=${unitId}`))
+              )}
           >
-            {this.props.item === 'Report' &&
-              <Link className='white f4' to={{pathname: `/unit/${unitId}/reports/new`,
-                state: { prevPath: this.props.location.pathname }}}>
-                Create {item}
-              </Link>
-            }
-            {this.props.item === 'Case' &&
-              <Link className='white f4 link' to={{pathname: `/case/new?unit=${unitId}`,
-                state: { prevPath: this.props.location.pathname }}}>
-                Create {item}
-              </Link>
-            }
+            <span className='white f4'>
+              Create {item}
+            </span>
           </RaisedButton>
         </div>
       </div>
