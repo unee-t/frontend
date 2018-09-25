@@ -1,6 +1,10 @@
 import URL from 'url'
 import { URL as url2 } from 'meteor/url'
 
+export function resolveUserName (user) {
+  return `${user.profile.name || user.emails[0].address.split('@')[0]}`
+}
+
 function engage (params) {
   // where to: url
   // who: email
@@ -21,7 +25,9 @@ function resolveServiceDomain (service) {
 
 export function optOutHtml (settingType, notificationId, user, optoutUrl) {
   return (`
-<p><a href=https://unee-t.com>Unee-T</a>, managing and sharing 'To Do's for your properties has never been easier.</p>
+<p>
+Unee-T is a combination of a To Do list, a Messaging System and an Issue Tracker when something needs to be done in your properties
+</p>
     <p>
       To opt out of receiving "${settingType}" emails, please visit
       <a href='${
@@ -39,7 +45,8 @@ export function optOutHtml (settingType, notificationId, user, optoutUrl) {
 
 export function optOutText (settingType, notificationId, user, optoutUrl) {
   return (`
-Unee-T, managing and sharing 'To Do's for your properties has never been easier.
+--
+Unee-T is a combination of a To Do list, a Messaging System and an Issue Tracker when something needs to be done in your properties
 
 To opt out of receiving "${settingType}" emails, please visit
     ${engage({

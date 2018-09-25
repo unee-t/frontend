@@ -1,6 +1,6 @@
 export ROOT_URL=https://case.demo.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-demo ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
-export BUGZILLA_URL=https://demo.dashboard.unee-t.com
+export BUGZILLA_URL=https://dashboard.demo.unee-t.com
 export INVITE_LAMBDA_URL=https://invite.demo.unee-t.com
 export UNIT_CREATE_LAMBDA_URL=https://unit.demo.unee-t.com/create
 export APIENROLL_LAMBDA_URL=https://apienroll.demo.unee-t.com
@@ -11,5 +11,5 @@ export MONGO_CONNECT=$(aws --profile uneet-demo ssm get-parameters --names MONGO
 export CLOUDINARY_PRESET=$(aws --profile uneet-demo ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
 export CLOUDINARY_URL=$(aws --profile uneet-demo ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
 export API_ACCESS_TOKEN=$(aws --profile uneet-demo ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
-export FROM_EMAIL="DEMO Unee-T Case <demo.case@unee-t.com>"
+export FROM_EMAIL="DEMO Unee-T Case <case@demo.unee-t.com>"
 export MAIL_URL=$(aws --profile uneet-demo ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)
