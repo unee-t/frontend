@@ -5,7 +5,6 @@ import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import { goBack } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
-import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
 
 import Reports, { collectionName } from '../../api/reports'
@@ -15,17 +14,20 @@ import InnerAppBar from '../components/inner-app-bar'
 import UserSelectionBox from '../components/user-selection-box'
 import Preloader from '../preloader/preloader'
 import PdfIcon from '../components/pdf-icon'
+import TagInput from '../components/tag-input'
+import { emailValidator } from '../../util/validators'
 
 class ReportShare extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      selectedRecipients: []
+      selectedRecipients: [],
+      newRecipients: []
     }
   }
   render () {
     const { dispatch, reportItem, isLoading, unitUsers, pdfUrl } = this.props
-    const { selectedRecipients } = this.state
+    const { selectedRecipients, newRecipients, tagInputError } = this.state
     if (isLoading) return <Preloader />
 
     return (
@@ -70,12 +72,25 @@ class ReportShare extends Component {
           <h5 className='mid-gray ma0 mt3'>
             Also send report to the following recipients:
           </h5>
-          <TextField placeholder='Enter email(s)' />
+          <TagInput
+            className='mt2'
+            tags={newRecipients}
+            onTagsChanged={tags => this.setState({newRecipients: tags})}
+            validator={value => {
+              if (!emailValidator(value)) {
+                return 'Not a valid email address'
+              }
+              if (newRecipients.includes(value)) {
+                return 'Email already present'
+              }
+            }}
+            onErrorStateChanged={hasError => this.setState({tagInputError: hasError})}
+          />
           <div className='mt3'>
             <RaisedButton
               primary
               fullWidth
-              disabled={selectedRecipients.length === 0}
+              disabled={tagInputError || (selectedRecipients.length === 0 && newRecipients.length === 0)}
               onClick={() => {}}
             >
               <span className='f4 white'>Send report</span>
