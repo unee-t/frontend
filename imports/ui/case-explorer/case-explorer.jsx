@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import UnverifiedWarning from '../components/unverified-warning'
-import { withRouter, Link } from 'react-router-dom'
+import { withRouter, Route, Link } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
@@ -18,6 +18,8 @@ import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
+import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { goBack } from 'react-router-redux'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -126,7 +128,7 @@ class CaseExplorer extends Component {
     }
   )
   render () {
-    const { isLoading, caseList, allNotifications, unreadNotifications } = this.props
+    const { isLoading, caseList, allNotifications, unreadNotifications, dispatch } = this.props
     const { filterStatus, myInvolvement } = this.state
     if (isLoading) return <Preloader />
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
@@ -160,6 +162,18 @@ class CaseExplorer extends Component {
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
           </Link>
+          <Route
+            exact
+            path={`/case/unit-select`}
+            children={({match, location}) => (
+              <UnitSelectDialog
+                show={!!match}
+                onDismissed={() => dispatch(goBack())}
+                item='Case'
+                location={location}
+              />
+            )}
+          />
         </div>
       </div>
     )

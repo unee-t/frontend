@@ -14,8 +14,7 @@ import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
 import { renderCurrUserAvatar, renderAppBarLeft } from '../util/app-bar-utils'
-import UnitSelectDialog from '../dialogs/unit-select-dialog'
-import { goBack } from 'react-router-redux'
+import { push } from 'react-router-redux'
 
 import {
   titleStyle
@@ -87,15 +86,15 @@ class CaseMaster extends Component {
     }
   }
 
-  // componentDidUpdate(prevProps, prevState, snapshot) {
-  //   const { location, dispatch } = this.props
-  //   if (prevProps.location.pathname !== location.pathname && location.pathname === '/case/unit-select') {
-  //     this.setState({
-  //       isLoading: false
-  //     })
-  //     dispatch(push(`/case/unit-select`))
-  //   }
-  // }
+  componentDidUpdate (prevProps, prevState) {
+    const { location, dispatch } = this.props
+    if (prevProps.location.pathname !== location.pathname && location.pathname === '/case/unit-select') {
+      this.setState({
+        isLoading: false
+      })
+      dispatch(push(`/case/unit-select`))
+    }
+  }
 
   handleIconClick = () => {
     this.props.dispatch(setDrawerState(true))
@@ -156,31 +155,6 @@ class CaseMaster extends Component {
                 this.setState({
                   isLoading: false
                 })
-              }} />
-            </div>
-            <div className='flex-10 flex items-center justify-center bg-very-light-gray h-100'>
-              <Route exact path={`/case/unit-select`} children={({match, location}) => {
-                if (match) {
-                  const { isSubLoading } = this.state
-                  return (
-                    <div className='h-100 w-100'>
-                      {isSubLoading && (
-                        <Preloader />
-                      )}
-                      <UnitSelectDialog
-                        show={!!match}
-                        onDismissed={() => this.props.dispatch(goBack())}
-                        item='Case'
-                        location={location}
-                        className={isSubLoading ? 'dn' : ''}
-                        dispatchLoadingResult={() => {
-                          this.setState({
-                            isSubLoading: false
-                          })
-                        }} />
-                    </div>
-                  )
-                }
               }} />
             </div>
             <div className='flex-10 flex items-center justify-center bg-very-light-gray h-100'>
