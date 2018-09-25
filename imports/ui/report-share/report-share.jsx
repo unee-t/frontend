@@ -39,13 +39,11 @@ class ReportShare extends Component {
               {reportItem.title}
             </div>
             <div className='ml2'>
-              <IconButton>
-                <a className='link' href={pdfUrl} target='_blank'>
-                  <FontIcon className='material-icons' color='var(--bondi-blue)'>
-                    get_app
-                  </FontIcon>
-                </a>
-              </IconButton>
+              <a className='link pa2 outline-0' href={pdfUrl} target='_blank'>
+                <FontIcon className='material-icons' color='var(--bondi-blue)'>
+                  get_app
+                </FontIcon>
+              </a>
             </div>
           </div>
           <h3 className='near-black f4 fw5'>Who would you like to send it to?</h3>
