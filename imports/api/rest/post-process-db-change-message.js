@@ -37,6 +37,7 @@ const emailDomain = fromEmail.indexOf('<') === -1
 
 function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   const emailAddr = assignee.emails[0].address
+  const bzId = assignee.bugzillaCreds.id
   const emailProps = {
     to: emailAddr,
     from: fromEmail
@@ -45,10 +46,10 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   if (responseBugId) {
     const signature = crypto
       .createHmac('sha256', process.env.API_ACCESS_TOKEN)
-      .update(responseBugId.toString())
+      .update(responseBugId.toString() + bzId.toString())
       .digest('hex')
 
-    emailProps.replyTo = `reply+${responseBugId}-${signature}@${emailDomain}`
+    emailProps.replyTo = `reply+${responseBugId}-${bzId}-${signature}@${emailDomain}`
   }
   try {
     Email.send(Object.assign(emailProps, emailContent))
