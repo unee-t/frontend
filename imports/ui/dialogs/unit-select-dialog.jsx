@@ -47,7 +47,7 @@ class UnitSelectDialog extends Component {
     const units = searchMode ? searchResult : unitList
     const title =
       <div>
-        <div className='pb1'>Select units</div>
+        <div className='pb1'>Select Unit</div>
         <span className='ba b--moon-gray mv1 br1 pv1'>
           <span className='ml2 absolute left-1' style={{marginTop: '0.75rem'}}>
             <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
