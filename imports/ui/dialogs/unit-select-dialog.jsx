@@ -5,14 +5,18 @@ import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
-import { modalTitleStyle, closeDialogButtonStyle } from './generic-dialog.mui-styles'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
-
+import Preloader from '../preloader/preloader'
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import TextField from 'material-ui/TextField'
+import { NoItemMsg } from '../explorer-components/no-item-msg'
+import {
+  customTitleStyle,
+  closeDialogButtonStyle
+} from './generic-dialog.mui-styles'
 
 class UnitSelectDialog extends Component {
   constructor (props) {
@@ -40,42 +44,20 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { show, onDismissed, inProgress, dispatch, unitList, item } = this.props
+    const { show, onDismissed, inProgress, dispatch, unitList, item, isLoading } = this.props
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
-    const title =
-      <div>
-        <div className='pb1'>Select Unit</div>
-        <span className='ba b--moon-gray mv1 br1 pv1'>
-          <span className='ml2 absolute left-1' style={{marginTop: '0.75rem'}}>
-            <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
-              search
-            </FontIcon>
-          </span>
-          <TextField
-            hintText={<span className='ml1 '>Unit names </span>}
-            underlineShow={false}
-            fullWidth
-            value={searchText}
-            onChange={(evt) => this.onSearchChanged(evt.target.value)}
-            style={{paddingLeft: '2rem'}}
-            inputStyle={{padding: '0.3rem'}}
-          />
-        </span>
-      </div>
-
     const actions =
       <div>
-        <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
-          <span> Add a new unit </span>
+        <div className={'bondi-blue tc pa2'} onClick={() => dispatch(push(`/unit/new`))} >
+          <span className={units.length === 0 && 'dn'}> Add a new unit </span>
         </div>
       </div>
-
     return (
       <Dialog
-        title={title}
+        title='Select Unit'
         actions={actions}
-        titleStyle={modalTitleStyle}
+        titleStyle={customTitleStyle}
         open={show}
         autoDetectWindowHeight
         autoScrollBodyContent
@@ -92,29 +74,59 @@ class UnitSelectDialog extends Component {
       >
         {!inProgress && (
           <button onClick={onDismissed}
-            className='button b--none bg-transparent absolute top-1 pt2 right-1 outline-0'
+            className='button b--none bg-transparent absolute top-1 right-1'
           >
             <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
           </button>
         )}
-        <div className='ba b--moon-gray pa2 br1'>
-          {units.map(({ name, metaData, description, id }) =>
-            <div key={name}>
-              <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                onClick={() => item === 'Report'
-                  ? (dispatch(push(`/unit/${id}/reports/new`))
-                  ) : (
-                    dispatch(push(`/case/new?unit=${id}`))
+        <div>
+          <span className='ba b--moon-gray mv1 br1 pv1'>
+            <span className='ml3 absolute left-1' style={{marginTop: '0.8rem'}}>
+              <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
+                search
+              </FontIcon>
+            </span>
+            <TextField
+              hintText={<span className='ml1 '>Unit names </span>}
+              underlineShow={false}
+              fullWidth
+              value={searchText}
+              onChange={(evt) => this.onSearchChanged(evt.target.value)}
+              style={{paddingLeft: '2rem'}}
+              inputStyle={{padding: '0.3rem'}}
+            />
+          </span>
+        </div>
+        <div className='ba b--moon-gray pa2 br1' style={{minHeight: '380px'}}>
+          { isLoading ? (<Preloader />
+          ) : (
+            <div>
+              {units.length ? (
+                <div>
+                  {units.map(({ name, metaData, description, id }) =>
+                    <div key={name}>
+                      <MenuItem
+                        innerDivStyle={resetMenuItemDivStyle}
+                        onClick={() => item === 'Report'
+                          ? (dispatch(push(`/unit/${id}/reports/new`))
+                          ) : (
+                            dispatch(push(`/case/new?unit=${id}`))
+                          )}
+                        style={{whiteSpace: 'none', display: 'inline'}}
+                      >
+                        <div className='bt b--very-light-gray br1 w-100 flex items-center'>
+                          <UnitTypeIcon metaData={metaData} />
+                          <div className={'ml3 mv3 semi-dark-gray lh-copy flex-grow'}>
+                            <div>{(metaData && metaData.displayName) || name}</div>
+                          </div>
+                        </div>
+                      </MenuItem>
+                    </div>
                   )}
-                style={{whiteSpace: 'none'}}
-              >
-                <div className='bb b--very-light-gray br1 w-100 flex items-center'>
-                  <UnitTypeIcon metaData={metaData} />
-                  <div className={'ml3 mv1 semi-dark-gray lh-copy flex-grow'}>
-                    <div>{(metaData && metaData.displayName) || name}</div>
-                  </div>
                 </div>
-              </MenuItem>
+              ) : (
+                <NoItemMsg item={'unit'} />
+              )}
             </div>
           )}
         </div>

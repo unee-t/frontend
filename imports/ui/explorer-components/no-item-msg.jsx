@@ -1,6 +1,7 @@
 import React from 'react'
 import FontIcon from 'material-ui/FontIcon'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 
 export function NoItemMsg ({item}) {
   return (
@@ -21,7 +22,15 @@ export function NoItemMsg ({item}) {
         <div className='mt3 ph4'>
           <div className='mid-gray b lh-copy'>
             <div>There are no {item}s that match your current filter combination.</div>
-            <div>Click on the "+" button to select a unit to add a new {item}</div>
+            {item === 'unit' ? (
+              <Link className='bondi-blue tc pa2 link'
+                to={`/unit/new`}
+              >
+                Add a new unit
+              </Link>
+            ) : (
+              <div>Click on the "+" button to select a unit to add a new {item}</div>
+            )}
           </div>
         </div>
       </div>

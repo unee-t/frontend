@@ -6,6 +6,15 @@ export const modalTitleStyle = {
   fontWeight: 500
 }
 
+export const customTitleStyle = {
+  padding: '0.75rem 1rem',
+  paddingBottom: '0rem',
+  marginRight: '0.5rem',
+  color: '#222',
+  fontSize: 20,
+  fontWeight: 500
+}
+
 export const modalBodyStyle = {
   paddingBottom: '1.5rem',
   paddingLeft: '1rem',
