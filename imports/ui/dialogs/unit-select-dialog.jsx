@@ -12,7 +12,6 @@ import { resetMenuItemDivStyle } from '../general.mui-styles'
 
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
-import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField'
 
 class UnitSelectDialog extends Component {
@@ -21,8 +20,7 @@ class UnitSelectDialog extends Component {
     this.state = {
       searchMode: false,
       searchText: '',
-      searchResult: [],
-      unitId: null
+      searchResult: []
     }
   }
 
@@ -43,7 +41,7 @@ class UnitSelectDialog extends Component {
 
   render () {
     const { show, onDismissed, inProgress, dispatch, unitList, item } = this.props
-    const { searchText, searchMode, searchResult, unitId } = this.state
+    const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const title =
       <div>
@@ -70,23 +68,6 @@ class UnitSelectDialog extends Component {
       <div>
         <div className='bondi-blue tc pa2' onClick={() => dispatch(push(`/unit/new`))} >
           <span> Add a new unit </span>
-        </div>
-        <div className='ph3'>
-          <RaisedButton
-            fullWidth
-            backgroundColor='var(--bondi-blue)'
-            type='submit'
-            disabled={unitId === null}
-            onClick={() => item === 'Report'
-              ? (dispatch(push(`/unit/${unitId}/reports/new`))
-              ) : (
-                dispatch(push(`/case/new?unit=${unitId}`))
-              )}
-          >
-            <span className='white f4'>
-              Create {item}
-            </span>
-          </RaisedButton>
         </div>
       </div>
 
@@ -120,8 +101,11 @@ class UnitSelectDialog extends Component {
           {units.map(({ name, metaData, description, id }) =>
             <div key={name}>
               <MenuItem innerDivStyle={resetMenuItemDivStyle}
-                onClick={() => this.setState({unitId: id})}
-                style={{whiteSpace: 'none', backgroundColor: unitId === id ? 'var(--very-light-gray)' : ''}}
+                onClick={() => item === 'Report'
+                  ? (dispatch(push(`/unit/${id}/reports/new`))
+                  ) : (
+                    dispatch(push(`/case/new?unit=${id}`))
+                  )}
               >
                 <div className='bb b--very-light-gray br1 w-100 flex items-center'>
                   <UnitTypeIcon metaData={metaData} />
