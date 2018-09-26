@@ -91,7 +91,7 @@ class ReportShare extends Component {
               primary
               fullWidth
               disabled={tagInputError || (selectedRecipients.length === 0 && newRecipients.length === 0)}
-              onClick={() => {}}
+              onClick={() => console.log('click')}
             >
               <span className='f4 white'>Send report</span>
             </RaisedButton>
