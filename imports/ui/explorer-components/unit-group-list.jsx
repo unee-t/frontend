@@ -54,7 +54,9 @@ export class UnitGroupList extends Component {
             <div className='flex items-center h3 bt b--light-gray bg-white'
               onClick={evt => this.handleExpandUnit(evt, unitTitle)}
             >
-              <UnitTypeIcon iconInExplorer={unitType} />
+              <div className='mh3'>
+                <UnitTypeIcon iconInExplorer={unitType} />
+              </div>
               <div className='flex-grow ellipsis mid-gray mr4'>
                 {unitTitle}
                 <div className='flex justify-space'>

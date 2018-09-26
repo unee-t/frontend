@@ -62,3 +62,38 @@ npm install
 ```shell
 npm start
 ```
+
+# Tips
+
+## How do I figure out the email of the logged in user?
+
+Run in browser's developer console:
+
+	Meteor.user().emails[0].address
+
+## How to find user account on MongoDB given an email address foo@example.com?
+
+	./backup/connect.sh
+	db.users.findOne({'emails.address': 'foo@example.com'})
+
+## How do I set up for local development?
+
+Assuming `.env` is already setup, you need to populate yours users db, by cross
+referencing an existing user in the Bugzilla backend. For example running in
+the dev tools of your browser:
+
+	Accounts.createUser({ email: 'leonel@mailinator.com', password: 'leonel', profile: { bzLogin: 'leonel@mailinator.com', bzPass: 'leonel' }})
+
+Ensure it worked by looking at the `npm start` log.
+
+Next in `meteor mongo`, you need to verify the address like so:
+
+	db.users.update({'emails.address': 'leonel@mailinator.com'}, {$set : {'emails.0.verified': true}})
+
+## How to test the notifications / email templates?
+
+Refer to
+[simulate.sh](https://github.com/unee-t/lambda2sns/blob/master/tests/simulate.sh)
+though you need to tweak the
+[events](https://github.com/unee-t/lambda2sns/tree/master/tests/events) to map
+to the bugzillaCreds **id** from `db.users.find().pretty()`
