@@ -106,6 +106,7 @@ class UnitSelectDialog extends Component {
                   ) : (
                     dispatch(push(`/case/new?unit=${id}`))
                   )}
+                style={{whiteSpace: 'none'}}
               >
                 <div className='bb b--very-light-gray br1 w-100 flex items-center'>
                   <UnitTypeIcon metaData={metaData} />
