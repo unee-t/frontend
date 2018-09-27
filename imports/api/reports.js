@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import { HTTP } from 'meteor/http'
+import { Email } from 'meteor/email'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { getUnitRoles, serverHelpers } from './units'
@@ -19,6 +20,8 @@ import {
   fieldEditMethodMaker,
   factoryOptions as caseFactoryOpts
 } from './cases'
+import { emailValidator } from '../util/validators'
+import reportPdfSharedEmail from '../email-templates/report-pdf-shared'
 
 export const collectionName = 'reports'
 const factoryOptions = {
@@ -513,6 +516,70 @@ Meteor.methods({
       return {
         url: previewUrl
       }
+    }
+  },
+  [`${collectionName}.shareWithRecipients`]: (reportId, recipients) => {
+    check(reportId, Number)
+    check(recipients, Array)
+    if (!Meteor.userId()) {
+      throw new Meteor.Error('not-authorized')
+    }
+    const faultyEmail = recipients.find(r => !emailValidator(r))
+    if (faultyEmail) {
+      throw new Meteor.Error('Invalid email address', faultyEmail)
+    }
+    if (Meteor.isServer) {
+      const errorLogParams = {
+        user: Meteor.userId(),
+        method: `${collectionName}.shareWithRecipients`,
+        args: [reportId, recipients]
+      }
+      const sender = Meteor.user()
+      const { bugzillaCreds: { apiKey } } = sender
+
+      // Calling the API just for an authorization check. The data is meaningless
+      try {
+        bugById(reportId, apiKey)
+      } catch (e) {
+        console.error({
+          ...errorLogParams,
+          step: `Fetch main report object (get /rest/bug/${reportId})`,
+          error: e
+        })
+        throw new Meteor.Error('Failed to access the report with your credentials')
+      }
+      const reportSnapshot = ReportSnapshots.findOne({'reportItem.id': reportId})
+      if (!reportSnapshot) {
+        throw new Meteor.Error('There is no finalized export for this report yet')
+      }
+      const senderRoleObj = reportSnapshot.unitRoles.find(role => role.members.find(mem => mem.id === sender._id))
+      const reportTitle = reportSnapshot.reportItem.summary
+      const unitName = reportSnapshot.unitMetaData.displayName || reportSnapshot.unitMetaData.bzName
+      recipients.forEach(recipientEmail => {
+        let recipientObj = Meteor.users.findOne({'emails.address': recipientEmail})
+        if (!recipientObj) {
+          recipientObj = {
+            profile: {},
+            emails: [{
+              address: recipientEmail
+            }]
+          }
+        }
+        const emailContent = reportPdfSharedEmail(
+          sender,
+          senderRoleObj.roleType,
+          recipientObj,
+          reportId,
+          reportSnapshot.pdfUrl,
+          reportTitle,
+          unitName
+        )
+        Email.send({
+          to: recipientObj.emails[0].address,
+          from: process.env.FROM_EMAIL,
+          ...emailContent
+        })
+      })
     }
   },
   [`${collectionName}.editReportField`]: fieldEditMethodMaker({

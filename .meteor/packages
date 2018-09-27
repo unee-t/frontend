@@ -31,3 +31,4 @@ dburles:collection-helpers
 force-ssl@1.1.0
 percolate:migrations
 underscore
+email
