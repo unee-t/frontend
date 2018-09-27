@@ -13,3 +13,5 @@ export CLOUDINARY_URL=$(aws --profile uneet-demo ssm get-parameters --names CLOU
 export API_ACCESS_TOKEN=$(aws --profile uneet-demo ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
 export FROM_EMAIL="DEMO Unee-T Case <case@demo.unee-t.com>"
 export MAIL_URL=$(aws --profile uneet-demo ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)
+export STAGE=demo
+export DOMAIN=unee-t.com

@@ -12,3 +12,5 @@ export CLOUDINARY_URL=$(aws --profile uneet-dev ssm get-parameters --names CLOUD
 export API_ACCESS_TOKEN=$(aws --profile uneet-dev ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
 export FROM_EMAIL=$(aws --profile uneet-dev ssm get-parameters --names FROM_EMAIL --query Parameters[0].Value --output text)
 export MAIL_URL=$(aws --profile uneet-dev ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)
+export STAGE=dev
+export DOMAIN=unee-t.com

@@ -89,6 +89,9 @@ test -f aws-env.$STAGE && source aws-env.$STAGE
 service=$(grep -A1 services AWS-docker-compose.yml | tail -n1 | tr -cd '[[:alnum:]]')
 echo Deploying $service with commit $COMMIT >&2
 
+# Ensure docker compose file's STAGE env is empty for production
+test "$STAGE" == prod && export STAGE=""
+
 envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up --timeout 7
