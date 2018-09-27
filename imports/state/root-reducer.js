@@ -16,6 +16,7 @@ import pathBreadcrumb from './reducers/path-breadcrumb'
 import unitCreationState from './reducers/unit-creation-state'
 import genericErrorState from './reducers/generic-error-state'
 import reportPreviewUrls from './reducers/report-preview-urls'
+import reportSharingState from './reducers/report-sharing-state'
 
 const rootReducer = combineReducers({
   showLoginError,
@@ -34,6 +35,7 @@ const rootReducer = combineReducers({
   reportCreationState,
   genericErrorState,
   reportPreviewUrls,
+  reportSharingState,
   router
 })
 

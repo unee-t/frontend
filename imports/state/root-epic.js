@@ -24,6 +24,7 @@ import { editReportField } from './epics/edit-report-field'
 import { addReportAttachment } from './epics/add-report-attachment'
 import { retryReportAttachment } from './epics/retry-report-attachment'
 import { generateReportHTMLPreview } from './epics/generate-report-html-preview'
+import { sendReportPdf } from './epics/send-report-pdf'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -50,5 +51,6 @@ export const rootEpic = combineEpics(
   editReportField,
   addReportAttachment,
   retryReportAttachment,
-  generateReportHTMLPreview
+  generateReportHTMLPreview,
+  sendReportPdf
 )
