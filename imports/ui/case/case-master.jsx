@@ -14,8 +14,6 @@ import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
 import { renderCurrUserAvatar, renderAppBarLeft } from '../util/app-bar-utils'
-import { push } from 'react-router-redux'
-
 import {
   titleStyle
 } from '../components/app-bar.mui-styles'
@@ -78,16 +76,6 @@ class CaseMaster extends Component {
           isSubLoading: true
         })
       }
-    }
-  }
-
-  componentDidUpdate (prevProps, prevState) {
-    const { location, dispatch } = this.props
-    if (prevProps.location.pathname !== location.pathname && location.pathname === '/case/unit-select') {
-      this.setState({
-        isLoading: false
-      })
-      dispatch(push(`/case/unit-select`))
     }
   }
 
