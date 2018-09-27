@@ -14,6 +14,7 @@ import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
 import { renderCurrUserAvatar, renderAppBarLeft } from '../util/app-bar-utils'
+
 import {
   titleStyle
 } from '../components/app-bar.mui-styles'
@@ -78,7 +79,6 @@ class CaseMaster extends Component {
       }
     }
   }
-
   handleIconClick = () => {
     this.props.dispatch(setDrawerState(true))
   }
