@@ -4,7 +4,7 @@ import url from 'url'
 export default (sender, senderRole, recipient, reportId, pdfUrl, reportTitle, unitName) => ({
   subject: `Inspection Report "${reportTitle}" for "${unitName}"`,
   html: `
-    <div class='max-width: 600px'>
+    <div style='max-width: 400px'>
       <p>Hi ${resolveUserName(recipient)},</p>
       <p>
         <span style='font-weight: bold'>${resolveUserName(sender)} </span>
@@ -12,18 +12,18 @@ export default (sender, senderRole, recipient, reportId, pdfUrl, reportTitle, un
         <span style='font-weight: bold'> "${reportTitle}" for ${unitName}</span>
       </p>
       <p>
-        You may also view the inspection report here:
+        You may also view the inspection report here:<br />
         ${url.resolve(process.env.ROOT_URL, `/report/${reportId}/preview`)}
       </p>
-      <p style='margin-top: 2em; font-weight: 600'>
-        Cheers,
+      <p style='margin-top: 2em; font-weight: 500'>
+        Cheers,<br />
         Your friends at Unee-T
       </p>
       <p>
-         <img src="cid:logo@unee-t.com" />
+         <img src="cid:logo@unee-t.com" /><br />
          Learn more about how Unee-T can help you supercharge the management of units at <a href="https://unee-t.com">unee-t.com</a>
       </p>    
-    </div>
+    </div>    
   `,
   text: `
 Hi ${resolveUserName(recipient)},
