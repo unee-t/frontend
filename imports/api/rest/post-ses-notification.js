@@ -10,6 +10,7 @@ export default (req, res) => {
 
   switch (message.bounce.bounceType) {
     case 'Permanent':
+    case 'Transient':
       console.log('Mark invalid', message.bounce.bouncedRecipients[0].emailAddress)
       Meteor.users.update(
         { 'emails.address': message.bounce.bouncedRecipients[0].emailAddress },
