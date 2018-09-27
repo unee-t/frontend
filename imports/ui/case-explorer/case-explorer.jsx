@@ -19,6 +19,7 @@ import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { push } from 'react-router-redux'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -42,6 +43,11 @@ class CaseExplorer extends Component {
   handleOnItemClicked = () => {
     const { dispatch, match } = this.props
     dispatch(storeBreadcrumb(match.url))
+  }
+
+  handleOnUnitClicked = (unitId) => {
+    const { dispatch } = this.props
+    dispatch(push(`/case/new?unit=${unitId}`))
   }
 
   componentWillReceiveProps ({isLoading, casesError, caseList}) {
@@ -163,7 +169,7 @@ class CaseExplorer extends Component {
           <UnitSelectDialog
             show={open}
             onDismissed={() => this.setState({open: false})}
-            item='Case'
+            onUnitClick={this.handleOnUnitClicked}
           />
         </div>
       </div>

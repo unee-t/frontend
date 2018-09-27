@@ -15,6 +15,7 @@ import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FontIcon from 'material-ui/FontIcon'
 import { ReportList } from '../report-explorer/report-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { push } from 'react-router-redux'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -37,6 +38,16 @@ class ReportExplorer extends Component {
   handleOnItemClicked = () => {
     const { dispatch, match } = this.props
     dispatch(storeBreadcrumb(match.url))
+  }
+
+  handleOnItemClicked = () => {
+    const { dispatch, match } = this.props
+    dispatch(storeBreadcrumb(match.url))
+  }
+
+  handleOnUnitClicked = (unitId) => {
+    const { dispatch } = this.props
+    dispatch(push(`/unit/${unitId}/reports/new`))
   }
 
   makeReportGrouping = memoizeOne(
@@ -99,6 +110,7 @@ class ReportExplorer extends Component {
               show={open}
               onDismissed={() => this.setState({open: false})}
               item='Report'
+              onUnitClick={this.handleOnUnitClicked}
             />
           </div>
         </div>

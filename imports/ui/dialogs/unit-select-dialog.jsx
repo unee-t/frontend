@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
-import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
@@ -45,7 +44,7 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { show, onDismissed, inProgress, dispatch, unitList, item, isLoading } = this.props
+    const { show, onDismissed, inProgress, unitList, isLoading, onUnitClick } = this.props
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const actions =
@@ -111,11 +110,7 @@ class UnitSelectDialog extends Component {
                     <div key={name}>
                       <MenuItem
                         innerDivStyle={resetMenuItemDivStyle}
-                        onClick={() => item === 'Report'
-                          ? (dispatch(push(`/unit/${id}/reports/new`))
-                          ) : (
-                            dispatch(push(`/case/new?unit=${id}`))
-                          )}
+                        onClick={() => onUnitClick(id)}
                         style={{whiteSpace: 'none', display: 'inline'}}
                       >
                         <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
