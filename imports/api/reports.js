@@ -560,7 +560,9 @@ Meteor.methods({
       if (!reportSnapshot) {
         throw new Meteor.Error('There is no finalized export for this report yet')
       }
+
       const senderRoleObj = reportSnapshot.unitRoles.find(role => role.members.find(mem => mem.id === sender._id))
+      const senderRole = senderRoleObj ? senderRoleObj.roleType : 'Stakeholder'
       const reportTitle = reportSnapshot.reportItem.summary
       const unitName = reportSnapshot.unitMetaData.displayName || reportSnapshot.unitMetaData.bzName
       newEmails.map(email => ({
@@ -571,7 +573,7 @@ Meteor.methods({
       })).concat(recipientUsers).forEach(recipientObj => {
         const emailContent = reportPdfSharedEmail(
           sender,
-          senderRoleObj.roleType,
+          senderRole,
           recipientObj,
           reportId,
           reportSnapshot.pdfUrl,
