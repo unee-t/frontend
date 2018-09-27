@@ -20,7 +20,7 @@ import 'rxjs/add/operator/filter'
 export const sendReportPdf = action$ => action$
   .ofType(EMAIL_PDF_ATTACHMENT)
   .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-  .mergeMap(({ reportId, recipients }) => {
+  .mergeMap(({ reportId, newEmails, selectedRecipients }) => {
     const meteorResult$ = (new Subject())
       .mergeMap(({error}) => {
         if (error) {
@@ -32,7 +32,7 @@ export const sendReportPdf = action$ => action$
         return of(emailPdfAttachmentSuccess())
       })
     Meteor.call(
-      `${collectionName}.shareWithRecipients`, reportId, recipients, error => {
+      `${collectionName}.shareWithRecipients`, reportId, newEmails, selectedRecipients, error => {
         if (error) {
           console.error('Report email sharing error', error)
         }

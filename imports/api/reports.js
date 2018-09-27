@@ -518,21 +518,29 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.shareWithRecipients`]: (reportId, recipients) => {
+  [`${collectionName}.shareWithRecipients`]: (reportId, newEmails, selectedRecipientIds) => {
     check(reportId, Number)
-    check(recipients, Array)
+    check(newEmails, Array)
+    check(selectedRecipientIds, Array)
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
-    const faultyEmail = recipients.find(r => !emailValidator(r))
+    const faultyEmail = newEmails.find(r => !emailValidator(r))
     if (faultyEmail) {
       throw new Meteor.Error('Invalid email address', faultyEmail)
     }
+    const recipientUsers = selectedRecipientIds.map(userId => {
+      const user = Meteor.users.findOne(userId)
+      if (!user) {
+        throw new Meteor.Error(`No user exists with id ${userId}`)
+      }
+      return user
+    })
     if (Meteor.isServer) {
       const errorLogParams = {
         user: Meteor.userId(),
         method: `${collectionName}.shareWithRecipients`,
-        args: [reportId, recipients]
+        args: [reportId, newEmails]
       }
       const sender = Meteor.user()
       const { bugzillaCreds: { apiKey } } = sender
@@ -555,16 +563,12 @@ Meteor.methods({
       const senderRoleObj = reportSnapshot.unitRoles.find(role => role.members.find(mem => mem.id === sender._id))
       const reportTitle = reportSnapshot.reportItem.summary
       const unitName = reportSnapshot.unitMetaData.displayName || reportSnapshot.unitMetaData.bzName
-      recipients.forEach(recipientEmail => {
-        let recipientObj = Meteor.users.findOne({'emails.address': recipientEmail})
-        if (!recipientObj) {
-          recipientObj = {
-            profile: {},
-            emails: [{
-              address: recipientEmail
-            }]
-          }
-        }
+      newEmails.map(email => ({
+        profile: {},
+        emails: [{
+          address: email
+        }]
+      })).concat(recipientUsers).forEach(recipientObj => {
         const emailContent = reportPdfSharedEmail(
           sender,
           senderRoleObj.roleType,
