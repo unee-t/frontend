@@ -10,6 +10,9 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Reports, { collectionName } from '../../api/reports'
 import ReportSnapshots, { collectionName as snapsCollName } from '../../api/report-snapshots'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
+import {
+  emailPdfAttachment
+} from '../../state/actions/report-share.actions'
 import InnerAppBar from '../components/inner-app-bar'
 import UserSelectionBox from '../components/user-selection-box'
 import Preloader from '../preloader/preloader'
@@ -55,13 +58,13 @@ class ReportShare extends Component {
           <UserSelectionBox
             usersList={unitUsers}
             onUserClick={user => this.setState({
-              selectedRecipients: selectedRecipients.includes(user.login)
-                ? selectedRecipients.filter(u => u !== user.login)
-                : selectedRecipients.concat([user.login])
+              selectedRecipients: selectedRecipients.includes(user.userId)
+                ? selectedRecipients.filter(u => u !== user.userId)
+                : selectedRecipients.concat([user.userId])
             })}
             userStatusRenderer={user => (
               <div className='flex flex-column items-center justify-center'>
-                {selectedRecipients.includes(user.login) ? (
+                {selectedRecipients.includes(user.userId) ? (
                   <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
                 ) : (
                   <FontIcon className='material-icons' color='var(--silver)'>panorama_fish_eye</FontIcon>
@@ -91,7 +94,7 @@ class ReportShare extends Component {
               primary
               fullWidth
               disabled={tagInputError || (selectedRecipients.length === 0 && newRecipients.length === 0)}
-              onClick={() => console.log('click')}
+              onClick={() => dispatch(emailPdfAttachment(reportItem.id, newRecipients, selectedRecipients))}
             >
               <span className='f4 white'>Send report</span>
             </RaisedButton>
