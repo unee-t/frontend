@@ -17,8 +17,8 @@ const unitTypes = [
 
 export default class UnitTypeIcon extends Component {
   render () {
-    const { metaData, iconInExplorer, unitType } = this.props
-    const iconType = (metaData && metaData.unitType) || iconInExplorer || unitType
+    const { metaData, iconInExplorer } = this.props
+    const iconType = (metaData && metaData.unitType) || iconInExplorer
     const icon = unitTypes.find(type => type.categories.includes(iconType))
     let unitTypeIcon
     if (metaData === null || (metaData && metaData.unitType === null)) {
@@ -52,6 +52,5 @@ export default class UnitTypeIcon extends Component {
 
 UnitTypeIcon.propTypes = {
   metaData: PropTypes.object,
-  iconInExplorer: PropTypes.string,
-  unitType: PropTypes.string
+  iconInExplorer: PropTypes.string
 }

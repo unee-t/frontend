@@ -8,7 +8,7 @@ import FontIcon from 'material-ui/FontIcon'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
-import Preloader from '../preloader/preloader'
+import CircularProgress from 'material-ui/CircularProgress'
 import { Meteor } from 'meteor/meteor'
 import Units, { collectionName } from '../../api/units'
 import TextField from 'material-ui/TextField'
@@ -17,6 +17,7 @@ import {
   customTitleStyle,
   closeDialogButtonStyle
 } from './generic-dialog.mui-styles'
+import { Link } from 'react-router-dom'
 
 class UnitSelectDialog extends Component {
   constructor (props) {
@@ -48,10 +49,12 @@ class UnitSelectDialog extends Component {
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const actions =
-      <div>
-        <div className={'bondi-blue tc pa2'} onClick={() => dispatch(push(`/unit/new`))} >
-          <span className={units.length === 0 && 'dn'}> Add a new unit </span>
-        </div>
+      <div className='tc pa2'>
+        <Link className={'bondi-blue link ' + (units.length === 0 ? 'dn' : '')}
+          to={`/unit/new`}
+        >
+          Add a new unit
+        </Link>
       </div>
     return (
       <Dialog
@@ -59,8 +62,6 @@ class UnitSelectDialog extends Component {
         actions={actions}
         titleStyle={customTitleStyle}
         open={show}
-        autoDetectWindowHeight
-        autoScrollBodyContent
         repositionOnUpdate
         contentStyle={{
           width: '90%',
@@ -80,8 +81,8 @@ class UnitSelectDialog extends Component {
           </button>
         )}
         <div>
-          <span className='ba b--moon-gray mv1 br1 pv1'>
-            <span className='ml3 absolute left-1' style={{marginTop: '0.8rem'}}>
+          <div className='ba b--moon-gray mt1 mb2 br1 pv1'>
+            <span className='ml3 absolute left-1' style={{marginTop: '0.2rem'}}>
               <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
                 search
               </FontIcon>
@@ -92,15 +93,18 @@ class UnitSelectDialog extends Component {
               fullWidth
               value={searchText}
               onChange={(evt) => this.onSearchChanged(evt.target.value)}
-              style={{paddingLeft: '2rem'}}
-              inputStyle={{padding: '0.3rem'}}
+              style={{paddingLeft: '2rem', height: '24px'}}
+              hintStyle={{bottom: '0px'}}
             />
-          </span>
+          </div>
         </div>
-        <div className='ba b--moon-gray pa2 br1' style={{minHeight: '380px'}}>
-          { isLoading ? (<Preloader />
+        <div className='flex flex-column'>
+          { isLoading ? (
+            <div className='absolute top-0 right-0 bottom-0 left-0'>
+              <CircularProgress color='white' size={30} />
+            </div>
           ) : (
-            <div>
+            <div className='ba b--moon-gray br1 flex-grow overflow-auto' style={{height: '370px'}}>
               {units.length ? (
                 <div>
                   {units.map(({ name, metaData, description, id }) =>
@@ -114,7 +118,7 @@ class UnitSelectDialog extends Component {
                           )}
                         style={{whiteSpace: 'none', display: 'inline'}}
                       >
-                        <div className='bt b--very-light-gray br1 w-100 flex items-center'>
+                        <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
                           <UnitTypeIcon metaData={metaData} />
                           <div className={'ml3 mv3 semi-dark-gray lh-copy flex-grow'}>
                             <div>{(metaData && metaData.displayName) || name}</div>
@@ -125,7 +129,7 @@ class UnitSelectDialog extends Component {
                   )}
                 </div>
               ) : (
-                <NoItemMsg item={'unit'} />
+                <NoItemMsg item='unit' addUnit />
               )}
             </div>
           )}

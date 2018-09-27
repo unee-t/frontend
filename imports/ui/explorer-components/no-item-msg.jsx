@@ -3,7 +3,7 @@ import FontIcon from 'material-ui/FontIcon'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
-export function NoItemMsg ({item}) {
+export function NoItemMsg ({item, addUnit}) {
   return (
     <div className='flex-grow flex flex-column items-center justify-center'>
       <div className='tc'>
@@ -22,7 +22,7 @@ export function NoItemMsg ({item}) {
         <div className='mt3 ph4'>
           <div className='mid-gray b lh-copy'>
             <div>There are no {item}s that match your current filter combination.</div>
-            {item === 'unit' ? (
+            {addUnit ? (
               <Link className='bondi-blue tc pa2 link'
                 to={`/unit/new`}
               >
