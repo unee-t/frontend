@@ -105,24 +105,16 @@ class UnitSelectDialog extends Component {
             />
           </div>
         </div>
-        <div className='flex flex-column'>
-          <div className='ba b--moon-gray br1 flex-grow overflow-auto relative' style={{height: '370px'}}>
-            { units.length === 0 ? (
-              inProgress ? (
-                <div className='absolute' style={centerIcon}>
-                  <CircularProgress size={80} />
-                </div>
-              ) : (
-                <NoItemMsg item='unit' />
-              )
-            ) : (
+        <div className='flex flex-column' style={{height: '400px'}}>
+          <div className='ba b--moon-gray br1 overflow-auto relative flex-grow'>
+            { units.length ? (
               <div>
                 {units.map(({ name, metaData, description, id }) =>
                   <div key={name}>
                     <MenuItem
                       innerDivStyle={resetMenuItemDivStyle}
                       onClick={() => onUnitClick(id)}
-                      style={{whiteSpace: 'none', display: 'inline'}}
+                      style={{whiteSpace: 'none'}}
                     >
                       <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
                         <UnitTypeIcon metaData={metaData} />
@@ -134,6 +126,14 @@ class UnitSelectDialog extends Component {
                   </div>
                 )}
               </div>
+            ) : (
+              searchResult.length === 0 ? (
+                <NoItemMsg item='unit' buttonOption={false} />
+              ) : (
+                <div className='absolute' style={centerIcon}>
+                  <CircularProgress size={80} />
+                </div>
+              )
             )}
           </div>
         </div>
@@ -148,9 +148,7 @@ UnitSelectDialog.propTypes = {
 }
 
 let unitsError
-export default connect(({ reportCreationState }) => ({
-  inProgress: !!reportCreationState.inProgress,
-  error: reportCreationState.error || ''
+export default connect(() => ({
 }))(createContainer(() => {
   const unitsHandle = Meteor.subscribe(`${collectionName}.forBrowsing`, {
     onStop: (error) => {
