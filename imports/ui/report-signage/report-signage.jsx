@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { goBack } from 'react-router-redux'
 import { Redirect } from 'react-router-dom'
 import { createContainer } from 'meteor/react-meteor-data'
-import FontIcon from 'material-ui/FontIcon'
 import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import InnerAppBar from '../components/inner-app-bar'
@@ -14,14 +13,11 @@ import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/
 import Preloader from '../preloader/preloader'
 import { infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
+import PdfIcon from '../components/pdf-icon'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import SignDialog from '../dialogs/sign-dialog'
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import { finalizeReport } from '../report-wizard/report-wizard.actions'
-
-const docIconStyle = {
-  fontSize: '40px'
-}
 
 class ReportSignage extends Component {
   constructor () {
@@ -47,12 +43,7 @@ class ReportSignage extends Component {
       <div className='flex-grow overflow-auto pa3 flex flex-column'>
         <h4 className='ma0 mid-gray pb1'>Sign the report</h4>
         <div className='ba b--black-20 br2 flex pv2 ph3 mt2 items-center'>
-          <div className='relative dib'>
-            <FontIcon className='icon-doc' color='var(--gray)' style={docIconStyle} />
-            <div className='absolute bottom-0 right-0 pb1 pr2 gray f7'>
-              PDF
-            </div>
-          </div>
+          <PdfIcon />
           <div className='ml2 mid-gray flex-grow'>
             {reportItem.title}.pdf
           </div>

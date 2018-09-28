@@ -45,6 +45,9 @@
     },
     "PDFGEN_LAMBDA_URL": {
       "required": true
+    },
+    "PDFCONVERT_LAMBDA_URL": {
+      "required": true
     }
   },
   "formation": {

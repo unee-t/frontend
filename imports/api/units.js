@@ -71,7 +71,9 @@ export const getUnitRoles = unit => {
       // Using the prefetched array to find the user doc
       const user = userDocs.find(doc => doc._id === memberDesc.id)
       all.push({
+        userId: user._id,
         login: user.bugzillaCreds.login,
+        name: user.profile.name,
         role: roleObj.roleType,
         isOccupant: memberDesc.isOccupant
       })
