@@ -96,36 +96,36 @@ class UnitSelectDialog extends Component {
           </div>
         </div>
         <div className='flex flex-column'>
-          { inProgress ? (
-            <div className='absolute top-0 right-0 bottom-0 left-0'>
-              <CircularProgress color='white' size={30} />
-            </div>
-          ) : (
-            <div className='ba b--moon-gray br1 flex-grow overflow-auto' style={{height: '370px'}}>
-              {units.length ? (
-                <div>
-                  {units.map(({ name, metaData, description, id }) =>
-                    <div key={name}>
-                      <MenuItem
-                        innerDivStyle={resetMenuItemDivStyle}
-                        onClick={() => onUnitClick(id)}
-                        style={{whiteSpace: 'none', display: 'inline'}}
-                      >
-                        <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
-                          <UnitTypeIcon metaData={metaData} />
-                          <div className={'ml3 mv3 semi-dark-gray lh-copy flex-grow'}>
-                            <div>{(metaData && metaData.displayName) || name}</div>
-                          </div>
+          <div className='ba b--moon-gray br1 flex-grow overflow-auto' style={{height: '370px'}}>
+            {
+              inProgress && (
+                <div className='absolute top-0 right-0 bottom-0 left-0'>
+                  <CircularProgress color='white' size={30} />
+                </div>)
+            }
+            {!inProgress && units.length ? (
+              <div>
+                {units.map(({ name, metaData, description, id }) =>
+                  <div key={name}>
+                    <MenuItem
+                      innerDivStyle={resetMenuItemDivStyle}
+                      onClick={() => onUnitClick(id)}
+                      style={{whiteSpace: 'none', display: 'inline'}}
+                    >
+                      <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
+                        <UnitTypeIcon metaData={metaData} />
+                        <div className={'ml3 mv3 semi-dark-gray lh-copy flex-grow'}>
+                          <div>{(metaData && metaData.displayName) || name}</div>
                         </div>
-                      </MenuItem>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <NoItemMsg item='unit' addUnit />
-              )}
-            </div>
-          )}
+                      </div>
+                    </MenuItem>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <NoItemMsg item='unit' addUnit />
+            )}
+          </div>
         </div>
       </Dialog>
     )
