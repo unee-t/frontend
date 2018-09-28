@@ -3,15 +3,18 @@ import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
-import { goBack } from 'react-router-redux'
+import { goBack, go } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
+import Dialog from 'material-ui/Dialog'
+import CircularProgress from 'material-ui/CircularProgress'
 
 import Reports, { collectionName } from '../../api/reports'
 import ReportSnapshots, { collectionName as snapsCollName } from '../../api/report-snapshots'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import {
-  emailPdfAttachment
+  emailPdfAttachment,
+  emailPdfAttachmentReset
 } from '../../state/actions/report-share.actions'
 import InnerAppBar from '../components/inner-app-bar'
 import UserSelectionBox from '../components/user-selection-box'
@@ -19,6 +22,8 @@ import Preloader from '../preloader/preloader'
 import PdfIcon from '../components/pdf-icon'
 import TagInput from '../components/tag-input'
 import { emailValidator } from '../../util/validators'
+
+import { closeDialogButtonStyle } from '../dialogs/generic-dialog.mui-styles'
 
 class ReportShare extends Component {
   constructor () {
@@ -28,8 +33,21 @@ class ReportShare extends Component {
       newRecipients: []
     }
   }
+  handleDialogClose = () => {
+    this.props.dispatch(emailPdfAttachmentReset())
+    this.setState({
+      selectedRecipients: [],
+      newRecipients: []
+    })
+  }
+  handleBackToReportListing = evt => {
+    evt.preventDefault()
+    const { dispatch } = this.props
+    dispatch(emailPdfAttachmentReset())
+    dispatch(go(-2))
+  }
   render () {
-    const { dispatch, reportItem, isLoading, unitUsers, pdfUrl } = this.props
+    const { dispatch, reportItem, isLoading, unitUsers, pdfUrl, inProgress, success } = this.props
     const { selectedRecipients, newRecipients, tagInputError } = this.state
     if (isLoading) return <Preloader />
 
@@ -100,6 +118,34 @@ class ReportShare extends Component {
             </RaisedButton>
           </div>
         </div>
+        <Dialog open={inProgress || success} modal>
+          {inProgress ? (
+            <div className='tc pb4 pt1'>
+              <CircularProgress size={70} />
+            </div>
+          ) : (
+            <div>
+              <button className='button b--none bg-transparent absolute top-1 pt2 right-1 outline-0'
+                onClick={this.handleDialogClose}
+              >
+                <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
+              </button>
+              <div className='tc'>
+                <FontIcon className='material-icons' color='var(--success-green)' style={{ fontSize: '80px' }}>
+                  check_circle
+                </FontIcon>
+                <p className='mv0 near-black lh-copy b'>
+                  Your report has been sent to the selected recipients.
+                </p>
+                <div className='mt2'>
+                  <a className='link bondi-blue' href='/report' onClick={this.handleBackToReportListing}>
+                    Back to Inspection Report listing
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+        </Dialog>
       </div>
     )
   }
@@ -107,13 +153,15 @@ class ReportShare extends Component {
 
 ReportShare.propTypes = {
   isLoading: PropTypes.bool.isRequired,
+  inProgress: PropTypes.bool.isRequired,
+  success: PropTypes.bool.isRequired,
   reportItem: PropTypes.object,
   unitUsers: PropTypes.array,
   pdfUrl: PropTypes.string
 }
 
 export default connect(
-  () => ({})
+  ({ reportSharingState: { inProgress, success } }) => ({inProgress, success})
 )(createContainer(
   props => {
     const reportId = parseInt(props.match.params.reportId)
