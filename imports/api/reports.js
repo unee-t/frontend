@@ -518,10 +518,10 @@ Meteor.methods({
       }
     }
   },
-  [`${collectionName}.shareWithRecipients`]: (reportId, newEmails, selectedRecipientIds) => {
+  [`${collectionName}.shareWithRecipients`]: (reportId, newEmails, selectedRecipientLogins) => {
     check(reportId, Number)
     check(newEmails, Array)
-    check(selectedRecipientIds, Array)
+    check(selectedRecipientLogins, Array)
     if (!Meteor.userId()) {
       throw new Meteor.Error('not-authorized')
     }
@@ -529,12 +529,14 @@ Meteor.methods({
     if (faultyEmail) {
       throw new Meteor.Error('Invalid email address', faultyEmail)
     }
-    const recipientUsers = selectedRecipientIds.map(userId => {
-      const user = Meteor.users.findOne(userId)
-      if (!user) {
-        throw new Meteor.Error(`No user exists with id ${userId}`)
+    const recipientUsers = selectedRecipientLogins.map(login => {
+      const user = Meteor.users.findOne({'bugzillaCreds.login': login})
+      return user || {
+        profile: {},
+        emails: [{
+          address: login
+        }]
       }
-      return user
     })
     if (Meteor.isServer) {
       const errorLogParams = {

@@ -76,13 +76,13 @@ class ReportShare extends Component {
           <UserSelectionBox
             usersList={unitUsers}
             onUserClick={user => this.setState({
-              selectedRecipients: selectedRecipients.includes(user.userId)
-                ? selectedRecipients.filter(u => u !== user.userId)
-                : selectedRecipients.concat([user.userId])
+              selectedRecipients: selectedRecipients.includes(user.login)
+                ? selectedRecipients.filter(u => u !== user.login)
+                : selectedRecipients.concat([user.login])
             })}
             userStatusRenderer={user => (
               <div className='flex flex-column items-center justify-center'>
-                {selectedRecipients.includes(user.userId) ? (
+                {selectedRecipients.includes(user.login) ? (
                   <FontIcon className='material-icons' color='var(--success-green)'>check_circle</FontIcon>
                 ) : (
                   <FontIcon className='material-icons' color='var(--silver)'>panorama_fish_eye</FontIcon>
