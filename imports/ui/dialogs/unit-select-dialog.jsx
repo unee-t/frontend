@@ -48,12 +48,10 @@ class UnitSelectDialog extends Component {
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const actions =
-      <div className='tc pa2'>
+      <div className='tc ph2'>
         <Link className={'bondi-blue link ' + (units.length === 0 ? 'dn' : '')}
           to={`/unit/new`}
-        >
-          Add a new unit
-        </Link>
+        >Add a new unit</Link>
       </div>
     return (
       <Dialog
