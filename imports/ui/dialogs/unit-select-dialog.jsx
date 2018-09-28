@@ -18,6 +18,13 @@ import {
 } from './generic-dialog.mui-styles'
 import { Link } from 'react-router-dom'
 
+const centerIcon = {
+  top: '50%',
+  left: '50%',
+  marginRight: '-50%',
+  transform: 'translate(-50%, -50%)'
+}
+
 class UnitSelectDialog extends Component {
   constructor (props) {
     super(props)
@@ -48,8 +55,8 @@ class UnitSelectDialog extends Component {
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const actions =
-      <div className='tc ph2'>
-        <Link className={'bondi-blue link ' + (units.length === 0 ? 'dn' : '')}
+      <div className='tc pa2 bg-bondi-blue'>
+        <Link className={'white link ph3 br1 b--none pv2 lh-title dim' + (units.length === 0 ? 'dn' : '')}
           to={`/unit/new`}
         >Add a new unit</Link>
       </div>
@@ -68,6 +75,9 @@ class UnitSelectDialog extends Component {
           paddingBottom: '0',
           borderTop: 'none',
           borderBottom: 'none'
+        }}
+        actionsContainerStyle={{
+          padding: '8px 24px'
         }}
       >
         {!inProgress && (
@@ -96,14 +106,16 @@ class UnitSelectDialog extends Component {
           </div>
         </div>
         <div className='flex flex-column'>
-          <div className='ba b--moon-gray br1 flex-grow overflow-auto' style={{height: '370px'}}>
-            {
-              inProgress && (
-                <div className='absolute top-0 right-0 bottom-0 left-0'>
-                  <CircularProgress color='white' size={30} />
-                </div>)
-            }
-            {!inProgress && units.length ? (
+          <div className='ba b--moon-gray br1 flex-grow overflow-auto relative' style={{height: '370px'}}>
+            { units.length === 0 ? (
+              inProgress ? (
+                <div className='absolute' style={centerIcon}>
+                  <CircularProgress size={80} />
+                </div>
+              ) : (
+                <NoItemMsg item='unit' />
+              )
+            ) : (
               <div>
                 {units.map(({ name, metaData, description, id }) =>
                   <div key={name}>
@@ -114,7 +126,7 @@ class UnitSelectDialog extends Component {
                     >
                       <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
                         <UnitTypeIcon metaData={metaData} />
-                        <div className={'ml3 mv3 semi-dark-gray lh-copy flex-grow'}>
+                        <div className={'ml3 mv2 semi-dark-gray lh-copy flex-grow'}>
                           <div>{(metaData && metaData.displayName) || name}</div>
                         </div>
                       </div>
@@ -122,8 +134,6 @@ class UnitSelectDialog extends Component {
                   </div>
                 )}
               </div>
-            ) : (
-              <NoItemMsg item='unit' addUnit />
             )}
           </div>
         </div>

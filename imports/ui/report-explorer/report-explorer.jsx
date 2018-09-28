@@ -99,7 +99,7 @@ class ReportExplorer extends Component {
                   />)
                 }
                 name={'report'}
-              /> : (<NoItemMsg item={'report'} />)
+              /> : (<NoItemMsg item={'report'} ButtonOption />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>

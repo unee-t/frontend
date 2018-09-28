@@ -159,7 +159,7 @@ class CaseExplorer extends Component {
                 />)
               }
               name={'case'}
-            /> : (<NoItemMsg item={'case'} />)
+            /> : (<NoItemMsg item={'case'} ButtonOption />)
           }
         </div>
         <div className='absolute right-1 bottom-2'>
