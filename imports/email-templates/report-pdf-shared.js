@@ -21,7 +21,8 @@ export default (sender, senderRole, recipient, reportId, pdfUrl, reportTitle, un
       </p>
       <p>
          <img src="cid:logo@unee-t.com" /><br />
-         Learn more about how Unee-T can help you supercharge the management of units at <a href="https://unee-t.com">unee-t.com</a>
+         Unee-T makes your life easier!<br />
+         Learn more about how Unee-T can help you manage your properties at <a href="https://unee-t.com">unee-t.com</a>
       </p>    
     </div>    
   `,
