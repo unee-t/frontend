@@ -51,7 +51,7 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { show, onDismissed, inProgress, unitList, onUnitClick } = this.props
+    const { show, onDismissed, inProgress, unitList, onUnitClick, isLoading } = this.props
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const actions =
@@ -127,7 +127,7 @@ class UnitSelectDialog extends Component {
                 )}
               </div>
             ) : (
-              searchResult.length === 0 ? (
+              !isLoading ? (
                 <NoItemMsg item='unit' buttonOption={false} />
               ) : (
                 <div className='absolute' style={centerIcon}>
