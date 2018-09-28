@@ -44,7 +44,7 @@ class UnitSelectDialog extends Component {
   }
 
   render () {
-    const { show, onDismissed, inProgress, unitList, isLoading, onUnitClick } = this.props
+    const { show, onDismissed, inProgress, unitList, onUnitClick } = this.props
     const { searchText, searchMode, searchResult } = this.state
     const units = searchMode ? searchResult : unitList
     const actions =
@@ -96,7 +96,7 @@ class UnitSelectDialog extends Component {
           </div>
         </div>
         <div className='flex flex-column'>
-          { isLoading ? (
+          { inProgress ? (
             <div className='absolute top-0 right-0 bottom-0 left-0'>
               <CircularProgress color='white' size={30} />
             </div>
