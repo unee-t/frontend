@@ -31,7 +31,7 @@ function getUserByBZId (idStr) {
 }
 
 const fromEmail = process.env.FROM_EMAIL
-const emailDomain = process.env.STAGE ? `case.${process.env.STAGE}.${process.env.DOMAIN}` : `case.${process.env.DOMAIN}`
+const emailDomain = process.env.STAGE ? `${process.env.STAGE}.${process.env.DOMAIN}` : `case.${process.env.DOMAIN}`
 
 function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   const emailAddr = assignee.emails[0].address
