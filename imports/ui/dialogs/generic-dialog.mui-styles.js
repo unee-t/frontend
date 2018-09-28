@@ -7,9 +7,8 @@ export const modalTitleStyle = {
 }
 
 export const customTitleStyle = {
-  padding: '0.75rem 1rem 0rem 0.75rem',
-  marginRight: '0.5rem',
-  marginLeft: '0.75rem',
+  margin: '0',
+  padding: '1rem 1rem 0rem 1rem',
   color: '#222',
   fontSize: 20,
   fontWeight: 500
@@ -20,6 +19,14 @@ export const modalBodyStyle = {
   paddingLeft: '1rem',
   paddingRight: '1rem',
   paddingTop: 0,
+  display: 'flex',
+  flexDirection: 'column'
+}
+
+export const customBodyStyle = {
+  padding: '0px 16px 0px 16px',
+  borderTop: 'none',
+  borderBottom: 'none',
   display: 'flex',
   flexDirection: 'column'
 }

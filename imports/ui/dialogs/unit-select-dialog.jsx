@@ -14,16 +14,10 @@ import TextField from 'material-ui/TextField'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import {
   customTitleStyle,
-  closeDialogButtonStyle
+  closeDialogButtonStyle,
+  customBodyStyle
 } from './generic-dialog.mui-styles'
 import { Link } from 'react-router-dom'
-
-const centerIcon = {
-  top: '50%',
-  left: '50%',
-  marginRight: '-50%',
-  transform: 'translate(-50%, -50%)'
-}
 
 class UnitSelectDialog extends Component {
   constructor (props) {
@@ -62,7 +56,7 @@ class UnitSelectDialog extends Component {
       </div>
     return (
       <Dialog
-        title='Select Unit'
+        title='Select your unit'
         actions={actions}
         titleStyle={customTitleStyle}
         open={show}
@@ -71,13 +65,9 @@ class UnitSelectDialog extends Component {
           width: '90%',
           height: '90%'
         }}
-        bodyStyle={{
-          paddingBottom: '0',
-          borderTop: 'none',
-          borderBottom: 'none'
-        }}
+        bodyStyle={customBodyStyle}
         actionsContainerStyle={{
-          padding: '8px 24px'
+          padding: '8px 16px 16px 16px'
         }}
       >
         {!inProgress && (
@@ -88,25 +78,23 @@ class UnitSelectDialog extends Component {
           </button>
         )}
         <div>
-          <div className='ba b--moon-gray mt1 mb2 br1 pv1'>
-            <span className='ml3 absolute left-1' style={{marginTop: '0.2rem'}}>
-              <FontIcon className={'material-icons'} style={closeDialogButtonStyle}>
-                search
-              </FontIcon>
-            </span>
+          <div className='ba b--moon-gray mt1 mb2 br1 pv1 flex items-center'>
+            <FontIcon className={'material-icons ml1'} style={closeDialogButtonStyle}>
+              search
+            </FontIcon>
             <TextField
-              hintText={<span className='ml1 '>Unit names </span>}
+              hintText='Unit names'
               underlineShow={false}
               fullWidth
               value={searchText}
               onChange={(evt) => this.onSearchChanged(evt.target.value)}
-              style={{paddingLeft: '2rem', height: '24px'}}
+              style={{paddingLeft: '0.5rem', height: '24px'}}
               hintStyle={{bottom: '0px'}}
             />
           </div>
         </div>
-        <div className='flex flex-column' style={{height: '400px'}}>
-          <div className='ba b--moon-gray br1 overflow-auto relative flex-grow'>
+        <div className='flex flex-column flex-grow overflow-auto'>
+          <div className='ba b--moon-gray br1'>
             { units.length ? (
               <div>
                 {units.map(({ name, metaData, description, id }) =>
@@ -130,7 +118,7 @@ class UnitSelectDialog extends Component {
               !isLoading ? (
                 <NoItemMsg item='unit' buttonOption={false} />
               ) : (
-                <div className='absolute' style={centerIcon}>
+                <div className='flex-grow flex items-center justify-center'>
                   <CircularProgress size={80} />
                 </div>
               )
@@ -144,7 +132,9 @@ class UnitSelectDialog extends Component {
 
 UnitSelectDialog.propTypes = {
   show: PropTypes.bool.isRequired,
-  onDismissed: PropTypes.func.isRequired
+  onDismissed: PropTypes.func.isRequired,
+  unitList: PropTypes.array,
+  unitsError: PropTypes.object
 }
 
 let unitsError
