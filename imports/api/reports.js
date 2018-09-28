@@ -565,6 +565,9 @@ Meteor.methods({
       const senderRole = senderRoleObj ? senderRoleObj.roleType : 'Stakeholder'
       const reportTitle = reportSnapshot.reportItem.summary
       const unitName = reportSnapshot.unitMetaData.displayName || reportSnapshot.unitMetaData.bzName
+
+      const failedRecipients = []
+      const succeededRecipients = []
       newEmails.map(email => ({
         profile: {},
         emails: [{
@@ -580,12 +583,36 @@ Meteor.methods({
           reportTitle,
           unitName
         )
-        Email.send({
-          to: recipientObj.emails[0].address,
-          from: process.env.FROM_EMAIL,
-          ...emailContent
-        })
+        try {
+          Email.send({
+            to: recipientObj.emails[0].address,
+            from: process.env.FROM_EMAIL,
+            ...emailContent
+          })
+          succeededRecipients.push(recipientObj.emails[0].address)
+        } catch (e) {
+          console.error({
+            ...errorLogParams,
+            step: `Send report pdf email to ${recipientObj.emails[0].address}`,
+            error: e
+          })
+          failedRecipients.push(recipientObj.profile.name || recipientObj.emails[0].address.split('@')[0])
+        }
       })
+      if (succeededRecipients.length) {
+        ReportSnapshots.update(reportSnapshot._id, {
+          $push: {
+            sharedWith: {
+              sendDate: new Date(),
+              recipients: succeededRecipients,
+              failedRecipients
+            }
+          }
+        })
+      }
+      if (failedRecipients.length) {
+        throw new Meteor.Error('Failed to share with: ' + failedRecipients.join(', '))
+      }
     }
   },
   [`${collectionName}.editReportField`]: fieldEditMethodMaker({
