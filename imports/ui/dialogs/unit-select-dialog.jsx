@@ -93,37 +93,35 @@ class UnitSelectDialog extends Component {
             />
           </div>
         </div>
-        <div className='flex flex-column flex-grow overflow-auto'>
-          <div className='ba b--moon-gray br1'>
-            { units.length ? (
-              <div>
-                {units.map(({ name, metaData, description, id }) =>
-                  <div key={name}>
-                    <MenuItem
-                      innerDivStyle={resetMenuItemDivStyle}
-                      onClick={() => onUnitClick(id)}
-                      style={{whiteSpace: 'none'}}
-                    >
-                      <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
-                        <UnitTypeIcon metaData={metaData} />
-                        <div className={'ml3 mv2 semi-dark-gray lh-copy flex-grow'}>
-                          <div>{(metaData && metaData.displayName) || name}</div>
-                        </div>
+        <div className='ba b--moon-gray br1 flex flex-column flex-grow overflow-auto'>
+          { units.length ? (
+            <div>
+              {units.map(({ name, metaData, description, id }) =>
+                <div key={name}>
+                  <MenuItem
+                    innerDivStyle={resetMenuItemDivStyle}
+                    onClick={() => onUnitClick(id)}
+                    style={{whiteSpace: 'none'}}
+                  >
+                    <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
+                      <UnitTypeIcon metaData={metaData} />
+                      <div className={'ml3 mv2 semi-dark-gray lh-copy flex-grow'}>
+                        <div>{(metaData && metaData.displayName) || name}</div>
                       </div>
-                    </MenuItem>
-                  </div>
-                )}
-              </div>
-            ) : (
-              !isLoading ? (
-                <NoItemMsg item='unit' buttonOption={false} />
-              ) : (
-                <div className='flex-grow flex items-center justify-center'>
-                  <CircularProgress size={80} />
+                    </div>
+                  </MenuItem>
                 </div>
-              )
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            !isLoading ? (
+              <NoItemMsg item='unit' buttonOption={false} />
+            ) : (
+              <div className='flex-grow flex items-center justify-center'>
+                <CircularProgress size={80} />
+              </div>
+            )
+          )}
         </div>
       </Dialog>
     )

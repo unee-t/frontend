@@ -2,7 +2,7 @@ import React from 'react'
 import FontIcon from 'material-ui/FontIcon'
 import PropTypes from 'prop-types'
 
-export function NoItemMsg ({item, ButtonOption}) {
+export function NoItemMsg ({item, buttonOption}) {
   return (
     <div className='flex-grow flex flex-column items-center justify-center'>
       <div className='tc'>
@@ -21,7 +21,7 @@ export function NoItemMsg ({item, ButtonOption}) {
         <div className='mt3 ph4'>
           <div className='mid-gray b lh-copy'>
             <div>There are no {item}s that match your current filter combination.</div>
-            {ButtonOption &&
+            {buttonOption &&
               <div>Click on the "+" button to select a unit to add a new {item}</div>
             }
           </div>
@@ -32,5 +32,6 @@ export function NoItemMsg ({item, ButtonOption}) {
 }
 
 NoItemMsg.propTypes = {
-  item: PropTypes.string
+  item: PropTypes.string,
+  buttonOption: PropTypes.bool
 }
