@@ -115,7 +115,7 @@ class UnitSelectDialog extends Component {
             </div>
           ) : (
             !isLoading ? (
-              <NoItemMsg item='unit' buttonOption={false} />
+              <NoItemMsg item='unit' />
             ) : (
               <div className='flex-grow flex items-center justify-center'>
                 <CircularProgress size={80} />

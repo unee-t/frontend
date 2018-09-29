@@ -99,7 +99,7 @@ class ReportExplorer extends Component {
                   />)
                 }
                 name={'report'}
-              /> : (<NoItemMsg item={'report'} ButtonOption />)
+              /> : (<NoItemMsg item={'report'} buttonOption />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>
@@ -109,7 +109,6 @@ class ReportExplorer extends Component {
             <UnitSelectDialog
               show={open}
               onDismissed={() => this.setState({open: false})}
-              item='Report'
               onUnitClick={this.handleOnUnitClicked}
             />
           </div>
