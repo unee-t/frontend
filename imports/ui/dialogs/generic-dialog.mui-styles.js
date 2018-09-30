@@ -6,11 +6,27 @@ export const modalTitleStyle = {
   fontWeight: 500
 }
 
+export const customTitleStyle = {
+  margin: '0',
+  padding: '1rem 1rem 0rem 1rem',
+  color: '#222',
+  fontSize: 20,
+  fontWeight: 500
+}
+
 export const modalBodyStyle = {
   paddingBottom: '1.5rem',
   paddingLeft: '1rem',
   paddingRight: '1rem',
   paddingTop: 0,
+  display: 'flex',
+  flexDirection: 'column'
+}
+
+export const customBodyStyle = {
+  padding: '0px 16px 0px 16px',
+  borderTop: 'none',
+  borderBottom: 'none',
   display: 'flex',
   flexDirection: 'column'
 }

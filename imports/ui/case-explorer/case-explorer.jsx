@@ -5,7 +5,6 @@ import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import UnverifiedWarning from '../components/unverified-warning'
 import { withRouter } from 'react-router-dom'
-import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
@@ -19,6 +18,8 @@ import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
+import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { push } from 'react-router-redux'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -26,7 +27,8 @@ class CaseExplorer extends Component {
     this.state = {
       caseId: '',
       filterStatus: true,
-      myInvolvement: false
+      myInvolvement: false,
+      open: false
     }
   }
 
@@ -41,6 +43,11 @@ class CaseExplorer extends Component {
   handleOnItemClicked = () => {
     const { dispatch, match } = this.props
     dispatch(storeBreadcrumb(match.url))
+  }
+
+  handleOnUnitClicked = (unitId) => {
+    const { dispatch } = this.props
+    dispatch(push(`/case/new?unit=${unitId}`))
   }
 
   componentWillReceiveProps ({isLoading, casesError, caseList}) {
@@ -127,8 +134,8 @@ class CaseExplorer extends Component {
     }
   )
   render () {
-    const { isLoading, dispatch, caseList, allNotifications, unreadNotifications } = this.props
-    const { filterStatus, myInvolvement } = this.state
+    const { isLoading, caseList, allNotifications, unreadNotifications } = this.props
+    const { filterStatus, myInvolvement, open } = this.state
     if (isLoading) return <Preloader />
     const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
     return (
@@ -152,13 +159,18 @@ class CaseExplorer extends Component {
                 />)
               }
               name={'case'}
-            /> : (<NoItemMsg item={'case'} />)
+            /> : (<NoItemMsg item={'case'} buttonOption />)
           }
         </div>
         <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
+          <FloatingActionButton onClick={() => this.setState({open: true})}>
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
+          <UnitSelectDialog
+            show={open}
+            onDismissed={() => this.setState({open: false})}
+            onUnitClick={this.handleOnUnitClicked}
+          />
         </div>
       </div>
     )

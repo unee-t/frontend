@@ -13,15 +13,17 @@ import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FontIcon from 'material-ui/FontIcon'
-import { push } from 'react-router-redux'
 import { ReportList } from '../report-explorer/report-list'
+import UnitSelectDialog from '../dialogs/unit-select-dialog'
+import { push } from 'react-router-redux'
 
 class ReportExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       filterStatus: true,
-      myInvolvement: false
+      myInvolvement: false,
+      open: false
     }
   }
 
@@ -36,6 +38,16 @@ class ReportExplorer extends Component {
   handleOnItemClicked = () => {
     const { dispatch, match } = this.props
     dispatch(storeBreadcrumb(match.url))
+  }
+
+  handleOnItemClicked = () => {
+    const { dispatch, match } = this.props
+    dispatch(storeBreadcrumb(match.url))
+  }
+
+  handleOnUnitClicked = (unitId) => {
+    const { dispatch } = this.props
+    dispatch(push(`/unit/${unitId}/reports/new`))
   }
 
   makeReportGrouping = memoizeOne(
@@ -62,7 +74,7 @@ class ReportExplorer extends Component {
 
   render () {
     const { isLoading, dispatch, reportList } = this.props
-    const { filterStatus, myInvolvement } = this.state
+    const { filterStatus, myInvolvement, open } = this.state
     if (isLoading) return <Preloader />
     const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
     return (
@@ -87,13 +99,18 @@ class ReportExplorer extends Component {
                   />)
                 }
                 name={'report'}
-              /> : (<NoItemMsg item={'report'} />)
+              /> : (<NoItemMsg item={'report'} buttonOption />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>
-            <FloatingActionButton onClick={() => dispatch(push('/unit'))}>
+            <FloatingActionButton onClick={() => this.setState({open: true})}>
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
+            <UnitSelectDialog
+              show={open}
+              onDismissed={() => this.setState({open: false})}
+              onUnitClick={this.handleOnUnitClicked}
+            />
           </div>
         </div>
       </div>
