@@ -38,60 +38,62 @@ class ReportSignage extends Component {
       return <Redirect to={`/report/${reportItem.id}/preview`} />
     }
 
-    return <div className='full-height flex flex-column'>
-      <InnerAppBar onBack={() => dispatch(goBack())} title='Sign Report' />
-      <div className='flex-grow overflow-auto pa3 flex flex-column'>
-        <h4 className='ma0 mid-gray pb1'>Sign the report</h4>
-        <div className='ba b--black-20 br2 flex pv2 ph3 mt2 items-center'>
-          <PdfIcon />
-          <div className='ml2 mid-gray flex-grow'>
-            {reportItem.title}.pdf
-          </div>
-          <div className='ml2 pl1'>
-            <a
-              className='link bondi-blue fw5 f6'
-              href={`/report/${reportItem.id}/preview`}
-              onClick={evt => {
-                evt.preventDefault()
-                dispatch(goBack())
-              }}
-            >
-              Preview
-            </a>
-          </div>
-        </div>
-        <div className='mt3 gray f6 lh-title'>
-          Only recipients present during the creation of the report are required to sign
-        </div>
-        <div className='mt2'>
-          {infoItemLabel('Recipients:')}
-        </div>
-        <div className='flex-grow mt2 flex flex-column'>
-          {isLoadingRoles ? (
-            <div className='flex-grow flex items-center justify-center'>
-              <CircularProgress size={70} thickness={5} />
+    return (
+      <div className='full-height flex flex-column'>
+        <InnerAppBar onBack={() => dispatch(goBack())} title='Sign Report' />
+        <div className='flex-grow overflow-auto pa3 flex flex-column'>
+          <h4 className='ma0 mid-gray pb1'>Sign the report</h4>
+          <div className='ba b--black-20 br2 flex pv2 ph3 mt2 items-center'>
+            <PdfIcon />
+            <div className='ml2 mid-gray flex-grow'>
+              {reportItem.title}.pdf
             </div>
-          ) : unitRoles.reduce((all, userRoleDef, ind) => {
-            if (!placeholderEmailMatcher(userRoleDef.login)) {
-              all.push(
-                <div key={ind} className={all.length !== 0 ? 'mt3' : ''}>
-                  {userInfoItem(userRoleDef, () => signatureMap[userRoleDef.login] ? (
-                    <img className='w3 h-100' src={signatureMap[userRoleDef.login]} />
-                  ) : (
-                    <a
-                      className='link bondi-blue f6 ml2 fw5 pr1'
-                      onClick={() => this.setState({chosenUser: userRoleDef, signPadOpen: true})}
-                    >
-                      Sign Report
-                    </a>
-                  ))}
-                </div>
-              )
-            }
-            return all
-          }, [])}
+            <div className='ml2 pl1'>
+              <a
+                className='link bondi-blue fw5 f6'
+                href={`/report/${reportItem.id}/preview`}
+                onClick={evt => {
+                  evt.preventDefault()
+                  dispatch(goBack())
+                }}
+              >
+                Preview
+              </a>
+            </div>
+          </div>
+          <div className='mt3 gray f6 lh-title'>
+            Only recipients present during the creation of the report are required to sign
+          </div>
+          <div className='mt2'>
+            {infoItemLabel('Recipients:')}
+          </div>
+          <div className='mt2 flex flex-column'>
+            {isLoadingRoles ? (
+              <div className='flex-grow flex items-center justify-center'>
+                <CircularProgress size={70} thickness={5} />
+              </div>
+            ) : unitRoles.reduce((all, userRoleDef, ind) => {
+              if (!placeholderEmailMatcher(userRoleDef.login)) {
+                all.push(
+                  <div key={ind} className={all.length !== 0 ? 'mt3' : ''}>
+                    {userInfoItem(userRoleDef, () => signatureMap[userRoleDef.login] ? (
+                      <img className='w3 h-100' src={signatureMap[userRoleDef.login]} />
+                    ) : (
+                      <a
+                        className='link bondi-blue f6 ml2 fw5 pr1'
+                        onClick={() => this.setState({chosenUser: userRoleDef, signPadOpen: true})}
+                      >
+                        Sign Report
+                      </a>
+                    ))}
+                  </div>
+                )
+              }
+              return all
+            }, [])}
+          </div>
         </div>
-        <div className='mt3'>
+        <div className='pa3 scroll-shadow-1'>
           <RaisedButton
             primary
             fullWidth
@@ -101,33 +103,34 @@ class ReportSignage extends Component {
             <span className='f4 white'>Finalize Report</span>
           </RaisedButton>
         </div>
+        <SignDialog
+          open={signPadOpen}
+          signingUser={chosenUser}
+          onClose={() => this.setState({signPadOpen: false})}
+          onSignSubmit={signImgUri => this.setState({
+            signatureMap: {
+              ...signatureMap,
+              [chosenUser.login]: signImgUri
+            },
+            signPadOpen: false
+          })}
+        />
+        <ConfirmationDialog
+          title={''}
+          show={confirmationOpen}
+          onConfirm={() => dispatch(finalizeReport(reportItem.id, signatureMap))}
+          onCancel={() => this.setState({confirmationOpen: false})}
+        >
+          <h3 className='near-black pt3 ph2 fw3 lh-copy tc'>
+            Inspection Report
+            <span className='b'> “{reportItem.title}” </span>
+            for unit
+            <span className='b'> {unitName} </span>
+            will be finalized and locked. You will not be able to make any changes to this version of the report.
+          </h3>
+        </ConfirmationDialog>
       </div>
-      <SignDialog
-        open={signPadOpen}
-        signingUser={chosenUser}
-        onClose={() => this.setState({signPadOpen: false})}
-        onSignSubmit={signImgUri => this.setState({
-          signatureMap: {
-            ...signatureMap,
-            [chosenUser.login]: signImgUri
-          },
-          signPadOpen: false
-        })}
-      />
-      <ConfirmationDialog
-        show={confirmationOpen}
-        onConfirm={() => dispatch(finalizeReport(reportItem.id, signatureMap))}
-        onCancel={() => this.setState({confirmationOpen: false})}
-      >
-        <h3 className='near-black pt3 ph2 fw3 lh-copy tc'>
-          Inspection Report
-          <span className='b'> “{reportItem.title}” </span>
-          for unit
-          <span className='b'> {unitName} </span>
-          will be finalized and locked. You will not be able to make any changes to this version of the report.
-        </h3>
-      </ConfirmationDialog>
-    </div>
+    )
   }
 }
 
