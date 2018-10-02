@@ -123,7 +123,7 @@ class ReportWizard extends Component {
                 disabled={!isEditable}
                 underlineShow={isEditable}
                 currentValue={reportTitle}
-                inpRef={el => this.focusableInput = el}
+                inpRef={el => { this.focusableInput = el }}
                 onEdit={val => this.setState({reportTitle: val})}
               />
               {isEditable ? (
