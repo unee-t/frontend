@@ -286,7 +286,7 @@ const MobileHeader = props => {
       <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
         const { attachId } = subProps.match.params
         const selectedComment = _.find(comments, {id: parseInt(attachId)})
-        const { creationTime, creator } = selectedComment
+        const { creation_time: creationTime, creator } = selectedComment
         const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
         const creatorText = userBzLogin === creator ? 'You' : creator
         return (
