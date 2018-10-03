@@ -28,19 +28,19 @@ script:
 # https://docs.travis-ci.com/user/deployment/script/
 deploy:
  - provider: script
-   script: AWS_ACCESS_KEY_ID=$AWS_812644853088_ID AWS_SECRET_ACCESS_KEY=$AWS_812644853088_SECRET bash deploy.sh
+   script: AWS_ACCESS_KEY_ID=$AWS_812644853088_ID AWS_SECRET_ACCESS_KEY=$AWS_812644853088_SECRET ./deploy.sh
    skip_cleanup: true
    on:
      branch: master
  - provider: script
    # deploy to production, given that it's a tagged commit
-   script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET bash deploy.sh -p
+   script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET ./deploy.sh -p
    skip_cleanup: true
    on:
      tags: true
  - provider: script
    # deploy to demo, given that it's a tagged commit
-   script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET bash deploy.sh -d
+   script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET ./deploy.sh -d
    skip_cleanup: true
    on:
      tags: true

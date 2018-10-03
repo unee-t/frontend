@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/bin/bash
+set -e
 
 echo "START $0 $(date)"
 STAGE=dev
@@ -94,7 +95,10 @@ test "$STAGE" == prod && export STAGE=""
 
 envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
-ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up --timeout 7
+ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up \
+	--deployment-max-percent 100 \
+	--deployment-min-healthy-percent 0 \
+	--timeout 7
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service ps
 
