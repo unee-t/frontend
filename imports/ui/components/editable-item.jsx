@@ -15,13 +15,16 @@ export default class EditableItem extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      value: props.initialValue || ''
+      value: props.initialValue || props.currentValue || ''
     }
     this.lastEditTime = 0
   }
   componentWillReceiveProps (nextProps) {
     if (nextProps.initialValue !== this.props.initialValue && Date.now() - this.lastEditTime > 2000) {
       this.setState({value: nextProps.initialValue})
+    }
+    if (nextProps.currentValue !== this.props.currentValue) {
+      this.setState({value: nextProps.currentValue})
     }
   }
   handleEdit = (value) => {
@@ -30,7 +33,7 @@ export default class EditableItem extends Component {
     this.props.onEdit(value)
   }
   render () {
-    const { label, isMultiLine, selectionList, disabled, name } = this.props
+    const { label, isMultiLine, selectionList, disabled, name, underlineShow, inpRef } = this.props
     const { value } = this.state
 
     if (!selectionList) {
@@ -44,7 +47,9 @@ export default class EditableItem extends Component {
           fullWidth
           disabled={!!disabled}
           multiLine={isMultiLine}
+          underlineShow={typeof underlineShow === 'boolean' ? underlineShow : true}
           value={value}
+          ref={inpRef}
           onChange={({ target: { value } }) => this.handleEdit(value)}
         />
       )
@@ -75,6 +80,9 @@ EditableItem.propTypes = {
   onEdit: PropTypes.func.isRequired,
   isMultiLine: PropTypes.bool,
   initialValue: PropTypes.string,
+  currentValue: PropTypes.string,
   selectionList: PropTypes.array,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  inpRef: PropTypes.func, // relevant only if "selectionList" is undefined
+  underlineShow: PropTypes.bool // relevant only if "selectionList" is undefined
 }

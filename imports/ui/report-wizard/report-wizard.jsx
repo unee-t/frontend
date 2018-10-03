@@ -45,14 +45,20 @@ const makeCreationButton = (label, onClick) => (
   </FlatButton>
 )
 
+const flatButtonReset = {
+  minWidth: null,
+  padding: null,
+  margin: null
+}
+
 class ReportWizard extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       reportTitle: null,
-      isEditable: false,
-      initDone: false
+      isEditable: false
     }
+    this.titleUnset = true
   }
   handleSubmit = evt => {
     evt.preventDefault()
@@ -62,10 +68,20 @@ class ReportWizard extends Component {
     this.setState({isEditable: false})
   }
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate (prevProps, prevState) {
     const { reportItem } = this.props
-    if ((!prevProps.reportItem && reportItem) || (prevProps.reportItem && prevProps.reportItem.title !== reportItem.title)) {
+    if (
+      (this.titleUnset && reportItem) ||
+      (!prevProps.reportItem && reportItem) ||
+      (prevProps.reportItem && prevProps.reportItem.title !== reportItem.title)
+    ) {
+      this.titleUnset = false
       this.setState({reportTitle: reportItem.title})
+    }
+
+    if (this.state.isEditable && !prevState.isEditable && this.focusableInput) {
+      this.focusableInput.focus()
+      this.focusableInput.getInputNode().setSelectionRange(0, this.state.reportTitle.length)
     }
   }
 
@@ -100,41 +116,38 @@ class ReportWizard extends Component {
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
         <div className='flex-grow bg-white flex flex-column overflow-auto pa3'>
-          <div>
-            { isEditable ? (
-              <div>
-                <form onSubmit={this.handleSubmit}>
-                  <div className='relative'>
-                    <div className='mt1 f6 bondi-blue'>Edit title</div>
-                    <EditableItem
-                      label=''
-                      name={reportItem.title}
-                      key={reportItem.title}
-                      initialValue={reportTitle}
-                      onEdit={val => this.setState({reportTitle: val})}
-                    />
-                    <div className='absolute right-0 tl f6 bondi-blue fw5'>
-                      <FlatButton onClick={() => this.setState({isEditable: false, reportTitle: reportItem.title})} style={{minWidth: '50px'}}>
-                        <span className='silver'> Cancel</span>
-                      </FlatButton>
-                      <FlatButton type='submit' style={{minWidth: '50px'}} disabled={!reportTitle}>
-                        <span className={(reportTitle ? 'bondi-blue' : 'silver')} >
-                          Save
-                        </span>
-                      </FlatButton>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            ) : (
-              <div className='relative'>
-                {infoItemMembers('Report title', reportTitle)}
+          <form onSubmit={this.handleSubmit}>
+            <div className='relative'>
+              <EditableItem
+                label={isEditable ? 'Edit title' : 'Report title'}
+                disabled={!isEditable}
+                underlineShow={isEditable}
+                currentValue={reportTitle}
+                inpRef={el => { this.focusableInput = el }}
+                onEdit={val => this.setState({reportTitle: val})}
+              />
+              {isEditable ? (
+                <div className='absolute right-0 tl f6 bondi-blue fw5'>
+                  <FlatButton
+                    className='ph2'
+                    style={flatButtonReset}
+                    onClick={() => this.setState({isEditable: false, reportTitle: reportItem.title})}
+                  >
+                    <span className='silver'>Cancel</span>
+                  </FlatButton>
+                  <FlatButton type='submit' className='ph2 ml2' disabled={!reportTitle} style={flatButtonReset}>
+                    <span className={(reportTitle ? 'bondi-blue' : 'silver')} >
+                      Save
+                    </span>
+                  </FlatButton>
+                </div>
+              ) : (
                 <div className='absolute bottom-1 right-0 tl'>
                   <FontIcon className='material-icons' color='var(--silver)' onClick={() => this.setState({isEditable: true})}>create</FontIcon>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </form>
           <div>
             {infoItemMembers('Unit', unitDisplayName)}
           </div>
