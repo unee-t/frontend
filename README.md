@@ -86,7 +86,10 @@ the dev tools of your browser:
 
 Ensure it worked by looking at the `npm start` log.
 
-Next in `meteor mongo`, you need to verify the address like so:
+Note: `leonel@mailinator.com` is setup inside
+https://github.com/unee-t/bugzilla-customisation/tree/master/sql & loaded via [bugzilla-customisation](https://github.com/unee-t/bugzilla-customisation/)'s `make up`.
+
+Next in `meteor mongo`, you can verify the address (without going to mailinator to answer the mail) like so:
 
 	db.users.update({'emails.address': 'leonel@mailinator.com'}, {$set : {'emails.0.verified': true}})
 
@@ -97,3 +100,12 @@ Refer to
 though you need to tweak the
 [events](https://github.com/unee-t/lambda2sns/tree/master/tests/events) to map
 to the bugzillaCreds **id** from `db.users.find().pretty()`
+
+## Migrations: Not migrating, control is locked.
+
+	Migrations.unlock()
+	Migrations.migrateTo('latest')
+
+## error: Error: url must be absolute and start with http:// or https://
+
+Your `.env` file is almost not set up correctly.
