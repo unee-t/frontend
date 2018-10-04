@@ -1,5 +1,6 @@
 import URL from 'url'
 import { URL as url2 } from 'meteor/url'
+import { footer } from '../../ui/util/marketing'
 
 export function resolveUserName (user) {
   return `${user.profile.name || user.emails[0].address.split('@')[0]}`
@@ -26,7 +27,7 @@ function resolveServiceDomain (service) {
 export function optOutHtml (settingType, notificationId, user, optoutUrl) {
   return (`
 <p>
-Unee-T is a combination of a To Do list, a Messaging System and an Issue Tracker when something needs to be done in your properties
+${footer}
 </p>
     <p>
       To opt out of receiving "${settingType}" emails, please visit
@@ -46,7 +47,7 @@ Unee-T is a combination of a To Do list, a Messaging System and an Issue Tracker
 export function optOutText (settingType, notificationId, user, optoutUrl) {
   return (`
 --
-Unee-T is a combination of a To Do list, a Messaging System and an Issue Tracker when something needs to be done in your properties
+${footer}
 
 To opt out of receiving "${settingType}" emails, please visit
     ${engage({

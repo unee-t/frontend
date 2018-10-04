@@ -1,5 +1,6 @@
 import { resolveUserName } from './components/helpers'
 import url from 'url'
+import { signaturefromhtml, signaturefromtext, learnmorehtml, learnmoretext } from 'imports/ui/util/marketing'
 
 export default (sender, senderRole, recipient, reportId, pdfUrl, reportTitle, unitName) => ({
   subject: `Inspection Report "${reportTitle}" for "${unitName}"`,
@@ -15,14 +16,10 @@ export default (sender, senderRole, recipient, reportId, pdfUrl, reportTitle, un
         You may also view the inspection report here:<br />
         ${url.resolve(process.env.ROOT_URL, `/report/${reportId}/preview`)}
       </p>
-      <p style='margin-top: 2em; font-weight: 500'>
-        Cheers,<br />
-        Your friends at Unee-T
-      </p>
+${signaturefromhtml}
       <p>
          <img src="cid:logo@unee-t.com" /><br />
-         Unee-T makes your life easier!<br />
-         Learn more about how Unee-T can help you manage your properties at <a href="https://unee-t.com">unee-t.com</a>
+         ${learnmorehtml}
       </p>    
     </div>    
   `,
@@ -31,11 +28,10 @@ Hi ${resolveUserName(recipient)},
 
 ${resolveUserName(sender)} has shared with you Inspection Report "${reportTitle}" for ${unitName}
 
+--
+${signaturefromtext}
 
-Cheers,
-Your friends at Unee-T
-
-Learn more about how Unee-T can help you supercharge the management of units at https://unee-t.com
+${learnmoretext}
 `,
   attachments: [
     {

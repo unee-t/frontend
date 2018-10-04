@@ -1,6 +1,7 @@
 import { Email } from 'meteor/email'
 import url from 'url'
 import bugzillaApi from '../util/bugzilla-api'
+import { footer } from '../../ui/util/marketing'
 const { callAPI } = bugzillaApi
 
 export const invite = (user, invitedBy) => {
@@ -34,14 +35,11 @@ as the ${inviteeRole} for that unit.
 Please click on the link to get more information about the case and reply to ${invitorUsername || 'him'}:
 ${url.resolve(process.env.ROOT_URL, `/invitation?code=${accessToken}`)}
 
-Unee-t: Managing and sharing 'To Do's for your properties has never been easier.
-https://unee-t.com
-
+${footer}
 `,
       html: `<img src="cid:logo@unee-t.com"/>
 
 <p>Hi,</p>
-
 <p>
 <br>${invitorUsername || invitorEmailAddress},
 <br>the ${roleStr} for the unit
@@ -54,8 +52,7 @@ https://unee-t.com
 <br>Please click on <a href=${url.resolve(process.env.ROOT_URL, `/invitation?code=${accessToken}`)}>this link</a> to get more information about the case and reply to ${invitorUsername || 'him'}.
 <br>If the above link does not work, copy paste this in your browser: ${url.resolve(process.env.ROOT_URL, `/invitation?code=${accessToken}`)}
 </p>
-<p><a href=https://unee-t.com>Unee-T</a>, managing and sharing 'To Do's for your properties has never been easier.</p>
-
+<p>${footer}</p>
 `,
       attachments: [{
         path: 'https://s3-ap-southeast-1.amazonaws.com/prod-media-unee-t/2018-06-14/unee-t_logo_email.png',
