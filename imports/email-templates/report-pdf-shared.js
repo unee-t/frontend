@@ -1,6 +1,6 @@
 import { resolveUserName } from './components/helpers'
 import url from 'url'
-import { signaturefromhtml, signaturefromtext, learnmorehtml, learnmoretext } from 'imports/ui/util/marketing'
+import { signaturefromhtml, signaturefromtext, learnmorehtml, learnmoretext } from '../ui/util/marketing'
 
 export default (sender, senderRole, recipient, reportId, pdfUrl, reportTitle, unitName) => ({
   subject: `Inspection Report "${reportTitle}" for "${unitName}"`,

@@ -1,7 +1,7 @@
 import { Email } from 'meteor/email'
 import url from 'url'
 import bugzillaApi from '../util/bugzilla-api'
-import { footer } from '../../ui/util/marketing'
+import { footer } from '../ui/util/marketing'
 const { callAPI } = bugzillaApi
 
 export const invite = (user, invitedBy) => {
