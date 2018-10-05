@@ -15,10 +15,6 @@ import {
 } from './form-controls.mui-styles'
 
 class UnitRoleSelect extends Component {
-  constructor () {
-    super(...arguments)
-    this.state = {}
-  }
   render () {
     const { selectedRole, onRoleSelected, isOccupant, onOccupantToggled, disabled } = this.props
     return (
