@@ -6,7 +6,9 @@ export function resolveUserName (user) {
   return `${user.profile.name || user.emails[0].address.split('@')[0]}`
 }
 
-function engage (params) {
+// We can use this to actually see how users engaged with emails
+// https://github.com/unee-t/engagement
+export function createEngagementLink (params) {
   // where to: url
   // who: email
   // why: notification id
@@ -15,13 +17,9 @@ function engage (params) {
   return URL.format(engagementURL)
 }
 
-// Does not work on localhost domains, since we assume 4 parts: $service.$stage.unee-t.com
 function resolveServiceDomain (service) {
-  const url = URL.parse(process.env.ROOT_URL)
-  const hparts = url.hostname.split('.')
-  hparts[0] = service
-  url.host = hparts.join('.')
-  return URL.format(url)
+  const domain = process.env.STAGE ? `${service}.${process.env.STAGE}.${process.env.DOMAIN}` : `${service}.${process.env.DOMAIN}`
+  return URL.format('https://' + domain)
 }
 
 export function optOutHtml (settingType, notificationId, user, optoutUrl) {
@@ -32,7 +30,7 @@ ${footer}
     <p>
       To opt out of receiving "${settingType}" emails, please visit
       <a href='${
-    engage({
+    createEngagementLink({
       url: URL.resolve(process.env.ROOT_URL, '/notification-settings'),
       id: notificationId,
       email: user.emails[0].address
@@ -50,7 +48,7 @@ export function optOutText (settingType, notificationId, user, optoutUrl) {
 ${footer}
 
 To opt out of receiving "${settingType}" emails, please visit
-    ${engage({
+    ${createEngagementLink({
       url: URL.resolve(process.env.ROOT_URL, '/notification-settings'),
       id: notificationId,
       email: user.emails[0].address
