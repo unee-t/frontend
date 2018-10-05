@@ -12,6 +12,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
 import { emailValidator } from '../../util/validators'
 import { possibleRoles } from '../../api/unit-roles-data'
+import UnitRoleSelect from '../components/unit-role-select'
 
 import { inviteSuccessIconStyle } from './invite-dialog.mui-styles'
 
@@ -187,37 +188,13 @@ class InviteDialog extends Component {
                   onChange={this.handleEmailChanged}
                   disabled={invitationState.loading}
                 />
-                <SelectField
-                  floatingLabelText='Relationship to this unit'
-                  floatingLabelFixed
-                  fullWidth
-                  floatingLabelStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  value={selectedRole}
-                  onChange={(evt, idx, val) => {
-                    this.setState({
-                      selectedRole: val,
-                      isOccupant: false
-                    })
-                  }}
-                  disabled={invitationState.loading}
-                >
-                  {this.roleTypes.map(type => (
-                    <MenuItem key={type.name} value={type} primaryText={type.name} />
-                  ))}
-                </SelectField>
-                {selectedRole && selectedRole.canBeOccupant && (
-                  <Checkbox
-                    label={`The ${selectedRole.name} is also the occupant of this unit`}
-                    labelStyle={controlLabelStyle}
-                    checked={isOccupant}
-                    onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
-                    disabled={invitationState.loading}
-                  />
-                )}
+                <UnitRoleSelect
+                  selectedRole={selectedRole}
+                  onRoleSelected={role => this.setState({selectedRole: role})}
+                  isOccupant={isOccupant}
+                  onOccupantToggled={isIt => this.setState({isOccupant: isIt})}
+                  disabled={invitationState.disabled}
+                />
                 <div className='flex justify-space mt3'>
                   <button
                     className={simpleButtonClasses + ' relative' + (invitationState.loading ? ' o-60' : '')}
