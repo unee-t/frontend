@@ -7,7 +7,6 @@ import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
 import EmailInput from '../components/email-input'
-import { possibleRoles } from '../../api/unit-roles-data'
 import UnitRoleSelect from '../components/unit-role-select'
 
 import { inviteSuccessIconStyle } from './invite-dialog.mui-styles'
@@ -44,8 +43,6 @@ class InviteDialog extends Component {
     }
 
     window.addEventListener('resize', this.handleWindowResize)
-
-    this.roleTypes = possibleRoles
   }
 
   componentDidUpdate () {
