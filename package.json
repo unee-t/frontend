@@ -32,6 +32,7 @@
     "react-redux": "^5.0.5",
     "react-router-dom": "^4.1.1",
     "react-router-redux": "^5.0.0-alpha.6",
+    "react-stripe-elements": "^2.0.1",
     "react-swipeable-views": "^0.12.13",
     "react-transition-group": "^2.3.1",
     "redux": "^3.7.1",
@@ -39,7 +40,8 @@
     "redux-observable": "^0.17.0",
     "redux-thunk": "^2.2.0",
     "rxjs": "^5.5.5",
-    "signature_pad": "^3.0.0-beta.3"
+    "signature_pad": "^3.0.0-beta.3",
+    "stripe": "^6.12.1"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

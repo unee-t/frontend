@@ -28,6 +28,7 @@ import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
 import { checkPassReset } from './app.actions'
 import { genericErrorCleared } from './general-actions'
 import { BrowserSupportMsg } from './login/browser-support-msg'
+import { CardDemo } from './stripe/app'
 
 class App extends Component {
   componentWillMount () {
@@ -51,12 +52,13 @@ class App extends Component {
               <Route exact path='/unit' component={UnitExplorer} />
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />
+              <Route exact path='/upgrade' component={CardDemo} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
               <Route exact path='/report/:reportId/preview' component={ReportPreview} />
               <Route exact path='/report/:reportId/sign' component={ReportSignage} />
-`             <Route exact path='/report/:reportId/draft' component={ReportWizard} />
-`             <Route exact path='/report/:reportId/share' component={ReportShare} />
-`             <Route path='/report' component={ReportExplorer} />
+              <Route exact path='/report/:reportId/draft' component={ReportWizard} />
+              <Route exact path='/report/:reportId/share' component={ReportShare} />
+              <Route path='/report' component={ReportExplorer} />
               <Route exact path='/case/new' component={CaseWizard} />
               <Route path='/case' component={CaseMaster} />
               <Redirect to='/case' />

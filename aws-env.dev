@@ -15,3 +15,5 @@ export FROM_EMAIL=$(aws --profile uneet-dev ssm get-parameters --names FROM_EMAI
 export MAIL_URL=$(aws --profile uneet-dev ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)
 export STAGE=dev
 export DOMAIN=unee-t.com
+export STRIPE_PUBLISHABLE_KEY=pk_test_J9o1nZV3hyuto56DCj9zbOoU
+export STRIPE_SECRET_KEY=$(aws --profile uneet-dev ssm get-parameters --names STRIPE_SECRET_KEY --with-decryption --query Parameters[0].Value --output text)
