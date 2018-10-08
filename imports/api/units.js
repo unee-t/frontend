@@ -73,6 +73,7 @@ export const getUnitRoles = unit => {
       all.push({
         userId: user._id,
         login: user.bugzillaCreds.login,
+        email: user.emails[0].address,
         name: user.profile.name,
         role: roleObj.roleType,
         isOccupant: memberDesc.isOccupant
