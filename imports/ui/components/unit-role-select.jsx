@@ -16,7 +16,7 @@ import {
 
 class UnitRoleSelect extends Component {
   render () {
-    const { selectedRole, onRoleSelected, isOccupant, onOccupantToggled, disabled } = this.props
+    const { selectedRole, onRoleSelected, isOccupant, onOccupantToggled, disabled, showRequired } = this.props
     return (
       <div>
         <SelectField
@@ -34,6 +34,7 @@ class UnitRoleSelect extends Component {
             onOccupantToggled(false)
           }}
           disabled={disabled}
+          errorText={showRequired ? 'Select a role before proceeding' : ''}
         >
           {possibleRoles.map(type => (
             <MenuItem key={type.name} value={type} primaryText={type.name} />
@@ -58,7 +59,8 @@ UnitRoleSelect.propTypes = {
   onRoleSelected: PropTypes.func.isRequired,
   isOccupant: PropTypes.bool,
   onOccupantToggled: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  showRequired: PropTypes.bool
 }
 
 export default UnitRoleSelect
