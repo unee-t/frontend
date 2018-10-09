@@ -7,8 +7,8 @@ import { emailValidator } from '/imports/util/validators'
 import {
   textInputFloatingLabelStyle,
   textInputStyle,
-  textInputUnderlineFocusStyle,
-} from '../components/form-controls.mui-styles'
+  textInputUnderlineFocusStyle
+} from './form-controls.mui-styles'
 
 class EmailInput extends Component {
   constructor () {
