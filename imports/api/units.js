@@ -117,6 +117,104 @@ export const getUnitRoles = unit => {
   )
 }
 
+export const addUserToRole = (user, unitBzId, role, invType, isOccupant, errorLogParams = {}) => {
+  // Creating matching invitation records
+  const invitationObj = {
+    invitedBy: user.bugzillaCreds.id, // The user "self-invites" itself to the new role
+    invitee: user.bugzillaCreds.id,
+    type: invType,
+    unitId: unitBzId,
+    role,
+    isOccupant
+  }
+
+  // TODO: Once all dependencies of role resolving are moved from invitations to UnitRolesData, remove this
+  // Creating the invitation as pending first
+  const invitationId = PendingInvitations.insert(invitationObj)
+
+  // Linking invitation to user
+  Meteor.users.update(user._id, {
+    $push: {
+      receivedInvites: {
+        unitId: invitationObj.unitId,
+        invitedBy: invitationObj.invitedBy,
+        timestamp: Date.now(),
+        type: invitationObj.type,
+        invitationId,
+        role,
+        isOccupant
+      }
+    }
+  })
+
+  // Adding to the user to a role on BZ using lambda
+  try {
+    HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
+      data: [Object.assign({_id: invitationId}, invitationObj)],
+      headers: {
+        Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+      }
+    })
+  } catch (e) {
+    console.error({
+      ...errorLogParams,
+      step: 'INVITE lambda request, unit cleanup might be necessary',
+      error: e
+    })
+    throw new Meteor.Error('Invite API Lambda error', e)
+  }
+
+  // Marking the pending invitation as "done", now that the API responded with success
+  PendingInvitations.update({_id: invitationId}, {
+    $set: {
+      done: true
+    }
+  })
+  Meteor.users.update({
+    _id: user._id,
+    'receivedInvites.invitationId': invitationId
+  }, {
+    $set: {
+      'receivedInvites.$.done': true
+    }
+  })
+
+  // Updating the roles collection to sync with BZ's state
+  const unitRoleQuery = {
+    roleType: role,
+    unitBzId
+  }
+  UnitRolesData.update(unitRoleQuery, {
+    $push: {
+      members: {
+        id: user._id,
+        isVisible: true,
+        isDefaultInvited: false,
+        isOccupant
+      }
+    }
+  })
+
+  // Matching the role if the defaultAssigneeId is not defined and sets it to the current user. Does nothing otherwise
+  let doForceAssigneeUpdate
+  switch (invType) {
+    case REPLACE_DEFAULT:
+      doForceAssigneeUpdate = true
+      break
+    default:
+      doForceAssigneeUpdate = false
+  }
+  const assigneeUpdateQuery = doForceAssigneeUpdate ? unitRoleQuery : {
+    defaultAssigneeId: -1,
+    ...unitRoleQuery
+  }
+  UnitRolesData.update(assigneeUpdateQuery, {
+    $set: {
+      defaultAssigneeId: user._id
+    }
+  })
+}
+
 if (Meteor.isServer) {
   const factory = publicationFactory(factoryOptions)
   const associationFactory = makeAssociationFactory(collectionName)
@@ -323,78 +421,21 @@ Meteor.methods({
         moreInfo
       })
 
-      // TODO: Once all dependencies of role resolving are moved from invitations to UnitRolesData, remove this
-      // Creating matching invitation records
-      const invType = REPLACE_DEFAULT
-      const invitationObj = {
-        invitedBy: owner.bugzillaCreds.id, // The user "self-invites" itself to the new role
-        invitee: owner.bugzillaCreds.id,
-        type: invType,
-        unitId: unitBzId,
-        role,
-        isOccupant
-      }
-
-      const invitationId = PendingInvitations.insert(Object.assign({
-        done: true
-      }, invitationObj))
-
-      // Linking invitation to user
-      Meteor.users.update(owner._id, {
-        $push: {
-          receivedInvites: {
-            unitId: invitationObj.unitId,
-            invitedBy: invitationObj.invitedBy,
-            timestamp: Date.now(),
-            type: invitationObj.type,
-            done: true,
-            invitationId,
-            role,
-            isOccupant
-          }
-        }
-      })
-
-      // Adding to the user to a role on BZ using lambda
-      try {
-        HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
-          data: [Object.assign({_id: invitationId}, invitationObj)],
-          headers: {
-            Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
-          }
-        })
-      } catch (e) {
-        console.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.insert`,
-          args: [creationArgs],
-          step: 'INVITE lambda request, unit cleanup might be necessary',
-          error: e
-        })
-        throw new Meteor.Error('Invite API Lambda error', e)
-      }
-
       // Populating the roles for the new unit
       possibleRoles.forEach(({ name: roleName }) => {
-        const isSelectedRole = roleName === role // Whether this is the owner/creator's role
-
-        // Contains the owner, empty if not the right role
-        const members = isSelectedRole ? [{
-          id: owner._id,
-          isVisible: true,
-          isDefaultInvited: false,
-          isOccupant
-        }] : []
-
-        // It's the owner or an empty placeholder value
-        const defaultAssigneeId = isSelectedRole ? owner._id : -1
         UnitRolesData.insert({
           unitId: unitMongoId,
           roleType: roleName,
-          unitBzId,
-          defaultAssigneeId,
-          members
+          defaultAssigneeId: -1,
+          members: [],
+          unitBzId
         })
+      })
+
+      addUserToRole(owner, unitBzId, role, REPLACE_DEFAULT, isOccupant, {
+        user: Meteor.userId(),
+        method: `${collectionName}.insert`,
+        args: [creationArgs]
       })
 
       return {newUnitId: unitBzId}
