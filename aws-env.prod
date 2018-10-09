@@ -1,7 +1,6 @@
 export ROOT_URL=https://case.unee-t.com
 export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-prod ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
 export BUGZILLA_URL=https://dashboard.unee-t.com
-export INVITE_LAMBDA_URL=https://invite.unee-t.com
 export UNIT_CREATE_LAMBDA_URL=https://unit.unee-t.com/create
 export APIENROLL_LAMBDA_URL=https://apienroll.unee-t.com
 export PDFGEN_LAMBDA_URL=https://pdfgen.unee-t.com

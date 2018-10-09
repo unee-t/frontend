@@ -5,3 +5,4 @@
 /settings.json
 /pre-commit-hook.sh
 .vs
+package-lock.json

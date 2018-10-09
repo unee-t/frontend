@@ -1,9 +1,8 @@
 {
   "name": "unee-t",
   "description": "",
-  "scripts": {
-  },
-  "env":{
+  "scripts": {},
+  "env": {
     "HEROKU_APP_NAME": {
       "required": true
     },
@@ -50,11 +49,8 @@
       "required": true
     }
   },
-  "formation": {
-  },
-  "addons": [
-
-  ],
+  "formation": {},
+  "addons": [],
   "buildpacks": [
     {
       "url": "https://github.com/AdmitHub/meteor-buildpack-horse.git"

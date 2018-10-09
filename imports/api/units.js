@@ -3,6 +3,7 @@ import { Mongo } from 'meteor/mongo'
 import { HTTP } from 'meteor/http'
 import { check } from 'meteor/check'
 import randToken from 'rand-token'
+import { domain } from '../util/domain'
 import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
@@ -356,7 +357,8 @@ Meteor.methods({
 
       // Adding to the user to a role on BZ using lambda
       try {
-        HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
+        const inviteDomain = process.env.INVITE_LAMBDA_URL || domain('invite')
+        HTTP.call('POST', inviteDomain, {
           data: [Object.assign({_id: invitationId}, invitationObj)],
           headers: {
             Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`

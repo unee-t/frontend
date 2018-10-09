@@ -4,6 +4,7 @@ import { check } from 'meteor/check'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 import { callAPI } from '../util/bugzilla-api'
+import { domain } from '../util/domain'
 import { HTTP } from 'meteor/http'
 
 export const collectionName = 'pendingInvitations'
@@ -145,7 +146,8 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
   console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).receivedInvites)
 
   try {
-    HTTP.get(process.env.INVITE_LAMBDA_URL, {
+    const inviteDomain = process.env.INVITE_LAMBDA_URL || domain('invite')
+    HTTP.get(inviteDomain, {
       headers: {
         Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
       }
