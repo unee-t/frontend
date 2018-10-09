@@ -214,7 +214,8 @@ if (Meteor.isServer) {
         }, {
           bzId: 1,
           bzName: 1,
-          unitType: 1
+          unitType: 1,
+          disabled: 1
         })
       },
       collectionName: unitMetaCollName

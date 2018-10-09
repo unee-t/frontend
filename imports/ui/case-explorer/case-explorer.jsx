@@ -91,10 +91,9 @@ class CaseExplorer extends Component {
       // Building a unit dictionary to group the cases together
       const unitsDict = caseList.reduce((dict, caseItem) => {
         if (openFilter(caseItem) && assignedFilter(caseItem)) { // Filtering only the cases that match the selection
-          const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType } = caseItem
-
+          const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType, disabled } = caseItem
           // Pulling the existing or creating a new dictionary entry if none
-          const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId, unitType}
+          const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId, unitType, disabled}
           const caseIdStr = caseItem.id.toString()
 
           // Adding the latest update time to the case for easier sorting later
@@ -110,8 +109,7 @@ class CaseExplorer extends Component {
 
       // Creating a case grouping *array* from the unit dictionary
       return Object.keys(unitsDict).reduce((all, unitTitle) => {
-        const { bzId, cases, unitType } = unitsDict[unitTitle]
-
+        const { bzId, cases, unitType, disabled } = unitsDict[unitTitle]
         // Sorting cases within a unit by the order descending order of last update
         cases.sort((a, b) => b.latestUpdate - a.latestUpdate)
         all.push({
@@ -120,7 +118,8 @@ class CaseExplorer extends Component {
           items: cases,
           unitType,
           unitTitle,
-          bzId
+          bzId,
+          disabled
         })
         return all
       }, []).sort((a, b) => b.latestCaseUpdate - a.latestCaseUpdate) // Sorting by the latest case update for each
@@ -199,6 +198,7 @@ const connectedWrapper = connect(
   return {
     caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
       unitType: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).unitType,
+      disabled: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).disabled,
       selectedUnitBzId: (UnitMetaData.findOne({bzName: caseItem.selectedUnit}) || {}).bzId
     })),
     allNotifications: notifsHandle.ready() ? CaseNotifications.find().fetch() : [],

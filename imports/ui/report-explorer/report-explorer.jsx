@@ -61,8 +61,9 @@ class ReportExplorer extends Component {
           const { selectedUnit: unitBzName, unitMetaData: metaData } = reportItem
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
+          const disabled = metaData ? metaData.disabled : null
           const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
-          const unitDesc = dict[unitBzName] = dict[unitBzName] || {items: [], unitType, bzId, unitTitle}
+          const unitDesc = dict[unitBzName] = dict[unitBzName] || {items: [], unitType, bzId, unitTitle, disabled}
           unitDesc.items.push(reportItem)
         }
         return dict
