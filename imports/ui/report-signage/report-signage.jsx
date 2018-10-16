@@ -20,6 +20,7 @@ import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import InviteNewUserDialog from '../dialogs/invite-new-user-dialog'
 import { finalizeReport } from '../report-wizard/report-wizard.actions'
 import AddUserControlLine from '../components/add-user-control-line'
+import { inviteToUnit } from '/imports/state/actions/unit-invite.actions'
 
 class ReportSignage extends Component {
   constructor () {
@@ -32,7 +33,7 @@ class ReportSignage extends Component {
     }
   }
   render () {
-    const { dispatch, match, reportItem, isLoading, isLoadingRoles, unitRoles, unitName } = this.props
+    const { dispatch, match, reportItem, isLoading, isLoadingRoles, unitRoles, unitName, unitBzId, inviteState } = this.props
     const { chosenUser, signPadOpen, signatureMap, confirmationOpen } = this.state
     if (isLoading) return <Preloader />
 
@@ -104,6 +105,9 @@ class ReportSignage extends Component {
                     title='Who should be invited?'
                     currentInvitees={unitRoles}
                     onCloseRequested={() => dispatch(goBack())}
+                    onSubmitted={({ firstName, lastName, inviteeEmail, inviteeRole, isOccupant }) => dispatch(
+                      inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole, isOccupant)
+                    )}
                   />
                 )} />
               </div>
@@ -154,13 +158,15 @@ class ReportSignage extends Component {
 ReportSignage.propTypes = {
   reportItem: PropTypes.object,
   unitName: PropTypes.string,
+  unitBzId: PropTypes.number,
   isLoading: PropTypes.bool.isRequired,
   isLoadingRoles: PropTypes.bool.isRequired,
+  inviteState: PropTypes.array,
   unitRoles: PropTypes.array
 }
 
 export default connect(
-  () => ({})
+  ({ unitInvitationState }) => ({inviteState: unitInvitationState})
 )(createContainer(props => {
   const { reportId } = props.match.params
   const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
@@ -177,6 +183,7 @@ export default connect(
     isLoading: !reportHandle.ready(),
     isLoadingRoles: !unitHandle || !unitHandle.ready(),
     unitName: unitItem ? ((unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name) : '',
+    unitBzId: unitItem && unitItem.id,
     reportItem,
     unitRoles
   }

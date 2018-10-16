@@ -117,11 +117,11 @@ export const getUnitRoles = unit => {
   )
 }
 
-export const addUserToRole = (user, unitBzId, role, invType, isOccupant, errorLogParams = {}) => {
+export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}) => {
   // Creating matching invitation records
   const invitationObj = {
-    invitedBy: user.bugzillaCreds.id, // The user "self-invites" itself to the new role
-    invitee: user.bugzillaCreds.id,
+    invitedBy: invitingUser.bugzillaCreds.id,
+    invitee: inviteeUser.bugzillaCreds.id,
     type: invType,
     unitId: unitBzId,
     role,
@@ -133,7 +133,7 @@ export const addUserToRole = (user, unitBzId, role, invType, isOccupant, errorLo
   const invitationId = PendingInvitations.insert(invitationObj)
 
   // Linking invitation to user
-  Meteor.users.update(user._id, {
+  Meteor.users.update(inviteeUser._id, {
     $push: {
       receivedInvites: {
         unitId: invitationObj.unitId,
@@ -171,7 +171,7 @@ export const addUserToRole = (user, unitBzId, role, invType, isOccupant, errorLo
     }
   })
   Meteor.users.update({
-    _id: user._id,
+    _id: inviteeUser._id,
     'receivedInvites.invitationId': invitationId
   }, {
     $set: {
@@ -187,7 +187,7 @@ export const addUserToRole = (user, unitBzId, role, invType, isOccupant, errorLo
   UnitRolesData.update(unitRoleQuery, {
     $push: {
       members: {
-        id: user._id,
+        id: inviteeUser._id,
         isVisible: true,
         isDefaultInvited: false,
         isOccupant
@@ -210,7 +210,7 @@ export const addUserToRole = (user, unitBzId, role, invType, isOccupant, errorLo
   }
   UnitRolesData.update(assigneeUpdateQuery, {
     $set: {
-      defaultAssigneeId: user._id
+      defaultAssigneeId: inviteeUser._id
     }
   })
 }
@@ -432,7 +432,7 @@ Meteor.methods({
         })
       })
 
-      addUserToRole(owner, unitBzId, role, REPLACE_DEFAULT, isOccupant, {
+      addUserToRole(owner, owner, unitBzId, role, REPLACE_DEFAULT, isOccupant, {
         user: Meteor.userId(),
         method: `${collectionName}.insert`,
         args: [creationArgs]

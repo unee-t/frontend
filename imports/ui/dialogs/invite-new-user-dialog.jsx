@@ -27,24 +27,32 @@ class InviteNewUserDialog extends Component {
     this.state = {
       inviteeEmail: '',
       inviteeRole: null,
+      firstName: '',
+      lastName: '',
       isOccupant: false,
       showRoleRequired: false
     }
   }
   handleSubmit = evt => {
     evt.preventDefault()
-    const { inviteeRole } = this.state
+    const { inviteeRole, firstName, lastName, inviteeEmail, isOccupant } = this.state
     if (!inviteeRole) {
       this.setState({
         showRoleRequired: true
       })
     } else {
-
+      this.props.onSubmitted({
+        firstName,
+        lastName,
+        inviteeEmail,
+        inviteeRole,
+        isOccupant
+      })
     }
   }
   render () {
-    const { onCloseRequested, currentInvitees, ...rest } = this.props
-    const { inviteeEmail, inviteeRole, isOccupant, showRoleRequired } = this.state
+    const { onCloseRequested, currentInvitees, onSubmitted, ...rest } = this.props
+    const { inviteeEmail, inviteeRole, isOccupant, showRoleRequired, firstName, lastName } = this.state
     return (
       <Dialog
         titleStyle={modalTitleStyle}
@@ -62,6 +70,8 @@ class InviteNewUserDialog extends Component {
             <div>
               <TextField
                 floatingLabelText='First Name*'
+                value={firstName}
+                onChange={evt => this.setState({firstName: evt.target.value})}
                 fullWidth
                 required
                 inputStyle={textInputStyle}
@@ -71,6 +81,8 @@ class InviteNewUserDialog extends Component {
             <div className='ml3'>
               <TextField
                 floatingLabelText='Last Name*'
+                value={lastName}
+                onChange={evt => this.setState({lastName: evt.target.value})}
                 fullWidth
                 required
                 inputStyle={textInputStyle}
@@ -105,6 +117,7 @@ class InviteNewUserDialog extends Component {
 
 InviteNewUserDialog.propTypes = {
   onCloseRequested: PropTypes.func.isRequired,
+  onSubmitted: PropTypes.func.isRequired,
   currentInvitees: PropTypes.array
 }
 

@@ -12,6 +12,7 @@ export const collectionName = 'pendingInvitations'
 export const TYPE_ASSIGNED = 'type_assigned'
 export const TYPE_CC = 'type_cc'
 export const REPLACE_DEFAULT = 'replace_default'
+export const KEEP_DEFAULT = 'keep_default'
 
 const allowedTypes = [TYPE_ASSIGNED, TYPE_CC]
 

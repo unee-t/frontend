@@ -19,9 +19,7 @@ export const findOrCreateUser = email => {
         isLimited: true
       }
     })
-
     console.log(`new user created for ${email}`)
-
     inviteeUser = Accounts.findUserByEmail(email)
   }
   return inviteeUser
