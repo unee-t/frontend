@@ -20,7 +20,7 @@ import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import InviteNewUserDialog from '../dialogs/invite-new-user-dialog'
 import { finalizeReport } from '../report-wizard/report-wizard.actions'
 import AddUserControlLine from '../components/add-user-control-line'
-import { inviteToUnit } from '/imports/state/actions/unit-invite.actions'
+import { inviteToUnit, inviteCleared } from '/imports/state/actions/unit-invite.actions'
 
 class ReportSignage extends Component {
   constructor () {
@@ -105,9 +105,11 @@ class ReportSignage extends Component {
                     title='Who should be invited?'
                     currentInvitees={unitRoles}
                     onCloseRequested={() => dispatch(goBack())}
+                    activeInvites={inviteState.filter(i => i.unitBzId === unitBzId)}
                     onSubmitted={({ firstName, lastName, inviteeEmail, inviteeRole, isOccupant }) => dispatch(
                       inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole.name, isOccupant)
                     )}
+                    onErrorDismissed={userEmail => dispatch(inviteCleared(userEmail, unitBzId))}
                   />
                 )} />
               </div>

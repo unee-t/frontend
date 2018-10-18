@@ -5,15 +5,19 @@ import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import TextField from 'material-ui/TextField'
 import RaisedButton from 'material-ui/RaisedButton'
+import CircularProgress from 'material-ui/CircularProgress'
+import { CSSTransition } from 'react-transition-group'
 
 import EmailInput from '../components/email-input'
 import UnitRoleSelect from '../components/unit-role-select'
+import ErrorDialog from './error-dialog'
 
 import {
   modalTitleStyle,
   closeDialogButtonStyle,
   modalBodyStyle,
-  modalCustomContentStyle
+  modalCustomContentStyle,
+  inviteSuccessIconStyle
 } from './generic-dialog.mui-styles'
 
 import {
@@ -24,7 +28,7 @@ import {
 class InviteNewUserDialog extends Component {
   constructor () {
     super(...arguments)
-    this.state = {
+    this.initialState = {
       inviteeEmail: '',
       inviteeRole: null,
       firstName: '',
@@ -32,6 +36,18 @@ class InviteNewUserDialog extends Component {
       isOccupant: false,
       showRoleRequired: false
     }
+    this.state = {
+      ...this.initialState
+    }
+  }
+  getCurrentInviteObject (activeInvites) {
+    return activeInvites.find(i => i.userEmail === this.state.inviteeEmail)
+  }
+  getCurrentStateType (currentInviteObject) {
+    if (!currentInviteObject) return 'idle'
+    if (currentInviteObject.pending) return 'pending'
+    if (currentInviteObject.completed) return 'completed'
+    if (currentInviteObject.error) return 'error'
   }
   handleSubmit = evt => {
     evt.preventDefault()
@@ -50,9 +66,25 @@ class InviteNewUserDialog extends Component {
       })
     }
   }
+  componentDidUpdate (prevProps) {
+    const prevStateType = this.getCurrentStateType(this.getCurrentInviteObject(prevProps.activeInvites))
+    const currStateType = this.getCurrentStateType(this.getCurrentInviteObject(this.props.activeInvites))
+    if (prevStateType !== currStateType && currStateType === 'completed') {
+      setTimeout(() => {
+        this.props.onCloseRequested()
+        setTimeout(() => {
+          this.setState({
+            ...this.initialState
+          })
+        }, 300)
+      }, 800)
+    }
+  }
   render () {
-    const { onCloseRequested, currentInvitees, onSubmitted, ...rest } = this.props
+    const { onCloseRequested, currentInvitees, onSubmitted, activeInvites, onErrorDismissed, ...rest } = this.props
     const { inviteeEmail, inviteeRole, isOccupant, showRoleRequired, firstName, lastName } = this.state
+    const currentInviteObject = this.getCurrentInviteObject(this.props.activeInvites)
+    const stateType = this.getCurrentStateType(currentInviteObject)
     return (
       <Dialog
         titleStyle={modalTitleStyle}
@@ -65,7 +97,7 @@ class InviteNewUserDialog extends Component {
             <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
           </IconButton>
         </div>
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleSubmit} className={stateType !== 'idle' ? 'o-0 disabled' : ''}>
           <div className='flex'>
             <div>
               <TextField
@@ -110,6 +142,21 @@ class InviteNewUserDialog extends Component {
             </RaisedButton>
           </div>
         </form>
+        <CSSTransition in={stateType === 'pending' || stateType === 'error'} timeout={300} classNames='zoom-effect' unmountOnExit>
+          <div className='absolute top-0 bottom-0 right-0 left-0 flex items-center justify-center'>
+            <CircularProgress size={80} />
+          </div>
+        </CSSTransition>
+        <CSSTransition in={stateType === 'completed'} timeout={300} classNames='zoom-effect' unmountOnExit>
+          <div className='absolute top-0 bottom-0 right-0 left-0 flex items-center justify-center'>
+            <FontIcon className='material-icons' style={inviteSuccessIconStyle}>check_circle</FontIcon>
+          </div>
+        </CSSTransition>
+        <ErrorDialog
+          show={stateType === 'error'}
+          text={currentInviteObject && currentInviteObject.error ? currentInviteObject.error.error : ''}
+          onDismissed={() => onErrorDismissed(inviteeEmail)}
+        />
       </Dialog>
     )
   }
@@ -118,7 +165,9 @@ class InviteNewUserDialog extends Component {
 InviteNewUserDialog.propTypes = {
   onCloseRequested: PropTypes.func.isRequired,
   onSubmitted: PropTypes.func.isRequired,
-  currentInvitees: PropTypes.array
+  onErrorDismissed: PropTypes.func.isRequired,
+  currentInvitees: PropTypes.array,
+  activeInvites: PropTypes.array
 }
 
 export default InviteNewUserDialog
