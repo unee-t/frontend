@@ -81,7 +81,7 @@ Meteor.methods({
         'receivedInvites.unitId': unitBzId
       }, {
         $set: {
-          'receivedInvites.accessToken': accessToken
+          'receivedInvites.$.accessToken': accessToken
         }
       })
       const unitMetaData = UnitMetaData.findOne({bzId: unitBzId})
