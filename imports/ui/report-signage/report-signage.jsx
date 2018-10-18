@@ -106,7 +106,7 @@ class ReportSignage extends Component {
                     currentInvitees={unitRoles}
                     onCloseRequested={() => dispatch(goBack())}
                     onSubmitted={({ firstName, lastName, inviteeEmail, inviteeRole, isOccupant }) => dispatch(
-                      inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole, isOccupant)
+                      inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole.name, isOccupant)
                     )}
                   />
                 )} />
