@@ -9,13 +9,12 @@ import ErrorDialog from './error-dialog'
 import EmailInput from '../components/email-input'
 import UnitRoleSelect from '../components/unit-role-select'
 
-import { inviteSuccessIconStyle } from './invite-dialog.mui-styles'
-
 import {
   modalTitleStyle,
   closeDialogButtonStyle,
   modalBodyStyle,
-  modalCustomContentStyle
+  modalCustomContentStyle,
+  inviteSuccessIconStyle
 } from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
