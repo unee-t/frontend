@@ -22,7 +22,7 @@ export default (
 </p>
 <p>
   Your assigned role is <strong>${inviteeRoleType}</strong><br />
-  This invitation allow you to create cases for any issue in this property.<br />
+  This invitation allows you to create cases for any issue in this property.<br />
   You can also create inspection reports.
 </p>
 <br />Please click on <a href='${accessLink}'>this link</a> to access the property in Unee-T.
