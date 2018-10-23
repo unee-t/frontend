@@ -97,7 +97,7 @@ envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up \
 	--deployment-max-percent 100 \
-	--deployment-min-healthy-percent 0 \
+	--deployment-min-healthy-percent 50 \
 	--timeout 7
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service ps

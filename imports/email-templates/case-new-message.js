@@ -9,7 +9,7 @@ export default (assignee, notificationId, settingType, caseTitle, caseId, user, 
 
 <p>New message by ${resolveUserName(user)}:</p>
 
-<p>${message}</p>
+<p><strong>${message}</strong></p>
 
 <p>Please follow <a href='${
   createEngagementLink({
@@ -26,7 +26,7 @@ Hi ${resolveUserName(assignee)},
 
 New message by ${resolveUserName(user)}:
 
-  ${message}
+ > ${message}
 
   Please follow ${
   createEngagementLink({
