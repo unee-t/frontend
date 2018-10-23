@@ -137,7 +137,7 @@ export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType
     $push: {
       receivedInvites: {
         unitId: invitationObj.unitId,
-        invitedBy: invitationObj.invitedBy,
+        invitedBy: invitingUser._id,
         timestamp: Date.now(),
         type: invitationObj.type,
         invitationId,

@@ -143,6 +143,7 @@ Meteor.methods({
         email: invitedUser.emails[0].address,
         pw: randPass,
         caseId: invitedUser.receivedInvites[0].caseId,
+        unitId: invitedUser.receivedInvites[0].unitId,
         invitedByDetails
       }
     }
