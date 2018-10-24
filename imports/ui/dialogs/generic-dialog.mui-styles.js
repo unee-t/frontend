@@ -43,3 +43,8 @@ export const modalCustomContentStyle = {
   fontFamily: 'Roboto, sans-serif',
   transform: 'translate(0, 0px)'
 }
+
+export const inviteSuccessIconStyle = {
+  color: 'var(--success-green)',
+  fontSize: '80px'
+}

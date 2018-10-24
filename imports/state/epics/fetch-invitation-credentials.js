@@ -27,7 +27,7 @@ export const fetchInvitationCredentials = action$ => action$
         meteorResult$.complete()
         return
       }
-      const { email, pw, caseId, invitedByDetails } = result
+      const { email, pw, caseId, unitId, invitedByDetails } = result
       meteorResult$.next({
         type: LOGIN_INVITATION_CREDENTIALS
       })
@@ -43,7 +43,11 @@ export const fetchInvitationCredentials = action$ => action$
             showWelcomeMessage: !Meteor.user().profile.name,
             invitedByDetails
           })
-          meteorResult$.next(push(`/case/${caseId}`))
+          if (caseId) { // Invitation to a case
+            meteorResult$.next(push(`/case/${caseId}`))
+          } else {
+            meteorResult$.next(push(`/unit/${unitId}`))
+          }
         }
         meteorResult$.complete()
       })

@@ -25,6 +25,7 @@ import { addReportAttachment } from './epics/add-report-attachment'
 import { retryReportAttachment } from './epics/retry-report-attachment'
 import { generateReportHTMLPreview } from './epics/generate-report-html-preview'
 import { sendReportPdf } from './epics/send-report-pdf'
+import { inviteNewUserToUnit } from './epics/invite-new-user-to-unit'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -52,5 +53,6 @@ export const rootEpic = combineEpics(
   addReportAttachment,
   retryReportAttachment,
   generateReportHTMLPreview,
-  sendReportPdf
+  sendReportPdf,
+  inviteNewUserToUnit
 )

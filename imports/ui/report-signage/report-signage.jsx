@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { goBack } from 'react-router-redux'
-import { Redirect } from 'react-router-dom'
+import { Redirect, Link, Route } from 'react-router-dom'
 import { createContainer } from 'meteor/react-meteor-data'
 import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
@@ -17,7 +17,10 @@ import PdfIcon from '../components/pdf-icon'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import SignDialog from '../dialogs/sign-dialog'
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
+import InviteNewUserDialog from '../dialogs/invite-new-user-dialog'
 import { finalizeReport } from '../report-wizard/report-wizard.actions'
+import AddUserControlLine from '../components/add-user-control-line'
+import { inviteToUnit, inviteCleared } from '/imports/state/actions/unit-invite.actions'
 
 class ReportSignage extends Component {
   constructor () {
@@ -30,7 +33,7 @@ class ReportSignage extends Component {
     }
   }
   render () {
-    const { dispatch, reportItem, isLoading, isLoadingRoles, unitRoles, unitName } = this.props
+    const { dispatch, match, reportItem, isLoading, isLoadingRoles, unitRoles, unitName, unitBzId, inviteState } = this.props
     const { chosenUser, signPadOpen, signatureMap, confirmationOpen } = this.state
     if (isLoading) return <Preloader />
 
@@ -67,30 +70,50 @@ class ReportSignage extends Component {
           <div className='mt2'>
             {infoItemLabel('Recipients:')}
           </div>
-          <div className='mt2 flex flex-column'>
+          <div className='flex flex-column'>
             {isLoadingRoles ? (
               <div className='flex-grow flex items-center justify-center'>
                 <CircularProgress size={70} thickness={5} />
               </div>
-            ) : unitRoles.reduce((all, userRoleDef, ind) => {
-              if (!placeholderEmailMatcher(userRoleDef.login)) {
-                all.push(
-                  <div key={ind} className={all.length !== 0 ? 'mt3' : ''}>
-                    {userInfoItem(userRoleDef, () => signatureMap[userRoleDef.login] ? (
-                      <img className='w3 h-100' src={signatureMap[userRoleDef.login]} />
-                    ) : (
-                      <a
-                        className='link bondi-blue f6 ml2 fw5 pr1'
-                        onClick={() => this.setState({chosenUser: userRoleDef, signPadOpen: true})}
-                      >
-                        Sign Report
-                      </a>
-                    ))}
-                  </div>
-                )
-              }
-              return all
-            }, [])}
+            ) : (
+              <div>
+                {unitRoles.reduce((all, userRoleDef, ind) => {
+                  if (!placeholderEmailMatcher(userRoleDef.login)) {
+                    all.push(
+                      <div key={ind} className='mt2'>
+                        {userInfoItem(userRoleDef, () => signatureMap[userRoleDef.login] ? (
+                          <img className='w3 h-100' src={signatureMap[userRoleDef.login]} />
+                        ) : (
+                          <a
+                            className='link bondi-blue f6 ml2 fw5 pr1'
+                            onClick={() => this.setState({chosenUser: userRoleDef, signPadOpen: true})}
+                          >
+                            Sign Report
+                          </a>
+                        ))}
+                      </div>
+                    )
+                  }
+                  return all
+                }, [])}
+                <Link to={`${match.url}/invite`} className='link outline-0 db mt3'>
+                  <AddUserControlLine instruction='Invite a new user to sign' />
+                </Link>
+                <Route exact path={`${match.url}/invite`} children={({ match }) => (
+                  <InviteNewUserDialog
+                    open={!!match}
+                    title='Who should be invited?'
+                    currentInvitees={unitRoles}
+                    onCloseRequested={() => dispatch(goBack())}
+                    activeInvites={inviteState.filter(i => i.unitBzId === unitBzId)}
+                    onSubmitted={({ firstName, lastName, inviteeEmail, inviteeRole, isOccupant }) => dispatch(
+                      inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole.name, isOccupant)
+                    )}
+                    onErrorDismissed={userEmail => dispatch(inviteCleared(userEmail, unitBzId))}
+                  />
+                )} />
+              </div>
+            )}
           </div>
         </div>
         <div className='pa3 scroll-shadow-1'>
@@ -137,13 +160,15 @@ class ReportSignage extends Component {
 ReportSignage.propTypes = {
   reportItem: PropTypes.object,
   unitName: PropTypes.string,
+  unitBzId: PropTypes.number,
   isLoading: PropTypes.bool.isRequired,
   isLoadingRoles: PropTypes.bool.isRequired,
+  inviteState: PropTypes.array,
   unitRoles: PropTypes.array
 }
 
 export default connect(
-  () => ({})
+  ({ unitInvitationState }) => ({inviteState: unitInvitationState})
 )(createContainer(props => {
   const { reportId } = props.match.params
   const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
@@ -152,14 +177,15 @@ export default connect(
   if (reportItem) {
     unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithUsers`, reportItem.selectedUnit)
     unitItem = Units.findOne({name: reportItem.selectedUnit})
-    if (unitItem) {
+    if (unitHandle.ready() && unitItem) {
       unitRoles = getUnitRoles(unitItem)
     }
   }
   return {
     isLoading: !reportHandle.ready(),
-    isLoadingRoles: !!unitHandle && !unitHandle.ready(),
+    isLoadingRoles: !unitHandle || !unitHandle.ready(),
     unitName: unitItem ? ((unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name) : '',
+    unitBzId: unitItem && unitItem.id,
     reportItem,
     unitRoles
   }

@@ -9,6 +9,22 @@ export const makeMatchingUser = bzUser => {
   return regUser ? Object.assign({}, bzUser, regUser.profile) : bzUser
 }
 
+export const findOrCreateUser = email => {
+  let inviteeUser = Accounts.findUserByEmail(email)
+  if (!inviteeUser) {
+    // Using Meteor accounts package to create the user with no signup
+    Accounts.createUser({
+      email,
+      profile: {
+        isLimited: true
+      }
+    })
+    console.log(`new user created for ${email}`)
+    inviteeUser = Accounts.findUserByEmail(email)
+  }
+  return inviteeUser
+}
+
 const verifyUserLogin = handle => {
   if (!handle.userId) {
     handle.ready()
@@ -127,6 +143,7 @@ Meteor.methods({
         email: invitedUser.emails[0].address,
         pw: randPass,
         caseId: invitedUser.receivedInvites[0].caseId,
+        unitId: invitedUser.receivedInvites[0].unitId,
         invitedByDetails
       }
     }

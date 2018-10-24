@@ -18,6 +18,7 @@ import {
   caseQueryBuilder,
   associatedCasesQueryExps,
   fieldEditMethodMaker,
+  toggleParticipants,
   factoryOptions as caseFactoryOpts
 } from './cases'
 import { emailValidator } from '../util/validators'
@@ -465,6 +466,18 @@ Meteor.methods({
         pdfUrl,
         ...reportUnitInfo
       })
+
+      toggleParticipants(
+        Object.keys(signatureMap),
+        true,
+        reportId,
+        Reports,
+        () => {}, // TODO: Irrelevant now, but might be more significant later
+        {
+          step: 'Subscribing signatories to report',
+          ...errorLogParams
+        }
+      )
     }
   },
   [`${collectionName}.makePreview`] (reportId) {

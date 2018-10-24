@@ -3,31 +3,18 @@ import {Link, Route} from 'react-router-dom'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import FontIcon from 'material-ui/FontIcon'
-import TextField from 'material-ui/TextField'
-import SelectField from 'material-ui/SelectField'
-import MenuItem from 'material-ui/MenuItem'
-import Checkbox from 'material-ui/Checkbox'
 import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
-import { emailValidator } from '../../util/validators'
-import { possibleRoles } from '../../api/unit-roles-data'
-
-import { inviteSuccessIconStyle } from './invite-dialog.mui-styles'
-
-import {
-  textInputFloatingLabelStyle,
-  controlLabelStyle,
-  textInputStyle,
-  textInputUnderlineFocusStyle,
-  selectInputIconStyle
-} from '../components/form-controls.mui-styles'
+import EmailInput from '../components/email-input'
+import UnitRoleSelect from '../components/unit-role-select'
 
 import {
   modalTitleStyle,
   closeDialogButtonStyle,
   modalBodyStyle,
-  modalCustomContentStyle
+  modalCustomContentStyle,
+  inviteSuccessIconStyle
 } from './generic-dialog.mui-styles'
 
 const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
@@ -50,12 +37,11 @@ class InviteDialog extends Component {
       selectedRole: null,
       isOccupant: false,
       inputErrorModalOpen: false,
+      inviteeEmail: '',
       currMaxHeight: window.innerHeight - DIALOG_PADDING
     }
 
     window.addEventListener('resize', this.handleWindowResize)
-
-    this.roleTypes = possibleRoles
   }
 
   componentDidUpdate () {
@@ -77,22 +63,6 @@ class InviteDialog extends Component {
     })
   }
 
-  handleEmailChanged = evt => {
-    const { value } = evt.target
-    let emailError
-    if (!value || !emailValidator(value)) {
-      emailError = !value ? 'Email is required' : 'This address is invalid'
-
-      // Checking whether the email belongs to an existing role bearer for this unit
-    } else if (this.props.potentialInvitees.filter(inv => inv.email === value).length > 0) {
-      emailError = 'This email belongs to a user listed in the previous step'
-    }
-    this.setState({
-      inviteeEmail: value,
-      emailError
-    })
-  }
-
   handleSendInviteClick = () => {
     const { inviteeEmail, emailError, selectedRole, isOccupant } = this.state
     if (!selectedRole || !inviteeEmail || emailError) {
@@ -110,7 +80,7 @@ class InviteDialog extends Component {
       title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser,
       mainOperationSuccessContent
     } = this.props
-    const { selectedRole, isOccupant, inputErrorModalOpen, emailError, currMaxHeight } = this.state
+    const { selectedRole, isOccupant, inputErrorModalOpen, inviteeEmail, currMaxHeight } = this.state
     return (
       <Route path={`${basePath}/${relPath}`} children={({match}) => {
         return (
@@ -172,52 +142,23 @@ class InviteDialog extends Component {
               </div>
             ) : (
               <div className='pt1 mt2'>
-                <TextField
-                  hintText='Type the email address'
-                  floatingLabelText='Email of the user to invite'
-                  errorText={emailError}
-                  floatingLabelFixed
-                  fullWidth
-                  floatingLabelStyle={textInputFloatingLabelStyle}
-                  inputStyle={textInputStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  type='email'
-                  required
-                  ref={input => { this.inputToFocus = input }}
-                  onChange={this.handleEmailChanged}
+                <EmailInput
+                  label='Email of the user to invite'
+                  onEmailChanged={email => this.setState({inviteeEmail: email})}
+                  email={inviteeEmail}
+                  invalidReasonMessage='This email belongs to a user listed in the previous step'
+                  invalidEmails={potentialInvitees.map(i => i.email)}
+                  onValidityChanged={isValid => this.setState({emailError: !isValid})}
+                  inputRef={input => { this.inputToFocus = input }}
                   disabled={invitationState.loading}
                 />
-                <SelectField
-                  floatingLabelText='Relationship to this unit'
-                  floatingLabelFixed
-                  fullWidth
-                  floatingLabelStyle={textInputFloatingLabelStyle}
-                  labelStyle={textInputStyle}
-                  menuStyle={textInputStyle}
-                  iconStyle={selectInputIconStyle}
-                  underlineFocusStyle={textInputUnderlineFocusStyle}
-                  value={selectedRole}
-                  onChange={(evt, idx, val) => {
-                    this.setState({
-                      selectedRole: val,
-                      isOccupant: false
-                    })
-                  }}
-                  disabled={invitationState.loading}
-                >
-                  {this.roleTypes.map(type => (
-                    <MenuItem key={type.name} value={type} primaryText={type.name} />
-                  ))}
-                </SelectField>
-                {selectedRole && selectedRole.canBeOccupant && (
-                  <Checkbox
-                    label={`The ${selectedRole.name} is also the occupant of this unit`}
-                    labelStyle={controlLabelStyle}
-                    checked={isOccupant}
-                    onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
-                    disabled={invitationState.loading}
-                  />
-                )}
+                <UnitRoleSelect
+                  selectedRole={selectedRole}
+                  onRoleSelected={role => this.setState({selectedRole: role})}
+                  isOccupant={isOccupant}
+                  onOccupantToggled={isIt => this.setState({isOccupant: isIt})}
+                  disabled={invitationState.disabled}
+                />
                 <div className='flex justify-space mt3'>
                   <button
                     className={simpleButtonClasses + ' relative' + (invitationState.loading ? ' o-60' : '')}

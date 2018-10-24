@@ -132,6 +132,46 @@ const transformCaseForClient = bug => Object.keys(bug).reduce((all, key) => ({
   [caseClientFieldMapping[key] || key]: bug[key]
 }), {})
 
+export const toggleParticipants = (loginNames, isAdd, caseId, clientCollection, reloadFunc, errorLogParams) => {
+  const {callAPI} = bugzillaApi
+  const currUser = Meteor.users.findOne({_id: Meteor.userId()})
+
+  if (Meteor.isClient) {
+    const opType = isAdd ? '$push' : '$pull'
+    loginNames.forEach(email => {
+      clientCollection.update({id: caseId}, {
+        [opType]: {
+          involvedList: email
+        },
+        [opType]: {
+          involvedListDetail: {name: email}
+        }
+      })
+    })
+  } else {
+    const {apiKey} = currUser.bugzillaCreds
+    const opType = isAdd ? 'add' : 'remove'
+    const payload = {
+      api_key: apiKey,
+      cc: {
+        [opType]: loginNames
+      }
+    }
+    try {
+      callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
+
+      reloadFunc()
+      loginNames.forEach(email => console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to BZ case ${caseId}`))
+    } catch (e) {
+      console.error({
+        ...errorLogParams,
+        error: e
+      })
+      throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+    }
+  }
+}
+
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
@@ -335,45 +375,18 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized')
     }
 
-    const { callAPI } = bugzillaApi
-    const currUser = Meteor.users.findOne({_id: Meteor.userId()})
-
-    if (Meteor.isClient) {
-      const opType = isAdd ? '$push' : '$pull'
-      loginNames.forEach(email => {
-        Cases.update({id: caseId}, {
-          [opType]: {
-            involvedList: email
-          },
-          [opType]: {
-            involvedListDetail: {name: email}
-          }
-        })
-      })
-    } else {
-      const { apiKey } = currUser.bugzillaCreds
-      const opType = isAdd ? 'add' : 'remove'
-      const payload = {
-        api_key: apiKey,
-        cc: {
-          [opType]: loginNames
-        }
+    toggleParticipants(
+      loginNames,
+      isAdd,
+      caseId,
+      Cases,
+      () => reloadCaseFields(caseId, ['involvedList', 'involvedListDetail']),
+      {
+        user: Meteor.userId(),
+        method: `${collectionName}.toggleParticipant`,
+        args: [loginNames, caseId, isAdd]
       }
-      try {
-        callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
-
-        reloadCaseFields(caseId, ['involvedList', 'involvedListDetail'])
-        loginNames.forEach(email => console.log(`${email} was ${isAdd ? '' : 'un'}subscribed to case ${caseId}`))
-      } catch (e) {
-        console.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.toggleParticipant`,
-          args: [loginNames, caseId, isAdd],
-          error: e
-        })
-        throw new Meteor.Error(`API Error: ${e.response.data.message}`)
-      }
-    }
+    )
   },
   [`${collectionName}.insert`] (params, { newUserEmail, newUserIsOccupant, parentReportId }) {
     if (!Meteor.userId()) {

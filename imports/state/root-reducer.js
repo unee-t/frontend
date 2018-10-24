@@ -17,6 +17,7 @@ import unitCreationState from './reducers/unit-creation-state'
 import genericErrorState from './reducers/generic-error-state'
 import reportPreviewUrls from './reducers/report-preview-urls'
 import reportSharingState from './reducers/report-sharing-state'
+import unitInvitationState from './reducers/unit-invitation-state'
 
 const rootReducer = combineReducers({
   showLoginError,
@@ -36,6 +37,7 @@ const rootReducer = combineReducers({
   genericErrorState,
   reportPreviewUrls,
   reportSharingState,
+  unitInvitationState,
   router
 })
 

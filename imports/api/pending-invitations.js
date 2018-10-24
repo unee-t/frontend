@@ -5,12 +5,14 @@ import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
 import { callAPI } from '../util/bugzilla-api'
 import { HTTP } from 'meteor/http'
+import { findOrCreateUser } from './custom-users'
 
 export const collectionName = 'pendingInvitations'
 
 export const TYPE_ASSIGNED = 'type_assigned'
 export const TYPE_CC = 'type_cc'
 export const REPLACE_DEFAULT = 'replace_default'
+export const KEEP_DEFAULT = 'keep_default'
 
 const allowedTypes = [TYPE_ASSIGNED, TYPE_CC]
 
@@ -93,20 +95,7 @@ export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
 
 export const createPendingInvitation = (email, role, isOccupant, caseId, unitId, type) => {
   const currUser = Meteor.users.findOne({_id: Meteor.userId()})
-  let inviteeUser = Accounts.findUserByEmail(email)
-  if (!inviteeUser) {
-    // Using Meteor accounts package to create the user with no signup
-    Accounts.createUser({
-      email,
-      profile: {
-        isLimited: true
-      }
-    })
-
-    console.log(`new user created for ${email}`)
-
-    inviteeUser = Accounts.findUserByEmail(email)
-  }
+  const inviteeUser = findOrCreateUser(email)
 
   // Checking if there's another user invited to be the assignee, changing it to be CC instead
   if (type === TYPE_ASSIGNED) {
