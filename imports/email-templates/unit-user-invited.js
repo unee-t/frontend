@@ -1,5 +1,5 @@
 import url from 'url'
-import { resolveUserName, createEngagementLink } from './components/helpers'
+import { resolveUserName } from './components/helpers'
 
 export default (
   { invitee, invitor, inviteeRoleType, invitorRoleType, unitTitle, unitDescription, unitAddress, accessToken }
