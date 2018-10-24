@@ -25,20 +25,21 @@ import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
 import {ReportIcon} from '../report/report-icon'
-import SelectField from 'material-ui/SelectField'
-import {
-  selectInputIconStyle,
-  noUnderline,
-  sortBoxInputStyle,
-  selectedItemStyle
-} from '../components/form-controls.mui-styles'
+import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
+import { Sorter } from '../explorer-components/sorter'
+import { StatusFilter } from '../explorer-components/status-filter'
+import { RoleFilter } from '../explorer-components/role-filter'
 
-function NoInspectionReport () {
+import {
+  menuItemDivStyle
+} from '../general.mui-styles'
+
+function NoItem ({item, iconType}) {
   return (
     <div className='mt5 pt3 tc'>
       <div className='dib relative'>
         <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
-          content_paste
+          {iconType}
         </FontIcon>
         <div className='absolute bottom-0 right-0 pb1'>
           <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
@@ -49,7 +50,7 @@ function NoInspectionReport () {
         </div>
       </div>
       <div className='mid-gray b lh-copy'>
-        You have no inspection reports yet
+        You have no {item}s yet
       </div>
     </div>
   )
@@ -65,67 +66,52 @@ const severityIndex = [
   'minor'
 ]
 
-const menuItemDivStyle = {
-  display: 'flex',
-  alignItems: 'center'
-}
-
-const SORT_BY = {
-  DATE_ASCENDING: 0,
-  DATE_DESCENDING: 1,
-  NAME_ASCENDING: 2,
-  NAME_DESCENDING: 3
-}
-
-const sorters = {
-  [SORT_BY.DATE_ASCENDING]: (a, b) => {
-    const dateA = Date.parse(a.creation_time)
-    const dateB = Date.parse(b.creation_time)
-    return dateB - dateA
-  },
-  [SORT_BY.DATE_DESCENDING]: (a, b) => {
-    const dateA = Date.parse(a.creation_time)
-    const dateB = Date.parse(b.creation_time)
-    return dateA - dateB
-  },
-  [SORT_BY.NAME_ASCENDING]: (a, b) => {
-    const nameA = a.title
-    const nameB = b.title
-    return nameA.localeCompare(nameB)
-  },
-  [SORT_BY.NAME_DESCENDING]: (a, b) => {
-    const nameA = a.title
-    const nameB = b.title
-    return nameB.localeCompare(nameA)
-  }
-}
-
 class Unit extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      showOpenCases: true,
       sortedCases: [],
-      assignedToMe: false,
-      statusFilterValues: [],
+      selectedStatusFilter: null,
+      selectedRoleFilter: null,
       sortBy: null
     }
   }
 
   get filteredCases () {
-    const { showOpenCases, sortedCases, assignedToMe } = this.state
-    const openFilter = showOpenCases ? x => !isClosed(x) : x => isClosed(x)
-    const assignedFilter = assignedToMe ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
-    const filteredCases = sortedCases.filter(caseItem => openFilter(caseItem) && assignedFilter(caseItem))
+    const { sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
+    let statusFilter
+    switch (selectedStatusFilter) {
+      case 'All':
+        statusFilter = caseItem => true
+        break
+      case 'Open':
+        statusFilter = caseItem => !isClosed(caseItem)
+        break
+      case 'Closed':
+        statusFilter = caseItem => isClosed(caseItem)
+        break
+    }
+    const assignedFilter = selectedRoleFilter === 'Created By Me' ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+    const filteredCases = sortedCases.filter(caseItem => assignedFilter(caseItem) && statusFilter(caseItem)).sort(sorters[sortBy])
     return filteredCases
   }
 
-  handleStatusClicked (value) {
-    this.setState({ showOpenCases: value })
+  handleStatusFilterClicked = (event, index, selectedStatusFilter) => {
+    this.setState({
+      selectedStatusFilter: selectedStatusFilter
+    })
   }
 
-  handleAssignedClicked () {
-    this.setState({ assignedToMe: !this.state.assignedToMe })
+  handleRoleFilterClicked = (event, index, selectedRoleFilter) => {
+    this.setState({
+      selectedRoleFilter: selectedRoleFilter
+    })
+  }
+
+  handleSortClicked = (event, index, value) => {
+    this.setState({
+      sortBy: value
+    })
   }
 
   handleChange = val => {
@@ -143,55 +129,23 @@ class Unit extends Component {
       })
     }
   }
-  handleReportFilterClicked = (event, index, statusFilterValues) => {
-    this.setState({
-      statusFilterValues: statusFilterValues
-    })
-  }
 
-  handleReportSortClicked = (event, index, value) => {
-    this.setState({
-      sortBy: value
-    })
-  }
-
-  reportFilterMenu (statusFilterValues) {
-    const status = ['Draft', 'Finalized', 'Created By Me']
-    return status.map((name) => (
-      <MenuItem
-        key={name}
-        insetChildren
-        checked={statusFilterValues && statusFilterValues.indexOf(name) > -1}
-        value={name}
-        primaryText={name}
-      />
-    ))
-  }
-
-  reportSortMenu (sortBy) {
-    const labels = [
-      [SORT_BY.DATE_ASCENDING, 'Newest'],
-      [SORT_BY.DATE_DESCENDING, 'Oldest'],
-      [SORT_BY.NAME_ASCENDING, 'Name (A to Z)'],
-      [SORT_BY.NAME_DESCENDING, 'Name (Z to A)']
-    ]
-    return labels.map(([sortBy, label], index) => (
-      <MenuItem
-        key={sortBy}
-        value={sortBy}
-        primaryText={label}
-      />
-    ))
-  }
-
-  filteredReportItems () {
+  filteredReports () {
     const { reportList, currentUser } = this.props
-    const { statusFilterValues, sortBy } = this.state
-    const statusFilter = statusFilterValues.length === 3 || (statusFilterValues.includes('Draft') && statusFilterValues.includes('Finalized')) ? report => true
-      : statusFilterValues.includes('Draft') ? report => report.status === REPORT_DRAFT_STATUS
-        : statusFilterValues.includes('Finalized') ? report => report.status !== REPORT_DRAFT_STATUS : report => true
-    const creatorFilter = statusFilterValues.includes('Created By Me') ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
-    const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem) && statusFilter(reportItem))
+    const { selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
+    switch (selectedStatusFilter) {
+      case 'All':
+        reportList.filter(report => true)
+        break
+      case 'Draft':
+        reportList.filter(report => report.status === REPORT_DRAFT_STATUS)
+        break
+      case 'Finalized':
+        reportList.filter(report => report.status !== REPORT_DRAFT_STATUS)
+        break
+    }
+    const creatorFilter = selectedRoleFilter === 'Created By Me' ? report => report.assignee === currentUser.bugzillaCreds.login : report => true
+    const filteredReports = reportList.filter(reportItem => creatorFilter(reportItem))
       .sort(sorters[sortBy])
     return filteredReports.map(({ id, title, status, creation_time: date }) => {
       const isFinalized = status !== REPORT_DRAFT_STATUS
@@ -218,9 +172,9 @@ class Unit extends Component {
 
   render () {
     const {
-      unitItem, isLoading, unitError, casesError, unitUsers, reportList, reportsError, dispatch, match
+      unitItem, isLoading, unitError, casesError, unitUsers, caseList, reportList, reportsError, dispatch, match
     } = this.props
-    const { sortedCases, showOpenCases, assignedToMe, statusFilterValues, sortBy } = this.state
+    const { sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -278,73 +232,66 @@ class Unit extends Component {
                 >
 
                   <div className='flex-grow bg-very-light-gray'>
-                    <div className='flex pl3 pv3 bb b--very-light-gray bg-white'>
-                      <div
-                        className={'f6 fw5 ph2 ' + (showOpenCases ? 'mid-gray' : 'silver')}
-                        onClick={() => this.handleStatusClicked(true)}
-                      >
-                        Open
+                    { caseList.length ? (
+                      <div>
+                        <div className='flex bg-very-light-gray'>
+                          <StatusFilter
+                            selectedStatusFilter={selectedStatusFilter}
+                            onFilterClicked={this.handleStatusFilterClicked}
+                            status={['All', 'Open', 'Closed']}
+                          />
+                          <RoleFilter
+                            selectedRoleFilter={selectedRoleFilter}
+                            onRoleFilterClicked={this.handleRoleFilterClicked}
+                            roles={['All', 'Assigned to me']}
+                          />
+                          <Sorter
+                            onSortClicked={this.handleSortClicked}
+                            sortBy={sortBy}
+                            labels={labels.concat([
+                              [SORT_BY.LATEST_UPDATE, {category: 'Updated - Latest', selected: 'Updated ↓'}],
+                              [SORT_BY.OLDEST_UPDATE, {category: 'Updated - Oldest', selected: 'Updated ↑'}]
+                            ])}
+                          />
+                        </div>
+                        { filteredCases.map(caseItem => (
+                          <CaseMenuItem
+                            key={caseItem.id}
+                            className='ph3'
+                            caseItem={caseItem}
+                            onClick={() => {
+                              dispatch(storeBreadcrumb(rootMatch.url))
+                              dispatch(push(`/case/${caseItem.id}`))
+                            }}
+                          />
+                        ))
+                        }
                       </div>
-                      <div
-                        className={'f6 fw5 ml4 ph2 ' + (!showOpenCases ? 'mid-gray' : 'silver')}
-                        onClick={() => this.handleStatusClicked(false)}
-                      >
-                        Closed
-                      </div>
-                      <div
-                        onClick={() => this.handleAssignedClicked()}
-                        className={'f6 fw5 ml4 ph2 ' + (assignedToMe ? 'mid-gray' : 'silver')}
-                      >
-                        Assigned To Me
-                      </div>
-                    </div>
-                    {filteredCases.map(caseItem => (
-                      <CaseMenuItem
-                        key={caseItem.id}
-                        className='ph3'
-                        caseItem={caseItem}
-                        onClick={() => {
-                          dispatch(storeBreadcrumb(rootMatch.url))
-                          dispatch(push(`/case/${caseItem.id}`))
-                        }}
-                      />
-                    ))}
+                    ) : (<NoItem item='case' iconType='card_travel' />) }
                   </div>
                   <div className='flex-grow bg-very-light-gray'>
                     {reportList.length ? (
                       <div>
-                        <div className='flex flex-grow'>
-                          <SelectField
-                            multiple
-                            hintText='View: All Reports'
-                            value={statusFilterValues}
-                            onChange={this.handleReportFilterClicked}
-                            autoWidth
-                            underlineStyle={noUnderline}
-                            hintStyle={sortBoxInputStyle}
-                            iconStyle={selectInputIconStyle}
-                            labelStyle={sortBoxInputStyle}
-                            selectedMenuItemStyle={selectedItemStyle}
-                          >
-                            {this.reportFilterMenu(statusFilterValues)}
-                          </SelectField>
-                          <SelectField
-                            hintText='Sort by: Date Added'
-                            value={sortBy}
-                            onChange={this.handleReportSortClicked}
-                            underlineStyle={noUnderline}
-                            hintStyle={sortBoxInputStyle}
-                            iconStyle={selectInputIconStyle}
-                            labelStyle={sortBoxInputStyle}
-                            selectedMenuItemStyle={selectedItemStyle}
-                          >
-                            {this.reportSortMenu(sortBy)}
-                          </SelectField>
+                        <div className='flex bg-very-light-gray'>
+                          <StatusFilter
+                            selectedStatusFilter={selectedStatusFilter}
+                            onFilterClicked={this.handleStatusFilterClicked}
+                            status={['All', 'Draft', 'Finalized']}
+                          />
+                          <RoleFilter
+                            selectedRoleFilter={selectedRoleFilter}
+                            onRoleFilterClicked={this.handleRoleFilterClicked}
+                            roles={['All', 'Created by me']}
+                          />
+                          <Sorter
+                            onSortClicked={this.handleSortClicked}
+                            sortBy={sortBy}
+                          />
                         </div>
-                        {this.filteredReportItems()}
+                        {this.filteredReports()}
                       </div>
                     ) : (
-                      <NoInspectionReport />
+                      <NoItem item='inspection report' iconType='content_paste' />
                     )}
                     <Route exact path={`${rootMatch.url}/${viewsOrder[1]}/new`} children={({ match }) => (
                       <CreateReportDialog

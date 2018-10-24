@@ -9,35 +9,44 @@ import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import Preloader from '../preloader/preloader'
 import { setDrawerState, storeBreadcrumb } from '../general-actions'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
-import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import FontIcon from 'material-ui/FontIcon'
 import { ReportList } from '../report-explorer/report-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
 import { push } from 'react-router-redux'
+import { SORT_BY, sorters } from '../explorer-components/sort-items'
+import { Sorter } from '../explorer-components/sorter'
+import { StatusFilter } from '../explorer-components/status-filter'
+import { RoleFilter } from '../explorer-components/role-filter'
 
 class ReportExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
-      filterStatus: true,
-      myInvolvement: false,
-      open: false
+      open: false,
+      selectedStatusFilter: null,
+      selectedRoleFilter: null,
+      sortBy: null
     }
   }
 
-  handleStatusClicked = (value) => {
-    this.setState({ filterStatus: value })
+  handleStatusFilterClicked = (event, index, selectedStatusFilter) => {
+    this.setState({
+      selectedStatusFilter: selectedStatusFilter
+    })
   }
 
-  handleMyInvolvementClicked = () => {
-    this.setState({ myInvolvement: !this.state.myInvolvement })
+  handleRoleFilterClicked = (event, index, selectedRoleFilter) => {
+    this.setState({
+      selectedRoleFilter: selectedRoleFilter
+    })
   }
 
-  handleOnItemClicked = () => {
-    const { dispatch, match } = this.props
-    dispatch(storeBreadcrumb(match.url))
+  handleSortClicked = (event, index, value) => {
+    this.setState({
+      sortBy: value
+    })
   }
 
   handleOnItemClicked = () => {
@@ -51,13 +60,21 @@ class ReportExplorer extends Component {
   }
 
   makeReportGrouping = memoizeOne(
-    (reportList, filterStatus, myInvolvement) => {
-      const statusFilter = filterStatus
-        ? report => report.status !== REPORT_DRAFT_STATUS
-        : report => report.status === REPORT_DRAFT_STATUS
-      const creatorFilter = myInvolvement ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
+    (reportList, selectedStatusFilter, selectedRoleFilter, sortBy) => {
+      switch (selectedStatusFilter) {
+        case 'All':
+          reportList = reportList.filter(report => true)
+          break
+        case 'Draft':
+          reportList = reportList.filter(report => report.status === REPORT_DRAFT_STATUS)
+          break
+        case 'Finalized':
+          reportList = reportList.filter(report => report.status !== REPORT_DRAFT_STATUS)
+          break
+      }
+      const creatorFilter = selectedRoleFilter !== 'Created by me' ? report => true : report => report.assignee === this.props.currentUser.bugzillaCreds.login
       const unitDict = reportList.reduce((dict, reportItem) => {
-        if (statusFilter(reportItem) && creatorFilter(reportItem)) {
+        if (creatorFilter(reportItem)) {
           const { selectedUnit: unitBzName, unitMetaData: metaData } = reportItem
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
@@ -68,27 +85,51 @@ class ReportExplorer extends Component {
         return dict
       }, {})
 
-      return Object.values(unitDict)
+      const reportBundle = Object.keys(unitDict).reduce((all, unitTitle) => {
+        const { bzId, items, unitType } = unitDict[unitTitle]
+
+        // Sorting items within a unit by the order descending order of last update
+        items.sort(sorters[sortBy])
+        all.push({
+          items: items,
+          unitType,
+          unitTitle,
+          bzId
+        })
+        return all
+      }, []) // Sorting by the latest case update for each
+      const grouping = sortBy ? reportBundle.sort(sorters[sortBy]) : reportBundle.sort(sorters[SORT_BY.DATE_DESCENDING])
+      return grouping
     }
   )
 
   render () {
     const { isLoading, dispatch, reportList } = this.props
-    const { filterStatus, myInvolvement, open } = this.state
+    const { selectedStatusFilter, selectedRoleFilter, open, sortBy } = this.state
     if (isLoading) return <Preloader />
-    const reportGrouping = this.makeReportGrouping(reportList, filterStatus, myInvolvement)
+    const reportGrouping = this.makeReportGrouping(reportList, selectedStatusFilter, selectedRoleFilter, sortBy)
+
     return (
       <div className='flex flex-column flex-grow full-height'>
-        <RootAppBar title='My Reports' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
+        <RootAppBar title='Inspection Reports' onIconClick={() => dispatch(setDrawerState(true))} shadowless />
         <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
-          <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
-            <FilterRow
-              filterStatus={filterStatus}
-              myInvolvement={myInvolvement}
-              handleMyInvolvementClicked={this.handleMyInvolvementClicked}
-              handleStatusClicked={this.handleStatusClicked}
-              filterLabels={['Finalized', 'Draft', 'Created By Me']}
+          <div className='flex bg-very-light-gray'>
+            <StatusFilter
+              selectedStatusFilter={selectedStatusFilter}
+              onFilterClicked={this.handleStatusFilterClicked}
+              status={['All', 'Draft', 'Finalized']}
             />
+            <RoleFilter
+              selectedRoleFilter={selectedRoleFilter}
+              onRoleFilterClicked={this.handleRoleFilterClicked}
+              roles={['All', 'Created by me']}
+            />
+            <Sorter
+              onSortClicked={this.handleSortClicked}
+              sortBy={sortBy}
+            />
+          </div>
+          <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
             { reportGrouping.length
               ? <UnitGroupList
                 unitGroupList={reportGrouping}
@@ -99,7 +140,7 @@ class ReportExplorer extends Component {
                   />)
                 }
                 name={'report'}
-              /> : (<NoItemMsg item={'report'} buttonOption />)
+              /> : (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>

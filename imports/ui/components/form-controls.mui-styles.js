@@ -44,6 +44,12 @@ export const sortBoxInputStyle = {
   fontSize: '0.9rem'
 }
 
+export const sortBoxBlueInputStyle = {
+  color: 'var(--bondi-blue)',
+  left: '20px',
+  fontSize: '0.9rem'
+}
+
 export const selectedItemStyle = {
   color: 'var(--bondi-blue)'
 }

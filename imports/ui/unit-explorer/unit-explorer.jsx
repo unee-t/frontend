@@ -11,10 +11,12 @@ import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
 import Units, { collectionName } from '../../api/units'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
-import { Tabs, Tab } from 'material-ui/Tabs'
-import SwipeableViews from 'react-swipeable-views'
-import FilteredUnitsContainer from './filtered-units-container'
 import FilteredUnits from './filtered-units'
+import { SORT_BY, sorters } from '../explorer-components/sort-items'
+import { NoItemMsg } from '../explorer-components/no-item-msg'
+import { Sorter } from '../explorer-components/sorter'
+import { StatusFilter } from '../explorer-components/status-filter'
+import { RoleFilter } from '../explorer-components/role-filter'
 
 class UnitExplorer extends Component {
   constructor (props) {
@@ -23,15 +25,30 @@ class UnitExplorer extends Component {
       slideIndex: 0,
       searchResult: [],
       searchMode: false,
-      searchText: ''
+      searchText: '',
+      selectedStatusFilter: null,
+      selectedRoleFilter: null,
+      sortBy: null
     }
   }
 
-  handleChange = (value) => {
+  handleStatusFilterClicked = (event, index, selectedStatusFilter) => {
     this.setState({
-      slideIndex: value
+      selectedStatusFilter: selectedStatusFilter
     })
-  };
+  }
+
+  handleRoleFilterClicked = (event, index, selectedRoleFilter) => {
+    this.setState({
+      selectedRoleFilter: selectedRoleFilter
+    })
+  }
+
+  handleSortClicked = (event, index, value) => {
+    this.setState({
+      sortBy: value
+    })
+  }
 
   handleAddCaseClicked = (id) => {
     const { dispatch } = this.props
@@ -58,12 +75,46 @@ class UnitExplorer extends Component {
     }
   }
 
+  get filteredUnits () {
+    const { selectedStatusFilter, sortBy, selectedRoleFilter } = this.state
+    const { unitList, currentUserId } = this.props
+    let statusFilter
+    switch (selectedStatusFilter) {
+      case 'All':
+        statusFilter = unitItem => true
+        break
+      case 'Active':
+        statusFilter = unitItem => unitItem.is_active
+        break
+      case 'Disabled':
+        statusFilter = unitItem => !unitItem.is_active
+        break
+      default:
+        statusFilter = unitItem => unitItem.is_active
+    }
+    let roleFilter
+    switch (selectedRoleFilter) {
+      case 'All':
+        roleFilter = unitItem => true
+        break
+      case 'Created':
+        roleFilter = unitItem => unitItem.metaData && unitItem.metaData.ownerIds && unitItem.metaData.ownerIds[0] === currentUserId
+        break
+      case 'Involved':
+        roleFilter = unitItem => ((unitItem.metaData && !unitItem.metaData.ownerIds) || (unitItem.metaData && !unitItem.metaData.ownerIds && !unitItem.metaData.ownerIds[0] === currentUserId))
+        break
+      default:
+        roleFilter = unitItem => true
+    }
+    const filteredUnits = unitList.filter(unitItem => roleFilter(unitItem) && statusFilter(unitItem)).sort(sorters[sortBy])
+    return filteredUnits
+  }
+
   render () {
-    const { isLoading, unitList, dispatch, currentUserId } = this.props
-    const { searchResult, searchMode, searchText } = this.state
+    const { isLoading, dispatch } = this.props
+    const { filteredUnits } = this
+    const { searchResult, searchMode, searchText, selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
     if (isLoading) return <Preloader />
-    const activeUnits = unitList.filter(unitItem => unitItem.metaData && !unitItem.metaData.disabled)
-    const disabledUnits = unitList.filter(unitItem => unitItem.metaData && unitItem.metaData.disabled)
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar
@@ -78,45 +129,44 @@ class UnitExplorer extends Component {
         <UnverifiedWarning />
         { searchMode ? (
           <FilteredUnits filteredUnits={searchResult}
-            titleMode={0}
             handleUnitClicked={this.handleUnitClicked}
           />
         ) : (
           <div className='flex-grow flex flex-column overflow-hidden'>
-            <Tabs
-              className='no-shrink'
-              onChange={this.handleChange}
-              value={this.state.slideIndex}
-              inkBarStyle={{backgroundColor: 'white'}}
-            >
-              <Tab label='Active' value={0} />
-              <Tab label='Disabled' value={1} />
-            </Tabs>
+            <div className='flex bg-very-light-gray'>
+              <StatusFilter
+                selectedStatusFilter={selectedStatusFilter}
+                onFilterClicked={this.handleStatusFilterClicked}
+                status={['All', 'Active', 'Disabled']}
+              />
+              <RoleFilter
+                selectedRoleFilter={selectedRoleFilter}
+                onRoleFilterClicked={this.handleRoleFilterClicked}
+                roles={['All', 'Created', 'Involved']}
+              />
+              <Sorter
+                onSortClicked={this.handleSortClicked}
+                sortBy={sortBy}
+                labels={[
+                  [SORT_BY.NAME_ASCENDING, {category: 'Name (A to Z)', selected: 'Name ↑'}],
+                  [SORT_BY.NAME_DESCENDING, {category: 'Name (Z to A)', selected: 'Name ↓'}]
+                ]}
+              />
+            </div>
             <div className='flex-grow flex flex-column overflow-auto'>
-              <SwipeableViews
-                index={this.state.slideIndex}
-                onChangeIndex={this.handleChange}
-              >
-                {/* tab 1 */}
-                <div className='flex-grow bb b--very-light-gray bg-white pb6'>
-                  <FilteredUnitsContainer
-                    filteredUnits={activeUnits}
-                    currentUserId={currentUserId}
+              <div className='flex-grow bb b--very-light-gray bg-white pb6'>
+                { filteredUnits.length === 0 ? (
+                  <NoItemMsg item={'unit'} iconType={'location_on'} />
+                ) : (
+                  <FilteredUnits
+                    filteredUnits={filteredUnits}
                     handleUnitClicked={this.handleUnitClicked}
                     handleAddCaseClicked={this.handleAddCaseClicked}
                     showAddBtn
-                    active
                   />
-                </div>
-                {/* tab 2 */}
-                <div className='flex-grow bb b--very-light-gray bg-white pb6'>
-                  <FilteredUnitsContainer
-                    filteredUnits={disabledUnits}
-                    currentUserId={currentUserId}
-                    handleUnitClicked={this.handleUnitClicked}
-                  />
-                </div>
-              </SwipeableViews>
+                )
+                }
+              </div>
             </div>
           </div>
         ) }

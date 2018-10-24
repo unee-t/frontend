@@ -2,13 +2,13 @@ import React from 'react'
 import FontIcon from 'material-ui/FontIcon'
 import PropTypes from 'prop-types'
 
-export function NoItemMsg ({item, buttonOption}) {
+export function NoItemMsg ({item, iconType, buttonOption}) {
   return (
     <div className='flex-grow flex flex-column items-center justify-center'>
       <div className='tc'>
         <div className='dib relative'>
           <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '6rem'}}>
-            card_travel
+            {iconType}
           </FontIcon>
           <div className='absolute bottom--1 right--1 pb2'>
             <div className='br-100 pa1 bg-very-light-gray lh-cram'>

@@ -36,7 +36,7 @@ class UnitSelectDialog extends Component {
     } else {
       this.setState({searchMode: true})
       const matcher = new RegExp(searchText, 'i')
-      const searchResult = this.props.unitList
+      const searchResult = this.props.unitList.filter(unitItem => unitItem.is_active)
         .filter(unit => !matcher || (unit.name && unit.name.match(matcher)))
       this.setState({
         searchResult: searchResult
@@ -47,7 +47,7 @@ class UnitSelectDialog extends Component {
   render () {
     const { show, onDismissed, inProgress, unitList, onUnitClick, isLoading } = this.props
     const { searchText, searchMode, searchResult } = this.state
-    const units = searchMode ? searchResult : unitList
+    const units = searchMode ? searchResult : unitList.filter(unitItem => unitItem.is_active)
     const actions =
       <div className='tc pa2 bg-bondi-blue'>
         <Link className={'white link ph3 br1 b--none pv2 lh-title dim' + (units.length === 0 ? 'dn' : '')}

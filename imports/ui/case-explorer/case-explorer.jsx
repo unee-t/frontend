@@ -14,30 +14,36 @@ import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
-import { FilterRow } from '../explorer-components/filter-row'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
 import { push } from 'react-router-redux'
+import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
+import { RoleFilter } from '../explorer-components/role-filter'
+import { Sorter } from '../explorer-components/sorter'
 
 class CaseExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       caseId: '',
-      filterStatus: true,
-      myInvolvement: false,
-      open: false
+      open: false,
+      selectedRoleFilter: null,
+      sortBy: null
     }
   }
 
-  handleStatusClicked = (value) => {
-    this.setState({ filterStatus: value })
+  handleRoleFilterClicked = (event, index, selectedRoleFilter) => {
+    this.setState({
+      selectedRoleFilter: selectedRoleFilter
+    })
   }
 
-  handleMyInvolvementClicked = () => {
-    this.setState({ myInvolvement: !this.state.myInvolvement })
+  handleSortClicked = (event, index, value) => {
+    this.setState({
+      sortBy: value
+    })
   }
 
   handleOnItemClicked = () => {
@@ -81,18 +87,15 @@ class CaseExplorer extends Component {
     (a, b) => a.length === b.length
   )
   makeCaseGrouping = memoizeOne(
-    (caseList, showOpen, onlyAssigned, allNotifs, unreadNotifs) => {
-      const openFilter = showOpen ? x => !isClosed(x) : x => isClosed(x)
-      const assignedFilter = onlyAssigned ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
-
+    (caseList, selectedRoleFilter, sortBy, allNotifs, unreadNotifs) => {
+      const assignedFilter = selectedRoleFilter !== 'Assigned to me' ? x => true : x => x.assignee === this.props.currentUser.bugzillaCreds.login
       const caseUpdateTimeDict = this.makeCaseUpdateTimeDict(allNotifs)
       const caseUnreadDict = this.makeCaseUnreadDict(unreadNotifs)
 
       // Building a unit dictionary to group the cases together
       const unitsDict = caseList.reduce((dict, caseItem) => {
-        if (openFilter(caseItem) && assignedFilter(caseItem)) { // Filtering only the cases that match the selection
+        if (assignedFilter(caseItem) && !isClosed(caseItem)) { // Filtering only the cases that match the selection
           const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType } = caseItem
-
           // Pulling the existing or creating a new dictionary entry if none
           const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId, unitType}
           const caseIdStr = caseItem.id.toString()
@@ -100,20 +103,18 @@ class CaseExplorer extends Component {
           // Adding the latest update time to the case for easier sorting later
           unitDesc.cases.push(
             Object.assign({
-              latestUpdate: caseUpdateTimeDict[caseIdStr] || 0,
+              latestUpdate: caseUpdateTimeDict[caseIdStr] || (new Date(caseItem.creation_time)).getTime(),
               unreadCounts: caseUnreadDict[caseIdStr]
             }, caseItem)
           )
         }
         return dict
       }, {})
-
-      // Creating a case grouping *array* from the unit dictionary
+      const sortType = sortBy ? sorters[sortBy] : sorters[SORT_BY.LATEST_UPDATE]
       return Object.keys(unitsDict).reduce((all, unitTitle) => {
         const { bzId, cases, unitType } = unitsDict[unitTitle]
-
         // Sorting cases within a unit by the order descending order of last update
-        cases.sort((a, b) => b.latestUpdate - a.latestUpdate)
+        cases.sort(sortType)
         all.push({
           latestCaseUpdate: cases[0].latestUpdate, // The first case has to be latest due to the previous sort
           hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts), // true if any case has unreads
@@ -123,7 +124,7 @@ class CaseExplorer extends Component {
           bzId
         })
         return all
-      }, []).sort((a, b) => b.latestCaseUpdate - a.latestCaseUpdate) // Sorting by the latest case update for each
+      }, []).sort(sortType)
     },
     (a, b) => {
       if (a && b && Array.isArray(a)) {
@@ -135,20 +136,28 @@ class CaseExplorer extends Component {
   )
   render () {
     const { isLoading, caseList, allNotifications, unreadNotifications } = this.props
-    const { filterStatus, myInvolvement, open } = this.state
+    const { selectedRoleFilter, sortBy, open } = this.state
     if (isLoading) return <Preloader />
-    const caseGrouping = this.makeCaseGrouping(caseList, filterStatus, myInvolvement, allNotifications, unreadNotifications)
+    const caseGrouping = this.makeCaseGrouping(caseList, selectedRoleFilter, sortBy, allNotifications, unreadNotifications)
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <UnverifiedWarning />
-        <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
-          <FilterRow
-            filterStatus={filterStatus}
-            myInvolvement={myInvolvement}
-            handleMyInvolvementClicked={this.handleMyInvolvementClicked}
-            handleStatusClicked={this.handleStatusClicked}
-            filterLabels={['Open', 'Closed', 'Assigned To Me']}
+        <div className='flex bg-very-light-gray'>
+          <RoleFilter
+            selectedRoleFilter={selectedRoleFilter}
+            onRoleFilterClicked={this.handleRoleFilterClicked}
+            roles={['All', 'Assigned to me']}
           />
+          <Sorter
+            onSortClicked={this.handleSortClicked}
+            sortBy={sortBy}
+            labels={labels.concat([
+              [SORT_BY.LATEST_UPDATE, {category: 'Updated - Latest', selected: 'Updated ↓'}],
+              [SORT_BY.OLDEST_UPDATE, {category: 'Updated - Oldest', selected: 'Updated ↑'}]
+            ])}
+          />
+        </div>
+        <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
           { !isLoading && caseGrouping.length
             ? <UnitGroupList
               unitGroupList={caseGrouping}
@@ -159,7 +168,7 @@ class CaseExplorer extends Component {
                 />)
               }
               name={'case'}
-            /> : (<NoItemMsg item={'case'} buttonOption />)
+            /> : (<NoItemMsg item={'case'} iconType={'card_travel'} buttonOption />)
           }
         </div>
         <div className='absolute right-1 bottom-2'>
@@ -212,7 +221,7 @@ const connectedWrapper = connect(
 }, CaseExplorer))
 
 connectedWrapper.MobileHeader = ({onIconClick}) => (
-  <RootAppBar title='Cases' onIconClick={onIconClick} />
+  <RootAppBar title='Open Cases' onIconClick={onIconClick} />
 )
 
 connectedWrapper.MobileHeader.propTypes = {
