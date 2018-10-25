@@ -32,7 +32,7 @@ class EmailInput extends Component {
       emailError
     })
     onEmailChanged(value)
-    onValidityChanged && onValidityChanged(!!emailError)
+    onValidityChanged && onValidityChanged(!emailError)
   }
 
   render () {
