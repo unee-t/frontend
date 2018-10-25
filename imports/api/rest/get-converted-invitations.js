@@ -18,7 +18,6 @@ export default (req, res) => {
       }}
     ]).toArray()
       .then(docs => {
-        console.log(docs)
         res.send(docs)
       })
       .catch(err => {
