@@ -81,15 +81,15 @@ class Unit extends Component {
     const { sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
     let statusFilter
     switch (selectedStatusFilter) {
-      case 'All':
-        statusFilter = caseItem => true
-        break
       case 'Open':
         statusFilter = caseItem => !isClosed(caseItem)
         break
       case 'Closed':
         statusFilter = caseItem => isClosed(caseItem)
         break
+      case 'All':
+      default:
+        statusFilter = caseItem => true
     }
     const assignedFilter = selectedRoleFilter === 'Created By Me' ? x => x.assignee === this.props.currentUser.bugzillaCreds.login : x => true
     const filteredCases = sortedCases.filter(caseItem => assignedFilter(caseItem) && statusFilter(caseItem)).sort(sorters[sortBy])
