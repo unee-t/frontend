@@ -44,7 +44,8 @@ export const caseServerFieldMapping = {
 
 export const REPORT_KEYWORD = 'inspection_report'
 
-export const isClosed = caseItem => ['RESOLVED', 'VERIFIED', 'CLOSED'].includes(caseItem.status)
+const CLOSED_STATUS_TYPES = ['RESOLVED', 'VERIFIED', 'CLOSED']
+export const isClosed = caseItem => CLOSED_STATUS_TYPES.includes(caseItem.status)
 
 export const caseClientFieldMapping = Object.assign(
   Object.keys(caseServerFieldMapping).reduce((all, key) => ({
@@ -208,22 +209,31 @@ if (Meteor.isServer) {
     operator: 'nowords',
     value: REPORT_KEYWORD
   }
+  const openOnlyExp = {
+    field: 'bug_status',
+    operator: 'nowords',
+    value: encodeURIComponent(CLOSED_STATUS_TYPES.join(','))
+  }
 
   // TODO: Add tests for this
   Meteor.publish(`${collectionName}.associatedWithMe`, associationFactory(
     publicationObj.publishByCustomQuery({
       uriTemplate: () => '/rest/bug',
-      queryBuilder: subHandle => {
+      queryBuilder: (subHandle, { showOpenOnly }) => {
         if (!subHandle.userId) {
           return {}
         }
         const currUser = Meteor.users.findOne(subHandle.userId)
         const { login: userIdentifier } = currUser.bugzillaCreds
+        const queryExpressions = [
+          noReportsExp,
+          ...associatedCasesQueryExps(userIdentifier)
+        ]
+        if (showOpenOnly) {
+          queryExpressions.push(openOnlyExp)
+        }
         return caseQueryBuilder(
-          [
-            noReportsExp,
-            ...associatedCasesQueryExps(userIdentifier)
-          ],
+          queryExpressions,
           [
             'product',
             'summary',
