@@ -8,7 +8,7 @@ import { withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
-import Cases, { collectionName } from '../../api/cases'
+import Cases, { collectionName, isClosed } from '../../api/cases'
 import CaseNotifications, { collectionName as notifCollName } from '../../api/case-notifications'
 import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
@@ -87,14 +87,14 @@ class CaseExplorer extends Component {
     (a, b) => a.length === b.length
   )
   makeCaseGrouping = memoizeOne(
-    (caseList, selectedRoleFilter, sortBy, allNotifs, unreadNotifs) => {
+    ({ caseList, selectedRoleFilter, sortBy, allNotifs, unreadNotifs }) => {
       const assignedFilter = selectedRoleFilter !== 'Assigned to me' ? x => true : x => x.assignee === this.props.currentUser.bugzillaCreds.login
       const caseUpdateTimeDict = this.makeCaseUpdateTimeDict(allNotifs)
       const caseUnreadDict = this.makeCaseUnreadDict(unreadNotifs)
 
       // Building a unit dictionary to group the cases together
       const unitsDict = caseList.reduce((dict, caseItem) => {
-        if (assignedFilter(caseItem)) { // Filtering only the cases that match the selection
+        if (assignedFilter(caseItem) && !isClosed(caseItem)) { // Filtering only the cases that match the selection
           const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType } = caseItem
           // Pulling the existing or creating a new dictionary entry if none
           const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId, unitType}
@@ -127,18 +127,35 @@ class CaseExplorer extends Component {
       }, []).sort(sortType)
     },
     (a, b) => {
-      if (a && b && Array.isArray(a)) {
-        return a.length === b.length
-      } else {
-        return a === b
-      }
+      return Object.keys(a).every(key => {
+        const aAttr = a[key]
+        const bAttr = b[key]
+        if (key === 'caseList') {
+          if (Array.isArray(aAttr) && Array.isArray(bAttr)) {
+            return aAttr.length === bAttr.length && aAttr.filter(isClosed).length === bAttr.filter(isClosed).length
+          } else {
+            return true
+          }
+        } else if (aAttr && bAttr && Array.isArray(aAttr)) {
+          return aAttr.length === bAttr.length
+        } else {
+          return aAttr === bAttr
+        }
+      })
     }
   )
   render () {
     const { isLoading, caseList, allNotifications, unreadNotifications } = this.props
     const { selectedRoleFilter, sortBy, open } = this.state
     if (isLoading) return <Preloader />
-    const caseGrouping = this.makeCaseGrouping(caseList, selectedRoleFilter, sortBy, allNotifications, unreadNotifications)
+
+    const caseGrouping = this.makeCaseGrouping({
+      caseList,
+      selectedRoleFilter,
+      sortBy,
+      allNotifs: allNotifications,
+      unreadNotifs: unreadNotifications
+    })
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <UnverifiedWarning />

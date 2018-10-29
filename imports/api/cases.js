@@ -212,7 +212,7 @@ if (Meteor.isServer) {
   const openOnlyExp = {
     field: 'bug_status',
     operator: 'nowords',
-    value: encodeURIComponent(CLOSED_STATUS_TYPES.join(','))
+    value: CLOSED_STATUS_TYPES.join(',')
   }
 
   // TODO: Add tests for this
