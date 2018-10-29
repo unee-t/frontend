@@ -8,7 +8,7 @@ import { withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import memoizeOne from 'memoize-one'
-import Cases, { collectionName, isClosed } from '../../api/cases'
+import Cases, { collectionName } from '../../api/cases'
 import CaseNotifications, { collectionName as notifCollName } from '../../api/case-notifications'
 import UnitMetaData from '../../api/unit-meta-data'
 import RootAppBar from '../components/root-app-bar'
@@ -94,7 +94,7 @@ class CaseExplorer extends Component {
 
       // Building a unit dictionary to group the cases together
       const unitsDict = caseList.reduce((dict, caseItem) => {
-        if (assignedFilter(caseItem) && !isClosed(caseItem)) { // Filtering only the cases that match the selection
+        if (assignedFilter(caseItem)) { // Filtering only the cases that match the selection
           const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType } = caseItem
           // Pulling the existing or creating a new dictionary entry if none
           const unitDesc = dict[unitTitle] = dict[unitTitle] || {cases: [], bzId, unitType}
@@ -199,7 +199,7 @@ let casesError
 const connectedWrapper = connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
-  const casesHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, {
+  const casesHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, {showOpenOnly: true}, {
     onStop: (error) => {
       casesError = error
     }
