@@ -43,6 +43,10 @@ export const caseServerFieldMapping = {
 }
 
 export const REPORT_KEYWORD = 'inspection_report'
+export const REPORT_ROOM_KEYWORD = 'room'
+export const REPORT_ITEM_KEYWORD = 'item'
+
+const REPORT_EL_TYPES = [REPORT_KEYWORD, REPORT_ITEM_KEYWORD, REPORT_ROOM_KEYWORD]
 
 const CLOSED_STATUS_TYPES = ['RESOLVED', 'VERIFIED', 'CLOSED']
 export const isClosed = caseItem => CLOSED_STATUS_TYPES.includes(caseItem.status)
@@ -207,7 +211,7 @@ if (Meteor.isServer) {
   const noReportsExp = {
     field: 'keywords',
     operator: 'nowords',
-    value: REPORT_KEYWORD
+    value: REPORT_EL_TYPES.join(',')
   }
   const openOnlyExp = {
     field: 'bug_status',
@@ -249,7 +253,7 @@ if (Meteor.isServer) {
         return caseItem => {
           const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
           return (
-            !(keywords && keywords.includes(REPORT_KEYWORD)) && (
+            !(keywords && REPORT_EL_TYPES.some(type => keywords.includes(type))) && (
               userIdentifier === assignee ||
               userIdentifier === creator ||
               involvedList.includes(userIdentifier)
@@ -304,7 +308,7 @@ if (Meteor.isServer) {
       return caseItem => {
         const { selectedUnit, assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
         return (
-          selectedUnit === unitName && !(keywords && keywords.includes(REPORT_KEYWORD)) && (
+          selectedUnit === unitName && !(keywords && REPORT_EL_TYPES.some(type => keywords.includes(type))) && (
             userIdentifier === assignee ||
             userIdentifier === creator ||
             involvedList.includes(userIdentifier)
