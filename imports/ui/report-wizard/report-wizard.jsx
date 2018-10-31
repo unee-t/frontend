@@ -3,8 +3,8 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { goBack, push } from 'react-router-redux'
-import { Redirect } from 'react-router-dom'
+import { goBack, push, replace } from 'react-router-redux'
+import { Redirect, Route } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
@@ -51,6 +51,11 @@ const flatButtonReset = {
   padding: null,
   margin: null
 }
+
+const tabsOrder = [
+  'overview',
+  'cases'
+]
 
 const TabHeader = ({ isSelected, label, onSelected }) => (
   <div className={'flex-grow transition-bg' + (isSelected ? ' bg-white' : '')}>
@@ -171,109 +176,115 @@ class ReportWizard extends Component {
               {infoItemMembers('Unit', unitDisplayName)}
             </div>
           </div>
-          <div className='pt1 flex bt b--transparent'>
-            <TabHeader
-              label='overview'
-              isSelected={selectedTab === 0}
-              onSelected={() => this.setState({selectedTab: 0})}
-            />
-            <TabHeader
-              label='cases'
-              isSelected={selectedTab === 1}
-              onSelected={() => this.setState({selectedTab: 1})}
-            />
-          </div>
-          <div className='bg-white pa3 flex flex-column flex-grow overflow-auto'>
-            <SwipeableViews
-              resistance
-              style={{flex: 1, display: 'flex', flexDirection: 'column'}}
-              containerStyle={{flex: 1}}
-              slideStyle={{display: 'flex', flexDirection: 'column'}}
-              index={selectedTab}
-              onChangeIndex={idx => this.setState({selectedTab: idx})}
-            >
-              <div className='flex flex-column'>
-                <div>
-                  <EditableItem
-                    label='Remarks and Comments'
-                    initialValue={reportItem.additionalComments}
-                    onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-                    isMultiLine
+          <Route path={`${match.url}/:tabName`} children={({ match: subMatch }) => {
+            const tabIndex = subMatch ? tabsOrder.indexOf(subMatch.params.tabName) : 0
+            return (
+              <div>
+                <div className='pt1 flex bt b--transparent'>
+                  <TabHeader
+                    label='overview'
+                    isSelected={tabIndex === 0}
+                    onSelected={() => dispatch(replace(`${match.url}/${tabsOrder[0]}`))}
+                  />
+                  <TabHeader
+                    label='cases'
+                    isSelected={tabIndex === 1}
+                    onSelected={() => dispatch(replace(`${match.url}/${tabsOrder[1]}`))}
                   />
                 </div>
-                <div className='mt3'>
-                  {infoItemLabel('Attach Photos:')}
-                  <div className='flex flex-wrap pt1'>
-                    {attachmentUrls.map(url => (
-                      <img
-                        key={url}
-                        className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
-                        src={fitDimensions(url, 96, 96)} alt='X'
-                      />
-                    ))}
-                    {attachmentUploads.map(process => (
-                      <div
-                        key={process.processId}
-                        className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
-                      >
-                        <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
-                        <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
+                <div className='bg-white pa3 flex flex-column flex-grow overflow-auto'>
+                  <SwipeableViews
+                    resistance
+                    style={{flex: 1, display: 'flex', flexDirection: 'column'}}
+                    containerStyle={{flex: 1}}
+                    slideStyle={{display: 'flex', flexDirection: 'column'}}
+                    index={tabIndex}
+                    onChangeIndex={idx => dispatch(replace(`${match.url}/${tabsOrder[idx]}`))}
+                  >
+                    <div className='flex flex-column'>
+                      <div>
+                        <EditableItem
+                          label='Remarks and Comments'
+                          initialValue={reportItem.additionalComments}
+                          onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                          isMultiLine
+                        />
                       </div>
-                    ))}
-                    <div className='mt2'>
-                      <MenuItem innerDivStyle={resetMenuItemDivStyle}>
-                        <FileInput onFileSelected={imageInputEventHandler(
-                          (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
-                        )}>
-                          <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
-                            <FontIcon className='material-icons' color='var(--light-silver)'>
-                              add_a_photo
-                            </FontIcon>
-                            <div className='light-silver f7 tc mt1'>
-                              Add new
+                      <div className='mt3'>
+                        {infoItemLabel('Attach Photos:')}
+                        <div className='flex flex-wrap pt1'>
+                          {attachmentUrls.map(url => (
+                            <img
+                              key={url}
+                              className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
+                              src={fitDimensions(url, 96, 96)} alt='X'
+                            />
+                          ))}
+                          {attachmentUploads.map(process => (
+                            <div
+                              key={process.processId}
+                              className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
+                            >
+                              <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
+                              <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
                             </div>
+                          ))}
+                          <div className='mt2'>
+                            <MenuItem innerDivStyle={resetMenuItemDivStyle}>
+                              <FileInput onFileSelected={imageInputEventHandler(
+                                (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
+                              )}>
+                                <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
+                                  <FontIcon className='material-icons' color='var(--light-silver)'>
+                                    add_a_photo
+                                  </FontIcon>
+                                  <div className='light-silver f7 tc mt1'>
+                                    Add new
+                                  </div>
+                                </div>
+                              </FileInput>
+                            </MenuItem>
                           </div>
-                        </FileInput>
-                      </MenuItem>
+                        </div>
+                      </div>
+                      {/* <div className='ph3 pv2 mt2'>
+                       {infoItemLabel('Rooms')}
+                       <div className='moon-gray f7 mt2'>
+                       There are no rooms added to this Inspection Report yet. Click
+                       Add room to begin.
+                       </div>
+                       {makeCreationButton('Add room', () => {})}
+                       </div> */}
+                      <div className='mt2 pt1'>
+                        {infoItemLabel('Created by')}
+                        {userInfoItem(userInfo, null, () => moment(reportItem.creation_time).format('YYYY-MM-DD'))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-                {/* <div className='ph3 pv2 mt2'>
-                 {infoItemLabel('Rooms')}
-                 <div className='moon-gray f7 mt2'>
-                 There are no rooms added to this Inspection Report yet. Click
-                 Add room to begin.
-                 </div>
-                 {makeCreationButton('Add room', () => {})}
-                 </div> */}
-                <div className='mt2 pt1'>
-                  {infoItemLabel('Created by')}
-                  {userInfoItem(userInfo, null, () => moment(reportItem.creation_time).format('YYYY-MM-DD'))}
-                </div>
-              </div>
-              <div className='flex flex-column'>
-                <div className='f6 mid-gray lh-copy'>
-                  Create a new case for each issue that needs to be fixed.
-                </div>
-                <div className='pv2'>
-                  <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
-                    Cases for the overall unit
-                  </div>
-                  {childCases.map(caseItem => (
-                    <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                      dispatch(storeBreadcrumb(match.url))
-                      dispatch(push(`/case/${caseItem.id}`))
-                    }} />
-                  ))}
-                  {makeCreationButton(
-                    'Create case',
-                    () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
-                  )}
+                    <div className='flex flex-column'>
+                      <div className='f6 mid-gray lh-copy'>
+                        Create a new case for each issue that needs to be fixed.
+                      </div>
+                      <div className='pv2'>
+                        <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
+                          Cases for the overall unit
+                        </div>
+                        {childCases.map(caseItem => (
+                          <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
+                            dispatch(storeBreadcrumb(subMatch.url))
+                            dispatch(push(`/case/${caseItem.id}`))
+                          }} />
+                        ))}
+                        {makeCreationButton(
+                          'Create case',
+                          () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
+                        )}
+                      </div>
+                    </div>
+                  </SwipeableViews>
                 </div>
               </div>
-            </SwipeableViews>
-          </div>
-
+            )
+          }}/>
         </div>
         <div className='bg-white tr scroll-shadow-1 z-999'>
           <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
