@@ -138,8 +138,8 @@ class ReportWizard extends Component {
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
-        <div className='flex-grow flex flex-column bg-very-light-gray'>
-          <div className='bg-white pa3 flex flex-column'>
+        <div className='flex-grow flex flex-column bg-white overflow-auto'>
+          <div className='pa3 flex flex-column no-shrink'>
             <form onSubmit={this.handleSubmit}>
               <div className='relative'>
                 <EditableItem
@@ -179,7 +179,7 @@ class ReportWizard extends Component {
           <Route path={`${match.url}/:tabName`} children={({ match: subMatch }) => {
             const tabIndex = subMatch ? tabsOrder.indexOf(subMatch.params.tabName) : 0
             return (
-              <div>
+              <div className='bg-very-light-gray no-shrink flex flex-column'>
                 <div className='pt1 flex bt b--transparent'>
                   <TabHeader
                     label='overview'
@@ -192,16 +192,13 @@ class ReportWizard extends Component {
                     onSelected={() => dispatch(replace(`${match.url}/${tabsOrder[1]}`))}
                   />
                 </div>
-                <div className='bg-white pa3 flex flex-column flex-grow overflow-auto'>
+                <div className='bg-white pa3 flex flex-column no-shrink'>
                   <SwipeableViews
                     resistance
-                    style={{flex: 1, display: 'flex', flexDirection: 'column'}}
-                    containerStyle={{flex: 1}}
-                    slideStyle={{display: 'flex', flexDirection: 'column'}}
                     index={tabIndex}
                     onChangeIndex={idx => dispatch(replace(`${match.url}/${tabsOrder[idx]}`))}
                   >
-                    <div className='flex flex-column'>
+                    <div className='flex flex-column pb3'>
                       <div>
                         <EditableItem
                           label='Remarks and Comments'
@@ -284,7 +281,7 @@ class ReportWizard extends Component {
                 </div>
               </div>
             )
-          }}/>
+          }} />
         </div>
         <div className='bg-white tr scroll-shadow-1 z-999'>
           <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
