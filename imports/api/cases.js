@@ -223,10 +223,11 @@ if (Meteor.isServer) {
   Meteor.publish(`${collectionName}.associatedWithMe`, associationFactory(
     publicationObj.publishByCustomQuery({
       uriTemplate: () => '/rest/bug',
-      queryBuilder: (subHandle, { showOpenOnly }) => {
+      queryBuilder: (subHandle, options = {}) => {
         if (!subHandle.userId) {
           return {}
         }
+        const { showOpenOnly } = options
         const currUser = Meteor.users.findOne(subHandle.userId)
         const { login: userIdentifier } = currUser.bugzillaCreds
         const queryExpressions = [
