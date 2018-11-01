@@ -77,8 +77,7 @@ class ReportWizard extends Component {
     super(...arguments)
     this.state = {
       reportTitle: null,
-      isEditable: false,
-      selectedTab: 0
+      isEditable: false
     }
     this.titleUnset = true
   }
@@ -111,7 +110,6 @@ class ReportWizard extends Component {
     const {
       unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachmentUrls, attachmentUploads
     } = this.props
-    const { selectedTab } = this.state
 
     if (isLoading) {
       return <Preloader />
