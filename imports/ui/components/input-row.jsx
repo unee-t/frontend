@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import TextField from 'material-ui/TextField'
+
+import StickyTextField from './sticky-text-field'
+
 import {
   textInputFloatingLabelStyle,
   textInputStyle,
@@ -12,7 +14,7 @@ export default class InputRow extends Component {
     const { inpType, inpRef, label, isFloatingLabelFixed, placeholder, errorText, disabled, value, onChange, isMultiLine } = this.props
     const type = inpType || 'text'
     return (
-      <TextField
+      <StickyTextField
         floatingLabelText={label}
         floatingLabelFixed={!!isFloatingLabelFixed}
         floatingLabelShrinkStyle={textInputFloatingLabelStyle}
@@ -21,7 +23,7 @@ export default class InputRow extends Component {
         fullWidth
         multiLine={!!isMultiLine}
         hintText={placeholder}
-        ref={inpRef}
+        inpRef={inpRef}
         {...{type, errorText, disabled, value, onChange}}
       />
     )

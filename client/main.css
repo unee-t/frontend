@@ -115,6 +115,9 @@
 .bg-very-light-gray {
   background-color: var(--very-light-gray);
 }
+.bg-moon-gray {
+  background-color: var(--moon-gray);
+}
 
 .outline-0 {
   outline: 0;
@@ -455,3 +458,9 @@
 .overflow-auto {
   -webkit-overflow-scrolling: touch;
 }
+
+/* custom transitions - start */
+.transition-bg {
+  transition: background-color 500ms ease-in-out;
+}
+/* custom transitions - end */

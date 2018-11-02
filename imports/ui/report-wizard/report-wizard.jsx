@@ -3,13 +3,14 @@ import { Meteor } from 'meteor/meteor'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
-import { goBack, push } from 'react-router-redux'
-import { Redirect } from 'react-router-dom'
+import { goBack, push, replace } from 'react-router-redux'
+import { Redirect, Route } from 'react-router-dom'
 import moment from 'moment'
 import FontIcon from 'material-ui/FontIcon'
 import FlatButton from 'material-ui/FlatButton'
 import RaisedButton from 'material-ui/RaisedButton'
 import MenuItem from 'material-ui/MenuItem'
+import SwipeableViews from 'react-swipeable-views'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import Cases, { collectionName as casesCollName } from '../../api/cases'
@@ -49,6 +50,26 @@ const flatButtonReset = {
   minWidth: null,
   padding: null,
   margin: null
+}
+
+const tabsOrder = [
+  'overview',
+  'cases'
+]
+
+const TabHeader = ({ isSelected, label, onSelected }) => (
+  <div className={'flex-grow transition-bg' + (isSelected ? ' bg-white' : '')}>
+    <MenuItem style={{minHeight: 'auto'}} innerDivStyle={resetMenuItemDivStyle} onClick={onSelected}>
+      <div className='mid-gray lh-copy tc f6 fw5 pv2'>
+        {label.toUpperCase()}
+      </div>
+    </MenuItem>
+  </div>
+)
+TabHeader.propTypes = {
+  isSelected: PropTypes.bool,
+  label: PropTypes.string.isRequired,
+  onSelected: PropTypes.func
 }
 
 class ReportWizard extends Component {
@@ -115,114 +136,150 @@ class ReportWizard extends Component {
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar onBack={() => dispatch(goBack())} title={reportItem.title} />
-        <div className='flex-grow bg-white flex flex-column overflow-auto pa3'>
-          <form onSubmit={this.handleSubmit}>
-            <div className='relative'>
-              <EditableItem
-                label={isEditable ? 'Edit title' : 'Report title'}
-                disabled={!isEditable}
-                underlineShow={isEditable}
-                currentValue={reportTitle}
-                inpRef={el => { this.focusableInput = el }}
-                onEdit={val => this.setState({reportTitle: val})}
-              />
-              {isEditable ? (
-                <div className='absolute right-0 tl f6 bondi-blue fw5'>
-                  <FlatButton
-                    className='ph2'
-                    style={flatButtonReset}
-                    onClick={() => this.setState({isEditable: false, reportTitle: reportItem.title})}
-                  >
-                    <span className='silver'>Cancel</span>
-                  </FlatButton>
-                  <FlatButton type='submit' className='ph2 ml2' disabled={!reportTitle} style={flatButtonReset}>
-                    <span className={(reportTitle ? 'bondi-blue' : 'silver')} >
-                      Save
-                    </span>
-                  </FlatButton>
-                </div>
-              ) : (
-                <div className='absolute bottom-1 right-0 tl'>
-                  <FontIcon className='material-icons' color='var(--silver)' onClick={() => this.setState({isEditable: true})}>create</FontIcon>
-                </div>
-              )}
-            </div>
-          </form>
-          <div>
-            {infoItemMembers('Unit', unitDisplayName)}
-          </div>
-          <div>
-            <EditableItem
-              label='Remarks and Comments'
-              initialValue={reportItem.additionalComments}
-              onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
-              isMultiLine
-            />
-          </div>
-          <div className='mt3'>
-            {infoItemLabel('Attach Photos:')}
-            <div className='flex flex-wrap pt1'>
-              {attachmentUrls.map(url => (
-                <img
-                  key={url}
-                  className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
-                  src={fitDimensions(url, 96, 96)} alt='X'
+        <div className='flex-grow flex flex-column bg-white overflow-auto'>
+          <div className='pa3 flex flex-column no-shrink'>
+            <form onSubmit={this.handleSubmit}>
+              <div className='relative'>
+                <EditableItem
+                  label={isEditable ? 'Edit title' : 'Report title'}
+                  disabled={!isEditable}
+                  underlineShow={isEditable}
+                  currentValue={reportTitle}
+                  inpRef={el => { this.focusableInput = el }}
+                  onEdit={val => this.setState({reportTitle: val})}
                 />
-              ))}
-              {attachmentUploads.map(process => (
-                <div
-                  key={process.processId}
-                  className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
-                >
-                  <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
-                  <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
+                {isEditable ? (
+                  <div className='absolute right-0 tl f6 bondi-blue fw5'>
+                    <FlatButton
+                      className='ph2'
+                      style={flatButtonReset}
+                      onClick={() => this.setState({isEditable: false, reportTitle: reportItem.title})}
+                    >
+                      <span className='silver'>Cancel</span>
+                    </FlatButton>
+                    <FlatButton type='submit' className='ph2 ml2' disabled={!reportTitle} style={flatButtonReset}>
+                      <span className={(reportTitle ? 'bondi-blue' : 'silver')} >
+                        Save
+                      </span>
+                    </FlatButton>
+                  </div>
+                ) : (
+                  <div className='absolute bottom-1 right-0 tl'>
+                    <FontIcon className='material-icons' color='var(--silver)' onClick={() => this.setState({isEditable: true})}>create</FontIcon>
+                  </div>
+                )}
+              </div>
+            </form>
+            <div>
+              {infoItemMembers('Unit', unitDisplayName)}
+            </div>
+          </div>
+          <Route path={`${match.url}/:tabName`} children={({ match: subMatch }) => {
+            const tabIndex = subMatch ? tabsOrder.indexOf(subMatch.params.tabName) : 0
+            return (
+              <div className='bg-very-light-gray no-shrink flex flex-column'>
+                <div className='pt1 flex bt b--transparent'>
+                  <TabHeader
+                    label='overview'
+                    isSelected={tabIndex === 0}
+                    onSelected={() => dispatch(replace(`${match.url}/${tabsOrder[0]}`))}
+                  />
+                  <TabHeader
+                    label='cases'
+                    isSelected={tabIndex === 1}
+                    onSelected={() => dispatch(replace(`${match.url}/${tabsOrder[1]}`))}
+                  />
                 </div>
-              ))}
-              <div className='mt2'>
-                <MenuItem innerDivStyle={resetMenuItemDivStyle}>
-                  <FileInput onFileSelected={imageInputEventHandler(
-                    (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
-                  )}>
-                    <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
-                      <FontIcon className='material-icons' color='var(--light-silver)'>
-                        add_a_photo
-                      </FontIcon>
-                      <div className='light-silver f7 tc mt1'>
-                        Add new
+                <div className='bg-white pa3 flex flex-column no-shrink'>
+                  <SwipeableViews
+                    resistance
+                    index={tabIndex}
+                    onChangeIndex={idx => dispatch(replace(`${match.url}/${tabsOrder[idx]}`))}
+                  >
+                    <div className='flex flex-column pb3'>
+                      <div>
+                        <EditableItem
+                          label='Remarks and Comments'
+                          initialValue={reportItem.additionalComments}
+                          onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                          isMultiLine
+                        />
+                      </div>
+                      <div className='mt3'>
+                        {infoItemLabel('Attach Photos:')}
+                        <div className='flex flex-wrap pt1'>
+                          {attachmentUrls.map(url => (
+                            <img
+                              key={url}
+                              className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
+                              src={fitDimensions(url, 96, 96)} alt='X'
+                            />
+                          ))}
+                          {attachmentUploads.map(process => (
+                            <div
+                              key={process.processId}
+                              className='relative mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray overflow-hidden flex justify-center'
+                            >
+                              <img className='min-w-100 min-h-100 obj-cover' src={process.preview} />
+                              <UploadPreloader process={process} handleRetryUpload={() => dispatch(retryAttachment(process))} />
+                            </div>
+                          ))}
+                          <div className='mt2'>
+                            <MenuItem innerDivStyle={resetMenuItemDivStyle}>
+                              <FileInput onFileSelected={imageInputEventHandler(
+                                (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
+                              )}>
+                                <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>
+                                  <FontIcon className='material-icons' color='var(--light-silver)'>
+                                    add_a_photo
+                                  </FontIcon>
+                                  <div className='light-silver f7 tc mt1'>
+                                    Add new
+                                  </div>
+                                </div>
+                              </FileInput>
+                            </MenuItem>
+                          </div>
+                        </div>
+                      </div>
+                      {/* <div className='ph3 pv2 mt2'>
+                       {infoItemLabel('Rooms')}
+                       <div className='moon-gray f7 mt2'>
+                       There are no rooms added to this Inspection Report yet. Click
+                       Add room to begin.
+                       </div>
+                       {makeCreationButton('Add room', () => {})}
+                       </div> */}
+                      <div className='mt2 pt1'>
+                        {infoItemLabel('Created by')}
+                        {userInfoItem(userInfo, null, () => moment(reportItem.creation_time).format('YYYY-MM-DD'))}
                       </div>
                     </div>
-                  </FileInput>
-                </MenuItem>
+                    <div className='flex flex-column'>
+                      <div className='f6 mid-gray lh-copy'>
+                        Create a new case for each issue that needs to be fixed.
+                      </div>
+                      <div className='pv2'>
+                        <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
+                          Cases for the overall unit
+                        </div>
+                        {childCases.map(caseItem => (
+                          <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
+                            dispatch(storeBreadcrumb(subMatch.url))
+                            dispatch(push(`/case/${caseItem.id}`))
+                          }} />
+                        ))}
+                        {makeCreationButton(
+                          'Create case',
+                          () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
+                        )}
+                      </div>
+                    </div>
+                  </SwipeableViews>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className='pv2 mt2'>
-            <div className={'b dark-gray lh-copy' + (childCases.length ? ' pb2 bb b--very-light-gray' : '')}>
-              Is there any defect which needs to be corrected or fixed?
-            </div>
-            {childCases.map(caseItem => (
-              <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                dispatch(storeBreadcrumb(match.url))
-                dispatch(push(`/case/${caseItem.id}`))
-              }} />
-            ))}
-            {makeCreationButton(
-              'Add case',
-              () => dispatch(push(`/case/new?unit=${unitItem.id}&report=${reportItem.id}`))
-            )}
-          </div>
-          {/* <div className='ph3 pv2 mt2'>
-            {infoItemLabel('Rooms')}
-            <div className='moon-gray f7 mt2'>
-              There are no rooms added to this Inspection Report yet. Click
-              Add room to begin.
-            </div>
-            {makeCreationButton('Add room', () => {})}
-          </div> */}
-          <div className='mt2 pt1'>
-            {infoItemLabel('Created by')}
-            {userInfoItem(userInfo, null, () => moment(reportItem.creation_time).format('YYYY-MM-DD'))}
-          </div>
+            )
+          }} />
         </div>
         <div className='bg-white tr scroll-shadow-1 z-999'>
           <div className='dib ph3 pb3 pt4 flex justify-end items-center'>
