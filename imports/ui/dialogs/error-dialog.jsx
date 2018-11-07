@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import { modalTitleStyle } from './generic-dialog.mui-styles'
 
-const ErrorDialog = ({show, text, onDismissed}) => (
+const ErrorDialog = ({ show, text, onDismissed }) => (
   <Dialog
     title={text}
     titleStyle={modalTitleStyle}

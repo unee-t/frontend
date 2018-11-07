@@ -23,7 +23,7 @@ if (Meteor.isServer) {
         role: 'patrol'
       }
 
-      invitationCreate({body}, {send: sendSpy})
+      invitationCreate({ body }, { send: sendSpy })
 
       expect(inviteUserUtil.inviteUser).to.have.been.calledWith(body.email, body.claimId, body.unitId, body.role)
       expect(sendSpy).to.have.been.calledOnce()

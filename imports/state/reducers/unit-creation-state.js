@@ -5,13 +5,13 @@ import {
   CREATE_UNIT_CLEAR_ERROR
 } from '../../ui/unit-wizard/unit-wizard.actions'
 
-const idleState = {inProgress: false, error: null}
+const idleState = { inProgress: false, error: null }
 export default function unitCreationState (state = idleState, action) {
   switch (action.type) {
     case CREATE_UNIT_INITIATED:
-      return Object.assign({}, state, {inProgress: true})
+      return Object.assign({}, state, { inProgress: true })
     case CREATE_UNIT_ERROR:
-      return Object.assign({}, state, {error: action.errorText})
+      return Object.assign({}, state, { error: action.errorText })
     case CREATE_UNIT_SUCCESS:
       return Object.assign({}, idleState)
     case CREATE_UNIT_CLEAR_ERROR:

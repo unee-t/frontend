@@ -8,5 +8,5 @@ import 'rxjs/add/operator/ignoreElements'
 export const assignExistingUser = action$ =>
   action$.ofType(ASSIGN_EXISTING_USER)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .do(({user, caseId}) => Meteor.call(`${collectionName}.changeAssignee`, user, parseInt(caseId)))
+    .do(({ user, caseId }) => Meteor.call(`${collectionName}.changeAssignee`, user, parseInt(caseId)))
     .ignoreElements()

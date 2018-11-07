@@ -11,7 +11,7 @@ import bugzillaApi from '../../util/bugzilla-api'
  - error() - notifies the subscribed client that an error has occurred during the process of this publication
  - onStop(callback) - adds a handler for when a subscribed client removes its subscription
  */
-export default ({collectionName, dataResolver}) => {
+export default ({ collectionName, dataResolver }) => {
   // Storing all handles for use in live updates
   const addedMatcherDescriptors = []
   const changedHandles = {}
@@ -45,21 +45,21 @@ export default ({collectionName, dataResolver}) => {
     }
   }
   const basePublish = (subHandle, url, resolver, payload = {}) => {
-    const {callAPI} = bugzillaApi
+    const { callAPI } = bugzillaApi
 
     // Checking if the user is authenticated
     if (!subHandle.userId) {
       subHandle.ready()
-      subHandle.error(new Meteor.Error({message: 'Authentication required'}))
+      subHandle.error(new Meteor.Error({ message: 'Authentication required' }))
       return false
     }
 
     // Fetching the current user
-    const currUser = Meteor.users.findOne({_id: subHandle.userId})
+    const currUser = Meteor.users.findOne({ _id: subHandle.userId })
     let handleStopped
 
     // Fetching the data from bugzilla using the uriTemplate given by the resource implementation
-    callAPI('get', url, Object.assign({api_key: currUser.bugzillaCreds.apiKey}, payload))
+    callAPI('get', url, Object.assign({ api_key: currUser.bugzillaCreds.apiKey }, payload))
       .then(data => {
         // Using the dataResolver callback to focus on the relevant data from the response object
         const payload = resolver(data)
@@ -97,7 +97,7 @@ export default ({collectionName, dataResolver}) => {
           err
         )
         subHandle.ready()
-        subHandle.error(new Meteor.Error({message: 'REST API error', origError: err}))
+        subHandle.error(new Meteor.Error({ message: 'REST API error', origError: err }))
       })
     subHandle.onStop(() => {
       handleStopped = true
@@ -105,7 +105,7 @@ export default ({collectionName, dataResolver}) => {
     return true
   }
   return {
-    publishById ({uriTemplate, addedMatcherFactory}) {
+    publishById ({ uriTemplate, addedMatcherFactory }) {
       const store = matchersStore(addedMatcherFactory)
       return function (resourceId) {
         const resolvedRoute = uriTemplate(resourceId)
@@ -115,7 +115,7 @@ export default ({collectionName, dataResolver}) => {
         if (typeof resolvedRoute === 'string') {
           accepted = basePublish(this, resolvedRoute, data => dataResolver(data, resourceId))
         } else {
-          const {url, params} = resolvedRoute
+          const { url, params } = resolvedRoute
           accepted = basePublish(this, url, data => dataResolver(data, resourceId), params)
         }
 
@@ -125,7 +125,7 @@ export default ({collectionName, dataResolver}) => {
       }
     },
     // TODO: Add tests for this
-    publishByCustomQuery ({uriTemplate, addedMatcherFactory, queryBuilder}) {
+    publishByCustomQuery ({ uriTemplate, addedMatcherFactory, queryBuilder }) {
       const store = matchersStore(addedMatcherFactory)
       return function () {
         const query = queryBuilder(this, ...arguments)

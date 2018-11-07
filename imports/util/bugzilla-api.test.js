@@ -29,16 +29,16 @@ if (Meteor.isServer) {
       }
     })
     it('should call HTTP.call with the appropriate method and params, when using GET', () => {
-      const params = {param1: 1}
+      const params = { param1: 1 }
       callAPI('get', '/some-route', params)
 
-      expect(HTTP.call).to.have.been.calledWith('get', `${base}/some-route`, sinon.match({params: params}), sinon.match.func)
+      expect(HTTP.call).to.have.been.calledWith('get', `${base}/some-route`, sinon.match({ params: params }), sinon.match.func)
     })
     it('should call HTTP.call with the appropriate method and params, when using anything other than GET', () => {
-      const params = {param1: 1}
+      const params = { param1: 1 }
       callAPI('post', '/dummy', params)
 
-      expect(HTTP.call).to.have.been.calledWith('post', `${base}/dummy`, sinon.match({data: params}), sinon.match.func)
+      expect(HTTP.call).to.have.been.calledWith('post', `${base}/dummy`, sinon.match({ data: params }), sinon.match.func)
     })
     it('should use the bugzilla server path from the env var, if specified', () => {
       process.env.BUGZILLA_URL = 'https://bla.bugzilla.unee-t.net'
@@ -51,7 +51,7 @@ if (Meteor.isServer) {
 
       callAPI('get', '/dummy', {}, true)
 
-      expect(HTTP.call).to.have.been.calledWith(sinon.match.string, sinon.match.string, sinon.match({params: {api_key: 'someDummyKeyExample'}}), sinon.match.func)
+      expect(HTTP.call).to.have.been.calledWith(sinon.match.string, sinon.match.string, sinon.match({ params: { api_key: 'someDummyKeyExample' } }), sinon.match.func)
     })
     it('should not call HTTP.call with a callback function, if "isSync" is set to true', () => {
       callAPI('get', '/dummy', {}, false, true)
@@ -84,7 +84,7 @@ if (Meteor.isServer) {
       })
 
       it('should resolve the returned promise if HTTP.call yields a value', async function (done) {
-        HTTP.call.yields(null, {data: 'response'})
+        HTTP.call.yields(null, { data: 'response' })
 
         try {
           const result = await callAPI('get', '/dummy', {})

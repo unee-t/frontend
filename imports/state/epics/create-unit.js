@@ -21,7 +21,7 @@ export const createUnit = action$ => action$
   .mergeMap(({ creationArgs }) => {
     const meteorResult$ = (new Subject())
       .take(1)
-      .mergeMap(({error, result: {newUnitId}}) => {
+      .mergeMap(({ error, result: { newUnitId } }) => {
         if (error) {
           return of({
             type: CREATE_UNIT_ERROR,
@@ -40,7 +40,7 @@ export const createUnit = action$ => action$
         if (error) {
           console.error('Unit creation error', error)
         }
-        meteorResult$.next({error, result: result || {}})
+        meteorResult$.next({ error, result: result || {} })
       }
     )
     return merge(

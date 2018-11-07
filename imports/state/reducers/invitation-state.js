@@ -11,9 +11,9 @@ export default function (state = {}, { type, caseId, email, errorText }) {
       return {}
     case INVITATION_INITIATED:
     case INVITATION_ERROR:
-      return {caseId, email, errorText, loading: true}
+      return { caseId, email, errorText, loading: true }
     case INVITATION_SUCCESS:
-      return {caseId, email, completed: true}
+      return { caseId, email, completed: true }
   }
   return state
 }

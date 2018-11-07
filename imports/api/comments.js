@@ -44,7 +44,7 @@ Meteor.methods({
     }
 
     const { callAPI } = bugzillaApi
-    const currUser = Meteor.users.findOne({_id: Meteor.userId()})
+    const currUser = Meteor.users.findOne({ _id: Meteor.userId() })
     const mockCommentObject = {
       creator: currUser.bugzillaCreds.login,
       creation_time: (new Date()).toISOString(),
@@ -72,7 +72,7 @@ Meteor.methods({
 
         // Fetching the full comment object by the returned id from the creation operation
         const commentData = callAPI(
-          'get', `/rest/bug/comment/${createData.data.id}`, {api_key: apiKey}, false, true
+          'get', `/rest/bug/comment/${createData.data.id}`, { api_key: apiKey }, false, true
         )
 
         // Digging the new comment object out of the response

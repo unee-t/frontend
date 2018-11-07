@@ -34,7 +34,7 @@ export default class PopoverButton extends Component {
     const { popoverOpen, buttonEl, popoverWidth, popoverMaxHeight } = this.state
     return (
       <div className='w-100 overflow-hidden' ref={el => { this.containerEl = el }}>
-        <FlatButton style={{height: 'auto', width: '100%'}} onClick={this.handleOpen}>
+        <FlatButton style={{ height: 'auto', width: '100%' }} onClick={this.handleOpen}>
           <div className='flex ph2 ba b--moon-gray br2 items-center'>
             <div className='mid-gray flex-grow ellipsis tl'>{this.props.buttonText}</div>
             <FontIcon className='material-icons' color='var(--mid-gray)'>
@@ -45,12 +45,12 @@ export default class PopoverButton extends Component {
         <div className='h5' />
         <div className='h2-5' />
         <Popover open={popoverOpen} anchorEl={buttonEl}
-          anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-          targetOrigin={{horizontal: 'left', vertical: 'top'}}
-          onRequestClose={() => this.setState({popoverOpen: false})}
-          style={{width: popoverWidth, marginTop: -1}}
+          anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+          targetOrigin={{ horizontal: 'left', vertical: 'top' }}
+          onRequestClose={() => this.setState({ popoverOpen: false })}
+          style={{ width: popoverWidth, marginTop: -1 }}
         >
-          <div className='w-100 flex flex-column' style={{maxHeight: popoverMaxHeight}}>
+          <div className='w-100 flex flex-column' style={{ maxHeight: popoverMaxHeight }}>
             {this.props.children}
           </div>
         </Popover>

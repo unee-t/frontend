@@ -44,7 +44,7 @@ export class Case extends Component {
         !_.isEqual(comments, this.props.comments)
       )
     ) {
-      this.props.dispatchLoadingResult({caseItem, comments, dispatch, userBzLogin, ancestorPath})
+      this.props.dispatchLoadingResult({ caseItem, comments, dispatch, userBzLogin, ancestorPath })
     }
   }
   navigateToAttachment (id) {
@@ -90,7 +90,7 @@ export class Case extends Component {
       <Switch>
         <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
           const { attachId } = subProps.match.params
-          const selectedComment = _.find(comments, {id: parseInt(attachId)})
+          const selectedComment = _.find(comments, { id: parseInt(attachId) })
           if (!selectedComment || !attachmentTextMatcher(selectedComment.text)) {
             return <Redirect to={match.url} />
           } else {
@@ -104,7 +104,7 @@ export class Case extends Component {
             <Switch>
               <Route exact path={match.url} render={() => (
                 <CaseMessages
-                  {...{caseItem, comments, attachmentUploads, userBzLogin}}
+                  {...{ caseItem, comments, attachmentUploads, userBzLogin }}
                   onCreateComment={text => dispatch(createComment(text, caseId))}
                   onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
                   onRetryAttachment={process => dispatch(retryAttachment(process))}
@@ -145,7 +145,7 @@ export class Case extends Component {
               show={showWelcomeDialog}
               onDismissed={() => dispatch(clearWelcomeMessage())}
               onNameSubmitted={name => dispatch(updateInvitedUserName(name))}
-              {...{unitItem, caseItem, invitedByDetails}}
+              {...{ unitItem, caseItem, invitedByDetails }}
             />
           </div>
         )} />
@@ -204,7 +204,7 @@ const CaseContainer = createContainer(props => {
         unitError = error
       }
     })
-    currUnit = unitHandle.ready() ? Units.findOne({name: currCase.selectedUnit}) : null
+    currUnit = unitHandle.ready() ? Units.findOne({ name: currCase.selectedUnit }) : null
   }
   const cfvHandle = Meteor.subscribe(`${cfvCollName}.fetchByName`, 'status', {
     onStop: error => {
@@ -222,7 +222,7 @@ const CaseContainer = createContainer(props => {
     caseItem: currCase,
     loadingComments: !commentsHandle.ready(),
     commentsError,
-    comments: Comments.find({bug_id: parseInt(caseId)}).fetch().map(comment => {
+    comments: Comments.find({ bug_id: parseInt(caseId) }).fetch().map(comment => {
       const creatorUser = Meteor.users.findOne({ 'bugzillaCreds.login': comment.creator })
       return { ...comment, creatorUser }
     }),
@@ -233,9 +233,9 @@ const CaseContainer = createContainer(props => {
     unitUsers: unitRoles && unitRoles.map(makeMatchingUser),
     caseUserTypes: caseUserTypes && unitRoles && Object.keys(caseUserTypes).reduce((all, userType) => {
       const mapUser = user => {
-        const role = _.find(unitRoles, {login: user.login})
+        const role = _.find(unitRoles, { login: user.login })
         const matchingUser = makeMatchingUser(user)
-        return role ? Object.assign(matchingUser, {role: role.role}) : matchingUser
+        return role ? Object.assign(matchingUser, { role: role.role }) : matchingUser
       }
       all[userType] = Array.isArray(caseUserTypes[userType])
         ? caseUserTypes[userType].map(mapUser)
@@ -243,10 +243,10 @@ const CaseContainer = createContainer(props => {
       return all
     }, {}),
     loadingCfv: !cfvHandle.ready(),
-    cfvDictionary: cfvHandle.ready() ? {status: CaseFieldValues.findOne({name: 'status'})} : null,
+    cfvDictionary: cfvHandle.ready() ? { status: CaseFieldValues.findOne({ name: 'status' }) } : null,
     cfvError,
     loadingPendingInvitations: !Meteor.subscribe(`${inviteCollName}.byCaseId`, parseInt(caseId)).ready(),
-    pendingInvitations: PendingInvitations.find({caseId: parseInt(caseId)}).fetch()
+    pendingInvitations: PendingInvitations.find({ caseId: parseInt(caseId) }).fetch()
   }
 }, Case)
 
@@ -285,7 +285,7 @@ const MobileHeader = props => {
     <Switch>
       <Route exact path={`${match.url}/attachment/:attachId`} render={subProps => {
         const { attachId } = subProps.match.params
-        const selectedComment = _.find(comments, {id: parseInt(attachId)})
+        const selectedComment = _.find(comments, { id: parseInt(attachId) })
         const { creation_time: creationTime, creator } = selectedComment
         const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
         const creatorText = userBzLogin === creator ? 'You' : creator

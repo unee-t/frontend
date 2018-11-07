@@ -7,7 +7,7 @@ import FontIcon from 'material-ui/FontIcon'
 import { titleStyle } from './app-bar.mui-styles'
 const InnerAppBar = ({ title, onBack, shadowless, rightIconElement }) => (
   <AppBar
-    style={shadowless ? {boxShadow: 'none'} : undefined}
+    style={shadowless ? { boxShadow: 'none' } : undefined}
     title={title}
     titleStyle={titleStyle}
     iconElementLeft={

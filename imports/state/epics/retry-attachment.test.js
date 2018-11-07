@@ -39,7 +39,7 @@ if (Meteor.isClient) {
       const action = {
         type: RETRY_ATTACHMENT,
         preview: 'someImageDataUrl',
-        file: {type: 'blob'},
+        file: { type: 'blob' },
         processId: 54
       }
 

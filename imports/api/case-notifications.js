@@ -15,7 +15,7 @@ Meteor.methods({
     }
 
     CaseNotifications.update({
-      markedAsRead: {$ne: true},
+      markedAsRead: { $ne: true },
       caseId,
       userId
     }, {

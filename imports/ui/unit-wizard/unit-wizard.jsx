@@ -165,7 +165,7 @@ class UnitWizard extends Component {
                   labelStyle={controlLabelStyle}
                   checked={isOccupant}
                   disabled={inProgress}
-                  onCheck={(evt, isChecked) => { this.setState({isOccupant: isChecked}) }}
+                  onCheck={(evt, isChecked) => { this.setState({ isOccupant: isChecked }) }}
                 />
               )}
               <InputRow

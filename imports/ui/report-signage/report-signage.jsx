@@ -86,7 +86,7 @@ class ReportSignage extends Component {
                         ) : (
                           <a
                             className='link bondi-blue f6 ml2 fw5 pr1'
-                            onClick={() => this.setState({chosenUser: userRoleDef, signPadOpen: true})}
+                            onClick={() => this.setState({ chosenUser: userRoleDef, signPadOpen: true })}
                           >
                             Sign Report
                           </a>
@@ -121,7 +121,7 @@ class ReportSignage extends Component {
             primary
             fullWidth
             disabled={Object.keys(signatureMap).length === 0}
-            onClick={() => this.setState({confirmationOpen: true})}
+            onClick={() => this.setState({ confirmationOpen: true })}
           >
             <span className='f4 white'>Finalize Report</span>
           </RaisedButton>
@@ -129,7 +129,7 @@ class ReportSignage extends Component {
         <SignDialog
           open={signPadOpen}
           signingUser={chosenUser}
-          onClose={() => this.setState({signPadOpen: false})}
+          onClose={() => this.setState({ signPadOpen: false })}
           onSignSubmit={signImgUri => this.setState({
             signatureMap: {
               ...signatureMap,
@@ -142,7 +142,7 @@ class ReportSignage extends Component {
           title={''}
           show={confirmationOpen}
           onConfirm={() => dispatch(finalizeReport(reportItem.id, signatureMap))}
-          onCancel={() => this.setState({confirmationOpen: false})}
+          onCancel={() => this.setState({ confirmationOpen: false })}
         >
           <h3 className='near-black pt3 ph2 fw3 lh-copy tc'>
             Inspection Report
@@ -168,15 +168,15 @@ ReportSignage.propTypes = {
 }
 
 export default connect(
-  ({ unitInvitationState }) => ({inviteState: unitInvitationState})
+  ({ unitInvitationState }) => ({ inviteState: unitInvitationState })
 )(createContainer(props => {
   const { reportId } = props.match.params
   const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
-  const reportItem = Reports.findOne({id: parseInt(reportId)})
+  const reportItem = Reports.findOne({ id: parseInt(reportId) })
   let unitHandle, unitRoles, unitItem
   if (reportItem) {
     unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithUsers`, reportItem.selectedUnit)
-    unitItem = Units.findOne({name: reportItem.selectedUnit})
+    unitItem = Units.findOne({ name: reportItem.selectedUnit })
     if (unitHandle.ready() && unitItem) {
       unitRoles = getUnitRoles(unitItem)
     }

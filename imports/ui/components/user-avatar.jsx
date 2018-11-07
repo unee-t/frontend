@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import styles from './user-themes.mss'
 
-const UserAvatar = ({user, isSmall, isBig, additionalClasses}) => {
+const UserAvatar = ({ user, isSmall, isBig, additionalClasses }) => {
   const userDisplayText = user.name || user.login || user.email || ''
   const classes = [
     styles.userAvatar,

@@ -10,10 +10,10 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import Divider from 'material-ui/Divider'
 import { renderAppBarLeft, renderCurrUserAvatar } from '../util/app-bar-utils'
-import {ReportIcon} from '../report/report-icon'
+import { ReportIcon } from '../report/report-icon'
 
 class SideMenu extends Component {
-  linkDrawerItem = ({href, iconName, iconRenderer, text, isExternal}, doHighlight = false) => {
+  linkDrawerItem = ({ href, iconName, iconRenderer, text, isExternal }, doHighlight = false) => {
     const { dispatch } = this.props
     return (
       <Link className='link' to={href} target={isExternal ? '_blank' : null}>
@@ -124,7 +124,7 @@ SideMenu.propTypes = {
 }
 
 export default withRouter(connect(
-  ({ drawerState }) => ({isDrawerOpen: drawerState.isOpen}) // map redux state to props
+  ({ drawerState }) => ({ isDrawerOpen: drawerState.isOpen }) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
   user: Meteor.user()
 }), SideMenu)))

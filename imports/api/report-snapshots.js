@@ -12,13 +12,13 @@ if (Meteor.isServer) {
 
     // Calling BZ API to authorize the current user
     try {
-      callAPI('get', `/rest/bug/${reportId}`, {api_key: apiKey}, false, true)
+      callAPI('get', `/rest/bug/${reportId}`, { api_key: apiKey }, false, true)
     } catch (e) {
       console.error(`Unauthorized access to report ${reportId}`)
       return
     }
 
-    return ReportSnapshots.find({'reportItem.id': parseInt(reportId)}, {
+    return ReportSnapshots.find({ 'reportItem.id': parseInt(reportId) }, {
       fields: {
         previewUrl: 1,
         pdfUrl: 1,

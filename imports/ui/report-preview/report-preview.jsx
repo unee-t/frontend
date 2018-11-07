@@ -95,7 +95,7 @@ export default connect(
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
     return {
       isLoading: !reportHandle.ready(),
-      reportItem: Reports.findOne({id: parseInt(reportId)})
+      reportItem: Reports.findOne({ id: parseInt(reportId) })
     }
   }, ReportPreview)
 )

@@ -3,7 +3,7 @@ import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
-export function AddGroupLink ({name, bzId}) {
+export function AddGroupLink ({ name, bzId }) {
   let link
   name === 'case' ? link = `/case/new?unit=${bzId}` : link = `/unit/${bzId}/reports/new`
   return (

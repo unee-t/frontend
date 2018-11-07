@@ -1,7 +1,7 @@
 import React from 'react'
 import FontIcon from 'material-ui/FontIcon'
 
-export function ReportIcon ({isFinalized}) {
+export function ReportIcon ({ isFinalized }) {
   return (
     <div className='dib relative flex items-center'>
       <FontIcon className='material-icons' color='var(--mid-gray)'>
@@ -12,7 +12,7 @@ export function ReportIcon ({isFinalized}) {
           <FontIcon
             className='material-icons'
             color={isFinalized ? 'var(--success-green)' : 'var(--bondi-blue)'}
-            style={{fontSize: '0.75rem'}}
+            style={{ fontSize: '0.75rem' }}
           >
             {isFinalized ? 'check_circle' : 'watch_later'}
           </FontIcon>

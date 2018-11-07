@@ -35,7 +35,7 @@ class SignDialog extends Component {
         )}
         <div className='mt3'>
           <SignBox
-            onChange={dataUri => this.setState({signImgUri: dataUri})}
+            onChange={dataUri => this.setState({ signImgUri: dataUri })}
             registerCleanListener={fn => { this.cleanSignature = fn }}
           />
         </div>
@@ -47,7 +47,7 @@ class SignDialog extends Component {
           <RaisedButton
             onClick={() => {
               this.cleanSignature()
-              this.setState({signImgUri: ''})
+              this.setState({ signImgUri: '' })
             }}
           >
             <span className='bondi-blue'>

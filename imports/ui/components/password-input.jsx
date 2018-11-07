@@ -29,7 +29,7 @@ export default class PasswordInput extends React.Component<Props, State> {
         <div className='absolute bottom-1 right-0 tl'>
           <Checkbox
             checked={this.state.showPass}
-            onCheck={(evt, isChecked) => this.setState({showPass: isChecked})}
+            onCheck={(evt, isChecked) => this.setState({ showPass: isChecked })}
             checkedIcon={<FontIcon color='var(--bondi-blue)' className='material-icons'>visibility</FontIcon>}
             uncheckedIcon={<FontIcon className='material-icons'>visibility_off</FontIcon>}
           />

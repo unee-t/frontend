@@ -1,5 +1,5 @@
-import React, {Component} from 'react'
-import {Link, Route} from 'react-router-dom'
+import React, { Component } from 'react'
+import { Link, Route } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import FontIcon from 'material-ui/FontIcon'
@@ -82,7 +82,7 @@ class InviteDialog extends Component {
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, inviteeEmail, currMaxHeight } = this.state
     return (
-      <Route path={`${basePath}/${relPath}`} children={({match}) => {
+      <Route path={`${basePath}/${relPath}`} children={({ match }) => {
         return (
           <Dialog
             title={invitationState.loading ? 'Please wait... '
@@ -93,7 +93,7 @@ class InviteDialog extends Component {
             modal
             open={!!match}
             contentStyle={modalCustomContentStyle}
-            bodyStyle={Object.assign({maxHeight: currMaxHeight}, modalBodyStyle)}
+            bodyStyle={Object.assign({ maxHeight: currMaxHeight }, modalBodyStyle)}
             autoDetectWindowHeight={false}
           >
             <Link to={basePath} onClick={onResetInvitation}
@@ -144,19 +144,19 @@ class InviteDialog extends Component {
               <div className='pt1 mt2'>
                 <EmailInput
                   label='Email of the user to invite'
-                  onEmailChanged={email => this.setState({inviteeEmail: email})}
+                  onEmailChanged={email => this.setState({ inviteeEmail: email })}
                   email={inviteeEmail}
                   invalidReasonMessage='This email belongs to a user listed in the previous step'
                   invalidEmails={potentialInvitees.map(i => i.email)}
-                  onValidityChanged={isValid => this.setState({emailError: !isValid})}
+                  onValidityChanged={isValid => this.setState({ emailError: !isValid })}
                   inputRef={input => { this.inputToFocus = input }}
                   disabled={invitationState.loading}
                 />
                 <UnitRoleSelect
                   selectedRole={selectedRole}
-                  onRoleSelected={role => this.setState({selectedRole: role})}
+                  onRoleSelected={role => this.setState({ selectedRole: role })}
                   isOccupant={isOccupant}
-                  onOccupantToggled={isIt => this.setState({isOccupant: isIt})}
+                  onOccupantToggled={isIt => this.setState({ isOccupant: isIt })}
                   disabled={invitationState.disabled}
                 />
                 <div className='flex justify-space mt3'>
@@ -184,7 +184,7 @@ class InviteDialog extends Component {
                   show={!!invitationState.errorText || inputErrorModalOpen}
                   text={invitationState.errorText || 'Please fill in all the details properly' || ''}
                   onDismissed={
-                    inputErrorModalOpen ? () => this.setState({inputErrorModalOpen: false}) : onResetInvitation
+                    inputErrorModalOpen ? () => this.setState({ inputErrorModalOpen: false }) : onResetInvitation
                   }
                 />
               </div>

@@ -28,9 +28,9 @@ export default function fallibleMethodCaller (
             take(1),
             map(error => {
               if (error) {
-                return errorGen ? errorGen(error, inputAction) : {type: 'noopt'}
+                return errorGen ? errorGen(error, inputAction) : { type: 'noopt' }
               }
-              return successGen ? successGen(inputAction) : {type: 'noopt'}
+              return successGen ? successGen(inputAction) : { type: 'noopt' }
             })
           )
         Meteor.call(methodName, ...argTranslator(inputAction), error => meteorResult$.next(error))

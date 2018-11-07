@@ -33,12 +33,12 @@ class UsersSearchList extends Component {
         <div className='no-shrink flex'>
           <input placeholder='Enter the name or email'
             className={'input-reset ba b--moon-gray outline-0 lh-dbl mb2 ti3 flex-grow' + (searchEnabled ? '' : ' dn')}
-            value={filterString} onChange={evt => this.setState({filterString: evt.target.value})}
+            value={filterString} onChange={evt => this.setState({ filterString: evt.target.value })}
             ref={searchInputRef}
           />
         </div>
         <UserSelectionBox
-          {...{userStatusRenderer, userClassNames, onUserClick, emptyListMessage}}
+          {...{ userStatusRenderer, userClassNames, onUserClick, emptyListMessage }}
           usersList={filteredUsers}
         />
       </div>

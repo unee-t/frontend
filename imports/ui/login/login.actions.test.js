@@ -35,7 +35,7 @@ if (Meteor.isClient) {
           const action = submitCredentials(fakes.email, fakes.password)
           action(dispatchStub)
 
-          expect(dispatchStub).to.have.been.calledWithMatch({type: LOGIN_PROCESS})
+          expect(dispatchStub).to.have.been.calledWithMatch({ type: LOGIN_PROCESS })
           expect(Meteor.loginWithPassword).to.have.been.calledWith(fakes.email, fakes.password, sinon.match.func)
         })
         it('should dispatch an "error" action if the Meteor API yields an error', () => {

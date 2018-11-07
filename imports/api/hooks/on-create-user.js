@@ -30,13 +30,13 @@ export function onCreateUser (options, user) {
   let apiResult
   try {
     if (!bzLogin && !bzPass) {
-      apiResult = callAPI('post', '/rest/user', {email, password}, true, true)
+      apiResult = callAPI('post', '/rest/user', { email, password }, true, true)
     } else {
-      apiResult = callAPI('get', '/rest/login', {login: bzLogin, password: bzPass}, false, true)
+      apiResult = callAPI('get', '/rest/login', { login: bzLogin, password: bzPass }, false, true)
     }
   } catch (e) {
     console.error(e)
-    throw new Meteor.Error({message: 'REST API error', origError: e})
+    throw new Meteor.Error({ message: 'REST API error', origError: e })
   }
   const { id: userId } = apiResult.data
   const userApiKey = randToken.generate(16)

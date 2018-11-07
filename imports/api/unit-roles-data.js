@@ -38,7 +38,7 @@ Meteor.methods({
     if (!Meteor.userId()) throw new Meteor.Error('not-authorized')
 
     if (Meteor.isServer) {
-      const unitRoles = UnitRolesData.find({unitBzId}).fetch()
+      const unitRoles = UnitRolesData.find({ unitBzId }).fetch()
 
       // Validating current user's permission to add
       const invitorRole = unitRoles.find(roleDocMemberMatcher(Meteor.userId()))
@@ -84,7 +84,7 @@ Meteor.methods({
           'receivedInvites.$.accessToken': accessToken
         }
       })
-      const unitMetaData = UnitMetaData.findOne({bzId: unitBzId})
+      const unitMetaData = UnitMetaData.findOne({ bzId: unitBzId })
       const unitTitle = unitMetaData.displayName || unitMetaData.bzName
       const unitDescription = unitMetaData.moreInfo
 

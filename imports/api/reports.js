@@ -10,7 +10,7 @@ import ReportSnapshots from './report-snapshots'
 import { attachmentTextMatcher } from '../util/matchers'
 import { makeAssociationFactory, withDocs } from './base/associations-helper'
 import UnitRolesData from './unit-roles-data'
-import UnitMetaData, { collectionName as unitMetaCollName} from './unit-meta-data'
+import UnitMetaData, { collectionName as unitMetaCollName } from './unit-meta-data'
 import {
   caseServerFieldMapping,
   REPORT_KEYWORD,
@@ -44,7 +44,7 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
     let imageAttachments, caseDetails
     try {
       const comments = bugzillaApi
-        .callAPI('get', `/rest/bug/${treeNode.id}/comment`, {api_key: apiKey}, false, true)
+        .callAPI('get', `/rest/bug/${treeNode.id}/comment`, { api_key: apiKey }, false, true)
         .data.bugs[treeNode.id.toString()].comments
       caseDetails = comments[0].text
       imageAttachments = comments.slice(1).reduce((all, comment) => {
@@ -84,12 +84,12 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
       // TODO: enhance for other report entities later
       return all
     }, {})
-    Object.assign(treeNode, {dependencies, imageAttachments, caseDetails})
+    Object.assign(treeNode, { dependencies, imageAttachments, caseDetails })
   })(reportItem)
 }
 
 export const generatePreviewUrl = ({ reportBlob, unitRoles, unitMetaData, signatureMap, errorLogParams }) => {
-  const reportCreator = Meteor.users.findOne({'bugzillaCreds.login': reportBlob.creator})
+  const reportCreator = Meteor.users.findOne({ 'bugzillaCreds.login': reportBlob.creator })
   const makeSignObj = user => {
     let isOccupant = false
     const userRoleObj = unitRoles.find(role => !!role.members.find(member => {
@@ -114,7 +114,7 @@ export const generatePreviewUrl = ({ reportBlob, unitRoles, unitMetaData, signat
     signatures: [
       makeSignObj(reportCreator)
     ].concat(Object.keys(signatureMap).reduce((all, loginName) => {
-      const ccUser = Meteor.users.findOne({'bugzillaCreds.login': loginName})
+      const ccUser = Meteor.users.findOne({ 'bugzillaCreds.login': loginName })
       if (ccUser && ccUser._id !== reportCreator._id) {
         all.push(makeSignObj(ccUser))
       }
@@ -196,7 +196,7 @@ export const generatePDFFromPreview = (previewUrl, errorLogParams) => {
 }
 
 export const fetchReportUnitInfo = unitBzName => {
-  const unitMetaData = UnitMetaData.findOne({bzName: unitBzName}) || {
+  const unitMetaData = UnitMetaData.findOne({ bzName: unitBzName }) || {
     displayName: unitBzName,
     unitType: 'Unspecified',
     streetAddress: 'N/A',
@@ -306,12 +306,12 @@ if (Meteor.isClient) {
   Reports = new Mongo.Collection(collectionName)
   Reports.helpers({
     unitMetaData () {
-      return UnitMetaData.findOne({bzName: this.selectedUnit})
+      return UnitMetaData.findOne({ bzName: this.selectedUnit })
     }
   })
 }
 
-const bugById = (id, apiKey) => bugzillaApi.callAPI('get', `/rest/bug/${id}`, {api_key: apiKey}, false, true).data.bugs[0]
+const bugById = (id, apiKey) => bugzillaApi.callAPI('get', `/rest/bug/${id}`, { api_key: apiKey }, false, true).data.bugs[0]
 
 Meteor.methods({
   [`${collectionName}.insert`] (params) {
@@ -389,7 +389,7 @@ Meteor.methods({
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
-      return {newReportId}
+      return { newReportId }
     }
   },
   [`${collectionName}.finalize`] (reportId, signatureMap) {
@@ -399,14 +399,14 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized')
     }
     if (Meteor.isClient) {
-      Reports.update({id: reportId}, {
+      Reports.update({ id: reportId }, {
         $set: {
           status: REPORT_FINAL_STATUS
         }
       })
     } else { // is server
       const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(Meteor.userId())
-      const {callAPI} = bugzillaApi
+      const { callAPI } = bugzillaApi
 
       let reportItem
       try {
@@ -443,7 +443,7 @@ Meteor.methods({
         })
         throw new Meteor.Error('API error')
       }
-      publicationObj.handleChanged(reportId, {status: REPORT_FINAL_STATUS})
+      publicationObj.handleChanged(reportId, { status: REPORT_FINAL_STATUS })
 
       populateReportDependees(reportItem, apiKey, {
         user: Meteor.userId(),
@@ -504,14 +504,14 @@ Meteor.methods({
         })
         throw new Meteor.Error('API error')
       }
-      const storedSnapshot = ReportSnapshots.findOne({'reportItem.id': reportId})
+      const storedSnapshot = ReportSnapshots.findOne({ 'reportItem.id': reportId })
       let reportBlob, signatureMap, previewUrl
       if (!storedSnapshot) {
         populateReportDependees(reportItem, apiKey, errorLogParams)
         reportBlob = reportItem
         const reportUnitInfo = fetchReportUnitInfo(reportItem.product)
         signatureMap = {}
-        previewUrl = generatePreviewUrl({reportBlob, signatureMap, errorLogParams, ...reportUnitInfo})
+        previewUrl = generatePreviewUrl({ reportBlob, signatureMap, errorLogParams, ...reportUnitInfo })
         if (reportItem.status !== REPORT_DRAFT_STATUS) {
           console.log(`No stored snapshot was found for finalized report ${reportId} while creating preview. Creating one as fallback`)
           const pdfUrl = generatePDFFromPreview(previewUrl)
@@ -544,7 +544,7 @@ Meteor.methods({
       throw new Meteor.Error('Invalid email address', faultyEmail)
     }
     const recipientUsers = selectedRecipientLogins.map(login => {
-      const user = Meteor.users.findOne({'bugzillaCreds.login': login})
+      const user = Meteor.users.findOne({ 'bugzillaCreds.login': login })
       return user || {
         profile: {},
         emails: [{
@@ -572,7 +572,7 @@ Meteor.methods({
         })
         throw new Meteor.Error('Failed to access the report with your credentials')
       }
-      const reportSnapshot = ReportSnapshots.findOne({'reportItem.id': reportId})
+      const reportSnapshot = ReportSnapshots.findOne({ 'reportItem.id': reportId })
       if (!reportSnapshot) {
         throw new Meteor.Error('There is no finalized export for this report yet')
       }

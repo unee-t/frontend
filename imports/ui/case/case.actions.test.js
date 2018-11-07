@@ -60,7 +60,7 @@ if (Meteor.isClient) {
       const process = {
         processId: 123,
         preview: 'asdasd',
-        file: {a: 0},
+        file: { a: 0 },
         caseId: 563
       }
 

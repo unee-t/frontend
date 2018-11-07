@@ -24,7 +24,7 @@ export const checkPassReset = action$ => action$
   .switchMap(() => {
     if (params) {
       return merge(
-        of(Object.assign({type: PASS_RESET_REQUESTED}, params)),
+        of(Object.assign({ type: PASS_RESET_REQUESTED }, params)),
         of(push('/reset-pass'))
       )
     } else {

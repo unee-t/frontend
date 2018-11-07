@@ -46,11 +46,11 @@ class RootAppBar extends Component {
         }
         id={title}
         titleStyle={titleStyle}
-        style={shadowless ? {boxShadow: 'none'} : undefined}
+        style={shadowless ? { boxShadow: 'none' } : undefined}
         iconElementLeft={
           searchTextDisplay ? (
             <IconButton
-              onClick={() => this.setState({searchTextDisplay: false})}
+              onClick={() => this.setState({ searchTextDisplay: false })}
             >
               <FontIcon className='material-icons' color='white'>
                arrow_back</FontIcon>
@@ -64,7 +64,7 @@ class RootAppBar extends Component {
         iconElementRight={
           <div>
             <span className={((!showSearch || searchTextDisplay) ? 'dn' : '')}>
-              <IconButton onClick={() => this.setState({searchTextDisplay: true})}>
+              <IconButton onClick={() => this.setState({ searchTextDisplay: true })}>
                 <FontIcon className='material-icons' color='white'>
                   search
                 </FontIcon>

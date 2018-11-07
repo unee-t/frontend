@@ -47,7 +47,7 @@ class WelcomeDialog extends Component {
         </button>
         <div className='pt3 overflow-auto'>
           <div className='tc'>
-            <UneeTIcon isDarkType style={{width: 67, height: 67}} />
+            <UneeTIcon isDarkType style={{ width: 67, height: 67 }} />
             <div className='mt2 pt1 bondi-blue f3 fw5'>
               Welcome to Unee&#8209;T!
             </div>

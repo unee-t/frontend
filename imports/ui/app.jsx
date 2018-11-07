@@ -93,7 +93,7 @@ App.propTypes = {
 
 // export default App
 export default withRouter(connect(
-  ({ genericErrorState }) => ({errors: genericErrorState}) // map redux state to props
+  ({ genericErrorState }) => ({ errors: genericErrorState }) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
   userLoggedIn: !!Meteor.userId()
 }), App)))

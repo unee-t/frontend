@@ -79,7 +79,7 @@ class ReportExplorer extends Component {
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
           const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
-          const unitDesc = dict[unitBzName] = dict[unitBzName] || {items: [], unitType, bzId, unitTitle}
+          const unitDesc = dict[unitBzName] = dict[unitBzName] || { items: [], unitType, bzId, unitTitle }
           unitDesc.items.push(reportItem)
         }
         return dict
@@ -133,7 +133,7 @@ class ReportExplorer extends Component {
             { reportGrouping.length
               ? <UnitGroupList
                 unitGroupList={reportGrouping}
-                expandedListRenderer={({allItems}) => (
+                expandedListRenderer={({ allItems }) => (
                   <ReportList
                     allReports={allItems}
                     onItemClick={this.handleOnItemClicked}
@@ -144,12 +144,12 @@ class ReportExplorer extends Component {
             }
           </div>
           <div className='absolute right-1 bottom-2'>
-            <FloatingActionButton onClick={() => this.setState({open: true})}>
+            <FloatingActionButton onClick={() => this.setState({ open: true })}>
               <FontIcon className='material-icons'>add</FontIcon>
             </FloatingActionButton>
             <UnitSelectDialog
               show={open}
-              onDismissed={() => this.setState({open: false})}
+              onDismissed={() => this.setState({ open: false })}
               onUnitClick={this.handleOnUnitClicked}
             />
           </div>

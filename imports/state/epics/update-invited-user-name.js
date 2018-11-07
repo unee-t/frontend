@@ -8,7 +8,7 @@ import 'rxjs/add/operator/mergeMap'
 export const updateUserName = action$ =>
   action$.ofType(UPDATE_INVITED_USER_NAME)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({name}) => {
+    .mergeMap(({ name }) => {
       Meteor.call('users.updateMyName', name)
       return of(clearWelcomeMessage())
     })

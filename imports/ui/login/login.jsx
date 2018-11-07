@@ -60,7 +60,7 @@ export class LoginPage extends Component {
             />
             <PasswordInput
               value={password}
-              onChange={evt => this.setState({password: evt.target.value})}
+              onChange={evt => this.setState({ password: evt.target.value })}
             />
           </fieldset>
           { this.props.showLoginError && (
@@ -92,6 +92,6 @@ LoginPage.propTypes = {
 }
 
 export default connect(
-  ({showLoginError}) => ({showLoginError}) // map redux state to props
+  ({ showLoginError }) => ({ showLoginError }) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
 }), LoginPage))

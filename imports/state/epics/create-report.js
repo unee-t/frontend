@@ -21,7 +21,7 @@ export const createReport = action$ => action$
   .mergeMap(({ unit, title }) => {
     const meteorResult$ = (new Subject())
       .take(1)
-      .mergeMap(({error, result: {newReportId}}) => {
+      .mergeMap(({ error, result: { newReportId } }) => {
         if (error) {
           return of({
             type: CREATE_REPORT_ERROR,
@@ -45,7 +45,7 @@ export const createReport = action$ => action$
         if (error) {
           console.error('Report creation error', error)
         }
-        meteorResult$.next({error, result: result || {}})
+        meteorResult$.next({ error, result: result || {} })
       }
     )
     return merge(
