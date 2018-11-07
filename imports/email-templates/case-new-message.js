@@ -1,5 +1,18 @@
 import url from 'url'
+import { matchWidth } from '../util/cloudinary-transformations'
 import { createEngagementLink, resolveUserName, optOutHtml, optOutText } from './components/helpers'
+
+function linkAttachment (message) {
+  const msgParts = message.trim().split(/\s+/)
+  if (msgParts.length > 1 && msgParts[0] === '[!attachment]') {
+    const attachmentUrl = msgParts[1]
+    if (attachmentUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+      const thumbUrl = matchWidth(attachmentUrl, 500)
+      return `<a href=${thumbUrl}><img alt="Attachment image" src=${thumbUrl}></a>`
+    }
+  }
+  return message
+}
 
 export default (assignee, notificationId, settingType, caseTitle, caseId, user, message) => ({
   subject: `New message on case "${caseTitle}"`,
@@ -9,7 +22,7 @@ export default (assignee, notificationId, settingType, caseTitle, caseId, user, 
 
 <p>New message by ${resolveUserName(user)}:</p>
 
-<p><strong>${message}</strong></p>
+<p><strong>${linkAttachment(message)}</strong></p>
 
 <p>Please follow <a href='${
   createEngagementLink({

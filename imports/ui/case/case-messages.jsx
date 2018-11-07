@@ -224,7 +224,7 @@ class CaseMessages extends Component {
   }
 
   renderMessageImageContent ({isSelf, text, creationTime, id, process}) {
-    const attachmentUrl = text.split('\n')[1]
+    const attachmentUrl = text.split(/\s+/m)[1]
     const { computedMessageWidth } = this.state
     const thumbUrl = computedMessageWidth && matchWidth(attachmentUrl, computedMessageWidth)
     return (
