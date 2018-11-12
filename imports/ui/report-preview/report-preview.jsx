@@ -1,24 +1,46 @@
-import React, { Component } from 'react'
+// @flow
+import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, push } from 'react-router-redux'
 import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
+import FontIcon from 'material-ui/FontIcon'
 
 import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import InnerAppBar from '../components/inner-app-bar'
+import ChangeLogoDialog from '../dialogs/change-logo-dialog'
 import Preloader from '../preloader/preloader'
 import { generateHTMLPreview } from './report-preview.actions'
 
-class ReportPreview extends Component {
+type Props = {
+  isLoading: boolean,
+  previewIsLoading: boolean,
+  reportItem: any,
+  match: any,
+  dispatch: (action: any) => void,
+  previewUrl: string
+}
+
+type State = {
+  showLogoAction: boolean,
+  showChangeLogoDialog: boolean
+}
+class ReportPreview extends React.Component<Props, State> {
+  state = {
+    showLogoAction: false,
+    showChangeLogoDialog: false
+  }
+
   componentDidMount () {
     const { match, dispatch } = this.props
     dispatch(generateHTMLPreview(match.params.reportId))
   }
+
   render () {
     const { isLoading, reportItem, dispatch, previewIsLoading, previewUrl } = this.props
+    const { showLogoAction, showChangeLogoDialog } = this.state
     if (isLoading) {
       return <Preloader />
     }
@@ -33,8 +55,30 @@ class ReportPreview extends Component {
               <CircularProgress size={70} thickness={5} />
             </div>
           ) : previewUrl && (
-            <div className='flex-grow overflow-auto'>
-              <iframe className='bn w-100 h-100' src={previewUrl} />
+            <div className='flex-grow overflow-auto relative'>
+              <div className='absolute top-0 bottom-0 right-0 left-0'>
+                <iframe className='bn w-100 h-100' src={previewUrl} />
+              </div>
+              <div className='absolute left-0 top-0 flex flex-column pl1 pt1'>
+                <div className='ba b--mid-gray b--dashed br2 bw1 w-content' onClick={() => {
+                  this.setState({
+                    showLogoAction: !showLogoAction
+                  })
+                }}>
+                  <div className='h3 w2 mh2' />
+                </div>
+                {showLogoAction && (
+                  <div
+                    className='mt1 bg-black-70 br2 white pa2 lh-title f6 b flex items-end'
+                    onClick={() => this.setState({ showChangeLogoDialog: true })}
+                  >
+                    <FontIcon className='material-icons' color='#fff'>camera_alt</FontIcon>
+                    <div className='ml1'>
+                      Add photo or logo
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
           <div className='bg-white scroll-shadow-2 pa3 tc z-999'>
@@ -68,16 +112,15 @@ class ReportPreview extends Component {
             )}
           </div>
         </div>
+        <ChangeLogoDialog
+          title='Add Photo Or Logo To Report'
+          show={showChangeLogoDialog}
+          onConfirm={() => {}}
+          onClose={() => this.setState({ showChangeLogoDialog: false })}
+        />
       </div>
     )
   }
-}
-
-ReportPreview.propTypes = {
-  isLoading: PropTypes.bool.isRequired,
-  previewIsLoading: PropTypes.bool.isRequired,
-  reportItem: PropTypes.object,
-  previewUrl: PropTypes.string
 }
 
 export default connect(
