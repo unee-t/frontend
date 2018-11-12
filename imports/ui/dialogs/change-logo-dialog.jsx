@@ -31,8 +31,16 @@ class ChangeLogoDialog extends React.Component<Props, State> {
     uploadPreview: null
   }
 
+  handleClose = () => {
+    this.uploadedFile = null
+    this.setState({
+      uploadPreview: null
+    })
+    this.props.onClose()
+  }
+
   render () {
-    const { show, title, onClose, onConfirm } = this.props
+    const { show, title, onConfirm } = this.props
     const { uploadPreview } = this.state
     return (
       <Dialog
@@ -41,7 +49,7 @@ class ChangeLogoDialog extends React.Component<Props, State> {
         titleStyle={modalTitleStyle}
         bodyStyle={modalBodyStyle}
         contentStyle={modalCustomContentStyle}
-        onRequestClose={onClose}
+        onRequestClose={this.handleClose()}
       >
         <div className='ma-auto'>
           <div className='ba b--moon-gray b--dashed'>
@@ -74,7 +82,7 @@ class ChangeLogoDialog extends React.Component<Props, State> {
         </div>
         <div className='mt3 flex justify-end'>
           <RaisedButton
-            onClick={onClose}
+            onClick={this.handleClose()}
           >
             <span className='bondi-blue'>
               Cancel
