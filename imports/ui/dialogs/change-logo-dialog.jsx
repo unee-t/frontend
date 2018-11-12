@@ -1,4 +1,5 @@
 // @flow
+/* global File */
 import * as React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import Dialog from 'material-ui/Dialog'
@@ -22,11 +23,11 @@ type Props = {
 }
 
 type State = {
-  uploadedPreview: any
+  uploadPreview: ?string
 }
 
 class ChangeLogoDialog extends React.Component<Props, State> {
-  uploadedFile: any
+  uploadedFile: ?File
   state = {
     uploadPreview: null
   }
@@ -60,7 +61,7 @@ class ChangeLogoDialog extends React.Component<Props, State> {
             ) : (
               <MenuItem innerDivStyle={resetMenuItemDivStyle}>
                 <FileInput onFileSelected={imageInputEventHandler(
-                  (preview, file) => {
+                  (preview: string, file: File) => {
                     this.uploadedFile = file
                     this.setState({
                       uploadPreview: preview
