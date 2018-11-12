@@ -55,7 +55,7 @@ class ReportPreview extends React.Component<Props, State> {
               <CircularProgress size={70} thickness={5} />
             </div>
           ) : previewUrl && (
-            <div className='flex-grow overflow-auto relative'>
+            <div className='flex-grow relative'>
               <div className='absolute top-0 bottom-0 right-0 left-0'>
                 <iframe className='bn w-100 h-100' src={previewUrl} />
               </div>
