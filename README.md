@@ -7,7 +7,7 @@
 
 They are securely managed in AWS's [parameter store](https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Parameters:sort=Name). The variables are retrieved via [an environment setup script](https://github.com/unee-t/frontend/blob/master/aws-env.dev), which is utilised by `deploy.sh`.
 
-For local development, copy `.env.sample` to `.env`. The values of the environment variables can be obtained from other developers via [Unee-T Slack](https://unee-t.slack.com/messages/C6UM93HD2).
+For local development, use `./env-setup.bash` assuming you have been access to the `uneet-dev` development environment.
 
 # Deployment
 
@@ -78,20 +78,10 @@ Run in browser's developer console:
 
 ## How do I set up for local development?
 
-Assuming `.env` is already setup, you need to populate yours users db, by cross
-referencing an existing user in the Bugzilla backend. For example running in
-the dev tools of your browser:
-
-	Accounts.createUser({ email: 'leonel@mailinator.com', password: 'leonel', profile: { bzLogin: 'leonel@mailinator.com', bzPass: 'leonel' }})
-
-Ensure it worked by looking at the `npm start` log.
-
-Note: `leonel@mailinator.com` is setup inside
-https://github.com/unee-t/bugzilla-customisation/tree/master/sql & loaded via [bugzilla-customisation](https://github.com/unee-t/bugzilla-customisation/)'s `make up`.
-
-Next in `meteor mongo`, you can verify the address (without going to mailinator to answer the mail) like so:
-
-	db.users.update({'emails.address': 'leonel@mailinator.com'}, {$set : {'emails.0.verified': true}})
+1. Make a backup snapshot of the devlopment Mongo database using `backup/dump.sh`
+2. `meteor reset` to clear state
+3. `npm run start` to start the mongo service
+3. `mongorestore -h 127.0.0.1 --port 3001 -d meteor $(date "+dev-%Y%m%d")/meteor`
 
 ## How to test the notifications / email templates?
 
@@ -108,4 +98,4 @@ to the bugzillaCreds **id** from `db.users.find().pretty()`
 
 ## error: Error: url must be absolute and start with http:// or https://
 
-Your `.env` file is almost not set up correctly.
+Your `.env` file is not set up correctly, consider `./env-setup.bash`
