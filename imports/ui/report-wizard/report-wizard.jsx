@@ -59,7 +59,7 @@ const tabsOrder = [
 
 const TabHeader = ({ isSelected, label, onSelected }) => (
   <div className={'flex-grow transition-bg' + (isSelected ? ' bg-white' : '')}>
-    <MenuItem style={{minHeight: 'auto'}} innerDivStyle={resetMenuItemDivStyle} onClick={onSelected}>
+    <MenuItem style={{ minHeight: 'auto' }} innerDivStyle={resetMenuItemDivStyle} onClick={onSelected}>
       <div className='mid-gray lh-copy tc f6 fw5 pv2'>
         {label.toUpperCase()}
       </div>
