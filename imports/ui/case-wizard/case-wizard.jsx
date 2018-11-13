@@ -65,7 +65,7 @@ class CaseWizard extends Component {
     const { unitItem, userBzLogin } = this.props
     const { inputValues } = this.state
     if (unitItem && prevProps.unitItem === null) {
-      const defaultValue = unitItem.components.find(({default_assigned_to: assignedTo}) => assignedTo === userBzLogin).name
+      const defaultValue = unitItem.components.find(({ default_assigned_to: assignedTo }) => assignedTo === userBzLogin).name
       this.setState({
         inputValues: Object.assign({}, inputValues, {
           mandatory: Object.assign({}, inputValues.mandatory, {
@@ -78,7 +78,7 @@ class CaseWizard extends Component {
 
   handleRoleChanged = (evt, val) => {
     const { inputValues } = this.state
-    const { default_assigned_to: assignedTo } = this.props.unitItem.components.find(({name}) => name === val)
+    const { default_assigned_to: assignedTo } = this.props.unitItem.components.find(({ name }) => name === val)
 
     this.setState({
       inputValues: Object.assign({}, inputValues, {
@@ -102,7 +102,7 @@ class CaseWizard extends Component {
       this.props.dispatch(createCase(
         Object.assign(
           {},
-          Object.assign({selectedUnit: this.props.unitItem.name}, mandatory),
+          Object.assign({ selectedUnit: this.props.unitItem.name }, mandatory),
           optional
         ),
         newUserEmail,
@@ -196,7 +196,7 @@ class CaseWizard extends Component {
                     })
                   })}
                 >
-                  {fieldValues.category.values.map(({name}) => (
+                  {fieldValues.category.values.map(({ name }) => (
                     <MenuItem key={name} value={name} primaryText={name} />
                   ))}
                 </SelectField>
@@ -220,7 +220,7 @@ class CaseWizard extends Component {
                     })
                   })}
                 >
-                  {fieldValues.subCategory.values.reduce((all, {name, visibility_values: [relatedCategory]}) => {
+                  {fieldValues.subCategory.values.reduce((all, { name, visibility_values: [relatedCategory] }) => {
                     if (relatedCategory === category) {
                       all.push(
                         <MenuItem key={name} value={name} primaryText={name} />
@@ -239,7 +239,7 @@ class CaseWizard extends Component {
             >
               {
                 unitItem.components
-                  .map(({id, name, default_assigned_to: assignedTo}) => ( // TODO: enhance later
+                  .map(({ id, name, default_assigned_to: assignedTo }) => ( // TODO: enhance later
                     <RadioButton
                       key={id} value={name} label={name + (assignedTo === userBzLogin ? ' (you)' : '')} disabled={inProgress}
                     />
@@ -253,7 +253,7 @@ class CaseWizard extends Component {
                   the {assignedUnitRole} role or select a different role.
                 </p>
                 <InputRow label={`Email of the ${assignedUnitRole} to invite *`} value={newUserEmail} inpType='email'
-                  onChange={(evt, val) => this.setState({newUserEmail: val})}
+                  onChange={(evt, val) => this.setState({ newUserEmail: val })}
                   errorText={(newUserEmail && !emailValidator(newUserEmail)) ? 'Email address is invalid' : ''}
                   inpRef={el => { this.emailInputEl = el }}
                   disabled={inProgress}
@@ -263,7 +263,7 @@ class CaseWizard extends Component {
                     label={`This ${assignedUnitRole} is also the occupant of this unit`}
                     labelStyle={controlLabelStyle}
                     checked={newUserIsOccupant}
-                    onCheck={(evt, isChecked) => { this.setState({newUserIsOccupant: isChecked}) }}
+                    onCheck={(evt, isChecked) => { this.setState({ newUserIsOccupant: isChecked }) }}
                     disabled={inProgress}
                   />
                 )}
@@ -332,12 +332,12 @@ export default withRouter(connect(
     return ({
       isLoading: loadingUnitInfo || loadingUserEmail || loadingFieldValues || loadingReport,
       unitItem: unitHandle.ready()
-        ? Object.assign(Units.findOne({id: unitIdInt}), UnitMetaData.findOne({bzId: unitIdInt}))
+        ? Object.assign(Units.findOne({ id: unitIdInt }), UnitMetaData.findOne({ bzId: unitIdInt }))
         : null,
       userBzLogin: bzLoginHandle.ready() ? Meteor.user().bugzillaCreds.login : null,
-      reportItem: Reports.findOne({id: reportIdInt}),
+      reportItem: Reports.findOne({ id: reportIdInt }),
       fieldValues: enumFields.reduce((all, name) => {
-        all[name] = CaseFieldValues.findOne({name})
+        all[name] = CaseFieldValues.findOne({ name })
         return all
       }, {})
     })

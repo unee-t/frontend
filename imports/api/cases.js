@@ -62,7 +62,7 @@ export const caseClientFieldMapping = Object.assign(
 )
 
 export const getCaseUsers = (() => {
-  const normalizeUser = ({real_name: realName, email, name}) => ({
+  const normalizeUser = ({ real_name: realName, email, name }) => ({
     login: name,
     name: realName,
     email
@@ -126,7 +126,7 @@ export const associatedCasesQueryExps = userIdentifier => [
   }
 ]
 
-const denormalizeUser = ({login, name, email}) => ({
+const denormalizeUser = ({ login, name, email }) => ({
   name: login,
   real_name: name,
   email
@@ -138,23 +138,23 @@ const transformCaseForClient = bug => Object.keys(bug).reduce((all, key) => ({
 }), {})
 
 export const toggleParticipants = (loginNames, isAdd, caseId, clientCollection, reloadFunc, errorLogParams) => {
-  const {callAPI} = bugzillaApi
-  const currUser = Meteor.users.findOne({_id: Meteor.userId()})
+  const { callAPI } = bugzillaApi
+  const currUser = Meteor.users.findOne({ _id: Meteor.userId() })
 
   if (Meteor.isClient) {
     const opType = isAdd ? '$push' : '$pull'
     loginNames.forEach(email => {
-      clientCollection.update({id: caseId}, {
+      clientCollection.update({ id: caseId }, {
         [opType]: {
           involvedList: email
         },
         [opType]: {
-          involvedListDetail: {name: email}
+          involvedListDetail: { name: email }
         }
       })
     })
   } else {
-    const {apiKey} = currUser.bugzillaCreds
+    const { apiKey } = currUser.bugzillaCreds
     const opType = isAdd ? 'add' : 'remove'
     const payload = {
       api_key: apiKey,
@@ -337,20 +337,20 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
     }
 
     if (Meteor.isClient) {
-      Cases.update({id: caseId}, {
+      Cases.update({ id: caseId }, {
         $set: changeSet
       })
     } else { // is server
       const { callAPI } = bugzillaApi
-      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({_id: Meteor.userId()})
+      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({ _id: Meteor.userId() })
       try {
         const normalizedSet = Object.keys(changeSet).reduce((all, key) => {
           all[caseServerFieldMapping[key]] = changeSet[key]
           return all
         }, {})
-        callAPI('put', `/rest/bug/${caseId}`, Object.assign({api_key: apiKey}, normalizedSet), false, true)
+        callAPI('put', `/rest/bug/${caseId}`, Object.assign({ api_key: apiKey }, normalizedSet), false, true)
         const { data: { bugs: [caseItem] } } = callAPI(
-          'get', `/rest/bug/${caseId}`, {api_key: apiKey}, false, true
+          'get', `/rest/bug/${caseId}`, { api_key: apiKey }, false, true
         )
         const updatedSet = Object.keys(changeSet).reduce((all, key) => {
           all[key] = caseItem[caseServerFieldMapping[key]]
@@ -493,7 +493,7 @@ Meteor.methods({
           newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED
         )
       }
-      return {newCaseId}
+      return { newCaseId }
     }
   },
   [`${collectionName}.changeAssignee`] (user, caseId) {
@@ -505,7 +505,7 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized')
     }
 
-    const assigneeUser = Meteor.users.findOne({'bugzillaCreds.login': user.login})
+    const assigneeUser = Meteor.users.findOne({ 'bugzillaCreds.login': user.login })
 
     unassignPending(caseId)
 
@@ -535,7 +535,7 @@ Meteor.methods({
       })
     } else {
       if (Meteor.isClient) {
-        Cases.update({id: caseId}, {
+        Cases.update({ id: caseId }, {
           $set: {
             assigneeDetail: denormalizeUser(user),
             assignee: user.login
@@ -543,7 +543,7 @@ Meteor.methods({
         })
       } else { // is server
         const { callAPI } = bugzillaApi
-        const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({_id: Meteor.userId()})
+        const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({ _id: Meteor.userId() })
         try {
           callAPI('put', `/rest/bug/${caseId}`, {
             [caseServerFieldMapping.assignee]: user.login,

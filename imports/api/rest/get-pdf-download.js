@@ -5,7 +5,7 @@ export default function (req, res) {
     return res.send(400, '"reportPdfUrl" query param is missing')
   }
   const pdfUrl = decodeURIComponent(req.query.reportPdfUrl)
-  const snap = ReportSnapshots.findOne({pdfUrl}, {_id: 1})
+  const snap = ReportSnapshots.findOne({ pdfUrl }, { _id: 1 })
   if (!snap) {
     return res.send(400, 'no matching snapshot for the provided pdf url')
   }

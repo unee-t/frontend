@@ -103,7 +103,7 @@ class InviteNewUserDialog extends Component {
               <TextField
                 floatingLabelText='First Name*'
                 value={firstName}
-                onChange={evt => this.setState({firstName: evt.target.value})}
+                onChange={evt => this.setState({ firstName: evt.target.value })}
                 fullWidth
                 required
                 inputStyle={textInputStyle}
@@ -114,7 +114,7 @@ class InviteNewUserDialog extends Component {
               <TextField
                 floatingLabelText='Last Name*'
                 value={lastName}
-                onChange={evt => this.setState({lastName: evt.target.value})}
+                onChange={evt => this.setState({ lastName: evt.target.value })}
                 fullWidth
                 required
                 inputStyle={textInputStyle}
@@ -127,13 +127,13 @@ class InviteNewUserDialog extends Component {
             email={inviteeEmail}
             invalidEmails={currentInvitees ? currentInvitees.map(i => i.email) : null}
             invalidReasonMessage='This email belongs to a user who is already invited'
-            onEmailChanged={email => this.setState({inviteeEmail: email})}
+            onEmailChanged={email => this.setState({ inviteeEmail: email })}
           />
           <UnitRoleSelect
             isOccupant={isOccupant}
             selectedRole={inviteeRole}
-            onRoleSelected={role => this.setState({inviteeRole: role, showRoleRequired: false})}
-            onOccupantToggled={isIt => this.setState({isOccupant: isIt})}
+            onRoleSelected={role => this.setState({ inviteeRole: role, showRoleRequired: false })}
+            onOccupantToggled={isIt => this.setState({ isOccupant: isIt })}
             showRequired={showRoleRequired}
           />
           <div className='flex justify-end mt3'>

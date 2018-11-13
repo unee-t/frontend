@@ -10,7 +10,7 @@ import 'rxjs/add/operator/mergeMap'
 export const createComment = action$ =>
   action$.ofType(CREATE_COMMENT)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({text, caseId}) => {
+    .mergeMap(({ text, caseId }) => {
       const meteorResult$ = new Subject()
       Meteor.call(`${collectionName}.insert`, text, parseInt(caseId), err => {
         if (err) {

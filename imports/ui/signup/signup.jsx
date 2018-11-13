@@ -31,7 +31,7 @@ export class SignupPage extends Component {
           const { value } = evt.target
           const { info, errorTexts } = this.state
           this.setState({
-            info: Object.assign({}, info, {emailAddress: value}),
+            info: Object.assign({}, info, { emailAddress: value }),
             errorTexts: Object.assign({}, errorTexts, {
               emailAddress: emailValidator(value) ? null : 'Email address is invalid'
             })
@@ -40,7 +40,7 @@ export class SignupPage extends Component {
       }
     ]
 
-    this.inputs.forEach(({identifier}) => { this.state.info[identifier] = '' })
+    this.inputs.forEach(({ identifier }) => { this.state.info[identifier] = '' })
   }
 
   makeInfoChange = infoMod => this.setState({
@@ -67,7 +67,7 @@ export class SignupPage extends Component {
   isFormValid = () => {
     const { info, errorTexts, termsAgreement } = this.state
     return (
-      this.inputs.filter(({identifier}) => !!info[identifier]).length === this.inputs.length && // All have a value
+      this.inputs.filter(({ identifier }) => !!info[identifier]).length === this.inputs.length && // All have a value
       Object.keys(errorTexts).filter(key => !!errorTexts[key]).length === 0 && // No error messages
       !!info.password && // Password has a value
       !!termsAgreement
@@ -89,9 +89,9 @@ export class SignupPage extends Component {
         <form className='measure center' onSubmit={this.handleSubmit}>
           <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
             <div className='relative'>
-              {this.inputs.map(({label, identifier, placeholder, type, onChange}, i) => (
+              {this.inputs.map(({ label, identifier, placeholder, type, onChange }, i) => (
                 <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
-                  onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({[identifier]: evt.target.value})}
+                  onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({ [identifier]: evt.target.value })}
                   errorText={errorTexts[identifier] || showSignupError}
                 />
               ))}
@@ -101,14 +101,14 @@ export class SignupPage extends Component {
                 reset your password </Link> if needed.
               </div>)}
             </div>
-            <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({password: evt.target.value})} />
+            <PasswordInput value={info.password} onChange={evt => this.makeInfoChange({ password: evt.target.value })} />
           </fieldset>
           <div className='f7 gray mt3 lh-copy'>
             <label className='pa0 ma0 lh-copy f6 pointer mid-gray'>
               <Checkbox
                 checked={termsAgreement}
                 label='By signing up, you agree to our'
-                onCheck={(evt, isChecked) => { this.setState({termsAgreement: isChecked}) }}
+                onCheck={(evt, isChecked) => { this.setState({ termsAgreement: isChecked }) }}
               />
               <a className='link bondi-blue fw8 pl3' target='_blank' href='https://unee-t.com/privacy-and-terms/'>
             Terms of Service &amp; Privacy Policy
@@ -129,5 +129,5 @@ export class SignupPage extends Component {
 SignupPage.propTypes = {}
 
 export default connect(
-  ({showSignupError}) => ({showSignupError}) // map redux state to props
+  ({ showSignupError }) => ({ showSignupError }) // map redux state to props
 )(createContainer(() => ({}), SignupPage)) // map meteor state to props

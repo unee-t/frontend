@@ -46,7 +46,7 @@ if (Meteor.isClient) {
       ajaxStub = sinon.stub()
       ajaxStream = new Subject()
       ajaxStub.returns(ajaxStream)
-      output = createAttachment(input, null, {ajax: ajaxStub})
+      output = createAttachment(input, null, { ajax: ajaxStub })
       nextSpy = sinon.spy()
     })
     afterEach(() => {
@@ -74,7 +74,7 @@ if (Meteor.isClient) {
         input.next(inputAction)
 
         const { progressSubscriber } = ajaxStub.firstCall.args[0]
-        progressSubscriber.next({lengthComputable: false}) // Should not yield any action
+        progressSubscriber.next({ lengthComputable: false }) // Should not yield any action
         const dispatchProgress = loaded => progressSubscriber.next({
           lengthComputable: true,
           loaded,
@@ -182,7 +182,7 @@ if (Meteor.isClient) {
       process.nextTick(() => {
         input.next(inputAction)
 
-        const {progressSubscriber} = ajaxStub.firstCall.args[0]
+        const { progressSubscriber } = ajaxStub.firstCall.args[0]
         progressSubscriber.next({
           lengthComputable: true,
           loaded: 4000,

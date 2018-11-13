@@ -19,7 +19,7 @@ export default function (state = [], { type, userEmail, unitBzId, error }) {
   }
   switch (type) {
     case INVITE_STARTED:
-      const newProcess = {userEmail, unitBzId, pending: true}
+      const newProcess = { userEmail, unitBzId, pending: true }
       if (processIndex === -1) {
         newState.push(newProcess)
       } else {
@@ -27,10 +27,10 @@ export default function (state = [], { type, userEmail, unitBzId, error }) {
       }
       return newState
     case INVITE_SUCCESS:
-      newState.splice(processIndex, 1, {userEmail, unitBzId, completed: true})
+      newState.splice(processIndex, 1, { userEmail, unitBzId, completed: true })
       return newState
     case INVITE_ERROR:
-      newState.splice(processIndex, 1, {userEmail, unitBzId, error})
+      newState.splice(processIndex, 1, { userEmail, unitBzId, error })
       return newState
     case INVITE_CLEARED:
       newState.splice(processIndex, 1)

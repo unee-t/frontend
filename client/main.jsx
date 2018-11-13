@@ -43,7 +43,7 @@ Accounts.onEnrollmentLink((token, done) => {
       if (user) {
         cmp.stop()
         if (user.profile.invitedToCase) {
-          const {caseId} = user.profile.invitedToCase
+          const { caseId } = user.profile.invitedToCase
           history.push(`/case/${caseId}`)
         }
       }

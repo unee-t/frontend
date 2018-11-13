@@ -22,7 +22,7 @@ export const sendReportPdf = action$ => action$
   .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
   .mergeMap(({ reportId, newEmails, selectedRecipients }) => {
     const meteorResult$ = (new Subject())
-      .mergeMap(({error}) => {
+      .mergeMap(({ error }) => {
         if (error) {
           return merge(
             of(emailPdfAttachmentReset()),
@@ -36,7 +36,7 @@ export const sendReportPdf = action$ => action$
         if (error) {
           console.error('Report email sharing error', error)
         }
-        meteorResult$.next({error})
+        meteorResult$.next({ error })
       }
     )
     return merge(

@@ -56,7 +56,7 @@ class CaseMessages extends Component {
 
   componentDidMount () {
     this.scrollToBottom()
-    this.setState({computedMessageWidth: Math.round(this.refs.messages.offsetWidth * messagePercentWidth)})
+    this.setState({ computedMessageWidth: Math.round(this.refs.messages.offsetWidth * messagePercentWidth) })
   }
 
   componentDidUpdate (prevProps) {
@@ -172,7 +172,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderDayLabel ({creation_time: creationTime}, key) {
+  renderDayLabel ({ creation_time: creationTime }, key) {
     const dayString = formatDayText(creationTime)
     return (
       <div className='tc mt3 mb2' key={key}>
@@ -181,7 +181,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderSingleMessage ({creator, creatorUser, text, creation_time: creationTime, process, id}, key) {
+  renderSingleMessage ({ creator, creatorUser, text, creation_time: creationTime, process, id }, key) {
     const isSelf = this.props.userBzLogin === creator
     const contentRenderer = attachmentTextMatcher(text)
       ? this.renderMessageImageContent.bind(this)
@@ -198,14 +198,14 @@ class CaseMessages extends Component {
     return (
       <div className={['mb3 ml2' + (isSelf ? ' tr' : ''), themeClass || ''].join(' ')} key={key}>
         { !isSelf ? (
-          <UserAvatar user={{login: creator}} />
+          <UserAvatar user={{ login: creator }} />
         ) : ''}
-        { contentRenderer({isSelf, creator, creatorUser, text, creationTime, id, process}) }
+        { contentRenderer({ isSelf, creator, creatorUser, text, creationTime, id, process }) }
       </div>
     )
   }
 
-  renderMessageTextContent ({isSelf, creatorUser, creator, text, creationTime}) {
+  renderMessageTextContent ({ isSelf, creatorUser, creator, text, creationTime }) {
     // If createUser is unset, i.e. it only has a Bugzilla user and not Meteor user,
     // truncate the email address to show only the local part
     const creatorText = creatorUser ? creatorUser.profile.name : creator.split('@')[0]
@@ -223,7 +223,7 @@ class CaseMessages extends Component {
     )
   }
 
-  renderMessageImageContent ({isSelf, text, creationTime, id, process}) {
+  renderMessageImageContent ({ isSelf, text, creationTime, id, process }) {
     const attachmentUrl = text.split('\n')[1]
     const { computedMessageWidth } = this.state
     const thumbUrl = computedMessageWidth && matchWidth(attachmentUrl, computedMessageWidth)

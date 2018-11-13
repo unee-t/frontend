@@ -9,7 +9,7 @@ import 'rxjs/add/operator/mergeMap'
 export const addRoleUsers = action$ =>
   action$.ofType(ADD_ROLE_USERS)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({userLogins, caseId}) => {
+    .mergeMap(({ userLogins, caseId }) => {
       const meteorResult$ = new Subject()
       Meteor.call('cases.toggleParticipants', userLogins, parseInt(caseId), err => {
         if (err) {

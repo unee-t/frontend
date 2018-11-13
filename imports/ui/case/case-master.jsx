@@ -91,7 +91,7 @@ class CaseMaster extends Component {
           <Preloader />
         ) : isMobileScreen ? (
           <Switch>
-            {this.routes.map(({path, RouteComp, exact = false}) => (
+            {this.routes.map(({ path, RouteComp, exact = false }) => (
               <Route key={path} exact={exact} path={path} render={() => (
                 <RouteComp.MobileHeader contentProps={componentsProps[path]} onIconClick={this.handleIconClick} />
               )} />
@@ -118,12 +118,12 @@ class CaseMaster extends Component {
         )}
         {isMobileScreen ? (
           <Switch>
-            {this.routes.map(({path, RouteComp, exact}) => (
+            {this.routes.map(({ path, RouteComp, exact }) => (
               <Route key={path} exact={exact} path={path} render={() => {
                 return (
                   <RouteComp className={isLoading ? 'dn' : ''} dispatchLoadingResult={data => {
                     this.setState({
-                      componentsData: Object.assign(componentsProps, {[path]: data}),
+                      componentsData: Object.assign(componentsProps, { [path]: data }),
                       isLoading: false
                     })
                   }} />
@@ -141,7 +141,7 @@ class CaseMaster extends Component {
               }} />
             </div>
             <div className='flex-10 flex items-center justify-center bg-very-light-gray h-100'>
-              <Route path='/case/:caseId' children={({match}) => {
+              <Route path='/case/:caseId' children={({ match }) => {
                 if (match) {
                   const { isSubLoading } = this.state
                   return (

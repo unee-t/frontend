@@ -10,7 +10,7 @@ export default function (state = {}, { type, token, done, error }) {
         isRequested: true
       }
     case RESET_PASS_ERROR:
-      return Object.assign({error}, state)
+      return Object.assign({ error }, state)
     case RESET_PASS_COMPLETE: {
       return {}
     }

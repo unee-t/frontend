@@ -9,7 +9,7 @@ if (API_ACCESS_TOKEN && APIENROLL_LAMBDA_URL) {
     version: 1,
     up: () => {
       Meteor.users.find({
-        'bugzillaCreds.apiKey': {$exists: false}
+        'bugzillaCreds.apiKey': { $exists: false }
       }, {
         fields: {
           'bugzillaCreds.id': 1

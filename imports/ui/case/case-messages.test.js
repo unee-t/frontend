@@ -123,8 +123,8 @@ if (Meteor.isClient) {
             caseItem={caseItem} comments={[]} userEmail='mail@example.com' onCreateComment={onCreateComment} />
         )
         comp.find('#chatbox')
-          .simulate('change', {target: {value}}) // Triggering the change
-        comp.find('FloatingActionButton').simulate('click', {preventDefault: () => {}})
+          .simulate('change', { target: { value } }) // Triggering the change
+        comp.find('FloatingActionButton').simulate('click', { preventDefault: () => {} })
 
         expect(onCreateComment).to.have.been.calledWith(value)
       })

@@ -30,11 +30,11 @@ class UnitSelectDialog extends Component {
   }
 
   onSearchChanged = (searchText) => {
-    this.setState({searchText})
+    this.setState({ searchText })
     if (searchText === '') {
-      this.setState({searchMode: false})
+      this.setState({ searchMode: false })
     } else {
-      this.setState({searchMode: true})
+      this.setState({ searchMode: true })
       const matcher = new RegExp(searchText, 'i')
       const searchResult = this.props.unitList.filter(unitItem => unitItem.is_active)
         .filter(unit => !matcher || (unit.name && unit.name.match(matcher)))
@@ -88,8 +88,8 @@ class UnitSelectDialog extends Component {
               fullWidth
               value={searchText}
               onChange={(evt) => this.onSearchChanged(evt.target.value)}
-              style={{paddingLeft: '0.5rem', height: '24px'}}
-              hintStyle={{bottom: '0px'}}
+              style={{ paddingLeft: '0.5rem', height: '24px' }}
+              hintStyle={{ bottom: '0px' }}
             />
           </div>
         </div>
@@ -101,7 +101,7 @@ class UnitSelectDialog extends Component {
                   <MenuItem
                     innerDivStyle={resetMenuItemDivStyle}
                     onClick={() => onUnitClick(id)}
-                    style={{whiteSpace: 'none'}}
+                    style={{ whiteSpace: 'none' }}
                   >
                     <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
                       <UnitTypeIcon metaData={metaData} />

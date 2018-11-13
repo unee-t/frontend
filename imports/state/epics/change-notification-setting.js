@@ -7,7 +7,7 @@ import 'rxjs/add/operator/ignoreElements'
 export const changeNotificationSetting = action$ =>
   action$.ofType(SETTING_CHANGED)
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .do(({settingName, newVal}) => {
+    .do(({ settingName, newVal }) => {
       Meteor.call('users.updateNotificationSetting', settingName, newVal)
     })
     .ignoreElements()

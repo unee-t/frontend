@@ -67,7 +67,7 @@ class CreateReportDialog extends Component {
             value={reportTitle}
             isMultiLine
             placeholder={this.placeholder()}
-            onChange={(evt, val) => this.setState({reportTitle: val})}
+            onChange={(evt, val) => this.setState({ reportTitle: val })}
             inpRef={el => { this.titleInputEl = el }}
             disabled={inProgress}
           />

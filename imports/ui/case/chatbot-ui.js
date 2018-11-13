@@ -48,18 +48,18 @@ export default class ChatBotUI extends Component {
 
   render () {
     const chatbotMsg = [
-      {id: 1, msg: this.assigneeBot(), link: null},
-      {id: 2, msg: 'Would you like to inform someone else about this case?', link: this.inviteBot()},
-      {id: 3,
+      { id: 1, msg: this.assigneeBot(), link: null },
+      { id: 2, msg: 'Would you like to inform someone else about this case?', link: this.inviteBot() },
+      { id: 3,
         msg: <span><span className='fw5'>Tip: </span> You can also add photos to your case so your correspondents have a better understanding of the case</span>,
-        link: this.photoBot()}
+        link: this.photoBot() }
     ]
     return (
       <div>
         { chatbotMsg.map((msg) =>
           <div className='inline-flex items-end mb3' key={msg.id} >
             <IconButton iconStyle={logoIconStyle} style={logoButtonStyle} >
-              <UneeTIcon className='ml2 ' isDarkType style={{width: '3rem', height: '3rem'}} />
+              <UneeTIcon className='ml2 ' isDarkType style={{ width: '3rem', height: '3rem' }} />
             </IconButton>
             <div className='flex flex-column mr2' >
               <div className={'mw-60 cf br3 pt2 pl3 pr2 mh2 dib tl bg-white ' + (msg.link ? 'br--top bb b--gray-93' : '')}>

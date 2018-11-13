@@ -12,7 +12,7 @@ import 'rxjs/add/operator/filter'
 export const forgotPass = action$ =>
   action$.ofType(FORGOT_PASS)
     .filter(() => !Meteor.userId())
-    .switchMap(({email}) => {
+    .switchMap(({ email }) => {
       const meteorResult$ = new Subject()
       Meteor.call('users.forgotPass', email, err => {
         if (err) {

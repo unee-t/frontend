@@ -1,9 +1,9 @@
 import React from 'react'
 
 const browserTypes = [
-  {icon: <i className='fab fa-chrome f2' />, name: 'Chrome'},
-  {icon: <i className='fab fa-firefox f2' />, name: 'Firefox'},
-  {icon: <i className='fab fa-safari f2' />, name: 'Safari'}
+  { icon: <i className='fab fa-chrome f2' />, name: 'Chrome' },
+  { icon: <i className='fab fa-firefox f2' />, name: 'Firefox' },
+  { icon: <i className='fab fa-safari f2' />, name: 'Safari' }
 ]
 
 const supportedBrowsers = browserTypes.map((browser, i) =>
@@ -19,7 +19,7 @@ const supportedBrowsers = browserTypes.map((browser, i) =>
 
 export function BrowserSupportMsg () {
   return (
-    <div className='w-100 min-h-100vh pt5 roboto' style={{backgroundColor: '#0095b6'}}>
+    <div className='w-100 min-h-100vh pt5 roboto' style={{ backgroundColor: '#0095b6' }}>
       <main className='measure-narrow center tc'>
         <div className='bg-white br3 pv4 ph3'>
           <img src={'/unee-t_logo_email.png'} />

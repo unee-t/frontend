@@ -34,7 +34,7 @@ if (Meteor.isServer) {
         usersFindOneStub.restore()
       })
       it('should return use the "ready" and "error" triggers if the user is not authenticated, and not try to fetch the user', () => {
-        const publishFunc = publishFactory({}).publishById({uriTemplate: () => '/route'})
+        const publishFunc = publishFactory({}).publishById({ uriTemplate: () => '/route' })
         const ready = sinon.spy()
         const error = sinon.spy()
         publishFunc.call({ userId: null, ready, error }, 11)
@@ -47,7 +47,7 @@ if (Meteor.isServer) {
       it('should call BZ API with the uriTemplate result and with the user\'s api key', () => {
         const resourceId = 2636
         const userId = 2848
-        const publishFunc = publishFactory({}).publishById({uriTemplate: (id) => `/bla/${id}/blabla`})
+        const publishFunc = publishFactory({}).publishById({ uriTemplate: (id) => `/bla/${id}/blabla` })
 
         publishFunc.call(({ userId, onStop: () => {} }), resourceId)
 
@@ -66,7 +66,7 @@ if (Meteor.isServer) {
         const publishFunc = publishFactory({
           collectionName: 'apples',
           dataResolver: (data) => data.bla.things[3]
-        }).publishById({uriTemplate: id => `/resource/${id}`})
+        }).publishById({ uriTemplate: id => `/resource/${id}` })
         const fakeApple = { description: 'Fuji', id: 111 }
         const fakePayload = {
           bla: {
@@ -91,7 +91,7 @@ if (Meteor.isServer) {
         const publishFunc = publishFactory({
           collectionName: 'oranges',
           dataResolver: (data) => data.oranges.list
-        }).publishById({uriTemplate: id => `/resource/${id}`})
+        }).publishById({ uriTemplate: id => `/resource/${id}` })
         const oranges = [
           { id: 111, size: 3 },
           { id: 222, size: 7 },
@@ -119,7 +119,7 @@ if (Meteor.isServer) {
           ready: sinon.spy(),
           onStop: () => {} // TODO: make it a spy and test
         }
-        const publishFunc = publishFactory({}).publishById({uriTemplate: id => `/resource/${id}`})
+        const publishFunc = publishFactory({}).publishById({ uriTemplate: id => `/resource/${id}` })
 
         innerReject()
         publishFunc.call(context, 444)

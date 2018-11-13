@@ -31,7 +31,7 @@ if (Meteor.isClient) {
     it('should render an error message that resulted from loading the case', () => {
       const message = 'Some error occurred'
       const error = {
-        error: {message}
+        error: { message }
       }
       const comp = shallow(<Case caseError={error} />)
 
@@ -41,7 +41,7 @@ if (Meteor.isClient) {
     it('should render the main sub-route after all data has been loaded', () => {
       const comp = shallow(
         <Case userBzLogin='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
-          match={{url: '/bla', params: {caseId: 41}}} />
+          match={{ url: '/bla', params: { caseId: 41 } }} />
       )
 
       expect(comp.find('Route').findWhere(route => route.props().path === '/bla')).to.have.length(1)
@@ -50,7 +50,7 @@ if (Meteor.isClient) {
     it('should render the attachment viewer sub-route after all data has been loaded', () => {
       const comp = shallow(
         <Case userEmail='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
-          match={{url: '/bla/32', params: {caseId: 41}}} />
+          match={{ url: '/bla/32', params: { caseId: 41 } }} />
       )
 
       expect(comp.find('Route').findWhere(route => route.props().path === '/bla/32/attachment/:attachId')).to.have.length(1)
@@ -59,7 +59,7 @@ if (Meteor.isClient) {
     it('should redirect to the main sub-route if no match is found after all data has been loaded', () => {
       const comp = shallow(
         <Case userBzLogin='a@example.com' comments={[]} attachmentUploads={[]} caseItem={{}}
-          match={{url: '/bla/32', params: {caseId: 41}}} />
+          match={{ url: '/bla/32', params: { caseId: 41 } }} />
       )
 
       expect(comp.find('Switch Redirect').props().to).to.equal('/bla/32')

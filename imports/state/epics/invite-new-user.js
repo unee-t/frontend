@@ -12,7 +12,7 @@ export const inviteNewUser = action$ =>
   action$
     .filter(action => [INVITE_NEW_USER, ASSIGN_NEW_USER].includes(action.type))
     .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .mergeMap(({type, email, role, isOccupant, caseId, unitId}) => {
+    .mergeMap(({ type, email, role, isOccupant, caseId, unitId }) => {
       const meteorResult$ = (new Subject())
         .take(1)
         .map((error) => ({

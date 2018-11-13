@@ -77,7 +77,7 @@ export default (req, res) => {
       })
 
       // Updating the default assignee for the role if none is defined
-      UnitRolesData.update(Object.assign({defaultAssigneeId: -1}, unitRoleMatcher), {
+      UnitRolesData.update(Object.assign({ defaultAssigneeId: -1 }, unitRoleMatcher), {
         $set: {
           defaultAssigneeId: invitee._id
         }

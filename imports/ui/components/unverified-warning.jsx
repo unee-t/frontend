@@ -37,7 +37,7 @@ UnverifiedWarning.propTypes = {
 }
 
 export default connect(
-  ({resendVerificationState}) => ({
+  ({ resendVerificationState }) => ({
     resendSuccess: resendVerificationState.resendSuccess
   }) // Redux store to props
 )(createContainer(

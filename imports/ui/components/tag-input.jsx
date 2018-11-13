@@ -19,7 +19,7 @@ class TagInput extends Component {
     const newError = faultyCandidate && validator(faultyCandidate)
     if (newError) {
       onErrorStateChanged && onErrorStateChanged(true)
-      this.setState({error: newError})
+      this.setState({ error: newError })
     } else {
       onTagsChanged(tags.concat(candidates))
       this.setState({
@@ -42,7 +42,7 @@ class TagInput extends Component {
     let doSetValue = false
     if (value.length > currInput.length) {
       if (value.length - currInput.length > 1) { // value pasted into the field
-        this.setState({currInput: value}) // Setting the new value first in case there'll be an error to correct
+        this.setState({ currInput: value }) // Setting the new value first in case there'll be an error to correct
         this.convertValueToTags(value)
       } else {
         // Finding the new char's index in the string

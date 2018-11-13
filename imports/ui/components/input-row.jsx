@@ -24,7 +24,7 @@ export default class InputRow extends Component {
         multiLine={!!isMultiLine}
         hintText={placeholder}
         inpRef={inpRef}
-        {...{type, errorText, disabled, value, onChange}}
+        {...{ type, errorText, disabled, value, onChange }}
       />
     )
   }

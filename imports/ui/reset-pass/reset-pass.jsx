@@ -41,7 +41,7 @@ class ResetPass extends Component {
         <form onSubmit={this.handleSubmit}>
           <fieldset className='ba b--transparent ph0 mh0'>
             <InputRow label='New password' value={newPass} inpType='password'
-              onChange={evt => this.setState({newPass: evt.target.value})}
+              onChange={evt => this.setState({ newPass: evt.target.value })}
             />
             <InputRow label='Confirm password' value={confirmPass} errorText={error || asyncError} inpType='password'
               onChange={evt => this.setState({
@@ -67,6 +67,6 @@ ResetPass.propTypes = {
 }
 
 export default connect(
-  ({ passResetState: { isRequested, error } }) => ({isRequested, asyncError: error}) // map redux state to props
+  ({ passResetState: { isRequested, error } }) => ({ isRequested, asyncError: error }) // map redux state to props
 )(createContainer(() => ({ // map meteor state to props
 }), ResetPass))

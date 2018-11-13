@@ -5,5 +5,5 @@ import { collectionName } from '../../api/cases'
 export const editCaseField = debouncedMethodCaller({
   actionType: EDIT_CASE_FIELD,
   methodName: `${collectionName}.editCaseField`,
-  argTranslator: ({changeSet, caseId}) => [parseInt(caseId), changeSet]
+  argTranslator: ({ changeSet, caseId }) => [parseInt(caseId), changeSet]
 })

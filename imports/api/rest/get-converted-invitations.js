@@ -8,14 +8,14 @@ export default (req, res) => {
     if (req.query.from) { query['dates.0']['$gte'] = new Date(req.query.from) }
     if (req.query.to) { query['dates.0']['$lte'] = new Date(req.query.to) }
     AccessInvitations.rawCollection().aggregate([
-      {$match: query},
-      {$unwind: '$dates'},
-      {$sort: {dates: 1}},
-      {$group: {
+      { $match: query },
+      { $unwind: '$dates' },
+      { $sort: { dates: 1 } },
+      { $group: {
         _id: { userId: '$userId' },
         units: { $addToSet: '$unitId' },
         firstOccurance: { $first: '$dates' }
-      }}
+      } }
     ]).toArray()
       .then(docs => {
         res.send(docs)

@@ -16,7 +16,7 @@ export default function attachmentUploads (state = {}, action) {
     newState[idStr] = (() => {
       switch (action.type) {
         case UPLOADING: // Creating a new process descriptor and appending to this case's list
-          const newProc = {processId, preview, file, caseId}
+          const newProc = { processId, preview, file, caseId }
           return state[idStr] ? state[idStr].concat([newProc]) : [newProc]
         case PROGRESS:
         case ERROR: // Both actions' parsing involve modifying an existing process descriptor
@@ -24,9 +24,9 @@ export default function attachmentUploads (state = {}, action) {
             ? (
               action.type === PROGRESS
                 // For PROGRESS, modify "percent" from the action
-                ? Object.assign({}, proc, {percent})
+                ? Object.assign({}, proc, { percent })
                 // For ERROR, remove "percent" and add error related info from the action
-                : Object.assign({}, proc, {percent: undefined}, _.pick(action, 'error', 'errorMessage'))
+                : Object.assign({}, proc, { percent: undefined }, _.pick(action, 'error', 'errorMessage'))
             ) : proc
           )
         case COMPLETED: // Removing the process descriptor from this case's list once its completed

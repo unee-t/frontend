@@ -59,7 +59,7 @@ const tabsOrder = [
 
 const TabHeader = ({ isSelected, label, onSelected }) => (
   <div className={'flex-grow transition-bg' + (isSelected ? ' bg-white' : '')}>
-    <MenuItem style={{minHeight: 'auto'}} innerDivStyle={resetMenuItemDivStyle} onClick={onSelected}>
+    <MenuItem style={{ minHeight: 'auto' }} innerDivStyle={resetMenuItemDivStyle} onClick={onSelected}>
       <div className='mid-gray lh-copy tc f6 fw5 pv2'>
         {label.toUpperCase()}
       </div>
@@ -85,8 +85,8 @@ class ReportWizard extends Component {
     evt.preventDefault()
     const { reportTitle } = this.state
     const { reportItem, dispatch } = this.props
-    dispatch(editReportField(reportItem.id, {title: reportTitle}))
-    this.setState({isEditable: false})
+    dispatch(editReportField(reportItem.id, { title: reportTitle }))
+    this.setState({ isEditable: false })
   }
 
   componentDidUpdate (prevProps, prevState) {
@@ -97,7 +97,7 @@ class ReportWizard extends Component {
       (prevProps.reportItem && prevProps.reportItem.title !== reportItem.title)
     ) {
       this.titleUnset = false
-      this.setState({reportTitle: reportItem.title})
+      this.setState({ reportTitle: reportItem.title })
     }
 
     if (this.state.isEditable && !prevState.isEditable && this.focusableInput) {
@@ -146,14 +146,14 @@ class ReportWizard extends Component {
                   underlineShow={isEditable}
                   currentValue={reportTitle}
                   inpRef={el => { this.focusableInput = el }}
-                  onEdit={val => this.setState({reportTitle: val})}
+                  onEdit={val => this.setState({ reportTitle: val })}
                 />
                 {isEditable ? (
                   <div className='absolute right-0 tl f6 bondi-blue fw5'>
                     <FlatButton
                       className='ph2'
                       style={flatButtonReset}
-                      onClick={() => this.setState({isEditable: false, reportTitle: reportItem.title})}
+                      onClick={() => this.setState({ isEditable: false, reportTitle: reportItem.title })}
                     >
                       <span className='silver'>Cancel</span>
                     </FlatButton>
@@ -165,7 +165,7 @@ class ReportWizard extends Component {
                   </div>
                 ) : (
                   <div className='absolute bottom-1 right-0 tl'>
-                    <FontIcon className='material-icons' color='var(--silver)' onClick={() => this.setState({isEditable: true})}>create</FontIcon>
+                    <FontIcon className='material-icons' color='var(--silver)' onClick={() => this.setState({ isEditable: true })}>create</FontIcon>
                   </div>
                 )}
               </div>
@@ -201,7 +201,7 @@ class ReportWizard extends Component {
                         <EditableItem
                           label='Remarks and Comments'
                           initialValue={reportItem.additionalComments}
-                          onEdit={val => dispatch(editReportField(reportItem.id, {additionalComments: val}))}
+                          onEdit={val => dispatch(editReportField(reportItem.id, { additionalComments: val }))}
                           isMultiLine
                         />
                       </div>
@@ -329,7 +329,7 @@ export default connect(
   createContainer(props => {
     const { reportId } = props.match.params
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
-    const reportItem = reportHandle.ready() ? Reports.findOne({id: parseInt(reportId)}) : null
+    const reportItem = reportHandle.ready() ? Reports.findOne({ id: parseInt(reportId) }) : null
     const commentsHandle = Meteor.subscribe(`${commentsCollName}.byCaseId`, reportId)
     const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
     let unitHandle, childHandles
@@ -345,14 +345,14 @@ export default connect(
         !bzLoginHandle.ready() ||
         !commentsHandle.ready() ||
         childHandles.filter(handle => !handle.ready()).length > 0,
-      unitItem: reportItem ? Units.findOne({name: reportItem.selectedUnit}) : null,
+      unitItem: reportItem ? Units.findOne({ name: reportItem.selectedUnit }) : null,
       childCases: reportItem ? Cases.find({
         id: {
           $in: reportItem.depends_on
         }
       }).fetch() : null,
       user: Meteor.user(),
-      attachmentUrls: Comments.find({bug_id: parseInt(reportId)}).fetch().reduce((all, curr) => {
+      attachmentUrls: Comments.find({ bug_id: parseInt(reportId) }).fetch().reduce((all, curr) => {
         if (attachmentTextMatcher(curr.text)) {
           all.push(curr.text.split('\n')[1])
         }

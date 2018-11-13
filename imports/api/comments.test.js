@@ -73,16 +73,16 @@ describe('Comments collection', () => {
           const caseId = 123
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {apiKey, login: 'a@example.com'}
+            bugzillaCreds: { apiKey, login: 'a@example.com' }
           })
-          callAPIStub.throws({response: {data: {}}})
+          callAPIStub.throws({ response: { data: {} } })
 
           const bound = commentsInsert.bind(null, comment, caseId)
 
           expect(bound).to.throw(Meteor.Error)
           expect(callAPIStub).to.have.been.calledOnce()
           expect(callAPIStub).to.have.been.calledWithMatch(
-            'post', `/rest/bug/${caseId}/comment`, {comment, api_key: apiKey}, false, true
+            'post', `/rest/bug/${caseId}/comment`, { comment, api_key: apiKey }, false, true
           )
         })
         it('should fetch the created comment by "GET /rest/bug/comment/{commentId}", and throw if it fails', () => {
@@ -90,19 +90,19 @@ describe('Comments collection', () => {
           const apiKey = 'asdkjajsej12@QasdAj2kad'
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {apiKey, login: 'a@example.com'}
+            bugzillaCreds: { apiKey, login: 'a@example.com' }
           })
           callAPIStub.onFirstCall().returns({
-            data: {id: newCommentId}
+            data: { id: newCommentId }
           })
-          callAPIStub.onSecondCall().throws({response: {data: {}}})
+          callAPIStub.onSecondCall().throws({ response: { data: {} } })
 
           const bound = commentsInsert.bind(null, 'bla bla bla', 123)
 
           expect(bound).to.throw(Meteor.Error)
           expect(callAPIStub).to.have.been.calledTwice()
           expect(callAPIStub).to.have.been.calledWithMatch(
-            'get', `/rest/bug/comment/${newCommentId}`, {api_key: apiKey}, false, true
+            'get', `/rest/bug/comment/${newCommentId}`, { api_key: apiKey }, false, true
           )
         })
         it('should notify subscribers by using "handleAdded" with the new comment object for the specified caseId', () => {
@@ -117,10 +117,10 @@ describe('Comments collection', () => {
           }
           Meteor.userId.returns(1)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {apiKey: 'sdfS5aDra923sAS', login: 'a@example.com'}
+            bugzillaCreds: { apiKey: 'sdfS5aDra923sAS', login: 'a@example.com' }
           })
           callAPIStub.onFirstCall().returns({
-            data: {id: newCommentObj.id}
+            data: { id: newCommentObj.id }
           })
           callAPIStub.onSecondCall().returns({
             data: {
@@ -144,13 +144,13 @@ describe('Comments collection', () => {
           const caseId = 555
           Meteor.userId.returns(5)
           Meteor.users.findOne.returns({
-            bugzillaCreds: {login: emailAddr}
+            bugzillaCreds: { login: emailAddr }
           })
 
           Meteor.call('comments.insert', msgContent, caseId, () => {}) // Empty cb fn used to silence the server error
 
-          expect(Meteor.users.findOne).to.have.been.calledWithMatch({_id: 5})
-          const newComment = Comments.findOne({bug_id: caseId})
+          expect(Meteor.users.findOne).to.have.been.calledWithMatch({ _id: 5 })
+          const newComment = Comments.findOne({ bug_id: caseId })
           expect(newComment).to.not.be.null()
           expect(newComment).to.include({
             creator: emailAddr,

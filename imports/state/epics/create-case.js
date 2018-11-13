@@ -21,7 +21,7 @@ export const createCase = action$ => action$
   .mergeMap(({ params, newUserEmail, newUserIsOccupant, parentReport }) => {
     const meteorResult$ = (new Subject())
       .take(1)
-      .mergeMap(({error, result: {newCaseId}}) => {
+      .mergeMap(({ error, result: { newCaseId } }) => {
         if (error) {
           return of({
             type: CREATE_CASE_ERROR,
@@ -40,11 +40,11 @@ export const createCase = action$ => action$
       })
     const parentReportId = parentReport ? parentReport.id : null
     Meteor.call(
-      `${collectionName}.insert`, params, {newUserEmail, newUserIsOccupant, parentReportId}, (error, result) => {
+      `${collectionName}.insert`, params, { newUserEmail, newUserIsOccupant, parentReportId }, (error, result) => {
         if (error) {
           console.error('Case creation error', error)
         }
-        meteorResult$.next({error, result: result || {}})
+        meteorResult$.next({ error, result: result || {} })
       }
     )
     return merge(

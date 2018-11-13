@@ -15,7 +15,7 @@ export const invite = (user, invitedBy) => {
     const invitorUsername = invitedBy.profile.name
     const invitorEmailAddress = invitedBy.emails[0].address
     const invitorRole = unitData.data.products[0].components.find(
-      ({default_assigned_to: defAssigned}) => defAssigned === invitedBy.emails[0].address
+      ({ default_assigned_to: defAssigned }) => defAssigned === invitedBy.emails[0].address
     )
     const roleStr = invitorRole ? invitorRole.name : 'Administrator'
 

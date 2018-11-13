@@ -33,7 +33,7 @@ if (Meteor.isServer) {
       it('should call "callAPI" with "POST /rest/user" and throw an error if it throws', () => {
         callAPIStub.throws()
 
-        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
+        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: {} }, {})
 
         expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledWith(
@@ -41,10 +41,10 @@ if (Meteor.isServer) {
         )
       })
       it('should do an http request "POST (apienroll API)" and throw an error if it throws', () => {
-        callAPIStub.returns({ data: {id: 2626} })
+        callAPIStub.returns({ data: { id: 2626 } })
         HTTP.call.throws()
 
-        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {}}, {})
+        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: {} }, {})
 
         expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledOnce()
@@ -120,7 +120,7 @@ if (Meteor.isServer) {
         const bzLogin = 'bla'
         const bzPass = 'bla bla'
 
-        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: { bzLogin, bzPass } }, {})
 
         expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledWith(
@@ -128,12 +128,12 @@ if (Meteor.isServer) {
         )
       })
       it('should do an http request "POST (apienroll API)" and throw an error if it throws', () => {
-        callAPIStub.returns({ data: {id: 3232} })
+        callAPIStub.returns({ data: { id: 3232 } })
         HTTP.call.throws()
         const bzLogin = 'bla'
         const bzPass = 'bla bla'
 
-        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: { bzLogin, bzPass } }, {})
 
         expect(boundFunc).to.throw()
         expect(callAPIStub).to.have.been.calledOnce()
@@ -157,7 +157,7 @@ if (Meteor.isServer) {
         callAPIStub.returns({ data: { id: fakeId } })
         HTTP.call.returns()
 
-        const boundFunc = onCreateUser.bind(null, {email: fakeEmail, profile: {bzLogin, bzPass}}, {})
+        const boundFunc = onCreateUser.bind(null, { email: fakeEmail, profile: { bzLogin, bzPass } }, {})
         const customizedUser = boundFunc()
 
         expect(customizedUser.bugzillaCreds.password).to.not.be.ok()

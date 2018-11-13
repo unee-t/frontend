@@ -24,7 +24,7 @@ import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
 import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
-import {ReportIcon} from '../report/report-icon'
+import { ReportIcon } from '../report/report-icon'
 import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
 import { Sorter } from '../explorer-components/sorter'
 import { StatusFilter } from '../explorer-components/status-filter'
@@ -34,16 +34,16 @@ import {
   menuItemDivStyle
 } from '../general.mui-styles'
 
-function NoItem ({item, iconType}) {
+function NoItem ({ item, iconType }) {
   return (
     <div className='mt5 pt3 tc'>
       <div className='dib relative'>
-        <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '5rem'}}>
+        <FontIcon className='material-icons' color='var(--moon-gray)' style={{ fontSize: '5rem' }}>
           {iconType}
         </FontIcon>
         <div className='absolute bottom-0 right-0 pb1'>
           <div className='br-100 ba b--very-light-gray bg-very-light-gray lh-cram'>
-            <FontIcon className='material-icons' color='var(--moon-gray)' style={{fontSize: '2.5rem'}}>
+            <FontIcon className='material-icons' color='var(--moon-gray)' style={{ fontSize: '2.5rem' }}>
               add_circle_outline
             </FontIcon>
           </div>
@@ -215,7 +215,7 @@ class Unit extends Component {
                 className='no-shrink'
                 onChange={this.handleChange}
                 value={viewIdx}
-                inkBarStyle={{backgroundColor: 'white'}}
+                inkBarStyle={{ backgroundColor: 'white' }}
               >
                 <Tab label={`CASES (${sortedCases.length})`} value={0} />
                 <Tab label={`REPORTS (${reportList.length})`} value={1} />
@@ -224,9 +224,9 @@ class Unit extends Component {
               <div className='flex-grow flex flex-column overflow-auto'>
                 <SwipeableViews
                   resistance
-                  style={{flex: 1, display: 'flex', flexDirection: 'column'}}
-                  containerStyle={{flex: 1}}
-                  slideStyle={{display: 'flex', flexDirection: 'column'}}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+                  containerStyle={{ flex: 1 }}
+                  slideStyle={{ display: 'flex', flexDirection: 'column' }}
                   index={viewIdx}
                   onChangeIndex={this.handleChange}
                 >
@@ -249,8 +249,8 @@ class Unit extends Component {
                             onSortClicked={this.handleSortClicked}
                             sortBy={sortBy}
                             labels={labels.concat([
-                              [SORT_BY.LATEST_UPDATE, {category: 'Updated - Latest', selected: 'Updated ↓'}],
-                              [SORT_BY.OLDEST_UPDATE, {category: 'Updated - Oldest', selected: 'Updated ↑'}]
+                              [SORT_BY.LATEST_UPDATE, { category: 'Updated - Latest', selected: 'Updated ↓' }],
+                              [SORT_BY.OLDEST_UPDATE, { category: 'Updated - Oldest', selected: 'Updated ↑' }]
                             ])}
                           />
                         </div>
@@ -396,7 +396,7 @@ export default connect(
       unitError = error
     }
   })
-  const unitItem = unitHandle.ready() ? Units.findOne({id: parseInt(unitId)}) : null
+  const unitItem = unitHandle.ready() ? Units.findOne({ id: parseInt(unitId) }) : null
   let casesHandle, reportsHandle
   if (unitItem) {
     casesHandle = Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
@@ -413,8 +413,8 @@ export default connect(
   return {
     isLoading: !unitHandle.ready() || !casesHandle.ready() || !reportsHandle.ready(),
     unitUsers: unitItem ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
-    caseList: unitItem ? Cases.find({selectedUnit: unitItem.name}).fetch() : null,
-    reportList: unitItem ? Reports.find({selectedUnit: unitItem.name}).fetch() : null,
+    caseList: unitItem ? Cases.find({ selectedUnit: unitItem.name }).fetch() : null,
+    reportList: unitItem ? Reports.find({ selectedUnit: unitItem.name }).fetch() : null,
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
     reportsError,
     casesError,

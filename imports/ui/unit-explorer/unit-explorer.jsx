@@ -61,11 +61,11 @@ class UnitExplorer extends Component {
   }
 
   onSearchChanged = (searchText) => {
-    this.setState({searchText})
+    this.setState({ searchText })
     if (searchText === '') {
-      this.setState({searchMode: false})
+      this.setState({ searchMode: false })
     } else {
-      this.setState({searchMode: true})
+      this.setState({ searchMode: true })
       const matcher = new RegExp(searchText, 'i')
       const searchResult = this.props.unitList
         .filter(unit => !matcher || (unit.name && unit.name.match(matcher)))
@@ -148,8 +148,8 @@ class UnitExplorer extends Component {
                 onSortClicked={this.handleSortClicked}
                 sortBy={sortBy}
                 labels={[
-                  [SORT_BY.NAME_ASCENDING, {category: 'Name (A to Z)', selected: 'Name ↑'}],
-                  [SORT_BY.NAME_DESCENDING, {category: 'Name (Z to A)', selected: 'Name ↓'}]
+                  [SORT_BY.NAME_ASCENDING, { category: 'Name (A to Z)', selected: 'Name ↑' }],
+                  [SORT_BY.NAME_DESCENDING, { category: 'Name (Z to A)', selected: 'Name ↓' }]
                 ]}
               />
             </div>

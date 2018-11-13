@@ -26,7 +26,7 @@ if (Meteor.isServer) {
     getAPIUnitByName (unitName, apiKey) {
       try {
         const requestUrl = `/rest/product?names=${encodeURIComponent(unitName)}`
-        const unitResult = callAPI('get', requestUrl, {api_key: apiKey}, false, true)
+        const unitResult = callAPI('get', requestUrl, { api_key: apiKey }, false, true)
         return unitResult.data.products[0]
       } catch (e) {
         // Pass through just to highlight this method can throw
@@ -59,11 +59,11 @@ const withRolesData = unitAssocHelper(UnitRolesData, unitRolesCollName, 'unitBzI
 
 export const getUnitRoles = unit => {
   // Resolving roles via the newer mongo collection
-  const roleDocs = UnitRolesData.find({unitBzId: unit.id}).fetch()
+  const roleDocs = UnitRolesData.find({ unitBzId: unit.id }).fetch()
 
   // Prefetching all user docs to optimize query performance (single query vs one for each user)
   const userIds = roleDocs.reduce((all, roleObj) => all.concat(roleObj.members.map(mem => mem.id)), [])
-  const userDocs = Meteor.users.find({_id: {$in: userIds}}).fetch()
+  const userDocs = Meteor.users.find({ _id: { $in: userIds } }).fetch()
 
   // Constructing the user role objects array similar to the way it is done from BZ's product components below
   const roleUsers = roleDocs.reduce((all, roleObj) => {
@@ -90,7 +90,7 @@ export const getUnitRoles = unit => {
   const invMatcher = makeInvitationMatcher(unit)
   invMatcher.receivedInvites.$elemMatch.done = true
   return _.uniqBy(
-    unit.components.reduce((all, {default_assigned_to: assigned, name}) => { // Getting names from the unit's components
+    unit.components.reduce((all, { default_assigned_to: assigned, name }) => { // Getting names from the unit's components
       if (assigned) {
         all.push({
           login: assigned,
@@ -113,7 +113,7 @@ export const getUnitRoles = unit => {
         isOccupant
       }))
     ),
-    ({login}) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation
+    ({ login }) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation
   )
 }
 
@@ -150,7 +150,7 @@ export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType
   // Adding to the user to a role on BZ using lambda
   try {
     HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
-      data: [Object.assign({_id: invitationId}, invitationObj)],
+      data: [Object.assign({ _id: invitationId }, invitationObj)],
       headers: {
         Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
       }
@@ -165,7 +165,7 @@ export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType
   }
 
   // Marking the pending invitation as "done", now that the API responded with success
-  PendingInvitations.update({_id: invitationId}, {
+  PendingInvitations.update({ _id: invitationId }, {
     $set: {
       done: true
     }
@@ -225,12 +225,12 @@ if (Meteor.isServer) {
       if (this.userId) {
         const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(this.userId)
         try {
-          const listResponse = callAPI('get', apiUrl, {api_key: apiKey}, false, true)
+          const listResponse = callAPI('get', apiUrl, { api_key: apiKey }, false, true)
           ids = listResponse.data.ids
         } catch (e) {
           console.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
           this.ready()
-          this.error(new Meteor.Error({message: 'REST API error', origError: e}))
+          this.error(new Meteor.Error({ message: 'REST API error', origError: e }))
         }
       }
       if (ids.length === 0) {
@@ -273,7 +273,7 @@ if (Meteor.isServer) {
         withUsers(
           unitItem => getUnitRoles(unitItem).map(u => u.login),
           // Should rely both on completed invitations and unit information (which is why the "$or" is there)
-          (query, unitItem) => ({$or: [makeInvitationMatcher(unitItem), query]}),
+          (query, unitItem) => ({ $or: [makeInvitationMatcher(unitItem), query] }),
           (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
         ),
         withMetaData(metaDataFields || {
@@ -438,7 +438,7 @@ Meteor.methods({
         args: [creationArgs]
       })
 
-      return {newUnitId: unitBzId}
+      return { newUnitId: unitBzId }
     }
   }
 })
@@ -448,10 +448,10 @@ if (Meteor.isClient) {
   Units = new Mongo.Collection(collectionName)
   Units.helpers({
     metaData () {
-      return UnitMetaData.findOne({bzId: this.id})
+      return UnitMetaData.findOne({ bzId: this.id })
     },
     rolesData () {
-      return UnitRolesData.find({unitBzId: this.id}).fetch()
+      return UnitRolesData.find({ unitBzId: this.id }).fetch()
     }
   })
 }

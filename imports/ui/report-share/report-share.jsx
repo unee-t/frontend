@@ -96,7 +96,7 @@ class ReportShare extends Component {
           <TagInput
             className='mt2'
             tags={newRecipients}
-            onTagsChanged={tags => this.setState({newRecipients: tags})}
+            onTagsChanged={tags => this.setState({ newRecipients: tags })}
             validator={value => {
               if (!emailValidator(value)) {
                 return 'Not a valid email address'
@@ -105,7 +105,7 @@ class ReportShare extends Component {
                 return 'Email already present'
               }
             }}
-            onErrorStateChanged={hasError => this.setState({tagInputError: hasError})}
+            onErrorStateChanged={hasError => this.setState({ tagInputError: hasError })}
           />
           <div className='mt3'>
             <RaisedButton
@@ -161,22 +161,22 @@ ReportShare.propTypes = {
 }
 
 export default connect(
-  ({ reportSharingState: { inProgress, success } }) => ({inProgress, success})
+  ({ reportSharingState: { inProgress, success } }) => ({ inProgress, success })
 )(createContainer(
   props => {
     const reportId = parseInt(props.match.params.reportId)
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
-    const reportItem = Reports.findOne({id: reportId})
+    const reportItem = Reports.findOne({ id: reportId })
     const snapHandle = Meteor.subscribe(`${snapsCollName}.byReportIdJustUrls`, reportId)
     let unitHandle, unitItem
     if (reportItem) {
       unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithUsers`, reportItem.selectedUnit)
-      unitItem = Units.findOne({name: reportItem.selectedUnit})
+      unitItem = Units.findOne({ name: reportItem.selectedUnit })
     }
     return {
       isLoading: !reportHandle.ready() || (unitHandle && !unitHandle.ready()) || !snapHandle.ready(),
       unitUsers: unitItem && getUnitRoles(unitItem),
-      pdfUrl: snapHandle.ready() ? ReportSnapshots.findOne({'reportItem.id': reportId}).pdfUrl : '',
+      pdfUrl: snapHandle.ready() ? ReportSnapshots.findOne({ 'reportItem.id': reportId }).pdfUrl : '',
       reportItem
     }
   },
