@@ -34,4 +34,8 @@ module.name_mapper='^meteor\/\(.*\)$' -> '<PROJECT_ROOT>/.meteor/local/build/pro
 # e.g. "meteor/meteor"
 module.name_mapper='^meteor\/\(.*\)$' -> '<PROJECT_ROOT>/.meteor/local/build/programs/web.browser/packages/\1'
 
+# Fallback for Meteor core on CI Builds
+# e.g. "meteor/meteor"
+module.name_mapper='^meteor\/\(.*\)$' -> '~/.meteor/packages/\1'
+
 [strict]
