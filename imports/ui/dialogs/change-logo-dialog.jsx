@@ -18,7 +18,7 @@ import {
 type Props = {
   show: boolean,
   title: string,
-  onConfirm: () => void,
+  onConfirm: (file: File) => void,
   onClose: () => void
 }
 
@@ -38,6 +38,17 @@ class ChangeLogoDialog extends React.Component<Props, State> {
       uploadPreview: null
     })
     this.props.onClose()
+  }
+
+  handleConfirm = () => {
+    const file = this.uploadedFile
+    this.uploadedFile = null
+    this.setState({
+      uploadPreview: null
+    })
+    if (file) {
+      this.props.onConfirm(file)
+    }
   }
 
   render () {
@@ -93,7 +104,7 @@ class ChangeLogoDialog extends React.Component<Props, State> {
             className='ml3'
             primary
             disabled={!uploadPreview}
-            onClick={onConfirm}
+            onClick={this.handleConfirm}
           >
             <span className='white'>
               Done
