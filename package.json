@@ -3,14 +3,13 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
-    "test": "npm run lint && npm run proof && npm run flow-ci",
+    "test": "npm run lint && npm run proof",
     "debug": "meteor run --inspect",
     "lint": "standard --verbose | snazzy",
     "lint-fix": "standard --fix",
     "proof": "TEST_BROWSER_DRIVER=puppeteer meteor test --once --driver-package meteortesting:mocha",
     "test-local": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
-    "flow": "flow",
-    "flow-ci": "flow check"
+    "flow": "flow"
   },
   "standard": {
     "parser": "babel-eslint",
