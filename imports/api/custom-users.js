@@ -55,6 +55,17 @@ if (Meteor.isServer) {
     }
   })
 
+  Meteor.publish('users.myPremiumStatus', function () {
+    if (verifyUserLogin(this)) {
+      return Meteor.users.find({ _id: this.userId }, {
+        fields: {
+          'premiumFeaturesEnabled': 1,
+          'customReportsLogoUrl': 1
+        }
+      })
+    }
+  })
+
   Meteor.publish('users.myNotificationSettings', function () {
     if (verifyUserLogin(this)) {
       return Meteor.users.find({ _id: this.userId }, {
@@ -192,6 +203,15 @@ Meteor.methods({
         throw e
       }
     }
+  },
+  'users.changeReportsLogo': function (url) {
+    const user = Meteor.user()
+    if (!user.premiumFeaturesEnabled) throw new Meteor.Error('Allowed for premium users only')
+    Meteor.users.update(Meteor.userId(), {
+      $set: {
+        customReportsLogoUrl: url
+      }
+    })
   },
   'resendEmail': function () {
     if (Meteor.isServer) {
