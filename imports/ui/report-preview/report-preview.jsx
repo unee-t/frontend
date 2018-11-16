@@ -1,4 +1,5 @@
 // @flow
+/* global File */
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
@@ -11,16 +12,23 @@ import FontIcon from 'material-ui/FontIcon'
 import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import InnerAppBar from '../components/inner-app-bar'
 import ChangeLogoDialog from '../dialogs/change-logo-dialog'
+import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
 import { generateHTMLPreview } from './report-preview.actions'
+import { changeReportsLogo, dismissChangeLogoError } from '/imports/state/actions/report-settings.actions'
 
 type Props = {
   isLoading: boolean,
   previewIsLoading: boolean,
+  isUploadingLogo: boolean,
+  uploadingLogoPercent?: number,
+  uploadingLogoError?: { error?: string },
   reportItem: any,
   match: any,
   dispatch: (action: any) => void,
-  previewUrl: string
+  previewUrl: string,
+  premiumEnabled: boolean,
+  customLogoExists: boolean
 }
 
 type State = {
@@ -37,9 +45,19 @@ class ReportPreview extends React.Component<Props, State> {
     const { match, dispatch } = this.props
     dispatch(generateHTMLPreview(match.params.reportId))
   }
+  componentDidUpdate (prevProps: Props) {
+    const { uploadingLogoError, isUploadingLogo, match, dispatch } = this.props
 
+    // Reloading a new preview if it is just after uploading a new logo
+    if (prevProps.isUploadingLogo && !isUploadingLogo && !uploadingLogoError) {
+      dispatch(generateHTMLPreview(match.params.reportId))
+    }
+  }
   render () {
-    const { isLoading, reportItem, dispatch, previewIsLoading, previewUrl } = this.props
+    const {
+      isLoading, reportItem, dispatch, previewIsLoading, previewUrl, premiumEnabled, customLogoExists,
+      isUploadingLogo, uploadingLogoError, uploadingLogoPercent
+    } = this.props
     const { showLogoAction, showChangeLogoDialog } = this.state
     if (isLoading) {
       return <Preloader />
@@ -59,26 +77,41 @@ class ReportPreview extends React.Component<Props, State> {
               <div className='absolute top-0 bottom-0 right-0 left-0'>
                 <iframe className='bn w-100 h-100' src={previewUrl} />
               </div>
-              <div className='absolute left-0 top-0 flex flex-column pl1 pt1'>
-                <div className='ba b--mid-gray b--dashed br2 bw1 w-content' onClick={() => {
-                  this.setState({
-                    showLogoAction: !showLogoAction
-                  })
-                }}>
-                  <div className='h3 w2 mh2' />
-                </div>
-                {showLogoAction && (
+              {isDraft && premiumEnabled && (
+                <div className='absolute left-0 top-0 flex flex-column pl1 pt1'>
                   <div
-                    className='mt1 bg-black-70 br2 white pa2 lh-title f6 b flex items-end'
-                    onClick={() => this.setState({ showChangeLogoDialog: true })}
+                    className={'ba b--mid-gray b--dashed br2 bw1 w-content' + (isUploadingLogo ? ' bg-white-60' : '')}
+                    onClick={() => {
+                      !isUploadingLogo && this.setState({
+                        showLogoAction: !showLogoAction
+                      })
+                    }}
                   >
-                    <FontIcon className='material-icons' color='#fff'>camera_alt</FontIcon>
-                    <div className='ml1'>
-                      Add photo or logo
+                    <div className='h3 w2 mh2 flex items-center justify-center'>
+                      {isUploadingLogo && (uploadingLogoPercent ? (
+                        <CircularProgress
+                          size={30} thickness={4} mode='determinate' value={uploadingLogoPercent} />
+                      ) : (
+                        <div className='dib'>
+                          <CircularProgress
+                            size={30} thickness={4} mode='indeterminate' />
+                        </div>
+                      ))}
                     </div>
                   </div>
-                )}
-              </div>
+                  {showLogoAction && (
+                    <div
+                      className='mt1 bg-black-70 br2 white pa2 lh-title f6 b flex items-end'
+                      onClick={() => this.setState({ showChangeLogoDialog: true })}
+                    >
+                      <FontIcon className='material-icons' color='#fff'>camera_alt</FontIcon>
+                      <div className='ml1'>
+                        {customLogoExists ? 'Change' : 'Add'} photo or logo
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           <div className='bg-white scroll-shadow-2 pa3 tc z-999'>
@@ -115,8 +148,19 @@ class ReportPreview extends React.Component<Props, State> {
         <ChangeLogoDialog
           title='Add Photo Or Logo To Report'
           show={showChangeLogoDialog}
-          onConfirm={() => {}}
+          onConfirm={(file: File) => {
+            this.setState({
+              showChangeLogoDialog: false,
+              showLogoAction: false
+            })
+            dispatch(changeReportsLogo(file))
+          }}
           onClose={() => this.setState({ showChangeLogoDialog: false })}
+        />
+        <ErrorDialog
+          show={!!uploadingLogoError}
+          text={uploadingLogoError ? uploadingLogoError.error : ''}
+          onDismissed={() => dispatch(dismissChangeLogoError())}
         />
       </div>
     )
@@ -124,21 +168,28 @@ class ReportPreview extends React.Component<Props, State> {
 }
 
 export default connect(
-  ({ reportPreviewUrls }, props) => {
+  ({ reportPreviewUrls, logoChangingState }, props) => {
     const { reportId } = props.match.params
     const previewInfo = reportPreviewUrls[reportId.toString()]
     return {
       previewIsLoading: !!previewInfo && !!previewInfo.inProgress,
-      previewUrl: previewInfo && previewInfo.url
+      previewUrl: previewInfo && previewInfo.url,
+      isUploadingLogo: logoChangingState.inProgress,
+      uploadingLogoPercent: logoChangingState.percent || 0,
+      uploadingLogoError: logoChangingState.error
     }
   }
 )(
   createContainer(props => {
     const { reportId } = props.match.params
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
+    const userHandle = Meteor.subscribe('users.myPremiumStatus')
+    const currUser = Meteor.user()
     return {
-      isLoading: !reportHandle.ready(),
-      reportItem: Reports.findOne({ id: parseInt(reportId) })
+      isLoading: !reportHandle.ready() || !userHandle.ready(),
+      reportItem: Reports.findOne({ id: parseInt(reportId) }),
+      premiumEnabled: !!currUser && currUser.premiumFeaturesEnabled,
+      customLogoExists: !!currUser && !! currUser.customReportsLogoUrl
     }
   }, ReportPreview)
 )
