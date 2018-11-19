@@ -52,7 +52,7 @@ class ChangeLogoDialog extends React.Component<Props, State> {
   }
 
   render () {
-    const { show, title, onConfirm } = this.props
+    const { show, title } = this.props
     const { uploadPreview } = this.state
     return (
       <Dialog

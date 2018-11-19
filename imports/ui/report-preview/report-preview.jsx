@@ -33,12 +33,14 @@ type Props = {
 
 type State = {
   showLogoAction: boolean,
-  showChangeLogoDialog: boolean
+  showChangeLogoDialog: boolean,
+  logoMarkingVisible: boolean
 }
 class ReportPreview extends React.Component<Props, State> {
   state = {
     showLogoAction: false,
-    showChangeLogoDialog: false
+    showChangeLogoDialog: false,
+    logoMarkingVisible: true
   }
 
   componentDidMount () {
@@ -53,12 +55,37 @@ class ReportPreview extends React.Component<Props, State> {
       dispatch(generateHTMLPreview(match.params.reportId))
     }
   }
+
+  handleIframeLoad = evt => {
+    const iframeDoc = evt.target.contentDocument
+    if (!iframeDoc) return console.warn('Report\'s content loaded from different domain, the dashed rect will be buggy')
+    iframeDoc.addEventListener('scroll', () => {
+      const { logoMarkingVisible } = this.state
+
+      if (logoMarkingVisible && iframeDoc.scrollingElement.scrollTop !== 0) {
+        this.setState({
+          logoMarkingVisible: false,
+          showLogoAction: false
+        })
+      } else if (iframeDoc.scrollingElement.scrollTop === 0) {
+        this.setState({
+          logoMarkingVisible: true
+        })
+      }
+    })
+    iframeDoc.addEventListener('click', () => {
+      this.setState({
+        showLogoAction: false
+      })
+    })
+  }
+
   render () {
     const {
       isLoading, reportItem, dispatch, previewIsLoading, previewUrl, premiumEnabled, customLogoExists,
       isUploadingLogo, uploadingLogoError, uploadingLogoPercent
     } = this.props
-    const { showLogoAction, showChangeLogoDialog } = this.state
+    const { showLogoAction, showChangeLogoDialog, logoMarkingVisible } = this.state
     if (isLoading) {
       return <Preloader />
     }
@@ -75,9 +102,9 @@ class ReportPreview extends React.Component<Props, State> {
           ) : previewUrl && (
             <div className='flex-grow relative'>
               <div className='absolute top-0 bottom-0 right-0 left-0'>
-                <iframe className='bn w-100 h-100' src={previewUrl} />
+                <iframe className='bn w-100 h-100' src={previewUrl} onLoad={this.handleIframeLoad} />
               </div>
-              {isDraft && premiumEnabled && (
+              {isDraft && premiumEnabled && logoMarkingVisible && (
                 <div className='absolute left-0 top-0 flex flex-column pl1 pt1'>
                   <div
                     className={'ba b--mid-gray b--dashed br2 bw1 w-content' + (isUploadingLogo ? ' bg-white-60' : '')}
@@ -189,7 +216,7 @@ export default connect(
       isLoading: !reportHandle.ready() || !userHandle.ready(),
       reportItem: Reports.findOne({ id: parseInt(reportId) }),
       premiumEnabled: !!currUser && currUser.premiumFeaturesEnabled,
-      customLogoExists: !!currUser && !! currUser.customReportsLogoUrl
+      customLogoExists: !!currUser && !!currUser.customReportsLogoUrl
     }
   }, ReportPreview)
 )
