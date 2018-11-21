@@ -1,4 +1,6 @@
-import React, { Component } from 'react'
+// @flow
+/* global SyntheticInputEvent, HTMLInputElement */
+import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { createContainer } from 'meteor/react-meteor-data'
 import { connect } from 'react-redux'
@@ -6,17 +8,46 @@ import RaisedButton from 'material-ui/RaisedButton'
 import Checkbox from 'material-ui/Checkbox'
 import InputRow from '../components/input-row'
 import PasswordInput from '../components/password-input'
-import actions from './signup.actions'
+import { submitSignupInfo } from './signup.actions'
 import LoginLayout from '../layouts/login-layout'
 import { emailValidator } from '../../util/validators'
+import CircularProgress from 'material-ui/CircularProgress'
 
-export class SignupPage extends Component {
+type Props = {
+  dispatch: (action: {}) => void,
+  userCreationState: {
+    inProgress: boolean,
+    error: string
+  }
+ }
+
+type State = {
+  termsAgreement: boolean,
+  info: {
+    password: string,
+    emailAddress: string
+  },
+  errorTexts: {}
+}
+
+type Inputs = Array<{
+  label: string,
+  identifier: string,
+  placeholder: string,
+  type: string,
+  onChange: (evt: SyntheticInputEvent<HTMLInputElement>) => void
+}>
+
+export class SignupPage extends React.Component<Props, State> {
+  inputs: Inputs
+
   constructor () {
     super(...arguments)
     this.state = {
       termsAgreement: false,
       info: {
-        password: ''
+        password: '',
+        emailAddress: ''
       },
       errorTexts: {}
     }
@@ -27,7 +58,7 @@ export class SignupPage extends Component {
         identifier: 'emailAddress',
         placeholder: 'Your email address',
         type: 'email',
-        onChange: evt => {
+        onChange: (evt) => {
           const { value } = evt.target
           const { info, errorTexts } = this.state
           this.setState({
@@ -43,24 +74,23 @@ export class SignupPage extends Component {
     this.inputs.forEach(({ identifier }) => { this.state.info[identifier] = '' })
   }
 
-  makeInfoChange = infoMod => this.setState({
+  makeInfoChange = (infoMod: {}) => this.setState({
     info: Object.assign({}, this.state.info, infoMod)
   })
 
-  handleSubmit = (event) => {
+  handleSubmit = (event: SyntheticInputEvent<HTMLInputElement>) => {
     // Stopping default form behavior
     event.preventDefault()
     if (!this.isFormValid()) return
 
     const { info } = this.state
     // Copying all the input values and trimming them
-    const signupInfo = Object.keys(info).reduce((all, curr) => {
+    const signupInfo: Object = Object.keys(info).reduce((all, curr) => {
       if (info[curr]) {
         all[curr] = info[curr].trim()
       }
       return all
     }, {})
-    const { submitSignupInfo } = actions
     this.props.dispatch(submitSignupInfo(signupInfo))
   }
 
@@ -75,8 +105,7 @@ export class SignupPage extends Component {
   }
   render () {
     const { info, errorTexts, termsAgreement } = this.state
-    const { showSignupError } = this.props
-
+    const { userCreationState } = this.props
     return (
       <LoginLayout subHeading='Sign up for a free account!'
         footerContent={
@@ -92,10 +121,10 @@ export class SignupPage extends Component {
               {this.inputs.map(({ label, identifier, placeholder, type, onChange }, i) => (
                 <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
                   onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({ [identifier]: evt.target.value })}
-                  errorText={errorTexts[identifier] || showSignupError}
+                  errorText={errorTexts[identifier] || userCreationState.error}
                 />
               ))}
-              {showSignupError.includes('Email') &&
+              {userCreationState.error && userCreationState.error.includes('Email') &&
               (<div className='f7 absolute bottom-0 left-2 error-red'>
                 You can <Link className='link dim b error-red' to='/forgot-pass'>
                 reset your password </Link> if needed.
@@ -116,9 +145,16 @@ export class SignupPage extends Component {
             </label>
           </div>
           <div className='mt3 tr'>
-            <RaisedButton label='Submit' labelColor='white' backgroundColor='var(--bondi-blue)' type='submit'
-              disabled={!this.isFormValid()}
-            />
+            <RaisedButton label={!userCreationState.inProgress && 'submit'} labelColor='#ffffff' backgroundColor='var(--bondi-blue)' type='submit'
+              style={{ boxShadow: 'none' }}
+              disabled={!this.isFormValid() || userCreationState.inProgress}>
+              {userCreationState.inProgress && (
+                <div className='absolute top-0 right-0 bottom-0 left-0'>
+                  <CircularProgress color='#ffffff' size={30} />
+                </div>
+              )
+              }
+            </RaisedButton>
           </div>
         </form>
       </LoginLayout>
@@ -129,5 +165,5 @@ export class SignupPage extends Component {
 SignupPage.propTypes = {}
 
 export default connect(
-  ({ showSignupError }) => ({ showSignupError }) // map redux state to props
+  ({ userCreationState }) => ({ userCreationState }) // map redux state to props
 )(createContainer(() => ({}), SignupPage)) // map meteor state to props
