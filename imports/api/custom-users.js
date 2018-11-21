@@ -59,7 +59,7 @@ if (Meteor.isServer) {
     if (verifyUserLogin(this)) {
       return Meteor.users.find({ _id: this.userId }, {
         fields: {
-          'premiumFeaturesEnabled': 1,
+          'customReportLogoEnabled': 1,
           'customReportsLogoUrl': 1
         }
       })
@@ -206,7 +206,7 @@ Meteor.methods({
   },
   'users.changeReportsLogo': function (url) {
     const user = Meteor.user()
-    if (!user.premiumFeaturesEnabled) throw new Meteor.Error('Allowed for premium users only')
+    if (!user.customReportLogoEnabled) throw new Meteor.Error('Allowed for premium users only')
     Meteor.users.update(Meteor.userId(), {
       $set: {
         customReportsLogoUrl: url

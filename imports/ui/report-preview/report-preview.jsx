@@ -215,7 +215,7 @@ export default connect(
     return {
       isLoading: !reportHandle.ready() || !userHandle.ready(),
       reportItem: Reports.findOne({ id: parseInt(reportId) }),
-      premiumEnabled: !!currUser && currUser.premiumFeaturesEnabled,
+      premiumEnabled: !!currUser && currUser.customReportLogoEnabled,
       customLogoExists: !!currUser && !!currUser.customReportsLogoUrl
     }
   }, ReportPreview)

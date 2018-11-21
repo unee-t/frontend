@@ -92,7 +92,7 @@ export const generatePreviewUrl = ({ reportBlob, unitRoles, unitMetaData, signat
   const reportCreator = Meteor.users.findOne({ 'bugzillaCreds.login': reportBlob.creator })
   let logoUrl
   const currentUser = Meteor.user()
-  if (currentUser && currentUser.premiumFeaturesEnabled && currentUser.customReportsLogoUrl) {
+  if (currentUser && currentUser.customReportLogoEnabled && currentUser.customReportsLogoUrl) {
     logoUrl = currentUser.customReportsLogoUrl
   }
   const makeSignObj = user => {
