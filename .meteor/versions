@@ -64,7 +64,7 @@ mongo@1.6.0
 mongo-decimal@0.1.0
 mongo-dev-server@1.1.0
 mongo-id@1.0.7
-nathantreid:css-modules@3.2.2
+nathantreid:css-modules@3.1.4
 npm-bcrypt@0.9.3
 npm-mongo@3.1.1
 observe-sequence@1.0.16

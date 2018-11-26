@@ -20,7 +20,7 @@ react-meteor-data
 accounts-password@1.5.1
 http@1.4.1
 juliancwirko:postcss
-nathantreid:css-modules
+nathantreid:css-modules@=3.1.4
 dburles:factory
 practicalmeteor:sinon
 omega:dirty-chai
