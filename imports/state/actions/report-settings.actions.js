@@ -10,6 +10,9 @@ export const CHANGE_LOGO_URL_STARTED = 'change_logo_url_started'
 export const CHANGE_LOGO_URL_ERROR = 'change_logo_url_error'
 export const CHANGE_LOGO_URL_COMPLETED = 'change_logo_url_completed'
 export const DISMISS_CHANGE_LOGO_ERROR = 'change_reports_logo_general_setting_error_dismissed'
+export const RESET_REPORTS_LOGO = 'reset_reports_logo_general_setting'
+export const RESET_REPORTS_LOGO_STARTED = 'reset_reports_logo_started'
+export const RESET_REPORTS_LOGO_COMPLETED = 'reset_reports_logo_completed'
 
 export function changeReportsLogo (file: File) {
   return {
@@ -64,5 +67,23 @@ export function changeLogoUrlCompleted () {
 export function dismissChangeLogoError () {
   return {
     type: DISMISS_CHANGE_LOGO_ERROR
+  }
+}
+
+export function resetReportsLogo () {
+  return {
+    type: RESET_REPORTS_LOGO
+  }
+}
+
+export function resetReportsLogoStarted () {
+  return {
+    type: RESET_REPORTS_LOGO_STARTED
+  }
+}
+
+export function resetReportsLogoCompleted () {
+  return {
+    type: RESET_REPORTS_LOGO_COMPLETED
   }
 }

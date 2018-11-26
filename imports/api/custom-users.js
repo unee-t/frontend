@@ -206,11 +206,20 @@ Meteor.methods({
     }
   },
   'users.changeReportsLogo': function (url) {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
     const user = Meteor.user()
     if (!user.customReportLogoEnabled) throw new Meteor.Error('Allowed for premium users only')
     Meteor.users.update(Meteor.userId(), {
       $set: {
         customReportsLogoUrl: url
+      }
+    })
+  },
+  'users.resetReportsLogo': function () {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    Meteor.users.update(Meteor.userId(), {
+      $unset: {
+        customReportsLogoUrl: 1
       }
     })
   },

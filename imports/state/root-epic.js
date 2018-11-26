@@ -28,6 +28,7 @@ import { sendReportPdf } from './epics/send-report-pdf'
 import { inviteNewUserToUnit } from './epics/invite-new-user-to-unit'
 import { uploadReportsLogo } from './epics/upload-reports-logo'
 import { changeLogoUrl } from './epics/change-logo-url'
+import { resetLogoUrl } from './epics/reset-reports-logo'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -58,5 +59,6 @@ export const rootEpic = combineEpics(
   sendReportPdf,
   inviteNewUserToUnit,
   uploadReportsLogo,
-  changeLogoUrl
+  changeLogoUrl,
+  resetLogoUrl
 )

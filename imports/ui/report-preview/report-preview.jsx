@@ -15,7 +15,13 @@ import ChangeLogoDialog from '../dialogs/change-logo-dialog'
 import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
 import { generateHTMLPreview } from './report-preview.actions'
-import { changeReportsLogo, dismissChangeLogoError } from '/imports/state/actions/report-settings.actions'
+import {
+  changeReportsLogo,
+  dismissChangeLogoError,
+  resetReportsLogo
+} from '/imports/state/actions/report-settings.actions'
+
+import ConfirmationDialog from '../dialogs/confirmation-dialog'
 
 type Props = {
   isLoading: boolean,
@@ -34,13 +40,18 @@ type Props = {
 type State = {
   showLogoAction: boolean,
   showChangeLogoDialog: boolean,
-  logoMarkingVisible: boolean
+  logoMarkingVisible: boolean,
+  showConfirmReset: boolean
 }
+
+const logoActionStyles = 'bg-black-70 br2 white pa2 lh-title f6 b flex items-center'
+
 class ReportPreview extends React.Component<Props, State> {
   state = {
     showLogoAction: false,
     showChangeLogoDialog: false,
-    logoMarkingVisible: true
+    logoMarkingVisible: true,
+    showConfirmReset: false
   }
 
   componentDidMount () {
@@ -85,7 +96,7 @@ class ReportPreview extends React.Component<Props, State> {
       isLoading, reportItem, dispatch, previewIsLoading, previewUrl, premiumEnabled, customLogoExists,
       isUploadingLogo, uploadingLogoError, uploadingLogoPercent
     } = this.props
-    const { showLogoAction, showChangeLogoDialog, logoMarkingVisible } = this.state
+    const { showLogoAction, showChangeLogoDialog, logoMarkingVisible, showConfirmReset } = this.state
     if (isLoading) {
       return <Preloader />
     }
@@ -127,14 +138,27 @@ class ReportPreview extends React.Component<Props, State> {
                     </div>
                   </div>
                   {showLogoAction && (
-                    <div
-                      className='mt1 bg-black-70 br2 white pa2 lh-title f6 b flex items-end'
-                      onClick={() => this.setState({ showChangeLogoDialog: true })}
-                    >
-                      <FontIcon className='material-icons' color='#fff'>camera_alt</FontIcon>
-                      <div className='ml1'>
-                        {customLogoExists ? 'Change' : 'Add'} photo or logo
+                    <div className='flex mt1'>
+                      <div
+                        className={logoActionStyles}
+                        onClick={() => this.setState({ showChangeLogoDialog: true })}
+                      >
+                        <FontIcon className='material-icons' color='#fff'>camera_alt</FontIcon>
+                        <div className='ml1'>
+                          Customize
+                        </div>
                       </div>
+                      {customLogoExists && (
+                        <div
+                          className={'ml1 ' + logoActionStyles}
+                          onClick={() => this.setState({ showConfirmReset: true })}
+                        >
+                          <FontIcon className='material-icons fliph-r-270' color='#fff'>refresh</FontIcon>
+                          <div className='ml1'>
+                            Reset to default
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -189,6 +213,19 @@ class ReportPreview extends React.Component<Props, State> {
           text={uploadingLogoError ? uploadingLogoError.error : ''}
           onDismissed={() => dispatch(dismissChangeLogoError())}
         />
+        <ConfirmationDialog
+          show={showConfirmReset}
+          title='Reset logo back to default'
+          onConfirm={() => {
+            this.setState({ showConfirmReset: false })
+            dispatch(resetReportsLogo())
+          }}
+          onCancel={() => this.setState({ showConfirmReset: false })}
+        >
+          <h3 className='near-black pt3 ph2 fw3 lh-copy tc'>
+            This will reset all the draft reports' logo back to the default "Unee-T" logo
+          </h3>
+        </ConfirmationDialog>
       </div>
     )
   }
