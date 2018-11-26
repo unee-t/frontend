@@ -41,7 +41,8 @@ export const baseUserSchema = Object.freeze({
     invitedToCase: true,
     caseNewMessage: true,
     caseUpdate: false
-  }
+  },
+  customReportLogoEnabled: true
 }) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation
 
 if (Meteor.isServer) {
