@@ -59,10 +59,13 @@ class ReportPreview extends React.Component<Props, State> {
     dispatch(generateHTMLPreview(match.params.reportId))
   }
   componentDidUpdate (prevProps: Props) {
-    const { uploadingLogoError, isUploadingLogo, match, dispatch } = this.props
+    const { uploadingLogoError, isUploadingLogo, match, dispatch, customLogoExists } = this.props
 
     // Reloading a new preview if it is just after uploading a new logo
-    if (prevProps.isUploadingLogo && !isUploadingLogo && !uploadingLogoError) {
+    if (
+      (prevProps.isUploadingLogo && !isUploadingLogo && !uploadingLogoError) ||
+      (prevProps.customLogoExists && !customLogoExists)
+    ) {
       dispatch(generateHTMLPreview(match.params.reportId))
     }
   }
