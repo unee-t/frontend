@@ -3,11 +3,11 @@
 import * as React from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import Dialog from 'material-ui/Dialog'
-import FontIcon from 'material-ui/FontIcon'
 import MenuItem from 'material-ui/MenuItem'
 
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 import FileInput from '../components/file-input'
+import { UploadIcon } from '../components/generic-icons'
 import { imageInputEventHandler } from '../util/dom-api'
 import {
   modalTitleStyle,
@@ -51,6 +51,15 @@ class ChangeLogoDialog extends React.Component<Props, State> {
     }
   }
 
+  handleFileSelected = imageInputEventHandler(
+    (preview: string, file: File) => {
+      this.uploadedFile = file
+      this.setState({
+        uploadPreview: preview
+      })
+    }
+  )
+
   render () {
     const { show, title } = this.props
     const { uploadPreview } = this.state
@@ -66,25 +75,37 @@ class ChangeLogoDialog extends React.Component<Props, State> {
         <div className='ma-auto'>
           <div className='ba b--moon-gray b--dashed'>
             {uploadPreview ? (
-              <div className='w5 h5'>
+              <div className='w5 h5 relative'>
                 <img src={uploadPreview} className='w-100 h-100 obj-contain' />
+                <div className='absolute top-0 right-0 pa2'>
+                  <FileInput onFileSelected={this.handleFileSelected}>
+                    <div className='bg-black-70 br2 white pa2 lh-title f6 b flex items-center'>
+                      <UploadIcon fillColor='white' />
+                      <div className='ml1'>
+                        Change logo
+                      </div>
+                    </div>
+                  </FileInput>
+                </div>
               </div>
             ) : (
               <MenuItem innerDivStyle={resetMenuItemDivStyle}>
-                <FileInput onFileSelected={imageInputEventHandler(
-                  (preview: string, file: File) => {
-                    this.uploadedFile = file
-                    this.setState({
-                      uploadPreview: preview
-                    })
-                  }
-                )}>
+                <FileInput onFileSelected={this.handleFileSelected}>
                   <div className='h5 w5 flex flex-column items-center justify-center'>
-                    <FontIcon className='material-icons' color='var(--bondi-blue)'>
-                      add_photo_alternate
-                    </FontIcon>
-                    <div className='bondi-blue f6 tc mt2 fw5'>
-                      Upload File
+                    <div className='flex items-end'>
+                      <UploadIcon fillColor='var(--bondi-blue)' style={{ width: '35px', height: '35px' }} />
+                      <div className='bondi-blue f5 tc ml1 fw5 lh-copy'>
+                        Upload File
+                      </div>
+                    </div>
+                    <div className='semi-dark-gray tc f7 mt2 lh-title'>
+                      <div>
+                        JPG, PNG, GIF or SVG file
+                      </div>
+                      <div>
+                        <span className='b'>Recommended dimensions: </span>
+                        200px by 200px
+                      </div>
                     </div>
                   </div>
                 </FileInput>
