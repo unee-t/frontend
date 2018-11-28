@@ -41,7 +41,8 @@ export const baseUserSchema = Object.freeze({
     invitedToCase: true,
     caseNewMessage: true,
     caseUpdate: false
-  }
+  },
+  customReportLogoEnabled: true
 }) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation
 
 if (Meteor.isServer) {
@@ -50,6 +51,17 @@ if (Meteor.isServer) {
       return Meteor.users.find({ _id: this.userId }, {
         fields: {
           'bugzillaCreds.login': 1
+        }
+      })
+    }
+  })
+
+  Meteor.publish('users.myPremiumStatus', function () {
+    if (verifyUserLogin(this)) {
+      return Meteor.users.find({ _id: this.userId }, {
+        fields: {
+          'customReportLogoEnabled': 1,
+          'customReportsLogoUrl': 1
         }
       })
     }
@@ -192,6 +204,24 @@ Meteor.methods({
         throw e
       }
     }
+  },
+  'users.changeReportsLogo': function (url) {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    const user = Meteor.user()
+    if (!user.customReportLogoEnabled) throw new Meteor.Error('Allowed for premium users only')
+    Meteor.users.update(Meteor.userId(), {
+      $set: {
+        customReportsLogoUrl: url
+      }
+    })
+  },
+  'users.resetReportsLogo': function () {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    Meteor.users.update(Meteor.userId(), {
+      $unset: {
+        customReportsLogoUrl: 1
+      }
+    })
   },
   'resendEmail': function () {
     if (Meteor.isServer) {

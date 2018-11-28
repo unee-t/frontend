@@ -157,6 +157,13 @@
 .rotate-315 { -webkit-transform: rotate( 315deg ); transform: rotate( 315deg ); }
 /* Tachyons rotations - end */
 
+/* Custom flip + rotation - start */
+.fliph-r-270 {
+  -webkit-transform: scale(-1,1) rotate( 270deg );
+  transform: scale(-1,1) rotate( 270deg );
+}
+/* Custom flip + rotation - end */
+
 /* Tachyons Height Scale - start */
 .h1 { height: 1rem; }
 .h2 { height: 2rem; }
@@ -181,6 +188,7 @@
 .w1-5 { width: 1.5rem; }
 .w40px { width: 40px; }
 .w3-5 { width: 6rem; }
+.w-content { width: fit-content; }
 /* Tachyons Width Scale - end */
 
 
@@ -290,6 +298,10 @@
 
 .ml-auto {
   margin-left: auto;
+}
+
+.ma-auto {
+  margin: auto
 }
 
 .flex{
@@ -453,6 +465,10 @@
 
 .obj-cover {
   object-fit: cover;
+}
+
+.obj-contain {
+  object-fit: contain;
 }
 
 .overflow-auto {

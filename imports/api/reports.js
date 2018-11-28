@@ -90,6 +90,11 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
 
 export const generatePreviewUrl = ({ reportBlob, unitRoles, unitMetaData, signatureMap, errorLogParams }) => {
   const reportCreator = Meteor.users.findOne({ 'bugzillaCreds.login': reportBlob.creator })
+  let logoUrl
+  const currentUser = Meteor.user()
+  if (currentUser && currentUser.customReportLogoEnabled && currentUser.customReportsLogoUrl) {
+    logoUrl = currentUser.customReportsLogoUrl
+  }
   const makeSignObj = user => {
     let isOccupant = false
     const userRoleObj = unitRoles.find(role => !!role.members.find(member => {
@@ -149,6 +154,11 @@ export const generatePreviewUrl = ({ reportBlob, unitRoles, unitMetaData, signat
       comments: reportBlob.whiteboard
     }
   }
+
+  if (logoUrl) {
+    generationPayload.logo = logoUrl
+  }
+
   const { PDFGEN_LAMBDA_URL, API_ACCESS_TOKEN } = process.env
   let response
   try {

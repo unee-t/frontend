@@ -14,7 +14,7 @@ delete confirmationCustomContentStyle.transform
 const confirmationTitleStyle = Object.assign({}, modalTitleStyle)
 delete confirmationTitleStyle.marginRight
 
-const ConfirmationDialog = ({ show, title, content, onConfirm, onCancel, children }) => (
+const ConfirmationDialog = ({ show, title, onConfirm, onCancel, children }) => (
   <Dialog
     open={show}
     title={title}
