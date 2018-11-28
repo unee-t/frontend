@@ -1,4 +1,5 @@
 // @flow
+/* global SyntheticInputEvent, HTMLInputElement */
 import * as React from 'react'
 import Checkbox from 'material-ui/Checkbox'
 import FontIcon from 'material-ui/FontIcon'
@@ -8,7 +9,7 @@ type Props = {
   inpRef?: (el: React.Node) => void,
   label?: string,
   value?: string,
-  onChange: (val: string) => void
+  onChange: (evt: SyntheticInputEvent<HTMLInputElement>) => void
 }
 type State = {
   showPass: boolean

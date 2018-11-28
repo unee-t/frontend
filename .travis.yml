@@ -5,7 +5,7 @@ node_js:
   - lts/*
 
 before_install:
-  - pyenv global 2.7.14 # For removing SNIMissingWarning warnings
+  - pyenv global 2.7.14  # For removing SNIMissingWarning warnings
   - curl https://install.meteor.com | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
@@ -75,7 +75,4 @@ env:
   global:
     - COMMIT=${TRAVIS_COMMIT::7}
 
-branches:
-  only:
-    - master
-    - /^greenkeeper.*$/
+if: tag IS present OR branch = master OR branch =~ /^greenkeeper.*$/

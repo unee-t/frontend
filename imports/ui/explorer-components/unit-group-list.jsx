@@ -49,7 +49,7 @@ export class UnitGroupList extends Component {
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
     return (
       <div>
-        {unitGroupList.map(({ unitTitle, unitType, bzId, items, hasUnread }) =>
+        {unitGroupList.map(({ unitTitle, unitType, bzId, items, hasUnread, isActive }) =>
           <div key={unitTitle}>
             <div className='flex items-center h3 bt b--light-gray bg-white'
               onClick={evt => this.handleExpandUnit(evt, unitTitle)}
@@ -63,7 +63,17 @@ export class UnitGroupList extends Component {
                   <div className={'f6 silver mt1' + (hasUnread ? ' b' : '')}>
                     <span>{items.length} { items.length > 1 ? name + 's' : name }</span>
                   </div>
-                  <AddGroupLink bzId={bzId} name={name} />
+                  {!isActive ? (
+                    <div className='no-shrink flex items-center br2 bg-silver'>
+                      <div className='f7 pa1 white' >
+                      Unit Disabled
+                      </div>
+                    </div>
+                  )
+                    : (
+                      <AddGroupLink bzId={bzId} name={name} />
+                    )
+                  }
                 </div>
               </div>
             </div>

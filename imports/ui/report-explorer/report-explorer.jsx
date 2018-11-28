@@ -19,6 +19,7 @@ import { SORT_BY, sorters } from '../explorer-components/sort-items'
 import { Sorter } from '../explorer-components/sorter'
 import { StatusFilter } from '../explorer-components/status-filter'
 import { RoleFilter } from '../explorer-components/role-filter'
+import Units, { collectionName as unitCollName } from '../../api/units'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -75,11 +76,11 @@ class ReportExplorer extends Component {
       const creatorFilter = selectedRoleFilter !== 'Created by me' ? report => true : report => report.assignee === this.props.currentUser.bugzillaCreds.login
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (creatorFilter(reportItem)) {
-          const { selectedUnit: unitBzName, unitMetaData: metaData } = reportItem
+          const { selectedUnit: unitBzName, unitMetaData: metaData, isActive } = reportItem
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
           const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
-          const unitDesc = dict[unitBzName] = dict[unitBzName] || { items: [], unitType, bzId, unitTitle }
+          const unitDesc = dict[unitBzName] = dict[unitBzName] || { items: [], unitType, bzId, unitTitle, isActive }
           unitDesc.items.push(reportItem)
         }
         return dict
@@ -164,6 +165,7 @@ ReportExplorer.propTypes = {
 }
 
 let reportsError
+let unitsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
@@ -172,13 +174,20 @@ export default connect(
       reportsError = error
     }
   })
+  const unitsHandle = Meteor.subscribe(`${unitCollName}.forBrowsing`, {
+    onStop: (error) => {
+      unitsError = error
+    }
+  })
   return {
     reportList: Reports.find().fetch().map(report => ({
+      isActive: (Units.findOne({ name: report.selectedUnit }) || {}).is_active,
       unitMetaData: report.unitMetaData(),
       ...report
     })),
-    isLoading: !reportsHandle.ready(),
+    isLoading: !reportsHandle.ready() || !unitsHandle.ready(),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
-    reportsError
+    reportsError,
+    unitsError
   }
 }, ReportExplorer))
