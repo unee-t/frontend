@@ -3,7 +3,7 @@ import fallibleMethodCaller from './base/fallible-method-caller'
 import {
   RESET_REPORTS_LOGO,
   resetReportsLogoStarted,
-  resetReportsLogoCompleted,
+  resetReportsLogoCompleted
 } from '../actions/report-settings.actions'
 import { genericErrorOccurred } from '../../ui/general-actions'
 
