@@ -161,8 +161,11 @@ Meteor.methods({
     }
   },
   'users.updateMyName': function (name) {
-    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    const user = Meteor.user()
+    if (user) return new Meteor.Error('Must be logged in')
     if (!name || name.length < 2) return new Meteor.Error('Name should be of minimum 2 characters')
+    const { firstName, lastName } = user.profile
+    if (firstName || lastName) throw new Meteor.Error('Please use "updateProfileField" to update the first and last name')
 
     Meteor.users.update(Meteor.userId(), {
       $set: { 'profile.name': name }
@@ -222,6 +225,22 @@ Meteor.methods({
         customReportsLogoUrl: 1
       }
     })
+  },
+  'users.updateProfileField': function (fieldName, value) {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    if (!['firstName', 'lastName', 'phoneNumber'].includes(fieldName)) throw new Meteor.Error('Incompatible field name')
+
+    Meteor.users.update(Meteor.userId(), {
+      $set: { [`profile.${fieldName}`]: value }
+    })
+
+    // Updating the legacy "name" field if first or last name were updated
+    if (['firstName', 'lastName'].includes(fieldName)) {
+      const user = Meteor.user()
+      Meteor.users.update(Meteor.userId(), {
+        $set: { 'profile.name': user.profile.firstName + ' ' + user.profile.lastName }
+      })
+    }
   },
   'resendEmail': function () {
     if (Meteor.isServer) {
