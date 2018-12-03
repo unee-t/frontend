@@ -15,6 +15,7 @@ import FileInput from '../components/file-input'
 import { imageInputEventHandler } from '../util/dom-api'
 import InputRow from '../components/input-row'
 import EmailInput from '../components/email-input'
+import { editProfileField } from '/imports/state/actions/account-edit.actions'
 
 type Props = {
   user: {
@@ -72,14 +73,26 @@ class AccountSettings extends React.Component<Props, State> {
             <div className='ph3 pb1 flex flex-column bb b--light-gray'>
               <div className='flex'>
                 <div className='flex-grow'>
-                  <InputRow label='First Name' value={user.profile.firstName || user.profile.name} onChange={() => {}} />
+                  <InputRow
+                    label='First Name'
+                    value={user.profile.firstName || ((user.profile.name && !user.profile.lastName) ? user.profile.name : '')}
+                    onChange={evt => dispatch(editProfileField('firstName', evt.target.value))}
+                  />
                 </div>
                 <div className='ml3 flex-grow'>
-                  <InputRow label='Last Name' value={user.profile.lastName} onChange={() => {}} />
+                  <InputRow
+                    label='Last Name'
+                    value={user.profile.lastName}
+                    onChange={evt => dispatch(editProfileField('lastName', evt.target.value))}
+                  />
                 </div>
               </div>
               <EmailInput label='Email' email={user.emails[0].address} onEmailChanged={() => {}} />
-              <InputRow label='Phone' value={user.profile.phoneNumber} onChange={() => {}} />
+              <InputRow
+                label='Phone'
+                value={user.profile.phoneNumber}
+                onChange={evt => dispatch(editProfileField('phoneNumber', evt.target.value))}
+              />
               <div className='mt2 pt1'>
                 {infoItemLabel('Password')}
                 <div className='flex items-center'>
