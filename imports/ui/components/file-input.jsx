@@ -1,15 +1,19 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+// @flow
+/* global SyntheticInputEvent, HTMLInputElement */
+import * as React from 'react'
 
-const FileInput = props => (
-  <label>
-    {props.children}
-    <input type='file' className='dn' onChange={props.onFileSelected} />
-  </label>
-)
-
-FileInput.propTypes = {
-  onFileSelected: PropTypes.func.isRequired
+type Props = {
+  children: React.Node,
+  onFileSelected: (evt: SyntheticInputEvent<HTMLInputElement>) => void
 }
 
-export default FileInput
+export default class FileInput extends React.Component<Props> {
+  render () {
+    return (
+      <label>
+        {this.props.children}
+        <input type='file' className='dn' onChange={this.props.onFileSelected} />
+      </label>
+    )
+  }
+}
