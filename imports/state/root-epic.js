@@ -29,6 +29,7 @@ import { inviteNewUserToUnit } from './epics/invite-new-user-to-unit'
 import { uploadReportsLogo } from './epics/upload-reports-logo'
 import { changeLogoUrl } from './epics/change-logo-url'
 import { resetLogoUrl } from './epics/reset-reports-logo'
+import { editProfileField } from './epics/edit-profile-field'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -60,5 +61,6 @@ export const rootEpic = combineEpics(
   inviteNewUserToUnit,
   uploadReportsLogo,
   changeLogoUrl,
-  resetLogoUrl
+  resetLogoUrl,
+  editProfileField
 )
