@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
+import { push } from 'react-router-redux'
 import PropTypes from 'prop-types'
 import { createContainer } from 'meteor/react-meteor-data'
 import { Link, Route, withRouter } from 'react-router-dom'
@@ -62,14 +63,26 @@ user: ${user.emails[0].address}`
         open={isDrawerOpen}
         onRequestChange={(open) => dispatch(setDrawerState(open))}
       >
-        <div className='bg-bondi-blue pa3'>
-          {renderAppBarLeft(() => dispatch(setDrawerState(true)))}
-          <div className='flex items-center mt4'>
-            {renderCurrUserAvatar(user, true)}
-            <div className='ml3 white ellipsis'>
-              {user.profile && (user.profile.name || user.emails[0].address)}
-            </div>
+        <div className='bg-bondi-blue pv3'>
+          <div className='ph3'>
+            {renderAppBarLeft(() => dispatch(setDrawerState(true)))}
           </div>
+          <MenuItem onClick={() => {
+            dispatch(push('/account-settings'))
+            dispatch(setDrawerState(false))
+          }}>
+            <div className='flex items-center mt4 pv1'>
+              {renderCurrUserAvatar(user, true)}
+              <div className='flex flex-column ml3 lh-copy'>
+                <div className='white ellipsis'>
+                  {user.profile && (user.profile.name || user.emails[0].address)}
+                </div>
+                <div className='mt2 bg-very-light-gray br1 bondi-blue lh-dbl tc fw5 f7 dib ph2 w-content'>
+                  STANDARD
+                </div>
+              </div>
+            </div>
+          </MenuItem>
         </div>
         {this.routeDrawerItem('/unit', {
           href: '/unit',
@@ -100,11 +113,6 @@ user: ${user.emails[0].address}`
           isExternal: true
         })}
         <Divider />
-        {this.routeDrawerItem('/notification-settings', {
-          href: '/notification-settings',
-          iconName: 'settings_applications',
-          text: 'Notification Settings'
-        })}
         <MenuItem onClick={() => dispatch(logoutUser())}>
           <div className='flex items-center pv2 mv1'>
             <div className='w1-5 lh-title tc'>

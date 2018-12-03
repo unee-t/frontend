@@ -19,6 +19,7 @@ import ReportExplorer from './report-explorer/report-explorer'
 import ReportSignage from './report-signage/report-signage'
 import ReportShare from './report-share/report-share'
 import NotificationSettings from './notification-settings/notification-settings'
+import AccountSettings from './account-settings/account-settings'
 import Unit from './unit/unit'
 import ReportWizard from './report-wizard/report-wizard'
 import ReportPreview from './report-preview/report-preview'
@@ -52,6 +53,7 @@ class App extends Component {
               <Route exact path='/dashboard' component={Dashboard} />
               <Route exact path='/invitation' component={InvitationLogin} />
               <Route exact path='/notification-settings' component={NotificationSettings} />
+              <Route exact path='/account-settings' component={AccountSettings} />
               <Route exact path='/report/:reportId/preview' component={ReportPreview} />
               <Route path='/report/:reportId/sign' component={ReportSignage} />
 `             <Route path='/report/:reportId/draft' component={ReportWizard} />
