@@ -229,18 +229,22 @@ Meteor.methods({
   'users.updateProfileField': function (fieldName, value) {
     if (!Meteor.user()) return new Meteor.Error('Must be logged in')
     if (!['firstName', 'lastName', 'phoneNumber'].includes(fieldName)) throw new Meteor.Error('Incompatible field name')
-
-    Meteor.users.update(Meteor.userId(), {
-      $set: { [`profile.${fieldName}`]: value }
-    })
+    const updateSet = { [`profile.${fieldName}`]: value }
 
     // Updating the legacy "name" field if first or last name were updated
     if (['firstName', 'lastName'].includes(fieldName)) {
-      const user = Meteor.user()
-      Meteor.users.update(Meteor.userId(), {
-        $set: { 'profile.name': user.profile.firstName + ' ' + user.profile.lastName }
+      const { profile: { firstName, lastName } } = Meteor.user()
+      const newName = fieldName === 'firstName'
+        ? value + (lastName ? ' ' + lastName : '')
+        : (firstName ? firstName + ' ' : '') + value
+      Object.assign(updateSet, {
+        'profile.name': newName
       })
     }
+
+    Meteor.users.update(Meteor.userId(), {
+      $set: updateSet
+    })
   },
   'resendEmail': function () {
     if (Meteor.isServer) {
