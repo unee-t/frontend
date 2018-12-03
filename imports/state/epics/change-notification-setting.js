@@ -1,13 +1,14 @@
-import { Meteor } from 'meteor/meteor'
+// @flow
+import { detachedMethodCaller } from './base/detached-method-caller'
 import { SETTING_CHANGED } from '../../ui/notification-settings/notification-settings.actions'
 
-import 'rxjs/add/operator/do'
-import 'rxjs/add/operator/ignoreElements'
-
-export const changeNotificationSetting = action$ =>
-  action$.ofType(SETTING_CHANGED)
-    .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-    .do(({ settingName, newVal }) => {
-      Meteor.call('users.updateNotificationSetting', settingName, newVal)
-    })
-    .ignoreElements()
+type Action = {
+  type: string,
+  settingName: string,
+  newVal: boolean
+}
+export const changeNotificationSetting = detachedMethodCaller < Action > ({
+  actionType: SETTING_CHANGED,
+  methodName: 'users.updateNotificationSetting',
+  argTranslator: ({ settingName, newVal }) => [settingName, newVal]
+})
