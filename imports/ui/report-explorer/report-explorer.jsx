@@ -87,15 +87,14 @@ class ReportExplorer extends Component {
       }, {})
 
       const reportBundle = Object.keys(unitDict).reduce((all, unitTitle) => {
-        const { bzId, items, unitType } = unitDict[unitTitle]
+        const { items, ...attrs } = unitDict[unitTitle]
 
         // Sorting items within a unit by the order descending order of last update
         items.sort(sorters[sortBy])
         all.push({
           items: items,
-          unitType,
           unitTitle,
-          bzId
+          ...attrs
         })
         return all
       }, []) // Sorting by the latest case update for each
