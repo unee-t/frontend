@@ -479,4 +479,13 @@
 .transition-bg {
   transition: background-color 500ms ease-in-out;
 }
+.transition-o-filter {
+  transition: opacity 400ms ease-out, -webkit-filter 400ms ease-out;
+}
 /* custom transitions - end */
+
+/* custom filters - start */
+.blur-1 {
+  -webkit-filter: blur(8px)
+}
+/* custom filters - end */

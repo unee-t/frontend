@@ -9,7 +9,8 @@ import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import FontIcon from 'material-ui/FontIcon'
 
-import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
+import Reports, { collectionName, REPORT_DRAFT_STATUS } from '/imports/api/reports'
+import Comments, { collectionName as commentsCollName } from '/imports/api/comments'
 import InnerAppBar from '../components/inner-app-bar'
 import ChangeLogoDialog from '../dialogs/change-logo-dialog'
 import ErrorDialog from '../dialogs/error-dialog'
@@ -22,6 +23,7 @@ import {
 } from '/imports/state/actions/report-settings.actions'
 
 import ConfirmationDialog from '../dialogs/confirmation-dialog'
+import { attachmentTextMatcher } from '../../util/matchers'
 
 type Props = {
   isLoading: boolean,
@@ -29,12 +31,20 @@ type Props = {
   isUploadingLogo: boolean,
   uploadingLogoPercent?: number,
   uploadingLogoError?: { error?: string },
-  reportItem: any,
+  reportItem: {
+    status: string,
+    title: string,
+    id: number
+  },
   match: any,
   dispatch: (action: any) => void,
   previewUrl: string,
   premiumEnabled: boolean,
-  customLogoExists: boolean
+  customLogoExists: boolean,
+  attachments: Array<{
+    text: string,
+    id: number
+  }>
 }
 
 type State = {
@@ -87,10 +97,20 @@ class ReportPreview extends React.Component<Props, State> {
         })
       }
     })
-    iframeDoc.addEventListener('click', () => {
+    iframeDoc.addEventListener('click', evt => {
       this.setState({
         showLogoAction: false
       })
+
+      if (evt.target.nodeName === 'IMG') {
+        const { dispatch, attachments, reportItem } = this.props
+        const url = evt.target.getAttribute('src')
+        const fileName = url.split('/').slice(-1)[0]
+        const matchingAttachment = attachments.find(attach => attach.text.includes(fileName))
+        if (matchingAttachment) {
+          dispatch(push(`/report/${reportItem.id}/attachment/${matchingAttachment.id}`))
+        }
+      }
     })
   }
 
@@ -250,11 +270,13 @@ export default connect(
   createContainer(props => {
     const { reportId } = props.match.params
     const reportHandle = Meteor.subscribe(`${collectionName}.byId`, reportId)
+    const commentHandle = Meteor.subscribe(`${commentsCollName}.byCaseId`, reportId)
     const userHandle = Meteor.subscribe('users.myPremiumStatus')
     const currUser = Meteor.user()
     return {
-      isLoading: !reportHandle.ready() || !userHandle.ready(),
+      isLoading: !reportHandle.ready() || !userHandle.ready() || !commentHandle.ready(),
       reportItem: Reports.findOne({ id: parseInt(reportId) }),
+      attachments: Comments.find({ bug_id: parseInt(reportId) }).fetch().filter(({ text }) => attachmentTextMatcher(text)),
       premiumEnabled: !!currUser && currUser.customReportLogoEnabled,
       customLogoExists: !!currUser && !!currUser.customReportsLogoUrl
     }
