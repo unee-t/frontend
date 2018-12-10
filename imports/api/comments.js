@@ -15,7 +15,6 @@ export const factoryOptions = {
   }
 }
 
-
 export let publicationObj // Exported for testing purposes
 let FailedComments
 if (Meteor.isServer) {
