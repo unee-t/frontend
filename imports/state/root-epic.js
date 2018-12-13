@@ -30,6 +30,8 @@ import { uploadReportsLogo } from './epics/upload-reports-logo'
 import { changeLogoUrl } from './epics/change-logo-url'
 import { resetLogoUrl } from './epics/reset-reports-logo'
 import { editProfileField } from './epics/edit-profile-field'
+import { uploadAvatarImage } from './epics/upload-avatar-image'
+import { changeAvatarUrl } from './epics/change-avatar-url'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -62,5 +64,7 @@ export const rootEpic = combineEpics(
   uploadReportsLogo,
   changeLogoUrl,
   resetLogoUrl,
-  editProfileField
+  editProfileField,
+  uploadAvatarImage,
+  changeAvatarUrl
 )
