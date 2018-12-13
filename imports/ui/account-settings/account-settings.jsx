@@ -7,15 +7,14 @@ import { createContainer } from 'meteor/react-meteor-data'
 import { goBack, push } from 'react-router-redux'
 import CircularProgress from 'material-ui/CircularProgress'
 import MenuItem from 'material-ui/MenuItem'
-import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 
-import { infoItemLabel } from '../util/static-info-rendering'
+import { infoItemMembers } from '../util/static-info-rendering'
 import FileInput from '../components/file-input'
 import { imageInputEventHandler } from '../util/dom-api'
 import InputRow from '../components/input-row'
-import EmailInput from '../components/email-input'
-import { editProfileField } from '/imports/state/actions/account-edit.actions'
+import { editProfileField, uploadAvatarImage } from '/imports/state/actions/account-edit.actions'
+import { fitDimensions } from '../../util/cloudinary-transformations'
 
 type Props = {
   user: {
@@ -23,13 +22,17 @@ type Props = {
       name?: string,
       firstName?: string,
       lastName?: string,
-      phoneNumber?: string
+      phoneNumber?: string,
+      avatarUrl?: string
     },
     emails: Array<{
       address: string
     }>
   },
-  dispatch: (action: { type: string }) => void
+  dispatch: (action: { type: string }) => void,
+  isUploadingAvatar: boolean,
+  uploadingAvatarPercent: number,
+  uploadingAvatarError?: Object
 }
 type State = {
   avatarPreview: ?string
@@ -38,8 +41,17 @@ class AccountSettings extends React.Component<Props, State> {
   state = {
     avatarPreview: null
   }
+
+  componentDidUpdate (prevProps) {
+    if (prevProps.isUploadingAvatar && !this.props.isUploadingAvatar) {
+      this.setState({
+        avatarPreview: null
+      })
+    }
+  }
+
   render () {
-    const { user, dispatch } = this.props
+    const { user, dispatch, isUploadingAvatar, uploadingAvatarPercent } = this.props
     const { avatarPreview } = this.state
     return (
       <div className='full-height flex flex-column'>
@@ -51,8 +63,27 @@ class AccountSettings extends React.Component<Props, State> {
         ) : (
           <div className='flex-grow flex flex-column pt3'>
             <div className='flex flex-column items-center'>
-              {avatarPreview ? (
-                <img className='w4 h4 br-100 obj-cover' src={avatarPreview} alt='Avatar Pic' />
+              {(avatarPreview || user.profile.avatarUrl) ? (
+                <div className='w4 h4 br-100 relative overflow-hidden'>
+                  <img
+                    className={'obj-cover w-100' + (isUploadingAvatar ? ' o-60' : '')}
+                    src={avatarPreview || fitDimensions(user.profile.avatarUrl, 126, 126)}
+                    alt='Avatar Pic'
+                  />
+                  {isUploadingAvatar && (
+                    <div className='absolute top-0 bottom-0 right-0 left-0 flex items-center justify-center'>
+                      {uploadingAvatarPercent ? (
+                        <CircularProgress
+                          size={40} thickness={4} mode='determinate' value={uploadingAvatarPercent} />
+                      ) : (
+                        <div className='dib'>
+                          <CircularProgress
+                            size={40} thickness={4} mode='indeterminate' />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className='w4 h4 br-100 bg-light-gray light-silver tc f2 lh-copy flex justify-center items-center'>
                   {(user.profile.name || user.emails[0].address.split('@')[0]).charAt(0).toUpperCase()}
@@ -62,6 +93,7 @@ class AccountSettings extends React.Component<Props, State> {
                 this.setState({
                   avatarPreview: preview
                 })
+                dispatch(uploadAvatarImage(file))
               })}>
                 <MenuItem>
                   <div className='fw5 ph2 bondi-blue'>
@@ -70,7 +102,7 @@ class AccountSettings extends React.Component<Props, State> {
                 </MenuItem>
               </FileInput>
             </div>
-            <div className='ph3 pb1 flex flex-column bb b--light-gray'>
+            <div className='ph3 pb2 flex flex-column bb b--light-gray'>
               <div className='flex'>
                 <div className='flex-grow'>
                   <InputRow
@@ -87,13 +119,16 @@ class AccountSettings extends React.Component<Props, State> {
                   />
                 </div>
               </div>
-              <EmailInput label='Email' email={user.emails[0].address} onEmailChanged={() => {}} />
+              {/* <EmailInput label='Email' email={user.emails[0].address} onEmailChanged={() => {}} /> */}
+              <div className='mt2'>
+                {infoItemMembers('Email', user.emails[0].address)}
+              </div>
               <InputRow
                 label='Phone'
                 value={user.profile.phoneNumber}
                 onChange={evt => dispatch(editProfileField('phoneNumber', evt.target.value))}
               />
-              <div className='mt2 pt1'>
+              {/* <div className='mt2 pt1'>
                 {infoItemLabel('Password')}
                 <div className='flex items-center'>
                   <div className='mid-gray flex-grow'>
@@ -103,7 +138,7 @@ class AccountSettings extends React.Component<Props, State> {
                     <FontIcon className='material-icons' color='var(--silver)'>edit</FontIcon>
                   </IconButton>
                 </div>
-              </div>
+              </div> */}
             </div>
             <MenuItem onClick={() => dispatch(push('/notification-settings'))}>
               <div className='flex items-center pv1'>
@@ -120,7 +155,13 @@ class AccountSettings extends React.Component<Props, State> {
   }
 }
 
-export default connect(() => ({}))(createContainer(() => {
+export default connect(
+  ({ avatarChangingState }) => ({
+    isUploadingAvatar: avatarChangingState.inProgress,
+    uploadingAvatarPercent: avatarChangingState.percent || 0,
+    uploadingAvatarError: avatarChangingState.error
+  })
+)(createContainer(() => {
   return {
     user: Meteor.user()
   }
