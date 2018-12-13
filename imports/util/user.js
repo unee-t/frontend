@@ -22,7 +22,7 @@ export const userInfoItem = (user, rightRenderer, subInfoRenderer) => {
 
   return (
     <div key={user.login} className={colorForUser + ' flex pt2'}>
-      <UserAvatar user={user} />
+      <UserAvatar user={user} imageUrl={user.avatarUrl} />
       <div className='ml2 pl1 flex-grow overflow-hidden'>
         <div className='mid-gray ellipsis'>{user.name || user.login.split('@')[0]}</div>
         <div className='f7 gray ellipsis lh-copy'>
