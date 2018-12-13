@@ -218,6 +218,14 @@ Meteor.methods({
       }
     })
   },
+  'users.changeAvatarImage': function (url) {
+    if (!Meteor.user()) return new Meteor.Error('Must be logged in')
+    Meteor.users.update(Meteor.userId(), {
+      $set: {
+        'profile.avatarUrl': url
+      }
+    })
+  },
   'users.resetReportsLogo': function () {
     if (!Meteor.user()) return new Meteor.Error('Must be logged in')
     Meteor.users.update(Meteor.userId(), {
