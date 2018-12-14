@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { callAPI } from '../util/bugzilla-api'
+import { logger } from '../util/logger'
 
 import { caseServerFieldMapping, caseClientFieldMapping } from './cases'
 
@@ -26,7 +27,7 @@ if (Meteor.isServer) {
       this.added(collectionName, fieldMeta.id.toString(), { ...fieldMeta, name: clientLocalFieldMapping[fieldMeta.name] })
       this.ready()
     } catch (e) {
-      console.error('API error encountered', e, `${collectionName}.fetchByName`, this.userId)
+      logger.error('API error encountered', e, `${collectionName}.fetchByName`, this.userId)
       this.ready()
       this.error(new Meteor.Error({ message: 'API Error' }))
     }

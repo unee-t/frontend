@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import randToken from 'rand-token'
+import { logger } from '../util/logger'
 
 import AccessInvitations from './access-invitations'
 
@@ -19,7 +20,7 @@ export const findOrCreateUser = email => {
         isLimited: true
       }
     })
-    console.log(`new user created for ${email}`)
+    logger.info(`new user created for ${email}`)
     inviteeUser = Accounts.findUserByEmail(email)
   }
   return inviteeUser
@@ -107,7 +108,7 @@ Meteor.methods({
         }, codeMatcher)
       })
       if (!invitedUser) {
-        console.log('The code is invalid or login is required first')
+        logger.info('The code is invalid or login is required first')
         throw new Meteor.Error('The code is invalid or login is required first')
       }
 
@@ -137,7 +138,7 @@ Meteor.methods({
           'emails.0.verified': true
         }
       })
-      console.log(`${invitedUser.emails[0].address} is using an invitation to access the system`)
+      logger.info(`${invitedUser.emails[0].address} is using an invitation to access the system`)
 
       // Resetting the password to something new the client-side could use for an automated login
       const randPass = randToken.generate(12)
@@ -194,13 +195,13 @@ Meteor.methods({
 
         // Checking if there was no last time the pass was reset (also if no user) or more than a minute has passed
         if (!lastResetTime || Date.now() - lastResetTime.getTime() > 6e4) {
-          console.log('Sending password reset email to ', userEmail)
+          logger.info('Sending password reset email to ', userEmail)
           return Accounts.sendResetPasswordEmail(user._id, userEmail)
         } else {
           throw new Meteor.Error('Please wait up to 1 minute before trying again')
         }
       } catch (e) {
-        console.error('Error occurred on password reset request', e)
+        logger.error('Error occurred on password reset request', e)
         throw e
       }
     }

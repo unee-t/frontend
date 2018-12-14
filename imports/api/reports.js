@@ -23,6 +23,7 @@ import {
 } from './cases'
 import { emailValidator } from '../util/validators'
 import reportPdfSharedEmail from '../email-templates/report-pdf-shared'
+import { logger } from '../util/logger'
 
 export const collectionName = 'reports'
 const factoryOptions = {
@@ -54,7 +55,7 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
         return all
       }, [])
     } catch (e) {
-      console.error({
+      logger.error({
         ...logData,
         step: `Fetch report dependee's comments (get /rest/bug/${treeNode.id}/comments)`,
         error: e
@@ -66,7 +67,7 @@ const populateReportDependees = (reportItem, apiKey, logData) => {
       try {
         dependee = bugById(id, apiKey)
       } catch (e) {
-        console.error({
+        logger.error({
           ...logData,
           step: `Fetch report dependee entity (get /rest/bug/:${id})`,
           error: e
@@ -170,7 +171,7 @@ export const generatePreviewUrl = ({ reportBlob, unitRoles, unitMetaData, signat
       }
     })
   } catch (e) {
-    console.error({
+    logger.error({
       ...errorLogParams,
       step: `Calling PdfGen Lambda`,
       error: e
@@ -194,7 +195,7 @@ export const generatePDFFromPreview = (previewUrl, errorLogParams) => {
       }
     })
   } catch (e) {
-    console.error({
+    logger.error({
       ...errorLogParams,
       step: `Calling PdfConvert (Prince) Lambda`,
       error: e
@@ -346,7 +347,7 @@ Meteor.methods({
       try {
         unitItem = serverHelpers.getAPIUnitByName(selectedUnit, apiKey)
       } catch (e) {
-        console.error({
+        logger.error({
           step: 'get /rest/product/...',
           error: e,
           ...errorTemplate
@@ -359,7 +360,7 @@ Meteor.methods({
 
       if (!currUserRole) {
         const errorMsg = 'not-authorized: The user must have a role in this unit'
-        console.error({
+        logger.error({
           step: 'user auth check',
           error: errorMsg,
           ...errorTemplate
@@ -367,7 +368,7 @@ Meteor.methods({
         throw new Meteor.Error(errorMsg)
       }
 
-      console.log('Creating report', params)
+      logger.info('Creating report', params)
       const normalizedParams = Object.keys(params).reduce((all, paramName) => {
         all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
         return all
@@ -389,10 +390,10 @@ Meteor.methods({
       try {
         const { data } = callAPI('post', '/rest/bug', normalizedParams, false, true)
         newReportId = data.id
-        console.log(`a new report has been created by user ${Meteor.userId()}, report id: ${newReportId}`)
+        logger.info(`a new report has been created by user ${Meteor.userId()}, report id: ${newReportId}`)
         // TODO: Add real time update handler usage
       } catch (e) {
-        console.error({
+        logger.error({
           step: 'post /rest/bug/...',
           error: e,
           ...errorTemplate
@@ -422,7 +423,7 @@ Meteor.methods({
       try {
         reportItem = bugById(reportId, apiKey)
       } catch (e) {
-        console.error({
+        logger.error({
           user: Meteor.userId(),
           method: `${collectionName}.finalize`,
           step: 'Fetch main report object (get /rest/bug/:reportId)',
@@ -446,7 +447,7 @@ Meteor.methods({
       try {
         callAPI('put', `/rest/bug/${reportId}`, requestPayload, false, true)
       } catch (e) {
-        console.error({
+        logger.error({
           step: 'Report status update (put /rest/bug/:reportId)',
           error: e,
           ...errorLogParams
@@ -507,7 +508,7 @@ Meteor.methods({
       try {
         reportItem = bugById(reportId, apiKey)
       } catch (e) {
-        console.error({
+        logger.error({
           ...errorLogParams,
           step: `Fetch main report object (get /rest/bug/${reportId})`,
           error: e
@@ -523,7 +524,7 @@ Meteor.methods({
         signatureMap = {}
         previewUrl = generatePreviewUrl({ reportBlob, signatureMap, errorLogParams, ...reportUnitInfo })
         if (reportItem.status !== REPORT_DRAFT_STATUS) {
-          console.log(`No stored snapshot was found for finalized report ${reportId} while creating preview. Creating one as fallback`)
+          logger.info(`No stored snapshot was found for finalized report ${reportId} while creating preview. Creating one as fallback`)
           const pdfUrl = generatePDFFromPreview(previewUrl)
           ReportSnapshots.insert({
             createdAt: new Date(),
@@ -575,7 +576,7 @@ Meteor.methods({
       try {
         bugById(reportId, apiKey)
       } catch (e) {
-        console.error({
+        logger.error({
           ...errorLogParams,
           step: `Fetch main report object (get /rest/bug/${reportId})`,
           error: e
@@ -617,7 +618,7 @@ Meteor.methods({
           })
           succeededRecipients.push(recipientObj.emails[0].address)
         } catch (e) {
-          console.error({
+          logger.error({
             ...errorLogParams,
             step: `Send report pdf email to ${recipientObj.emails[0].address}`,
             error: e

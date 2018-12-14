@@ -2,6 +2,8 @@ import { Email } from 'meteor/email'
 import url from 'url'
 import bugzillaApi from '../util/bugzilla-api'
 import { footer } from '../ui/util/marketing'
+import { logger } from '../util/logger'
+
 const { callAPI } = bugzillaApi
 
 export const invite = (user, invitedBy) => {
@@ -60,6 +62,6 @@ ${footer}
       }]
     })
   } catch (e) {
-    console.log(e)
+    logger.info(e)
   }
 }

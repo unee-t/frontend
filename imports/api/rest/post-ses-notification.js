@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { logger } from '../../util/logger'
 
 export default (req, res) => {
   if (req.headers['authorization'] !== `Bearer ${process.env.API_ACCESS_TOKEN}`) {
@@ -11,7 +12,7 @@ export default (req, res) => {
   switch (message.bounce.bounceType) {
     case 'Permanent':
     case 'Transient':
-      console.log('Mark invalid', message.bounce.bouncedRecipients[0].emailAddress)
+      logger.info('Mark invalid', message.bounce.bouncedRecipients[0].emailAddress)
       Meteor.users.update(
         { 'emails.address': message.bounce.bouncedRecipients[0].emailAddress },
         {
@@ -20,7 +21,7 @@ export default (req, res) => {
       )
       break
     default:
-      console.log('Ignored', message)
+      logger.info('Ignored', message)
   }
 
   res.send(200)

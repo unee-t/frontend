@@ -4,6 +4,7 @@ import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
+import { logger } from '../util/logger'
 
 export const collectionName = 'comments'
 
@@ -75,7 +76,7 @@ Meteor.methods({
         api_key: currUser.bugzillaCreds.apiKey
       }
 
-      console.log(`${currUser.bugzillaCreds.login} is commenting "${text}" on case ${caseId}`)
+      logger.info(`${currUser.bugzillaCreds.login} is commenting "${text}" on case ${caseId}`)
 
       try {
         // Creating the comment
@@ -91,7 +92,7 @@ Meteor.methods({
         const newComment = commentData.data.comments[createData.data.id.toString()]
         publicationObj.handleAdded(newComment)
       } catch (e) {
-        console.error({
+        logger.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
           args: [text, caseId],

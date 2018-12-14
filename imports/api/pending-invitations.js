@@ -6,6 +6,7 @@ import randToken from 'rand-token'
 import { callAPI } from '../util/bugzilla-api'
 import { HTTP } from 'meteor/http'
 import { findOrCreateUser } from './custom-users'
+import { logger } from '../util/logger'
 
 export const collectionName = 'pendingInvitations'
 
@@ -52,7 +53,7 @@ export const findUnitRoleConflictErrors = (unitId, email, role, isOccupant) => {
     const unitRequest = callAPI('get', `/rest/product/${unitId}`, { api_key: apiKey }, false, true)
     unitItem = unitRequest.data.products[0]
   } catch (e) {
-    console.error(e)
+    logger.error(e)
     return 'API Error'
   }
 
@@ -112,7 +113,7 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
     type
   })
 
-  console.log('PendingInvitation created', PendingInvitations.findOne(invitationId))
+  logger.info('PendingInvitation created', PendingInvitations.findOne(invitationId))
 
   // Updating the invitee user with the details of the invitation
   Meteor.users.update(inviteeUser._id, {
@@ -131,7 +132,7 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
     }
   })
 
-  console.log('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).receivedInvites)
+  logger.info('Invitee updated', inviteeUser._id, Meteor.users.findOne(inviteeUser._id).receivedInvites)
 
   try {
     HTTP.get(process.env.INVITE_LAMBDA_URL, {
@@ -140,7 +141,7 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
       }
     })
   } catch (e) {
-    console.error({
+    logger.error({
       message: 'Invite lambda error in "pull" mode',
       error: e
     })
