@@ -108,6 +108,7 @@ class ReportPreview extends React.Component<Props, State> {
         const fileName = url.split('/').slice(-1)[0]
         const matchingAttachment = attachments.find(attach => attach.text.includes(fileName))
         if (matchingAttachment) {
+          evt.preventDefault()
           dispatch(push(`/report/${reportItem.id}/attachment/${matchingAttachment.id}`))
         }
       }
