@@ -108,6 +108,7 @@ class ReportPreview extends React.Component<Props, State> {
         const fileName = url.split('/').slice(-1)[0]
         const matchingAttachment = attachments.find(attach => attach.text.includes(fileName))
         if (matchingAttachment) {
+          evt.preventDefault()
           dispatch(push(`/report/${reportItem.id}/attachment/${matchingAttachment.id}`))
         }
       }
@@ -136,7 +137,8 @@ class ReportPreview extends React.Component<Props, State> {
           ) : previewUrl && (
             <div className='flex-grow relative'>
               <div className='absolute top-0 bottom-0 right-0 left-0'>
-                <iframe className='bn w-100 h-100' src={previewUrl} onLoad={this.handleIframeLoad} />
+                {/*<iframe className='bn w-100 h-100' src={previewUrl} onLoad={this.handleIframeLoad} />*/}
+                <iframe className='bn w-100 h-100' src='/test-ir-preview-3.html' onLoad={this.handleIframeLoad} />
               </div>
               {isDraft && premiumEnabled && logoMarkingVisible && (
                 <div className='absolute left-0 top-0 flex flex-column pl1 pt1'>
