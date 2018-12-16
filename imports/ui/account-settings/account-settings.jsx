@@ -61,74 +61,75 @@ class AccountSettings extends React.Component<Props, State> {
             <CircularProgress size={50} thickness={4} />
           </div>
         ) : (
-          <div className='flex-grow flex flex-column pt3'>
-            <div className='flex flex-column items-center'>
-              {(avatarPreview || user.profile.avatarUrl) ? (
-                <div className='w4 h4 br-100 relative overflow-hidden'>
-                  <img
-                    className={'obj-cover w-100' + (isUploadingAvatar ? ' o-60' : '')}
-                    src={avatarPreview || fitDimensions(user.profile.avatarUrl, 126, 126)}
-                    alt='Avatar Pic'
-                  />
-                  {isUploadingAvatar && (
-                    <div className='absolute top-0 bottom-0 right-0 left-0 flex items-center justify-center'>
-                      {uploadingAvatarPercent ? (
-                        <CircularProgress
-                          size={40} thickness={4} mode='determinate' value={uploadingAvatarPercent} />
-                      ) : (
-                        <div className='dib'>
+          <div className='flex-grow flex flex-column pt3 overflow-auto'>
+            <div className='flex flex-column no-shrink'>
+              <div className='flex flex-column items-center'>
+                {(avatarPreview || user.profile.avatarUrl) ? (
+                  <div className='w4 h4 br-100 relative overflow-hidden'>
+                    <img
+                      className={'obj-cover w-100' + (isUploadingAvatar ? ' o-60' : '')}
+                      src={avatarPreview || fitDimensions(user.profile.avatarUrl, 126, 126)}
+                      alt='Avatar Pic'
+                    />
+                    {isUploadingAvatar && (
+                      <div className='absolute top-0 bottom-0 right-0 left-0 flex items-center justify-center'>
+                        {uploadingAvatarPercent ? (
                           <CircularProgress
-                            size={40} thickness={4} mode='indeterminate' />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className='w4 h4 br-100 bg-light-gray light-silver tc f2 lh-copy flex justify-center items-center'>
-                  {(user.profile.name || user.emails[0].address.split('@')[0]).charAt(0).toUpperCase()}
-                </div>
-              )}
-              <FileInput onFileSelected={imageInputEventHandler((preview, file) => {
-                this.setState({
-                  avatarPreview: preview
-                })
-                dispatch(uploadAvatarImage(file))
-              })}>
-                <MenuItem>
-                  <div className='fw5 ph2 bondi-blue'>
-                    Change Profile Picture
+                            size={40} thickness={4} mode='determinate' value={uploadingAvatarPercent} />
+                        ) : (
+                          <div className='dib'>
+                            <CircularProgress
+                              size={40} thickness={4} mode='indeterminate' />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </MenuItem>
-              </FileInput>
-            </div>
-            <div className='ph3 pb2 flex flex-column bb b--light-gray'>
-              <div className='flex'>
-                <div className='flex-grow'>
-                  <InputRow
-                    label='First Name'
-                    value={user.profile.firstName || ((user.profile.name && !user.profile.lastName) ? user.profile.name : '')}
-                    onChange={evt => dispatch(editProfileField('firstName', evt.target.value))}
-                  />
-                </div>
-                <div className='ml3 flex-grow'>
-                  <InputRow
-                    label='Last Name'
-                    value={user.profile.lastName}
-                    onChange={evt => dispatch(editProfileField('lastName', evt.target.value))}
-                  />
-                </div>
+                ) : (
+                  <div className='w4 h4 br-100 bg-light-gray light-silver tc f2 lh-copy flex justify-center items-center'>
+                    {(user.profile.name || user.emails[0].address.split('@')[0]).charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <FileInput onFileSelected={imageInputEventHandler((preview, file) => {
+                  this.setState({
+                    avatarPreview: preview
+                  })
+                  dispatch(uploadAvatarImage(file))
+                })}>
+                  <MenuItem>
+                    <div className='fw5 ph2 bondi-blue'>
+                      Change Profile Picture
+                    </div>
+                  </MenuItem>
+                </FileInput>
               </div>
-              {/* <EmailInput label='Email' email={user.emails[0].address} onEmailChanged={() => {}} /> */}
-              <div className='mt2'>
-                {infoItemMembers('Email', user.emails[0].address)}
-              </div>
-              <InputRow
-                label='Phone'
-                value={user.profile.phoneNumber}
-                onChange={evt => dispatch(editProfileField('phoneNumber', evt.target.value))}
-              />
-              {/* <div className='mt2 pt1'>
+              <div className='ph3 pb2 flex flex-column bb b--light-gray'>
+                <div className='flex'>
+                  <div className='flex-grow'>
+                    <InputRow
+                      label='First Name'
+                      value={user.profile.firstName || ((user.profile.name && !user.profile.lastName) ? user.profile.name : '')}
+                      onChange={evt => dispatch(editProfileField('firstName', evt.target.value))}
+                    />
+                  </div>
+                  <div className='ml3 flex-grow'>
+                    <InputRow
+                      label='Last Name'
+                      value={user.profile.lastName}
+                      onChange={evt => dispatch(editProfileField('lastName', evt.target.value))}
+                    />
+                  </div>
+                </div>
+                {/* <EmailInput label='Email' email={user.emails[0].address} onEmailChanged={() => {}} /> */}
+                <div className='mt2'>
+                  {infoItemMembers('Email', user.emails[0].address)}
+                </div>
+                <InputRow
+                  label='Phone'
+                  value={user.profile.phoneNumber}
+                  onChange={evt => dispatch(editProfileField('phoneNumber', evt.target.value))}
+                />
+                {/* <div className='mt2 pt1'>
                 {infoItemLabel('Password')}
                 <div className='flex items-center'>
                   <div className='mid-gray flex-grow'>
@@ -139,15 +140,16 @@ class AccountSettings extends React.Component<Props, State> {
                   </IconButton>
                 </div>
               </div> */}
-            </div>
-            <MenuItem onClick={() => dispatch(push('/notification-settings'))}>
-              <div className='flex items-center pv1'>
-                <div className='flex-grow bondi-blue'>
-                  Notification Settings
-                </div>
-                <FontIcon className='material-icons' color='var(--mid-gray)'>keyboard_arrow_right</FontIcon>
               </div>
-            </MenuItem>
+              <MenuItem onClick={() => dispatch(push('/notification-settings'))}>
+                <div className='flex items-center pv1'>
+                  <div className='flex-grow bondi-blue'>
+                    Notification Settings
+                  </div>
+                  <FontIcon className='material-icons' color='var(--mid-gray)'>keyboard_arrow_right</FontIcon>
+                </div>
+              </MenuItem>
+            </div>
           </div>
         )}
       </div>
