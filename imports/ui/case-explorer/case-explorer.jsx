@@ -16,7 +16,6 @@ import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
-import { storeBreadcrumb } from '../general-actions'
 import { CaseList } from '../case-explorer/case-list'
 import UnitSelectDialog from '../dialogs/unit-select-dialog'
 import { push } from 'react-router-redux'
@@ -45,11 +44,6 @@ class CaseExplorer extends Component {
     this.setState({
       sortBy: value
     })
-  }
-
-  handleOnItemClicked = () => {
-    const { dispatch, match } = this.props
-    dispatch(storeBreadcrumb(match.url))
   }
 
   handleOnUnitClicked = (unitId) => {
@@ -183,7 +177,6 @@ class CaseExplorer extends Component {
               expandedListRenderer={({ allItems }) => (
                 <CaseList
                   allCases={allItems}
-                  onItemClick={this.handleOnItemClicked}
                 />)
               }
               name={'case'}

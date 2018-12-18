@@ -12,7 +12,6 @@ import resendVerificationState from './reducers/resend-verification-state'
 import passResetState from './reducers/pass-reset-state'
 import caseUsersState from './reducers/case-users-state'
 import drawerState from './reducers/drawer-state'
-import pathBreadcrumb from './reducers/path-breadcrumb'
 import unitCreationState from './reducers/unit-creation-state'
 import genericErrorState from './reducers/generic-error-state'
 import reportPreviewUrls from './reducers/report-preview-urls'
@@ -32,7 +31,6 @@ const rootReducer = combineReducers({
   passResetState,
   caseUsersState,
   drawerState,
-  pathBreadcrumb,
   unitCreationState,
   reportCreationState,
   genericErrorState,

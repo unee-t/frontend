@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Subject } from 'rxjs/Subject'
 import { merge } from 'rxjs/observable/merge'
 import { of } from 'rxjs/observable/of'
-import { push, goBack } from 'react-router-redux'
+import { replace, goBack } from 'react-router-redux'
 import {
   CREATE_CASE,
   CREATE_CASE_INITIATED,
@@ -30,7 +30,7 @@ export const createCase = action$ => action$
         }
         const navAction = parentReport
           ? goBack()
-          : push(`/case/${newCaseId}`)
+          : replace(`/case/${newCaseId}`)
         return merge(
           of({
             type: CREATE_CASE_SUCCESS
