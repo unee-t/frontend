@@ -228,6 +228,7 @@ if (Meteor.isServer) {
         try {
           const listResponse = callAPI('get', apiUrl, { api_key: apiKey }, false, true)
           ids = listResponse.data.ids
+          if (!ids) throw new Meteor.Error({ message: 'Malformed API response', response: listResponse })
         } catch (e) {
           logger.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
           this.ready()
