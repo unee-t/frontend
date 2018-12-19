@@ -255,8 +255,7 @@ const connectedWrapper = withRouter(connect(
       attachmentUploads,
       invitationState,
       invitationLoginState: { showWelcomeMessage, invitedByDetails },
-      caseUsersState,
-      pathBreadcrumb
+      caseUsersState
     },
     props
   ) => ({
@@ -264,21 +263,15 @@ const connectedWrapper = withRouter(connect(
     invitationState,
     invitedByDetails,
     caseUsersState,
-    showWelcomeDialog: !!showWelcomeMessage,
-    ancestorPath: pathBreadcrumb
+    showWelcomeDialog: !!showWelcomeMessage
   })
 )(CaseContainer))
 
 const MobileHeader = props => {
-  const { caseItem, comments, dispatch, userBzLogin, ancestorPath } = props.contentProps
+  const { caseItem, comments, dispatch, userBzLogin } = props.contentProps
   const { match } = props
   const handleBack = () => {
-    const { replace } = routerRedux
-    if (match.isExact && ancestorPath) {
-      dispatch(replace(ancestorPath))
-    } else {
-      dispatch(replace(props.location.pathname.split('/').slice(0, -1).join('/')))
-    }
+    dispatch(routerRedux.goBack())
   }
   return (
     <Switch>
@@ -289,7 +282,7 @@ const MobileHeader = props => {
         const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
         const creatorText = userBzLogin === creator ? 'You' : creator
         return (
-          <FloatingInfoBar handleBack={() => handleBack(match.url)}>
+          <FloatingInfoBar handleBack={() => handleBack()}>
             <div className='white'>
               <h4 className='mv1'>{creatorText}</h4>
               <h5 className='mv1'>{timeText}</h5>

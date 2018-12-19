@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { REPORT_DRAFT_STATUS } from '../../api/reports'
 
-export function ReportList ({ allReports, onItemClick }) {
+export function ReportList ({ allReports }) {
   return (
     <div>
       {allReports.map((reportItem, ind) =>
@@ -12,7 +12,6 @@ export function ReportList ({ allReports, onItemClick }) {
             <Link
               className={'link flex-grow ellipsis ml3 pl1 pv3 bondi-blue'}
               to={`report/${reportItem.id}/${reportItem.status === REPORT_DRAFT_STATUS ? 'draft' : 'preview'}`}
-              onClick={onItemClick}
             >
               {reportItem.title}
             </Link>
@@ -24,6 +23,5 @@ export function ReportList ({ allReports, onItemClick }) {
 }
 
 ReportList.propTypes = {
-  allReports: PropTypes.array.isRequired,
-  onItemClick: PropTypes.func.isRequired
+  allReports: PropTypes.array.isRequired
 }

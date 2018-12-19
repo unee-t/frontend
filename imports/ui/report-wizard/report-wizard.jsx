@@ -24,7 +24,6 @@ import { imageInputEventHandler } from '../util/dom-api'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
-import { storeBreadcrumb } from '../general-actions'
 import { editReportField, addAttachment, retryAttachment } from './report-wizard.actions'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
@@ -271,7 +270,6 @@ class ReportWizard extends Component {
                         </div>
                         {childCases.map(caseItem => (
                           <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                            dispatch(storeBreadcrumb(subMatch.url))
                             dispatch(push(`/case/${caseItem.id}`))
                           }} />
                         ))}

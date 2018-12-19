@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
-import { Link, Route } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { Route } from 'react-router-dom'
+import { replace, goBack } from 'react-router-redux'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import FontIcon from 'material-ui/FontIcon'
@@ -78,7 +80,7 @@ class InviteDialog extends Component {
     const {
       basePath, relPath, invitationState, onResetInvitation, selectControlsRenderer, potentialInvitees,
       title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser,
-      mainOperationSuccessContent
+      mainOperationSuccessContent, dispatch
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, inviteeEmail, currMaxHeight } = this.state
     return (
@@ -96,14 +98,18 @@ class InviteDialog extends Component {
             bodyStyle={Object.assign({ maxHeight: currMaxHeight }, modalBodyStyle)}
             autoDetectWindowHeight={false}
           >
-            <Link to={basePath} onClick={onResetInvitation}
+            <a
+              onClick={() => {
+                onResetInvitation()
+                dispatch(goBack())
+              }}
               className={
                 'link b--none bg-transparent absolute top-1 pt2 right-1 outline-0' +
                 (invitationState.loading ? ' dn' : '')
               }
             >
               <FontIcon className='material-icons' style={closeDialogButtonStyle}>close</FontIcon>
-            </Link>
+            </a>
             <Route exact path={`${basePath}/${relPath}`} render={() => mainOperationSuccessContent
               ? successWrapper(mainOperationSuccessContent)
               : (
@@ -122,10 +128,14 @@ class InviteDialog extends Component {
                     </RaisedButton>
                     <p className='tc i mid-gray lh-title mt3 mb0'>
                       Can't find who you're looking for?&nbsp;
-                      <Link to={`${basePath}/${relPath}/new`}
-                        className='link b bondi-blue'>
+                      <a
+                        className='link b bondi-blue'
+                        onClick={() => {
+                          dispatch(replace(`${basePath}/${relPath}/new`))
+                        }}
+                      >
                         {linkLabelForNewUser}
-                      </Link>
+                      </a>
                     </p>
                   </div>
                 </div>
@@ -174,11 +184,14 @@ class InviteDialog extends Component {
                       Send Invitation
                     </span>
                   </button>
-                  <Link
-                    to={`${basePath}/${relPath}`}
-                    className={simpleLinkClasses + ' ph3' + (invitationState.loading ? ' disabled o-60' : '')}>
+                  <a
+                    className={simpleLinkClasses + ' ph3' + (invitationState.loading ? ' disabled o-60' : '')}
+                    onClick={() => {
+                      dispatch(replace(`${basePath}/${relPath}`))
+                    }}
+                  >
                     Back
-                  </Link>
+                  </a>
                 </div>
                 <ErrorDialog
                   show={!!invitationState.errorText || inputErrorModalOpen}
@@ -213,4 +226,4 @@ InviteDialog.propTypes = {
   mainOperationSuccessContent: PropTypes.element
 }
 
-export default InviteDialog
+export default connect(() => ({}))(InviteDialog)
