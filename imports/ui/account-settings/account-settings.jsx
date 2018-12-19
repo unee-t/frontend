@@ -1,4 +1,5 @@
 // @flow
+/* global HTMLInputElement */
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import InnerAppBar from '../components/inner-app-bar'
@@ -8,6 +9,7 @@ import { goBack, push } from 'react-router-redux'
 import CircularProgress from 'material-ui/CircularProgress'
 import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
+import FlatButton from 'material-ui/FlatButton'
 
 import { infoItemMembers } from '../util/static-info-rendering'
 import FileInput from '../components/file-input'
@@ -35,27 +37,45 @@ type Props = {
   uploadingAvatarError?: Object
 }
 type State = {
-  avatarPreview: ?string
+  avatarPreview: ?string,
+  editMode: boolean
 }
 class AccountSettings extends React.Component<Props, State> {
   state = {
-    avatarPreview: null
+    avatarPreview: null,
+    editMode: false
   }
 
-  componentDidUpdate (prevProps) {
+  firstField: ?HTMLInputElement
+
+  componentDidUpdate (prevProps, prevState) {
     if (prevProps.isUploadingAvatar && !this.props.isUploadingAvatar) {
       this.setState({
         avatarPreview: null
       })
     }
+    if (!prevState.editMode && this.state.editMode) {
+      setTimeout(() => { // Had to set timeout as the field is not focusable immediately after becoming enabled
+        if (this.firstField) this.firstField.focus()
+      }, 100)
+    }
   }
 
   render () {
     const { user, dispatch, isUploadingAvatar, uploadingAvatarPercent } = this.props
-    const { avatarPreview } = this.state
+    const { avatarPreview, editMode } = this.state
     return (
       <div className='full-height flex flex-column'>
-        <InnerAppBar title='Account' onBack={() => dispatch(goBack())} />
+        <InnerAppBar
+          title='Account'
+          onBack={() => dispatch(goBack())}
+          rightIconElement={
+            <FlatButton
+              label={editMode ? 'Save' : 'Edit'}
+              onClick={() => this.setState({ editMode: !editMode })}
+            />
+          }
+        />
         {!user ? (
           <div className='flex-grow flex items-center justify-center'>
             <CircularProgress size={50} thickness={4} />
@@ -103,17 +123,22 @@ class AccountSettings extends React.Component<Props, State> {
                   </MenuItem>
                 </FileInput>
               </div>
-              <div className='ph3 pb2 flex flex-column bb b--light-gray'>
+              <div className='ph3 pb2 flex flex-column bb b--light-gray bw3'>
                 <div className='flex'>
                   <div className='flex-grow'>
                     <InputRow
+                      disabled={!editMode}
+                      underlineShow={editMode}
                       label='First Name'
                       value={user.profile.firstName || ((user.profile.name && !user.profile.lastName) ? user.profile.name : '')}
                       onChange={evt => dispatch(editProfileField('firstName', evt.target.value))}
+                      inpRef={el => { this.firstField = el }}
                     />
                   </div>
                   <div className='ml3 flex-grow'>
                     <InputRow
+                      disabled={!editMode}
+                      underlineShow={editMode}
                       label='Last Name'
                       value={user.profile.lastName}
                       onChange={evt => dispatch(editProfileField('lastName', evt.target.value))}
@@ -125,6 +150,8 @@ class AccountSettings extends React.Component<Props, State> {
                   {infoItemMembers('Email', user.emails[0].address)}
                 </div>
                 <InputRow
+                  disabled={!editMode}
+                  underlineShow={editMode}
                   label='Phone'
                   value={user.profile.phoneNumber}
                   onChange={evt => dispatch(editProfileField('phoneNumber', evt.target.value))}
@@ -141,14 +168,16 @@ class AccountSettings extends React.Component<Props, State> {
                 </div>
               </div> */}
               </div>
-              <MenuItem onClick={() => dispatch(push('/notification-settings'))}>
-                <div className='flex items-center pv1'>
-                  <div className='flex-grow bondi-blue'>
-                    Notification Settings
+              <div className='bb b--light-gray bw3'>
+                <MenuItem onClick={() => dispatch(push('/notification-settings'))}>
+                  <div className='flex items-center pv1'>
+                    <div className='flex-grow bondi-blue'>
+                      Notification Settings
+                    </div>
+                    <FontIcon className='material-icons' color='var(--mid-gray)'>keyboard_arrow_right</FontIcon>
                   </div>
-                  <FontIcon className='material-icons' color='var(--mid-gray)'>keyboard_arrow_right</FontIcon>
-                </div>
-              </MenuItem>
+                </MenuItem>
+              </div>
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+// @flow
+/* global SyntheticInputEvent, HTMLInputElement */
+import * as React from 'react'
 
 import StickyTextField from './sticky-text-field'
 
@@ -9,9 +10,27 @@ import {
   textInputUnderlineFocusStyle
 } from '../components/form-controls.mui-styles'
 
-export default class InputRow extends Component {
+type Props = {
+  label: string,
+  onChange: (evt: SyntheticInputEvent<HTMLInputElement>) => void,
+  value: ?string,
+  errorText?: ?string,
+  inpRef?: (el: HTMLInputElement) => void,
+  disabled?: boolean,
+  isMultiLine?: boolean,
+  placeholder?: string,
+  underlineShow?: boolean,
+  inpType?: string,
+  isFloatingLabelFixed?: boolean
+}
+
+export default class InputRow extends React.Component<Props> {
   render () {
-    const { inpType, inpRef, label, isFloatingLabelFixed, placeholder, errorText, disabled, value, onChange, isMultiLine } = this.props
+    const {
+      inpType, inpRef, label, isFloatingLabelFixed, placeholder,
+      errorText, disabled, value, onChange, isMultiLine, underlineShow
+    } = this.props
+    const doShowUnderline = typeof underlineShow === 'boolean' ? underlineShow : true
     const type = inpType || 'text'
     return (
       <StickyTextField
@@ -24,20 +43,9 @@ export default class InputRow extends Component {
         multiLine={!!isMultiLine}
         hintText={placeholder}
         inpRef={inpRef}
+        underlineShow={doShowUnderline}
         {...{ type, errorText, disabled, value, onChange }}
       />
     )
   }
-}
-
-InputRow.propTypes = {
-  label: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
-  value: PropTypes.any,
-  errorText: PropTypes.string,
-  inpRef: PropTypes.func,
-  inpType: PropTypes.string,
-  disabled: PropTypes.bool,
-  isMultiLine: PropTypes.bool,
-  placeholder: PropTypes.string
 }
