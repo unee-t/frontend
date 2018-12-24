@@ -198,7 +198,7 @@ class CaseMessages extends Component {
     return (
       <div className={['mb3 ml2' + (isSelf ? ' tr' : ''), themeClass || ''].join(' ')} key={key}>
         { !isSelf ? (
-          <UserAvatar user={{ login: creator }} />
+          <UserAvatar user={{ login: creator }} imageUrl={creatorUser && creatorUser.profile.avatarUrl} />
         ) : ''}
         { contentRenderer({ isSelf, creator, creatorUser, text, creationTime, id, process }) }
       </div>

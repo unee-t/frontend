@@ -77,7 +77,8 @@ export const getUnitRoles = unit => {
         email: user.emails[0].address,
         name: user.profile.name,
         role: roleObj.roleType,
-        isOccupant: memberDesc.isOccupant
+        isOccupant: memberDesc.isOccupant,
+        avatarUrl: user.profile.avatarUrl
       })
     })
     return all

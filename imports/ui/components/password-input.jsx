@@ -6,7 +6,7 @@ import FontIcon from 'material-ui/FontIcon'
 import InputRow from './input-row'
 
 type Props = {
-  inpRef?: (el: React.Node) => void,
+  inpRef?: (el: HTMLInputElement) => void,
   label?: string,
   value?: string,
   onChange: (evt: SyntheticInputEvent<HTMLInputElement>) => void

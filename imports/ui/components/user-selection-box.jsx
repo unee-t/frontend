@@ -21,7 +21,7 @@ const UserSelectionBox = ({ usersList, userStatusRenderer, userClassNames, onUse
                   getColorForUser(user) + ' flex pv2 ph2 lh-title ' + extraClasses
                 }>
                   <div className='ml1'>
-                    <UserAvatar user={user} />
+                    <UserAvatar user={user} imageUrl={user.avatarUrl} />
                   </div>
                   <div className='ml2 flex-grow overflow-hidden'>
                     <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>

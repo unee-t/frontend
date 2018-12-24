@@ -22,7 +22,7 @@ export const renderCurrUserAvatar = (user, isBig) => {
   const userColor = getColorForUser(user)
 
   return (
-    <UserAvatar additionalClasses={`ba ${userColor}`} isBig={isBig} user={{
+    <UserAvatar additionalClasses={`ba ${userColor}`} isBig={isBig} imageUrl={user.profile.avatarUrl} user={{
       name: user.profile && user.profile.name,
       login: user.bugzillaCreds && user.bugzillaCreds.login,
       email: user.emails && user.emails[0].address
