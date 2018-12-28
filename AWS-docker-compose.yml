@@ -1,30 +1,30 @@
 version: '2'
 services:
     meteor:
-      image: 812644853088.dkr.ecr.ap-southeast-1.amazonaws.com/meteor:latest
-      ports:
-       - "8080:3000"
-      environment:
-       - ROOT_URL=${ROOT_URL}
-       - BUNDLE_URL=https://unee-t-media.s3-accelerate.amazonaws.com/frontend/commit/${COMMIT}.tar.gz
-       - BUGZILLA_URL=${BUGZILLA_URL}
-       - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
-       - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
-       - CLOUDINARY_URL=${CLOUDINARY_URL}
-       - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
-       - COMMIT=${COMMIT}
-       - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
-       - FROM_EMAIL=${FROM_EMAIL}
-       - MAIL_URL=${MAIL_URL}
-       - INVITE_LAMBDA_URL=${INVITE_LAMBDA_URL}
-       - APIENROLL_LAMBDA_URL=${APIENROLL_LAMBDA_URL}
-       - UNIT_CREATE_LAMBDA_URL=${UNIT_CREATE_LAMBDA_URL}
-       - PDFGEN_LAMBDA_URL=${PDFGEN_LAMBDA_URL}
-       - PDFCONVERT_LAMBDA_URL=${PDFCONVERT_LAMBDA_URL}
-       - STAGE=${STAGE}
-       - DOMAIN=${DOMAIN}
-      logging:
+        image: ulexus/meteor:build
+        ports:
+            - "8080:3000"
+        environment:
+            - ROOT_URL=${ROOT_URL}
+            - BUNDLE_URL=https://unee-t-media.s3-accelerate.amazonaws.com/frontend/commit/${COMMIT}.tar.gz
+            - BUGZILLA_URL=${BUGZILLA_URL}
+            - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
+            - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
+            - CLOUDINARY_URL=${CLOUDINARY_URL}
+            - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
+            - COMMIT=${COMMIT}
+            - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
+            - FROM_EMAIL=${FROM_EMAIL}
+            - MAIL_URL=${MAIL_URL}
+            - INVITE_LAMBDA_URL=${INVITE_LAMBDA_URL}
+            - APIENROLL_LAMBDA_URL=${APIENROLL_LAMBDA_URL}
+            - UNIT_CREATE_LAMBDA_URL=${UNIT_CREATE_LAMBDA_URL}
+            - PDFGEN_LAMBDA_URL=${PDFGEN_LAMBDA_URL}
+            - PDFCONVERT_LAMBDA_URL=${PDFCONVERT_LAMBDA_URL}
+            - STAGE=${STAGE}
+            - DOMAIN=${DOMAIN}
+        logging:
             driver: awslogs
             options:
-              awslogs-region: ap-southeast-1
-              awslogs-group: meteor
+                awslogs-region: ap-southeast-1
+                awslogs-group: meteor

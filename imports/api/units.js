@@ -10,6 +10,7 @@ import UnitMetaData, { unitTypes, collectionName as unitMetaCollName } from './u
 import UnitRolesData, { possibleRoles, collectionName as unitRolesCollName } from './unit-roles-data'
 import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
+import { logger } from '../util/logger'
 
 export const collectionName = 'units'
 
@@ -156,7 +157,7 @@ export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType
       }
     })
   } catch (e) {
-    console.error({
+    logger.error({
       ...errorLogParams,
       step: 'INVITE lambda request, unit cleanup might be necessary',
       error: e
@@ -227,8 +228,9 @@ if (Meteor.isServer) {
         try {
           const listResponse = callAPI('get', apiUrl, { api_key: apiKey }, false, true)
           ids = listResponse.data.ids
+          if (!ids) throw new Meteor.Error({ message: 'Malformed API response', response: listResponse })
         } catch (e) {
-          console.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
+          logger.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
           this.ready()
           this.error(new Meteor.Error({ message: 'REST API error', origError: e }))
         }
@@ -392,9 +394,9 @@ Meteor.methods({
         })
         unitBzId = apiResult.data[0].id
         unitBzName = apiResult.data[0].name
-        console.log(`BZ Unit ${name} was created successfully`)
+        logger.info(`BZ Unit ${name} was created successfully`)
       } catch (e) {
-        console.error({
+        logger.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
           args: [creationArgs],

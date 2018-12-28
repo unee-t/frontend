@@ -7,6 +7,7 @@ import caseAssigneeUpdateTemplate from '../../email-templates/case-assignee-upda
 import caseUpdatedTemplate from '../../email-templates/case-updated'
 import caseNewMessageTemplate from '../../email-templates/case-new-message'
 import caseUserInvitedTemplate from '../../email-templates/case-user-invited'
+import { logger } from '../../util/logger'
 
 const updatedWhatWhiteList = [
   'Unit',
@@ -51,9 +52,9 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   }
   try {
     Email.send(Object.assign(emailProps, emailContent))
-    console.log('Sent', emailAddr, 'notification:', notificationId)
+    logger.info('Sent', emailAddr, 'notification:', notificationId)
   } catch (e) {
-    console.error(`An error ${e} occurred while sending an email to ${emailAddr}`)
+    logger.error(`An error ${e} occurred while sending an email to ${emailAddr}`)
   }
 }
 
@@ -73,17 +74,17 @@ export default (req, res) => {
   const message = req.body
 
   if (message.notification_type === 'case_updated' && !updatedWhatWhiteList.includes(message.update_what)) {
-    console.log(`Ignoring "case_updated" notification type with "${message.update_what}" update subject`)
+    logger.info(`Ignoring "case_updated" notification type with "${message.update_what}" update subject`)
     res.send(200)
     return
   }
   if (MessagePayloads.findOne({ notification_id: message.notification_id })) {
-    console.log(`Duplicate message ${message.notification_id}`)
+    logger.info(`Duplicate message ${message.notification_id}`)
     res.send(400, `Duplicate message ${message.notification_id}`)
     return
   }
 
-  console.log('Incoming to /api/db-change-message/process', message.notification_id)
+  logger.info('Incoming to /api/db-change-message/process', message.notification_id)
   const payloadId = MessagePayloads.insert(message)
 
   // Common between https://github.com/unee-t/lambda2sns/tree/master/tests/events
@@ -151,14 +152,14 @@ export default (req, res) => {
       break
 
     default:
-      console.log('Unimplemented type:', type)
+      logger.info('Unimplemented type:', type)
       res.send(400)
       return
   }
   ;(new Set(userIds)).forEach(userId => {
     const recipient = getUserByBZId(userId)
     if (!recipient) {
-      console.error(`User with bz id ${userId} was not found in mongo`)
+      logger.error(`User with bz id ${userId} was not found in mongo`)
       return
     }
 
@@ -175,12 +176,12 @@ export default (req, res) => {
     }
 
     if (!recipient.emails[0].verified) {
-      console.error(`User with bz id ${userId} has no verified email address, skipping notification`)
+      logger.error(`User with bz id ${userId} has no verified email address, skipping notification`)
       return
     }
     const settingType = settingTypeMapping[type]
     if (!recipient.notificationSettings[settingType]) {
-      console.log(
+      logger.info(
         `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications.`
       )
     } else {

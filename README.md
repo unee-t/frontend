@@ -1,5 +1,7 @@
 # Unee-T
 
+<img src="https://media.dev.unee-t.com/2018-12-10/Unee-T_high_level_architecture.png" alt="Overview">
+
 * [How to test with Bugzilla in a local environment](https://unee-t-media.s3-accelerate.amazonaws.com/frontend/MEFE.mp4)
 * [ECS deploy](https://unee-t-media.s3-accelerate.amazonaws.com/2017/ecs-deploy.mp4) with `./deploy.sh`
 
@@ -78,10 +80,26 @@ Run in browser's developer console:
 
 ## How do I set up for local development?
 
-1. Make a backup snapshot of the devlopment Mongo database using `backup/dump.sh`
+1. Make a backup snapshot of the development Mongo database using `backup/dump.sh`
 2. `meteor reset` to clear state
 3. `npm run start` to start the mongo service
 3. `mongorestore -h 127.0.0.1 --port 3001 -d meteor $(date "+dev-%Y%m%d")/meteor`
+
+## How to create users in the case my MongoDB is lacking the users?
+
+To check the current users, connect to your MongoDB and run:
+
+	db.users.find({}, {'emails.address': 1, _id: 0}).map(d => d.emails[0].address).join('\n')
+
+If your Frontend datastore MongoDB out of sync with your [Bugzilla database's
+profiles](https://documentation.unee-t.com/2018/03/01/introduction-to-the-demo-environment/),
+you need to create the users in the users manually:
+
+	Accounts.createUser({ email: 'leonel@mailinator.com', password: 'leonel', profile: { bzLogin: 'leonel@mailinator.com', bzPass: 'leonel' }})
+
+Ensure it worked by looking at the `npm start` log. Next you might want to verify each user's email address.
+
+	db.users.update({'emails.address': 'leonel@mailinator.com'}, {$set : {'emails.0.verified': true}})
 
 ## How to test the notifications / email templates?
 

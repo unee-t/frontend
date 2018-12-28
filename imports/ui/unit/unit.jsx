@@ -22,7 +22,6 @@ import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
-import { storeBreadcrumb } from '../general-actions'
 import CaseMenuItem from '../components/case-menu-item'
 import { ReportIcon } from '../report/report-icon'
 import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
@@ -260,7 +259,6 @@ class Unit extends Component {
                             className='ph3'
                             caseItem={caseItem}
                             onClick={() => {
-                              dispatch(storeBreadcrumb(rootMatch.url))
                               dispatch(push(`/case/${caseItem.id}`))
                             }}
                           />

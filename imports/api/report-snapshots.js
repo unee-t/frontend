@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { Meteor } from 'meteor/meteor'
 import { callAPI } from '../util/bugzilla-api'
+import { logger } from '../util/logger'
 
 export const collectionName = 'reportSnapshots'
 
@@ -14,7 +15,7 @@ if (Meteor.isServer) {
     try {
       callAPI('get', `/rest/bug/${reportId}`, { api_key: apiKey }, false, true)
     } catch (e) {
-      console.error(`Unauthorized access to report ${reportId}`)
+      logger.error(`Unauthorized access to report ${reportId}`)
       return
     }
 

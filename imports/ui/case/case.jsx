@@ -7,8 +7,6 @@ import routerRedux from 'react-router-redux'
 import { Meteor } from 'meteor/meteor'
 import _ from 'lodash'
 import moment from 'moment'
-import IconButton from 'material-ui/IconButton'
-import FontIcon from 'material-ui/FontIcon'
 import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/cases'
 import Comments, { collectionName as commentsCollName } from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
@@ -24,6 +22,7 @@ import WelcomeDialog from '../dialogs/welcome-dialog'
 import { formatDayText } from '../../util/formatters'
 import Preloader from '../preloader/preloader'
 import { makeMatchingUser } from '../../api/custom-users'
+import FloatingInfoBar from '../components/floating-info-bar'
 
 export class Case extends Component {
   componentDidMount () {
@@ -256,8 +255,7 @@ const connectedWrapper = withRouter(connect(
       attachmentUploads,
       invitationState,
       invitationLoginState: { showWelcomeMessage, invitedByDetails },
-      caseUsersState,
-      pathBreadcrumb
+      caseUsersState
     },
     props
   ) => ({
@@ -265,21 +263,15 @@ const connectedWrapper = withRouter(connect(
     invitationState,
     invitedByDetails,
     caseUsersState,
-    showWelcomeDialog: !!showWelcomeMessage,
-    ancestorPath: pathBreadcrumb
+    showWelcomeDialog: !!showWelcomeMessage
   })
 )(CaseContainer))
 
 const MobileHeader = props => {
-  const { caseItem, comments, dispatch, userBzLogin, ancestorPath } = props.contentProps
+  const { caseItem, comments, dispatch, userBzLogin } = props.contentProps
   const { match } = props
   const handleBack = () => {
-    const { replace } = routerRedux
-    if (match.isExact && ancestorPath) {
-      dispatch(replace(ancestorPath))
-    } else {
-      dispatch(replace(props.location.pathname.split('/').slice(0, -1).join('/')))
-    }
+    dispatch(routerRedux.goBack())
   }
   return (
     <Switch>
@@ -290,15 +282,12 @@ const MobileHeader = props => {
         const timeText = `${formatDayText(creationTime)}, ${moment(creationTime).format('HH:mm')}`
         const creatorText = userBzLogin === creator ? 'You' : creator
         return (
-          <div className='fixed top-0 w-100 bg-black-20 flex items-center'>
-            <IconButton onClick={() => handleBack(match.url)}>
-              <FontIcon className='material-icons' color='white'>arrow_back</FontIcon>
-            </IconButton>
+          <FloatingInfoBar handleBack={() => handleBack()}>
             <div className='white'>
               <h4 className='mv1'>{creatorText}</h4>
               <h5 className='mv1'>{timeText}</h5>
             </div>
-          </div>
+          </FloatingInfoBar>
         )
       }} />
       <Route path={match.url} render={routeProps => (

@@ -23,10 +23,10 @@ const updateCounter = (iconType, count) => {
   )
 }
 
-export function CaseList ({ allCases, onItemClick }) {
+export function CaseList ({ allCases }) {
   return (
     <div>
-      {allCases.map((caseItem, ind) =>
+      {allCases.map(caseItem =>
         <li key={caseItem.id} className='h2-5 bt b--black-10'>
           <div className='flex items-center'>
             <Link
@@ -36,7 +36,6 @@ export function CaseList ({ allCases, onItemClick }) {
                   (isClosed(caseItem) ? 'silver strike' : 'bondi-blue')
               }
               to={`/case/${caseItem.id}`}
-              onClick={onItemClick}
             >
               {caseItem.title}
             </Link>
@@ -53,6 +52,5 @@ export function CaseList ({ allCases, onItemClick }) {
 }
 
 CaseList.propTypes = {
-  allCases: PropTypes.array.isRequired,
-  onItemClick: PropTypes.func.isRequired
+  allCases: PropTypes.array.isRequired
 }

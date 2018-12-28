@@ -4,14 +4,15 @@ import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
+import { logger } from '../util/logger'
 
 export const collectionName = 'comments'
 
 // Exported for testing purposes
 export const factoryOptions = {
   collectionName,
-  dataResolver: (data, claimId) => {
-    return data.bugs[claimId.toString()].comments
+  dataResolver: (data, caseId) => {
+    return data.bugs[caseId.toString()].comments
   }
 }
 
@@ -29,6 +30,18 @@ if (Meteor.isServer) {
       }),
       withUsers(commentItem => [commentItem.creator])
     )
+  )
+
+  Meteor.publish(
+    `${collectionName}.byId`,
+    publicationFactory({
+      collectionName,
+      dataResolver: (data, commentId) => {
+        return data.comments[commentId.toString()]
+      }
+    }).publishById({
+      uriTemplate: id => `/rest/bug/comment/${id}`
+    })
   )
   FailedComments = new Mongo.Collection('failedComments')
 }
@@ -63,7 +76,7 @@ Meteor.methods({
         api_key: currUser.bugzillaCreds.apiKey
       }
 
-      console.log(`${currUser.bugzillaCreds.login} is commenting "${text}" on case ${caseId}`)
+      logger.info(`${currUser.bugzillaCreds.login} is commenting "${text}" on case ${caseId}`)
 
       try {
         // Creating the comment
@@ -79,7 +92,7 @@ Meteor.methods({
         const newComment = commentData.data.comments[createData.data.id.toString()]
         publicationObj.handleAdded(newComment)
       } catch (e) {
-        console.error({
+        logger.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
           args: [text, caseId],

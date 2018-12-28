@@ -7,7 +7,7 @@ import RootAppBar from '../components/root-app-bar'
 import memoizeOne from 'memoize-one'
 import Reports, { collectionName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import Preloader from '../preloader/preloader'
-import { setDrawerState, storeBreadcrumb } from '../general-actions'
+import { setDrawerState } from '../general-actions'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { UnitGroupList } from '../explorer-components/unit-group-list'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
@@ -50,11 +50,6 @@ class ReportExplorer extends Component {
     })
   }
 
-  handleOnItemClicked = () => {
-    const { dispatch, match } = this.props
-    dispatch(storeBreadcrumb(match.url))
-  }
-
   handleOnUnitClicked = (unitId) => {
     const { dispatch } = this.props
     dispatch(push(`/unit/${unitId}/reports/new`))
@@ -87,15 +82,14 @@ class ReportExplorer extends Component {
       }, {})
 
       const reportBundle = Object.keys(unitDict).reduce((all, unitTitle) => {
-        const { bzId, items, unitType } = unitDict[unitTitle]
+        const { items, ...attrs } = unitDict[unitTitle]
 
         // Sorting items within a unit by the order descending order of last update
         items.sort(sorters[sortBy])
         all.push({
           items: items,
-          unitType,
           unitTitle,
-          bzId
+          ...attrs
         })
         return all
       }, []) // Sorting by the latest case update for each
@@ -137,9 +131,8 @@ class ReportExplorer extends Component {
                 expandedListRenderer={({ allItems }) => (
                   <ReportList
                     allReports={allItems}
-                    onItemClick={this.handleOnItemClicked}
-                  />)
-                }
+                  />
+                )}
                 name={'report'}
               /> : (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
             }

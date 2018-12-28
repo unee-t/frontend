@@ -13,12 +13,12 @@ import resendVerificationState from './reducers/resend-verification-state'
 import passResetState from './reducers/pass-reset-state'
 import caseUsersState from './reducers/case-users-state'
 import drawerState from './reducers/drawer-state'
-import pathBreadcrumb from './reducers/path-breadcrumb'
 import unitCreationState from './reducers/unit-creation-state'
 import genericErrorState from './reducers/generic-error-state'
 import reportPreviewUrls from './reducers/report-preview-urls'
 import reportSharingState from './reducers/report-sharing-state'
 import unitInvitationState from './reducers/unit-invitation-state'
+import logoChangingState from './reducers/logo-changing-state'
 
 const rootReducer = combineReducers({
   showLoginError,
@@ -33,13 +33,13 @@ const rootReducer = combineReducers({
   passResetState,
   caseUsersState,
   drawerState,
-  pathBreadcrumb,
   unitCreationState,
   reportCreationState,
   genericErrorState,
   reportPreviewUrls,
   reportSharingState,
   unitInvitationState,
+  logoChangingState,
   router
 })
 

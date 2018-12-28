@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import bugzillaApi from '../../util/bugzilla-api'
+import { logger } from '../../util/logger'
 
 /**
  This publication generator is using the low-level meteor API to manage a published collection to the client
@@ -91,7 +92,7 @@ export default ({ collectionName, dataResolver }) => {
         subHandle.ready()
       })
       .catch(err => {
-        console.log(
+        logger.info(
           `client request from user ${subHandle.userId} to ${url} with ${JSON.stringify(payload)} resulted
            in an error:`,
           err

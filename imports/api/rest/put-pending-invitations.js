@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 
 import { reloadCaseFields } from '../cases'
 import UnitRolesData from '../unit-roles-data'
+import { logger } from '../../util/logger'
 
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
@@ -11,7 +12,7 @@ export default (req, res) => {
     return
   }
 
-  console.log('Marking done:', req.body)
+  logger.info('Marking done:', req.body)
   try {
     // How to rollback: db.pendingInvitations.update({},{ $unset: {done:1}})
     const results = PendingInvitations.update({
@@ -40,9 +41,9 @@ export default (req, res) => {
       try {
         invite(invitee, inviteby)
       } catch (e) {
-        console.log(`Sending invitation email to ${invitee.emails[0].address} has failed due to`, e)
+        logger.info(`Sending invitation email to ${invitee.emails[0].address} has failed due to`, e)
       }
-      console.log(inviteby.emails[0].address, 'has invited', invitee.emails[0].address)
+      logger.info(inviteby.emails[0].address, 'has invited', invitee.emails[0].address)
 
       // Also store back reference to who invited that user?
 
@@ -87,7 +88,7 @@ export default (req, res) => {
       try {
         reloadCaseFields(inviteInfo.caseId, ['involvedList', 'involvedListDetail'])
       } catch (e) {
-        console.error({
+        logger.error({
           apiCall: `PUT /pendingInvitations/done`,
           reqBody: req.body,
           error: e

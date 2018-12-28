@@ -24,7 +24,6 @@ import { imageInputEventHandler } from '../util/dom-api'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
-import { storeBreadcrumb } from '../general-actions'
 import { editReportField, addAttachment, retryAttachment } from './report-wizard.actions'
 import { attachmentTextMatcher } from '../../util/matchers'
 import { fitDimensions } from '../../util/cloudinary-transformations'
@@ -108,7 +107,7 @@ class ReportWizard extends Component {
 
   render () {
     const {
-      unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachmentUrls, attachmentUploads
+      unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachments, attachmentUploads
     } = this.props
 
     if (isLoading) {
@@ -208,12 +207,18 @@ class ReportWizard extends Component {
                       <div className='mt3'>
                         {infoItemLabel('Attach Photos:')}
                         <div className='flex flex-wrap pt1'>
-                          {attachmentUrls.map(url => (
-                            <img
-                              key={url}
-                              className='mt2 mr2 h3-5 border-box w3-5 ba b--moon-gray'
-                              src={fitDimensions(url, 96, 96)} alt='X'
-                            />
+                          {attachments.map(({ text, id }) => (
+                            <div className='mt2 mr2' key={id}>
+                              <MenuItem
+                                innerDivStyle={resetMenuItemDivStyle}
+                                onClick={() => dispatch(push(`/report/${reportItem.id}/attachment/${id}`))}
+                              >
+                                <img
+                                  className='h3-5 border-box w3-5 ba b--moon-gray'
+                                  src={fitDimensions(text.split('\n')[1], 96, 96)} alt='X'
+                                />
+                              </MenuItem>
+                            </div>
                           ))}
                           {attachmentUploads.map(process => (
                             <div
@@ -265,7 +270,6 @@ class ReportWizard extends Component {
                         </div>
                         {childCases.map(caseItem => (
                           <CaseMenuItem key={caseItem.id} caseItem={caseItem} onClick={() => {
-                            dispatch(storeBreadcrumb(subMatch.url))
                             dispatch(push(`/case/${caseItem.id}`))
                           }} />
                         ))}
@@ -317,7 +321,7 @@ ReportWizard.propTypes = {
   reportItem: PropTypes.object,
   childCases: PropTypes.array,
   user: PropTypes.object,
-  attachmentUrls: PropTypes.array,
+  attachments: PropTypes.array,
   attachmentUploads: PropTypes.array.isRequired
 }
 
@@ -352,9 +356,9 @@ export default connect(
         }
       }).fetch() : null,
       user: Meteor.user(),
-      attachmentUrls: Comments.find({ bug_id: parseInt(reportId) }).fetch().reduce((all, curr) => {
+      attachments: Comments.find({ bug_id: parseInt(reportId) }).fetch().reduce((all, curr) => {
         if (attachmentTextMatcher(curr.text)) {
-          all.push(curr.text.split('\n')[1])
+          all.push(curr)
         }
         return all
       }, []),

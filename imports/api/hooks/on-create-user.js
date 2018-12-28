@@ -4,6 +4,7 @@ import { HTTP } from 'meteor/http'
 import randToken from 'rand-token'
 import bugzillaApi from '../../util/bugzilla-api'
 import { baseUserSchema } from '../custom-users'
+import { logger } from '../../util/logger'
 
 // Exported for testing purposes
 export function onCreateUser (options, user) {
@@ -35,7 +36,7 @@ export function onCreateUser (options, user) {
       apiResult = callAPI('get', '/rest/login', { login: bzLogin, password: bzPass }, false, true)
     }
   } catch (e) {
-    console.error(e)
+    logger.error(e)
     throw new Meteor.Error({ message: 'REST API error', origError: e })
   }
   const { id: userId } = apiResult.data
@@ -51,7 +52,7 @@ export function onCreateUser (options, user) {
       }
     })
   } catch (e) {
-    console.error({
+    logger.error({
       endpoint: process.env.APIENROLL_LAMBDA_URL,
       method: 'POST',
       error: e,
@@ -68,7 +69,7 @@ export function onCreateUser (options, user) {
   })
   customizedUser.profile = options.profile
   Object.assign(customizedUser, baseUserSchema)
-  console.log(`User for ${email} was created successfully`)
+  logger.info(`User for ${email} was created successfully`)
   return customizedUser
 }
 if (Meteor.isServer) {
