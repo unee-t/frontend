@@ -8,6 +8,7 @@ import caseCreationState from './reducers/case-creation-state'
 import reportCreationState from './reducers/report-creation-state'
 import invitationLoginState from './reducers/invitation-login-state'
 import sendResetLinkState from './reducers/send-reset-link-state'
+import caseSearchState from './reducers/case-search-state'
 import resendVerificationState from './reducers/resend-verification-state'
 import passResetState from './reducers/pass-reset-state'
 import caseUsersState from './reducers/case-users-state'
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   caseCreationState,
   invitationLoginState,
   sendResetLinkState,
+  caseSearchState,
   resendVerificationState,
   passResetState,
   caseUsersState,

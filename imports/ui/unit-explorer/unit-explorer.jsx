@@ -17,14 +17,14 @@ import { NoItemMsg } from '../explorer-components/no-item-msg'
 import { Sorter } from '../explorer-components/sorter'
 import { StatusFilter } from '../explorer-components/status-filter'
 import { RoleFilter } from '../explorer-components/role-filter'
+import memoizeOne from 'memoize-one'
 
 class UnitExplorer extends Component {
   constructor (props) {
     super(props)
     this.state = {
       slideIndex: 0,
-      searchResult: [],
-      searchMode: false,
+      searchActive: false,
       searchText: '',
       selectedStatusFilter: null,
       selectedRoleFilter: null,
@@ -62,59 +62,67 @@ class UnitExplorer extends Component {
 
   onSearchChanged = (searchText) => {
     this.setState({ searchText })
-    if (searchText === '') {
-      this.setState({ searchMode: false })
-    } else {
-      this.setState({ searchMode: true })
-      const matcher = new RegExp(searchText, 'i')
-      const searchResult = this.props.unitList
-        .filter(unit => !matcher || (unit.name && unit.name.match(matcher)))
-      this.setState({
-        searchResult: searchResult
-      })
-    }
   }
 
-  get filteredUnits () {
-    const { selectedStatusFilter, sortBy, selectedRoleFilter } = this.state
-    const { unitList, currentUserId } = this.props
-    let statusFilter
-    switch (selectedStatusFilter) {
-      case 'All':
-        statusFilter = unitItem => true
-        break
-      case 'Active':
-        statusFilter = unitItem => unitItem.is_active
-        break
-      case 'Disabled':
-        statusFilter = unitItem => !unitItem.is_active
-        break
-      default:
-        statusFilter = unitItem => unitItem.is_active
+  filterUnits = memoizeOne(
+    (unitList, selectedStatusFilter, sortBy, selectedRoleFilter, searchText, searchActive) => {
+      const { currentUserId } = this.props
+      let statusFilter
+      switch (selectedStatusFilter) {
+        case 'All':
+          statusFilter = () => true
+          break
+        case 'Active':
+          statusFilter = unitItem => unitItem.is_active
+          break
+        case 'Disabled':
+          statusFilter = unitItem => !unitItem.is_active
+          break
+        default:
+          statusFilter = unitItem => unitItem.is_active
+      }
+      let roleFilter
+      switch (selectedRoleFilter) {
+        case 'All':
+          roleFilter = () => true
+          break
+        case 'Created':
+          roleFilter = unitItem => unitItem.metaData && unitItem.metaData.ownerIds && unitItem.metaData.ownerIds[0] === currentUserId
+          break
+        case 'Involved':
+          roleFilter = unitItem => ((unitItem.metaData && !unitItem.metaData.ownerIds) || (unitItem.metaData && !unitItem.metaData.ownerIds && !unitItem.metaData.ownerIds[0] === currentUserId))
+          break
+        default:
+          roleFilter = () => true
+      }
+      const filteredUnits = unitList.filter(unitItem => roleFilter(unitItem) && statusFilter(unitItem)).sort(sorters[sortBy])
+
+      if (!searchText || !searchActive) return filteredUnits
+
+      let regex
+      if (searchText.charAt(0).match(/\d/)) {
+        regex = new RegExp(`(^|[^\\d])${searchText}`, 'i')
+      } else {
+        regex = new RegExp(`(^|[^a-zA-Z])${searchText}`, 'i')
+      }
+      return filteredUnits.filter(item => item.name.match(regex))
+    },
+    (a, b) => {
+      if (Array.isArray(a) && Array.isArray(b)) {
+        return a.length === b.length
+      } else {
+        return a === b
+      }
     }
-    let roleFilter
-    switch (selectedRoleFilter) {
-      case 'All':
-        roleFilter = unitItem => true
-        break
-      case 'Created':
-        roleFilter = unitItem => unitItem.metaData && unitItem.metaData.ownerIds && unitItem.metaData.ownerIds[0] === currentUserId
-        break
-      case 'Involved':
-        roleFilter = unitItem => ((unitItem.metaData && !unitItem.metaData.ownerIds) || (unitItem.metaData && !unitItem.metaData.ownerIds && !unitItem.metaData.ownerIds[0] === currentUserId))
-        break
-      default:
-        roleFilter = unitItem => true
-    }
-    const filteredUnits = unitList.filter(unitItem => roleFilter(unitItem) && statusFilter(unitItem)).sort(sorters[sortBy])
-    return filteredUnits
-  }
+  )
 
   render () {
-    const { isLoading, dispatch } = this.props
-    const { filteredUnits } = this
-    const { searchResult, searchMode, searchText, selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
+    const { isLoading, unitList, dispatch } = this.props
+    const { searchText, selectedStatusFilter, selectedRoleFilter, sortBy, searchActive } = this.state
+
     if (isLoading) return <Preloader />
+
+    const units = this.filterUnits(unitList, selectedStatusFilter, sortBy, selectedRoleFilter, searchText, searchActive)
     return (
       <div className='flex flex-column flex-grow full-height'>
         <RootAppBar
@@ -124,52 +132,53 @@ class UnitExplorer extends Component {
           shadowless
           searchText={searchText}
           onSearchChanged={this.onSearchChanged}
+          searchActive={searchActive}
+          onBackClicked={() => this.setState({
+            searchActive: false
+          })}
+          onSearchRequested={() => this.setState({
+            searchActive: true
+          })}
           showSearch
         />
         <UnverifiedWarning />
-        { searchMode ? (
-          <FilteredUnits filteredUnits={searchResult}
-            handleUnitClicked={this.handleUnitClicked}
-          />
-        ) : (
-          <div className='flex-grow flex flex-column overflow-hidden'>
-            <div className='flex bg-very-light-gray'>
-              <StatusFilter
-                selectedStatusFilter={selectedStatusFilter}
-                onFilterClicked={this.handleStatusFilterClicked}
-                status={['All', 'Active', 'Disabled']}
-              />
-              <RoleFilter
-                selectedRoleFilter={selectedRoleFilter}
-                onRoleFilterClicked={this.handleRoleFilterClicked}
-                roles={['All', 'Created', 'Involved']}
-              />
-              <Sorter
-                onSortClicked={this.handleSortClicked}
-                sortBy={sortBy}
-                labels={[
-                  [SORT_BY.NAME_ASCENDING, { category: 'Name (A to Z)', selected: 'Name ↑' }],
-                  [SORT_BY.NAME_DESCENDING, { category: 'Name (Z to A)', selected: 'Name ↓' }]
-                ]}
-              />
-            </div>
-            <div className='flex-grow flex flex-column overflow-auto'>
-              <div className='flex-grow bb b--very-light-gray bg-white pb6'>
-                { filteredUnits.length === 0 ? (
-                  <NoItemMsg item={'unit'} iconType={'location_on'} />
-                ) : (
-                  <FilteredUnits
-                    filteredUnits={filteredUnits}
-                    handleUnitClicked={this.handleUnitClicked}
-                    handleAddCaseClicked={this.handleAddCaseClicked}
-                    showAddBtn
-                  />
-                )
-                }
-              </div>
+        <div className='flex-grow flex flex-column overflow-hidden'>
+          <div className='flex bg-very-light-gray'>
+            <StatusFilter
+              selectedStatusFilter={selectedStatusFilter}
+              onFilterClicked={this.handleStatusFilterClicked}
+              status={['All', 'Active', 'Disabled']}
+            />
+            <RoleFilter
+              selectedRoleFilter={selectedRoleFilter}
+              onRoleFilterClicked={this.handleRoleFilterClicked}
+              roles={['All', 'Created', 'Involved']}
+            />
+            <Sorter
+              onSortClicked={this.handleSortClicked}
+              sortBy={sortBy}
+              labels={[
+                [SORT_BY.NAME_ASCENDING, { category: 'Name (A to Z)', selected: 'Name ↑' }],
+                [SORT_BY.NAME_DESCENDING, { category: 'Name (Z to A)', selected: 'Name ↓' }]
+              ]}
+            />
+          </div>
+          <div className='flex-grow flex flex-column overflow-auto'>
+            <div className='flex-grow bb b--very-light-gray bg-white pb6'>
+              { units.length === 0 ? (
+                <NoItemMsg item={'unit'} iconType={'location_on'} />
+              ) : (
+                <FilteredUnits
+                  filteredUnits={units}
+                  handleUnitClicked={this.handleUnitClicked}
+                  handleAddCaseClicked={this.handleAddCaseClicked}
+                  showAddBtn
+                />
+              )
+              }
             </div>
           </div>
-        ) }
+        </div>
         <div className='absolute bottom-2 right-2'>
           <FloatingActionButton
             onClick={() => dispatch(push(`/unit/new`))}
@@ -191,7 +200,7 @@ UnitExplorer.propTypes = {
 
 let unitsError
 export default connect(
-  () => ({}) // Redux store to props
+  () => ({ }) // Redux store to props
 )(createContainer(
   () => {
     const unitsHandle = Meteor.subscribe(`${collectionName}.forBrowsing`, {

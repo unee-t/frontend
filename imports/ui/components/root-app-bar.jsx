@@ -1,5 +1,7 @@
-import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+// @flow
+/* global Event */
+import * as React from 'react'
+// import PropTypes from 'prop-types'
 import AppBar from 'material-ui/AppBar'
 import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
@@ -16,30 +18,37 @@ import {
   logoButtonStyle
 } from '../components/app-bar.mui-styles'
 
-class RootAppBar extends Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      searchTextDisplay: false
-    }
-  }
-
+type Props = {
+  showSearch?: boolean,
+  title: string,
+  onIconClick?: (evt: Event) => void,
+  onSearchChanged?: (searchText: string) => void,
+  searchText?: string,
+  onSearchRequested?: () => void,
+  onBackClicked?: () => void,
+  searchActive?: boolean,
+  rightSideElement?: React.Node,
+  shadowless?: boolean
+}
+export default class RootAppBar extends React.Component<Props> {
   render () {
-    const { title, onSearchChanged, placeholder, onIconClick, shadowless, searchText, showSearch } = this.props
-    const { searchTextDisplay } = this.state
+    const {
+      title, onIconClick, shadowless, searchText, showSearch, rightSideElement,
+      onSearchRequested, onBackClicked, onSearchChanged, searchActive
+    } = this.props
     return (
       <AppBar
-        title={searchTextDisplay
+        title={searchActive
           ? (
             <TextField
-              hintText={placeholder}
+              name='searchText'
               floatingLabelShrinkStyle={textInputFloatingLabelStyle}
               underlineFocusStyle={textInputUnderlineFocusStyle}
               inputStyle={whiteInput}
               hintStyle={whiteInput}
               fullWidth
               value={searchText}
-              onChange={(evt) => onSearchChanged(evt.target.value)}
+              onChange={evt => onSearchChanged && onSearchChanged(evt.target.value)}
             />
           )
           : (title)
@@ -48,9 +57,9 @@ class RootAppBar extends Component {
         titleStyle={titleStyle}
         style={shadowless ? { boxShadow: 'none' } : undefined}
         iconElementLeft={
-          searchTextDisplay ? (
+          searchActive ? (
             <IconButton
-              onClick={() => this.setState({ searchTextDisplay: false })}
+              onClick={onBackClicked}
             >
               <FontIcon className='material-icons' color='white'>
                arrow_back</FontIcon>
@@ -62,9 +71,9 @@ class RootAppBar extends Component {
           )
         }
         iconElementRight={
-          <div>
-            <span className={((!showSearch || searchTextDisplay) ? 'dn' : '')}>
-              <IconButton onClick={() => this.setState({ searchTextDisplay: true })}>
+          <div className='flex items-center'>
+            <span className={((!showSearch || searchActive) ? 'dn' : '')}>
+              <IconButton onClick={onSearchRequested}>
                 <FontIcon className='material-icons' color='white'>
                   search
                 </FontIcon>
@@ -73,18 +82,9 @@ class RootAppBar extends Component {
             <IconButton>
               <FontIcon className='material-icons' color='white'>notifications</FontIcon>
             </IconButton>
+            {rightSideElement}
           </div>
         }
       />)
   }
 }
-
-RootAppBar.propTypes = {
-  showSearch: PropTypes.bool,
-  title: PropTypes.string.isRequired,
-  onIconClick: PropTypes.func,
-  onSearchChanged: PropTypes.func,
-  searchText: PropTypes.string
-}
-
-export default RootAppBar

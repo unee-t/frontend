@@ -5,23 +5,15 @@ import { connect } from 'react-redux'
 import { Meteor } from 'meteor/meteor'
 import { createContainer } from 'meteor/react-meteor-data'
 import _ from 'lodash'
-import AppBar from 'material-ui/AppBar'
-import IconButton from 'material-ui/IconButton'
-import FontIcon from 'material-ui/FontIcon'
 import { UneeTIcon } from '../components/unee-t-icons'
 import { setDrawerState } from '../general-actions'
 import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
-import { renderCurrUserAvatar, renderAppBarLeft } from '../util/app-bar-utils'
-
-import {
-  titleStyle
-} from '../components/app-bar.mui-styles'
-
 import {
   emptyPaneIconStyle
 } from './case-master.mui-styles'
+import { renderCurrUserAvatar } from '../util/app-bar-utils'
 
 const isMobileScreen = window.matchMedia('screen and (max-width: 768px)').matches
 
@@ -82,6 +74,7 @@ class CaseMaster extends Component {
   handleIconClick = () => {
     this.props.dispatch(setDrawerState(true))
   }
+
   render () {
     const { isLoading, componentsProps } = this.state
     const { user } = this.props
@@ -93,27 +86,23 @@ class CaseMaster extends Component {
           <Switch>
             {this.routes.map(({ path, RouteComp, exact = false }) => (
               <Route key={path} exact={exact} path={path} render={() => (
-                <RouteComp.MobileHeader contentProps={componentsProps[path]} onIconClick={this.handleIconClick} />
+                <RouteComp.MobileHeader contentProps={componentsProps[path]}
+                  onIconClick={this.handleIconClick}
+                />
               )} />
             ))}
           </Switch>
         ) : (
-          <AppBar titleStyle={titleStyle}
-            iconElementLeft={renderAppBarLeft(this.handleIconClick)}
-            iconElementRight={
+          <CaseExplorer.MobileHeader
+            onIconClick={this.handleIconClick}
+            rightSideElement={(
               <div className='flex items-center'>
-                <IconButton>
-                  <FontIcon className='material-icons' color='white'>search</FontIcon>
-                </IconButton>
-                <IconButton>
-                  <FontIcon className='material-icons' color='white'>notifications</FontIcon>
-                </IconButton>
                 <div className='white'>Welcome, {user.profile && user.profile.name}</div>
                 <div className='ml2'>
                   {renderCurrUserAvatar(user)}
                 </div>
               </div>
-            }
+            )}
           />
         )}
         {isMobileScreen ? (
@@ -134,11 +123,12 @@ class CaseMaster extends Component {
         ) : (
           <div className={isLoading ? 'dn' : 'flex flex-grow overflow-hidden'}>
             <div className='flex-3'>
-              <CaseExplorer dispatchLoadingResult={() => {
-                this.setState({
-                  isLoading: false
-                })
-              }} />
+              <CaseExplorer
+                dispatchLoadingResult={() => {
+                  this.setState({
+                    isLoading: false
+                  })
+                }} />
             </div>
             <div className='flex-10 flex items-center justify-center bg-very-light-gray h-100'>
               <Route path='/case/:caseId' children={({ match }) => {
@@ -177,6 +167,9 @@ CaseMaster.propTypes = {
   user: PropTypes.object.isRequired
 }
 
-export default connect(() => ({}))(createContainer(() => ({
+export default connect(
+  ({ caseSearchState }) => ({ caseSearchState
+  }) // map redux state to props
+)(createContainer(() => ({
   user: Meteor.user() || {}
 }), CaseMaster))
