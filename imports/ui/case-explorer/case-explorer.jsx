@@ -22,13 +22,14 @@ import { push } from 'react-router-redux'
 import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
 import { RoleFilter } from '../explorer-components/role-filter'
 import { Sorter } from '../explorer-components/sorter'
+import { finishSearch, startSearch, updateSearch } from '../case/case-search.actions'
 
 class CaseExplorer extends Component {
   constructor () {
     super(...arguments)
     this.state = {
       caseId: '',
-      open: false,
+      showUnitDialog: false,
       selectedRoleFilter: null,
       sortBy: null
     }
@@ -139,21 +140,40 @@ class CaseExplorer extends Component {
       })
     }
   )
-  render () {
-    const { isLoading, caseList, allNotifications, unreadNotifications, searchText, searchFinished } = this.props
-    const { selectedRoleFilter, sortBy, open } = this.state
-    if (isLoading) return <Preloader />
-    const searchResult = searchText !== '' ? caseList.filter(x => x.title.indexOf(searchText) !== -1) : []
-    const cases = searchText === null || searchFinished ? caseList : searchResult
+  filterCases = memoizeOne(
+    (cases, searchText) => {
+      if (!searchText) return cases
+      let regex
 
-    const caseGrouping =
-        this.makeCaseGrouping({
-          cases,
-          selectedRoleFilter,
-          sortBy,
-          allNotifs: allNotifications,
-          unreadNotifs: unreadNotifications
-        })
+      // Checking the first character of the search term to determine if it's a numerical or alphabetical search
+      if (searchText.charAt(0).match(/\d/)) {
+        regex = new RegExp(`(^|[^\\d])${searchText}`, 'i') // Searching for a number starting as the search term
+      } else {
+        regex = new RegExp(`(^|[^a-zA-Z])${searchText}`, 'i') // Searching for a word starting as the search term
+      }
+      return cases.filter(item => item.title.match(regex))
+    },
+    (a, b) => {
+      if (Array.isArray(a) && Array.isArray(b)) {
+        return a.length === b.length
+      } else {
+        return a === b
+      }
+    }
+  )
+  render () {
+    const { isLoading, caseList, allNotifications, unreadNotifications, searchText, searchActive } = this.props
+    const { selectedRoleFilter, sortBy, showUnitDialog } = this.state
+    if (isLoading) return <Preloader />
+    const cases = searchActive ? this.filterCases(caseList, searchText) : caseList
+
+    const caseGrouping = this.makeCaseGrouping({
+      cases,
+      selectedRoleFilter,
+      sortBy,
+      allNotifs: allNotifications,
+      unreadNotifs: unreadNotifications
+    })
     return (
       <div className='flex flex-column roboto overflow-hidden flex-grow h-100 relative'>
         <UnverifiedWarning />
@@ -186,12 +206,12 @@ class CaseExplorer extends Component {
           }
         </div>
         <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton onClick={() => this.setState({ open: true })}>
+          <FloatingActionButton onClick={() => this.setState({ showUnitDialog: true })}>
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
           <UnitSelectDialog
-            show={open}
-            onDismissed={() => this.setState({ open: false })}
+            show={showUnitDialog}
+            onDismissed={() => this.setState({ showUnitDialog: false })}
             onUnitClick={this.handleOnUnitClicked}
           />
         </div>
@@ -212,7 +232,7 @@ CaseExplorer.propTypes = {
 let casesError
 let unitsError
 const connectedWrapper = connect(
-  ({ caseSearchState }) => ({ searchText: caseSearchState.searchText, searchFinished: caseSearchState.searchFinished }) // map redux state to props
+  ({ caseSearchState }) => ({ searchText: caseSearchState.searchText, searchActive: caseSearchState.searchActive }) // map redux state to props
 )(createContainer(() => { // map meteor state to props
   const casesHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, { showOpenOnly: true }, {
     onStop: (error) => {
@@ -242,17 +262,34 @@ const connectedWrapper = connect(
   }
 }, CaseExplorer))
 
-connectedWrapper.MobileHeader = ({ onIconClick, searchText, onSearchChanged, caseList, onReturn, onStart }) => (
-  <RootAppBar title='Open Cases'
-    onIconClick={onIconClick}
-    searchText={searchText}
-    onSearchChanged={onSearchChanged}
-    onReturn={onReturn}
-    onStart={onStart}
-    caseList={caseList}
-    showSearch
-  />
-)
+class CaseExplorerHeader extends Component {
+  render () {
+    const { onIconClick, searchText, searchActive, dispatch, rightSideElement } = this.props
+    return (
+      <RootAppBar title='Open Cases'
+        onIconClick={onIconClick}
+        searchText={searchText}
+        onSearchChanged={text => dispatch(updateSearch(text))}
+        onBackClicked={() => dispatch(finishSearch())}
+        onSearchRequested={() => dispatch(startSearch())}
+        searchActive={searchActive}
+        rightSideElement={rightSideElement}
+        showSearch
+      />
+    )
+  }
+}
+
+CaseExplorerHeader.propsTypes = {
+  onIconClick: PropTypes.func.isRequired,
+  searchActive: PropTypes.bool.isRequired,
+  searchText: PropTypes.string,
+  rightSideElement: PropTypes.object
+}
+
+connectedWrapper.MobileHeader = connect(
+  ({ caseSearchState }) => ({ searchText: caseSearchState.searchText, searchActive: caseSearchState.searchActive })
+)(CaseExplorerHeader)
 
 connectedWrapper.MobileHeader.propTypes = {
   onIconClick: PropTypes.func.isRequired

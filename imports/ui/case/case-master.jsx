@@ -7,14 +7,13 @@ import { createContainer } from 'meteor/react-meteor-data'
 import _ from 'lodash'
 import { UneeTIcon } from '../components/unee-t-icons'
 import { setDrawerState } from '../general-actions'
-import { updateSearch, finishSearch, startSearch } from './case-search.actions'
 import CaseExplorer from '../case-explorer/case-explorer'
 import Preloader from '../preloader/preloader'
 import Case from './case'
-import RootAppBar from '../components/root-app-bar'
 import {
   emptyPaneIconStyle
 } from './case-master.mui-styles'
+import { renderCurrUserAvatar } from '../util/app-bar-utils'
 
 const isMobileScreen = window.matchMedia('screen and (max-width: 768px)').matches
 
@@ -24,9 +23,7 @@ class CaseMaster extends Component {
     this.state = {
       componentsProps: {},
       isLoading: true,
-      isSubLoading: false,
-      searchText: '',
-      searchMode: false
+      isSubLoading: false
     }
     this.routes = [
       {
@@ -78,26 +75,8 @@ class CaseMaster extends Component {
     this.props.dispatch(setDrawerState(true))
   }
 
-  handleSearch = (searchText) => {
-    this.setState({ searchText: searchText })
-    if (searchText === '') {
-      this.setState({ searchMode: false })
-    } else {
-      this.setState({ searchMode: true })
-    }
-    this.props.dispatch(updateSearch(searchText))
-  }
-
-  handleReturn = () => {
-    this.props.dispatch(finishSearch())
-  }
-
-  handleStart = () => {
-    this.props.dispatch(startSearch())
-  }
-
   render () {
-    const { isLoading, componentsProps, searchText } = this.state
+    const { isLoading, componentsProps } = this.state
     const { user } = this.props
     return (
       <div className='flex flex-column full-height roboto overflow-hidden'>
@@ -109,24 +88,21 @@ class CaseMaster extends Component {
               <Route key={path} exact={exact} path={path} render={() => (
                 <RouteComp.MobileHeader contentProps={componentsProps[path]}
                   onIconClick={this.handleIconClick}
-                  searchText={searchText}
-                  onSearchChanged={this.handleSearch}
-                  onReturn={this.handleReturn}
-                  onStart={this.handleStart}
                 />
               )} />
             ))}
           </Switch>
         ) : (
-          <RootAppBar title='Open Cases'
+          <CaseExplorer.MobileHeader
             onIconClick={this.handleIconClick}
-            searchText={searchText}
-            onSearchChanged={this.handleSearch}
-            onReturn={this.handleReturn}
-            onStart={this.handleStart}
-            showSearch
-            user={user}
-            cases
+            rightSideElement={(
+              <div className='flex items-center'>
+                <div className='white'>Welcome, {user.profile && user.profile.name}</div>
+                <div className='ml2'>
+                  {renderCurrUserAvatar(user)}
+                </div>
+              </div>
+            )}
           />
         )}
         {isMobileScreen ? (

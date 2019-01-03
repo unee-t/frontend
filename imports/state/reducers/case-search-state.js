@@ -5,7 +5,7 @@ import {
   START_SEARCH
 } from '../../ui/case/case-search.actions'
 
-const initialState = { searchText: null, searchFinished: null }
+const initialState = { searchText: '', searchActive: false }
 export default function caseSearchState (state = initialState, action) {
   switch (action.type) {
     case SEARCH_ERROR:
@@ -13,9 +13,9 @@ export default function caseSearchState (state = initialState, action) {
     case UPDATE_SEARCH_RESULT:
       return Object.assign({}, state, { searchText: action.searchText })
     case FINISH_SEARCH:
-      return Object.assign({}, state, { searchFinished: true })
+      return Object.assign({}, state, { searchActive: false })
     case START_SEARCH:
-      return Object.assign({}, state, { searchFinished: false })
+      return Object.assign({}, state, { searchActive: true })
   }
   return state
 }
