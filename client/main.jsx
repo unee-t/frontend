@@ -13,6 +13,11 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import theme from '../imports/mui-theme/unee-t-theme'
 
 Meteor.startup(() => {
+  try {
+    document.domain = 'unee-t.com'
+  } catch (e) {
+    console.warn('Not running on unee-t.com, some cross iframe issues might occur')
+  }
   if (history.length === 1) {
     const currLocation = history.location
     console.log('Injecting base route to new tab')
