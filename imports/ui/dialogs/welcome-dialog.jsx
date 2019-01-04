@@ -1,3 +1,5 @@
+// nbiton- deprecated on Jan 4 2018. Remove if it remains this way for a long time
+
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
