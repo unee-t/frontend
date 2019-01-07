@@ -6,9 +6,9 @@ import {
   CLEAR_ERROR_MESSAGE
 } from '../../ui/invitation-login/invitation-login.actions'
 
-import {
-  CLEAR_WELCOME_MESSAGE
-} from '../../ui/case/case.actions'
+// import {
+//   CLEAR_WELCOME_MESSAGE
+// } from '../../ui/case/case.actions'
 
 export default function invitationLoginState (state = {}, action) {
   switch (action.type) {

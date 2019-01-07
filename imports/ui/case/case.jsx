@@ -80,7 +80,7 @@ export class Case extends Component {
     const { push } = routerRedux
     const {
       createComment, createAttachment, retryAttachment, addRoleUsers, removeRoleUser, inviteNewUser, clearInvitation,
-      clearWelcomeMessage, updateInvitedUserName, assignNewUser, assignExistingUser, editCaseField, clearRoleUsersState
+      /* clearWelcomeMessage, updateInvitedUserName, */ assignNewUser, assignExistingUser, editCaseField, clearRoleUsersState
     } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
