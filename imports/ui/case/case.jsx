@@ -18,7 +18,7 @@ import MaximizedAttachment from './maximized-attachment'
 import CaseMessages from './case-messages'
 import CaseDetails from './case-details'
 import { attachmentTextMatcher } from '../../util/matchers'
-import WelcomeDialog from '../dialogs/welcome-dialog'
+// import WelcomeDialog from '../dialogs/welcome-dialog'
 import { formatDayText } from '../../util/formatters'
 import Preloader from '../preloader/preloader'
 import { makeMatchingUser } from '../../api/custom-users'
@@ -55,7 +55,7 @@ export class Case extends Component {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
       attachmentUploads, match, userBzLogin, dispatch, unitUsers, invitationState, caseUserTypes,
-      loadingPendingInvitations, pendingInvitations, showWelcomeDialog, invitedByDetails,
+      loadingPendingInvitations, pendingInvitations, /* showWelcomeDialog, invitedByDetails, */
       cfvDictionary, loadingCfv, cfvError, caseUsersState
     } = this.props
     const errors = [
@@ -80,7 +80,7 @@ export class Case extends Component {
     const { push } = routerRedux
     const {
       createComment, createAttachment, retryAttachment, addRoleUsers, removeRoleUser, inviteNewUser, clearInvitation,
-      clearWelcomeMessage, updateInvitedUserName, assignNewUser, assignExistingUser, editCaseField, clearRoleUsersState
+      /* clearWelcomeMessage, updateInvitedUserName, */ assignNewUser, assignExistingUser, editCaseField, clearRoleUsersState
     } = actions
     const { caseId } = match.params
     const detailsUrl = `${match.url}/details`
@@ -140,12 +140,12 @@ export class Case extends Component {
                 />
               )} />
             </Switch>
-            <WelcomeDialog
-              show={showWelcomeDialog}
-              onDismissed={() => dispatch(clearWelcomeMessage())}
-              onNameSubmitted={name => dispatch(updateInvitedUserName(name))}
-              {...{ unitItem, caseItem, invitedByDetails }}
-            />
+            {/* <WelcomeDialog */}
+            {/* show={showWelcomeDialog}* /}
+            {/* onDismissed={() => dispatch(clearWelcomeMessage())}* /}
+            {/* onNameSubmitted={name => dispatch(updateInvitedUserName(name))} */}
+            {/* {...{ unitItem, caseItem, invitedByDetails }}* /}
+            {/* /> */}
           </div>
         )} />
         <Redirect to={match.url} />
@@ -175,8 +175,8 @@ Case.propTypes = {
   invitationState: PropTypes.object.isRequired,
   loadingPendingInvitations: PropTypes.bool.isRequired,
   pendingInvitations: PropTypes.array,
-  showWelcomeDialog: PropTypes.bool,
-  invitedByDetails: PropTypes.object,
+  // showWelcomeDialog: PropTypes.bool,
+  // invitedByDetails: PropTypes.object,
   caseUsersState: PropTypes.object.isRequired,
   ancestorPath: PropTypes.string
 }
@@ -254,16 +254,16 @@ const connectedWrapper = withRouter(connect(
     {
       attachmentUploads,
       invitationState,
-      invitationLoginState: { showWelcomeMessage, invitedByDetails },
+      // invitationLoginState: { showWelcomeMessage, invitedByDetails },
       caseUsersState
     },
     props
   ) => ({
     attachmentUploads: attachmentUploads[props.match.params.caseId.toString()] || [],
     invitationState,
-    invitedByDetails,
-    caseUsersState,
-    showWelcomeDialog: !!showWelcomeMessage
+    caseUsersState
+    // invitedByDetails,
+    // showWelcomeDialog: !!showWelcomeMessage
   })
 )(CaseContainer))
 

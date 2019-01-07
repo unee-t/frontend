@@ -6,9 +6,9 @@ import {
   CLEAR_ERROR_MESSAGE
 } from '../../ui/invitation-login/invitation-login.actions'
 
-import {
-  CLEAR_WELCOME_MESSAGE
-} from '../../ui/case/case.actions'
+// import {
+//   CLEAR_WELCOME_MESSAGE
+// } from '../../ui/case/case.actions'
 
 export default function invitationLoginState (state = {}, action) {
   switch (action.type) {
@@ -26,7 +26,7 @@ export default function invitationLoginState (state = {}, action) {
       }
     case SUCCESS_INVITATION_CREDENTIALS:
       return {
-        showWelcomeMessage: action.showWelcomeMessage,
+        // showWelcomeMessage: action.showWelcomeMessage,
         invitedByDetails: action.invitedByDetails
       }
     case CLEAR_ERROR_MESSAGE:
@@ -34,11 +34,11 @@ export default function invitationLoginState (state = {}, action) {
         return {}
       }
       break
-    case CLEAR_WELCOME_MESSAGE:
-      if (state.showWelcomeMessage) {
-        return {}
-      }
-      break
+    // case CLEAR_WELCOME_MESSAGE:
+    //   if (state.showWelcomeMessage) {
+    //     return {}
+    //   }
+    //   break
   }
   return state
 }
