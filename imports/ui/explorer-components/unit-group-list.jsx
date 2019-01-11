@@ -39,7 +39,7 @@ export class UnitGroupList extends Component {
               onClick={evt => this.handleExpandUnit(evt, unitTitle)}
             >
               <div className='mh3'>
-                <UnitTypeIcon iconInExplorer={unitType} />
+                <UnitTypeIcon unitType={unitType} />
               </div>
               <div className='flex-grow ellipsis mid-gray mr4'>
                 {unitTitle}
