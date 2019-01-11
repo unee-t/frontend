@@ -137,7 +137,7 @@ class ReportExplorer extends Component {
                   )}
                   name={'report'}
                 />
-              ): (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
+              ) : (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>
