@@ -199,15 +199,18 @@ class CaseExplorer extends Component {
         </div>
         <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
           { !isLoading && caseGrouping.length
-            ? <UnitGroupList
-              unitGroupList={caseGrouping}
-              expandedListRenderer={({ allItems }) => (
-                <CaseList
-                  allCases={allItems}
-                />)
-              }
-              name={'case'}
-            /> : (<NoItemMsg item={'case'} iconType={'card_travel'} buttonOption />)
+            ? (
+              <UnitGroupList
+                unitGroupList={caseGrouping}
+                creationUrlGenerator={bzId => `/case/new?unit=${bzId}`}
+                expandedListRenderer={({ allItems }) => (
+                  <CaseList
+                    allCases={allItems}
+                  />)
+                }
+                name={'case'}
+              />
+            ) : (<NoItemMsg item={'case'} iconType={'card_travel'} buttonOption />)
           }
         </div>
         <div className='absolute right-1 bottom-2'>
