@@ -83,14 +83,16 @@ class CaseExplorer extends Component {
     (a, b) => a.length === b.length
   )
   makeCaseGrouping = memoizeOne(
-    ({ cases, selectedRoleFilter, sortBy, allNotifs, unreadNotifs }) => {
+    ({ cases, unitsMetaDict, selectedRoleFilter, sortBy, allNotifs, unreadNotifs }) => {
       const assignedFilter = selectedRoleFilter !== 'Assigned to me' ? x => true : x => x.assignee === this.props.currentUser.bugzillaCreds.login
       const caseUpdateTimeDict = this.makeCaseUpdateTimeDict(allNotifs)
       const caseUnreadDict = this.makeCaseUnreadDict(unreadNotifs)
       // Building a unit dictionary to group the cases together
       const unitsDict = cases.reduce((dict, caseItem) => {
         if (assignedFilter(caseItem) && !isClosed(caseItem)) { // Filtering only the cases that match the selection
-          const { selectedUnit: unitTitle, selectedUnitBzId: bzId, unitType, isActive } = caseItem
+          const { selectedUnit: unitTitle } = caseItem
+          const { bzId, unitType, isActive } = unitsMetaDict[unitTitle]
+
           // Pulling the existing or creating a new dictionary entry if none
           const unitDesc = dict[unitTitle] = dict[unitTitle] || { cases: [], bzId, unitType, isActive }
           const caseIdStr = caseItem.id.toString()
@@ -162,13 +164,16 @@ class CaseExplorer extends Component {
     }
   )
   render () {
-    const { isLoading, caseList, allNotifications, unreadNotifications, searchText, searchActive } = this.props
+    const {
+      isLoading, caseList, allNotifications, unreadNotifications, searchText, searchActive, unitsMetaDict
+    } = this.props
     const { selectedRoleFilter, sortBy, showUnitDialog } = this.state
     if (isLoading) return <Preloader />
     const cases = searchActive ? this.filterCases(caseList, searchText) : caseList
 
     const caseGrouping = this.makeCaseGrouping({
       cases,
+      unitsMetaDict,
       selectedRoleFilter,
       sortBy,
       allNotifs: allNotifications,
@@ -226,7 +231,8 @@ CaseExplorer.propTypes = {
   casesError: PropTypes.object,
   allNotifications: PropTypes.array.isRequired,
   unreadNotifications: PropTypes.array.isRequired,
-  dispatchLoadingResult: PropTypes.func.isRequired
+  dispatchLoadingResult: PropTypes.func.isRequired,
+  unitsMetaDict: PropTypes.object
 }
 
 let casesError
@@ -245,18 +251,24 @@ const connectedWrapper = connect(
       unitsError = error
     }
   })
+  const caseList = Cases.find().fetch()
+  const unitsMetaDict = caseList.reduce((all, caseItem) => {
+    if (!all[caseItem.selectedUnit]) {
+      const { unitType, bzId } = (UnitMetaData.findOne({ bzName: caseItem.selectedUnit }) || {})
+      const { is_active: isActive } = (Units.findOne({ name: caseItem.selectedUnit }) || {})
+      all[caseItem.selectedUnit] = { unitType, bzId, isActive }
+    }
+    return all
+  }, {})
   return {
-    caseList: Cases.find().fetch().map(caseItem => Object.assign({}, caseItem, {
-      unitType: (UnitMetaData.findOne({ bzName: caseItem.selectedUnit }) || {}).unitType,
-      selectedUnitBzId: (UnitMetaData.findOne({ bzName: caseItem.selectedUnit }) || {}).bzId,
-      isActive: (Units.findOne({ name: caseItem.selectedUnit }) || {}).is_active
-    })),
     allNotifications: notifsHandle.ready() ? CaseNotifications.find().fetch() : [],
     unreadNotifications: notifsHandle.ready() ? CaseNotifications.find({
       markedAsRead: { $ne: true }
     }).fetch() : [],
     isLoading: !casesHandle.ready() || !notifsHandle.ready() || !unitsHandle.ready(),
     currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
+    caseList,
+    unitsMetaDict,
     casesError,
     unitsError
   }
