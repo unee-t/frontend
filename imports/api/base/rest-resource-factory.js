@@ -12,7 +12,8 @@ import { logger } from '../../util/logger'
  - error() - notifies the subscribed client that an error has occurred during the process of this publication
  - onStop(callback) - adds a handler for when a subscribed client removes its subscription
  */
-export default ({ collectionName, dataResolver }) => {
+const defaultIdResolver = item => item.id.toString()
+export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }) => {
   // Storing all handles for use in live updates
   const addedMatcherDescriptors = []
   const changedHandles = {}
@@ -72,7 +73,7 @@ export default ({ collectionName, dataResolver }) => {
 
         // Creating a function that could be used to add every item to the simulated collection
         doPayloadAction(payload, item => {
-          const idStr = item.id.toString()
+          const idStr = idResolver(item)
           if (!handleStopped) {
             const resourceHandles = changedHandles[idStr] = changedHandles[idStr] || []
             resourceHandles.push(subHandle)
@@ -82,7 +83,7 @@ export default ({ collectionName, dataResolver }) => {
 
         subHandle.onStop(() => {
           doPayloadAction(payload, item => {
-            const idStr = item.id.toString()
+            const idStr = idResolver(item)
             const handleInd = changedHandles[idStr].indexOf(subHandle)
             changedHandles[idStr].splice(handleInd, 1)
           })

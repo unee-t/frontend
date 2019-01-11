@@ -258,7 +258,7 @@ const connectedWrapper = connect(
   const unitsMetaDict = caseList.reduce((all, caseItem) => {
     if (!all[caseItem.selectedUnit]) {
       const { unitType, bzId } = (UnitMetaData.findOne({ bzName: caseItem.selectedUnit }) || {})
-      const { is_active: isActive } = (Units.findOne({ name: caseItem.selectedUnit }) || {})
+      const { is_active: isActive } = (Units.findOne({ _id: caseItem.selectedUnit }) || {})
       all[caseItem.selectedUnit] = { unitType, bzId, isActive }
     }
     return all
