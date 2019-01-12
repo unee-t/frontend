@@ -17,7 +17,8 @@ export const collectionName = 'units'
 // TODO: TEST THIS STUFF!!! (but later)
 export const factoryOptions = {
   collectionName,
-  dataResolver: data => data.products
+  dataResolver: data => data.products,
+  idResolver: item => item.name // Using a custom idResolver to allow for an efficient matching of unit to case via _id querying
 }
 
 export let serverHelpers

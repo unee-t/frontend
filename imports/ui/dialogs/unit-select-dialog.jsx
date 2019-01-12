@@ -94,7 +94,7 @@ class UnitSelectDialog extends Component {
           </div>
         </div>
         <div className='ba b--moon-gray br1 flex flex-column flex-grow overflow-auto'>
-          { units.length ? (
+          {units.length ? (
             <div>
               {units.map(({ name, metaData, description, id }) =>
                 <div key={name}>
@@ -104,7 +104,7 @@ class UnitSelectDialog extends Component {
                     style={{ whiteSpace: 'none' }}
                   >
                     <div className='bt b--very-light-gray br1 w-100 pl2 flex items-center'>
-                      <UnitTypeIcon metaData={metaData} />
+                      <UnitTypeIcon unitType={metaData ? metaData.unitType : ''} />
                       <div className={'ml3 mv2 semi-dark-gray lh-copy flex-grow'}>
                         <div>{(metaData && metaData.displayName) || name}</div>
                       </div>

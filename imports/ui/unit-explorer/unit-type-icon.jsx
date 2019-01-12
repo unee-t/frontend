@@ -15,42 +15,27 @@ const unitTypes = [
   { icon: 'restaurant', categories: ['Restaurant/Cafe'] }
 ]
 
+const iconDict = unitTypes.reduce((all, def) => {
+  def.categories.forEach(cat => {
+    all[cat] = def.icon
+  })
+  return all
+}, {})
+
 export default class UnitTypeIcon extends Component {
   render () {
-    const { metaData, iconInExplorer } = this.props
-    const iconType = (metaData && metaData.unitType) || iconInExplorer
-    const icon = unitTypes.find(type => type.categories.includes(iconType))
-    let unitTypeIcon
-    if (metaData === null || (metaData && metaData.unitType === null)) {
-      unitTypeIcon =
-        <FontIcon className='material-icons' color='var(--semi-dark-gray)'>
-        not_listed_location
-        </FontIcon>
-    } else if (
-      (iconInExplorer === null || iconInExplorer === undefined || iconInExplorer === 'not_listed') &&
-      metaData === undefined) {
-      unitTypeIcon =
-        <FontIcon className='material-icons'
-          color='var(--semi-dark-gray)'
-          style={unitIconsStyle}
-        >
-        not_listed_location
-        </FontIcon>
-    } else if (icon && icon.icon) {
-      unitTypeIcon =
-        <FontIcon
-          className='material-icons'
-          color='var(--semi-dark-gray)'
-          style={unitIconsStyle}
-        >
-          {icon.icon}
-        </FontIcon>
-    }
-    return (unitTypeIcon)
+    const { unitType } = this.props
+    const iconName = unitType && unitType !== 'not_listed'
+      ? iconDict[unitType]
+      : 'not_listed_location'
+    return (
+      <FontIcon className='material-icons' color='var(--semi-dark-gray)' style={unitIconsStyle}>
+        {iconName}
+      </FontIcon>
+    )
   }
 }
 
 UnitTypeIcon.propTypes = {
-  metaData: PropTypes.object,
-  iconInExplorer: PropTypes.string
+  unitType: PropTypes.string
 }

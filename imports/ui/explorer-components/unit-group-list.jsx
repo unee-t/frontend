@@ -3,22 +3,6 @@ import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
-export function AddGroupLink ({ name, bzId }) {
-  let link
-  name === 'case' ? link = `/case/new?unit=${bzId}` : link = `/unit/${bzId}/reports/new`
-  return (
-    <div className='no-shrink flex items-center'>
-      {bzId &&
-      <Link
-        className='f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5'
-        to={link}>
-        Add {name}
-      </Link>
-      }
-    </div>
-  )
-}
-
 export class UnitGroupList extends Component {
   constructor (props) {
     super(props)
@@ -44,7 +28,7 @@ export class UnitGroupList extends Component {
   }
 
   render () {
-    const { unitGroupList, name, expandedListRenderer } = this.props
+    const { unitGroupList, name, expandedListRenderer, creationUrlGenerator } = this.props
     const { expandedUnits } = this.state
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
     return (
@@ -55,7 +39,7 @@ export class UnitGroupList extends Component {
               onClick={evt => this.handleExpandUnit(evt, unitTitle)}
             >
               <div className='mh3'>
-                <UnitTypeIcon iconInExplorer={unitType} />
+                <UnitTypeIcon unitType={unitType} />
               </div>
               <div className='flex-grow ellipsis mid-gray mr4'>
                 {unitTitle}
@@ -65,13 +49,17 @@ export class UnitGroupList extends Component {
                   </div>
                   {!isActive ? (
                     <div className='no-shrink flex items-center br2 bg-silver'>
-                      <div className='f7 pa1 white' >
-                      Unit Disabled
-                      </div>
+                      <div className='f7 pa1 white'>Unit Disabled</div>
                     </div>
                   )
-                    : (
-                      <AddGroupLink bzId={bzId} name={name} />
+                    : bzId && (
+                      <div className='no-shrink flex items-center'>
+                        <Link
+                          className='f6 link ellipsis ml3 pl1 mv1 bondi-blue fw5'
+                          to={creationUrlGenerator(bzId)}>
+                          Add {name}
+                        </Link>
+                      </div>
                     )
                   }
                 </div>
@@ -94,5 +82,6 @@ export class UnitGroupList extends Component {
 UnitGroupList.propTypes = {
   unitGroupList: PropTypes.array,
   name: PropTypes.string,
-  expandedListRenderer: PropTypes.func.isRequired
+  expandedListRenderer: PropTypes.func.isRequired,
+  creationUrlGenerator: PropTypes.func.isRequired
 }

@@ -126,15 +126,18 @@ class ReportExplorer extends Component {
           </div>
           <div className='bb b--black-10 overflow-auto flex-grow flex flex-column bg-very-light-gray pb6'>
             { reportGrouping.length
-              ? <UnitGroupList
-                unitGroupList={reportGrouping}
-                expandedListRenderer={({ allItems }) => (
-                  <ReportList
-                    allReports={allItems}
-                  />
-                )}
-                name={'report'}
-              /> : (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
+              ? (
+                <UnitGroupList
+                  unitGroupList={reportGrouping}
+                  creationUrlGenerator={bzId => `/unit/${bzId}/reports/new`}
+                  expandedListRenderer={({ allItems }) => (
+                    <ReportList
+                      allReports={allItems}
+                    />
+                  )}
+                  name={'report'}
+                />
+              ) : (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
             }
           </div>
           <div className='absolute right-1 bottom-2'>
