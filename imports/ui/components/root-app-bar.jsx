@@ -23,6 +23,7 @@ type Props = {
   title: string,
   onIconClick?: (evt: Event) => void,
   onSearchChanged?: (searchText: string) => void,
+  onNavigationRequested?: () => void,
   searchText?: string,
   onSearchRequested?: () => void,
   onBackClicked?: () => void,
@@ -34,7 +35,7 @@ export default class RootAppBar extends React.Component<Props> {
   render () {
     const {
       title, onIconClick, shadowless, searchText, showSearch, rightSideElement,
-      onSearchRequested, onBackClicked, onSearchChanged, searchActive
+      onSearchRequested, onBackClicked, onSearchChanged, searchActive, onNavigationRequested
     } = this.props
     return (
       <AppBar
@@ -49,6 +50,11 @@ export default class RootAppBar extends React.Component<Props> {
               fullWidth
               value={searchText}
               onChange={evt => onSearchChanged && onSearchChanged(evt.target.value)}
+              onKeyPress={evt => {
+                if (evt.charCode === 13) {
+                  onNavigationRequested && onNavigationRequested()
+                }
+              }}
             />
           )
           : (title)

@@ -22,7 +22,7 @@ import { push } from 'react-router-redux'
 import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
 import { RoleFilter } from '../explorer-components/role-filter'
 import { Sorter } from '../explorer-components/sorter'
-import { finishSearch, startSearch, updateSearch } from '../case/case-search.actions'
+import { finishSearch, startSearch, updateSearch, navigationRequested, navigationGranted } from '../case/case-search.actions'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -52,11 +52,20 @@ class CaseExplorer extends Component {
     dispatch(push(`/case/new?unit=${unitId}`))
   }
 
-  componentWillReceiveProps ({ isLoading, casesError, caseList }) {
+  componentWillReceiveProps ({ isLoading, casesError, caseList, navigationRequested }) {
     if (!isLoading && !casesError && isLoading !== this.props.isLoading) {
       this.props.dispatchLoadingResult({ caseList })
     }
+    if (navigationRequested && this.primeCaseId) {
+      this.props.dispatch(push(`/case/${this.primeCaseId}`))
+    }
   }
+
+  componentWillUnmount () {
+    this.primeCaseId = null
+    this.props.dispatch(navigationGranted())
+  }
+
   makeCaseUpdateTimeDict = memoizeOne(
     allNotifications => allNotifications.reduce((dict, curr) => {
       const caseIdStr = curr.caseId.toString()
@@ -144,16 +153,35 @@ class CaseExplorer extends Component {
   )
   filterCases = memoizeOne(
     (cases, searchText) => {
+      this.primeCaseId = null
       if (!searchText) return cases
-      let regex
+
+      const searchCfg = {
+        num: {
+          flds: ['_id', 'title', 'selectedUnit'],
+          redirectOnFieldMatch: '_id', // full match agains id will allow redirect to matched case uppon "Enter"
+          regex: new RegExp(`(^|[^\\d])${searchText}`, 'i')
+        },
+        txt: {
+          flds: ['title', 'selectedUnit'],
+          regex: new RegExp(`(^|[^a-zA-Z])${searchText}`, 'i')
+        }
+      }
 
       // Checking the first character of the search term to determine if it's a numerical or alphabetical search
-      if (searchText.charAt(0).match(/\d/)) {
-        regex = new RegExp(`(^|[^\\d])${searchText}`, 'i') // Searching for a number starting as the search term
-      } else {
-        regex = new RegExp(`(^|[^a-zA-Z])${searchText}`, 'i') // Searching for a word starting as the search term
-      }
-      return cases.filter(item => item.title.match(regex))
+      const selectedCfg = searchCfg[ searchText.charAt(0).match(/\d/) ? 'num' : 'txt' ]
+      const results = cases.filter(item => {
+        return selectedCfg.flds.some(fld => {
+          const caseResult = item[fld].match(selectedCfg.regex)
+          if (caseResult) {
+            if (!this.primeCaseId && fld === selectedCfg.redirectOnFieldMatch && caseResult.input === caseResult[0]) {
+              this.primeCaseId = item.id
+            }
+          }
+          return !!caseResult
+        })
+      })
+      return results
     },
     (a, b) => {
       if (Array.isArray(a) && Array.isArray(b)) {
@@ -235,13 +263,18 @@ CaseExplorer.propTypes = {
   allNotifications: PropTypes.array.isRequired,
   unreadNotifications: PropTypes.array.isRequired,
   dispatchLoadingResult: PropTypes.func.isRequired,
+  navigationRequested: PropTypes.bool,
   unitsMetaDict: PropTypes.object
 }
 
 let casesError
 let unitsError
 const connectedWrapper = connect(
-  ({ caseSearchState }) => ({ searchText: caseSearchState.searchText, searchActive: caseSearchState.searchActive }) // map redux state to props
+  ({ caseSearchState }) => ({
+    searchText: caseSearchState.searchText,
+    searchActive: caseSearchState.searchActive,
+    navigationRequested: caseSearchState.navigationRequested
+  }) // map redux state to props
 )(createContainer(() => { // map meteor state to props
   const casesHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, { showOpenOnly: true }, {
     onStop: (error) => {
@@ -290,6 +323,7 @@ class CaseExplorerHeader extends Component {
         searchActive={searchActive}
         rightSideElement={rightSideElement}
         showSearch
+        onNavigationRequested={() => dispatch(navigationRequested())}
       />
     )
   }
@@ -303,7 +337,10 @@ CaseExplorerHeader.propsTypes = {
 }
 
 connectedWrapper.MobileHeader = connect(
-  ({ caseSearchState }) => ({ searchText: caseSearchState.searchText, searchActive: caseSearchState.searchActive })
+  ({ caseSearchState }) => ({
+    searchText: caseSearchState.searchText,
+    searchActive: caseSearchState.searchActive
+  })
 )(CaseExplorerHeader)
 
 connectedWrapper.MobileHeader.propTypes = {
