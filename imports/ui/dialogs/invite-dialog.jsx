@@ -76,9 +76,18 @@ class InviteDialog extends Component {
     }
   }
 
+  handleAdditionalOpsClick = () => {
+    this.setState({
+      selectedRole: null,
+      isOccupant: false,
+      inviteeEmail: ''
+    })
+    this.props.onResetInvitation()
+  }
+
   render () {
     const {
-      basePath, relPath, invitationState, onResetInvitation, selectControlsRenderer, potentialInvitees,
+      basePath, relPath, invitationState, selectControlsRenderer, potentialInvitees,
       title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser,
       mainOperationSuccessContent, dispatch
     } = this.props
@@ -100,7 +109,7 @@ class InviteDialog extends Component {
           >
             <a
               onClick={() => {
-                onResetInvitation()
+                this.handleAdditionalOpsClick()
                 dispatch(goBack())
               }}
               className={
@@ -146,7 +155,7 @@ class InviteDialog extends Component {
                 <p className='f4 mv0'>
               Awesome! We just sent an invite to <span className='fw5'>{invitationState.email}</span> so you could collaborate on this case.
                 </p>
-                <button className={simpleButtonClasses + ' mt4'} onClick={onResetInvitation}>
+                <button className={simpleButtonClasses + ' mt4'} onClick={this.handleAdditionalOpsClick}>
                   {additionalOperationText}
                 </button>
               </div>
@@ -197,7 +206,7 @@ class InviteDialog extends Component {
                   show={!!invitationState.errorText || inputErrorModalOpen}
                   text={invitationState.errorText || 'Please fill in all the details properly' || ''}
                   onDismissed={
-                    inputErrorModalOpen ? () => this.setState({ inputErrorModalOpen: false }) : onResetInvitation
+                    inputErrorModalOpen ? () => this.setState({ inputErrorModalOpen: false }) : this.handleAdditionalOpsClick
                   }
                 />
               </div>

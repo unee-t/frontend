@@ -245,7 +245,7 @@ const CaseContainer = createContainer(props => {
     cfvDictionary: cfvHandle.ready() ? { status: CaseFieldValues.findOne({ name: 'status' }) } : null,
     cfvError,
     loadingPendingInvitations: !Meteor.subscribe(`${inviteCollName}.byCaseId`, parseInt(caseId)).ready(),
-    pendingInvitations: PendingInvitations.find({ caseId: parseInt(caseId) }).fetch()
+    pendingInvitations: PendingInvitations.find({ caseId: parseInt(caseId) }).fetch().filter(inv => inv.inviteeUser())
   }
 }, Case)
 
