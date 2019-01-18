@@ -1,6 +1,4 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
 import Dialog from 'material-ui/Dialog'
 import FontIcon from 'material-ui/FontIcon'
@@ -8,8 +6,6 @@ import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 import CircularProgress from 'material-ui/CircularProgress'
-import { Meteor } from 'meteor/meteor'
-import Units, { collectionName } from '../../api/units'
 import TextField from 'material-ui/TextField'
 import { NoItemMsg } from '../explorer-components/no-item-msg'
 import {
@@ -27,6 +23,7 @@ class UnitSelectDialog extends Component {
       searchText: '',
       searchResult: []
     }
+    this.shownOnce = props.show
   }
 
   onSearchChanged = (searchText) => {
@@ -41,6 +38,12 @@ class UnitSelectDialog extends Component {
       this.setState({
         searchResult: searchResult
       })
+    }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    if (!this.props.show && nextProps.show) {
+      this.shownOnce = true
     }
   }
 
@@ -94,7 +97,7 @@ class UnitSelectDialog extends Component {
           </div>
         </div>
         <div className='ba b--moon-gray br1 flex flex-column flex-grow overflow-auto'>
-          {units.length ? (
+          {units.length && this.shownOnce ? (
             <div>
               {units.map(({ name, metaData, description, id }) =>
                 <div key={name}>
@@ -135,19 +138,4 @@ UnitSelectDialog.propTypes = {
   unitsError: PropTypes.object
 }
 
-let unitsError
-export default connect(() => ({
-}))(createContainer(() => {
-  const unitsHandle = Meteor.subscribe(`${collectionName}.forBrowsing`, {
-    onStop: (error) => {
-      unitsError = error
-    }
-  })
-  return {
-    unitList: Units.find().fetch().map(unit => Object.assign({}, unit, {
-      metaData: unit.metaData()
-    })),
-    isLoading: !unitsHandle.ready(),
-    unitsError
-  }
-}, UnitSelectDialog))
+export default UnitSelectDialog
