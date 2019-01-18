@@ -1,9 +1,10 @@
-import React, { Component } from 'react'
+import React, { PureComponent } from 'react'
 import UnitTypeIcon from '../unit-explorer/unit-type-icon'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
-export class UnitGroupList extends Component {
+// Using "PureComponent" to prevent unnecessary re-renders
+export class UnitGroupList extends PureComponent {
   constructor (props) {
     super(props)
     this.state = {
@@ -31,6 +32,7 @@ export class UnitGroupList extends Component {
     const { unitGroupList, name, expandedListRenderer, creationUrlGenerator } = this.props
     const { expandedUnits } = this.state
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
+
     return (
       <div>
         {unitGroupList.map(({ unitTitle, unitType, bzId, items, hasUnread, isActive }) =>
