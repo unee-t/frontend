@@ -20,6 +20,8 @@ import { Sorter } from '../explorer-components/sorter'
 import { StatusFilter } from '../explorer-components/status-filter'
 import { RoleFilter } from '../explorer-components/role-filter'
 import Units, { collectionName as unitCollName } from '../../api/units'
+import UnitMetaData from '../../api/unit-meta-data'
+import _ from 'lodash'
 
 class ReportExplorer extends Component {
   constructor () {
@@ -55,8 +57,18 @@ class ReportExplorer extends Component {
     dispatch(push(`/unit/${unitId}/reports/new`))
   }
 
+  handleDialogDismissed = () => this.setState({ open: false })
+
+  createReportUrlGen = bzId => `/unit/${bzId}/reports/new`
+
+  extendedReportsRenderer = ({ allItems }) => (
+    <ReportList
+      allReports={allItems}
+    />
+  )
+
   makeReportGrouping = memoizeOne(
-    (reportList, selectedStatusFilter, selectedRoleFilter, sortBy) => {
+    ({ reportList, unitsMetaDict, selectedStatusFilter, selectedRoleFilter, sortBy }) => {
       switch (selectedStatusFilter) {
         case 'All':
           reportList = reportList.filter(report => true)
@@ -71,11 +83,18 @@ class ReportExplorer extends Component {
       const creatorFilter = selectedRoleFilter !== 'Created by me' ? report => true : report => report.assignee === this.props.currentUser.bugzillaCreds.login
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (creatorFilter(reportItem)) {
-          const { selectedUnit: unitBzName, unitMetaData: metaData, isActive } = reportItem
+          // const { selectedUnit: unitBzName, unitMetaData: metaData, isActive } = reportItem
+          const { metaData, isActive } = unitsMetaDict[reportItem.selectedUnit]
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
-          const unitTitle = metaData && metaData.displayName ? metaData.displayName : unitBzName
-          const unitDesc = dict[unitBzName] = dict[unitBzName] || { items: [], unitType, bzId, unitTitle, isActive }
+          const unitTitle = metaData && metaData.displayName ? metaData.displayName : reportItem.selectedUnit
+          const unitDesc = dict[reportItem.selectedUnit] = dict[reportItem.selectedUnit] || {
+            items: [],
+            unitType,
+            bzId,
+            unitTitle,
+            isActive
+          }
           unitDesc.items.push(reportItem)
         }
         return dict
@@ -95,14 +114,34 @@ class ReportExplorer extends Component {
       }, []) // Sorting by the latest case update for each
       const grouping = sortBy ? reportBundle.sort(sorters[sortBy]) : reportBundle.sort(sorters[SORT_BY.DATE_DESCENDING])
       return grouping
+    },
+    (a, b) => {
+      return Object.keys(a).every(key => {
+        const aAttr = a[key]
+        const bAttr = b[key]
+        if (key === 'reportList') {
+          if (Array.isArray(aAttr) && Array.isArray(bAttr)) {
+            return aAttr.length === bAttr.length &&
+              _.isEqualWith(aAttr, bAttr, (aVal, bVal) => aVal.status === bVal.status && aVal.assignee === bVal.assignee)
+          } else {
+            return true
+          }
+        } else if (key === 'unitsMetaDict') {
+          return _.isEqual(aAttr, bAttr)
+        } else if (aAttr && bAttr && Array.isArray(aAttr)) {
+          return aAttr.length === bAttr.length
+        } else {
+          return aAttr === bAttr
+        }
+      })
     }
   )
 
   render () {
-    const { isLoading, dispatch, reportList } = this.props
+    const { isLoading, dispatch, reportList, unitList, unitsMetaDict } = this.props
     const { selectedStatusFilter, selectedRoleFilter, open, sortBy } = this.state
     if (isLoading) return <Preloader />
-    const reportGrouping = this.makeReportGrouping(reportList, selectedStatusFilter, selectedRoleFilter, sortBy)
+    const reportGrouping = this.makeReportGrouping({ reportList, unitsMetaDict, selectedStatusFilter, selectedRoleFilter, sortBy })
 
     return (
       <div className='flex flex-column flex-grow full-height'>
@@ -129,12 +168,8 @@ class ReportExplorer extends Component {
               ? (
                 <UnitGroupList
                   unitGroupList={reportGrouping}
-                  creationUrlGenerator={bzId => `/unit/${bzId}/reports/new`}
-                  expandedListRenderer={({ allItems }) => (
-                    <ReportList
-                      allReports={allItems}
-                    />
-                  )}
+                  creationUrlGenerator={this.createReportUrlGen}
+                  expandedListRenderer={this.extendedReportsRenderer}
                   name={'report'}
                 />
               ) : (<NoItemMsg item={'report'} iconType={'content_paste'} buttonOption />)
@@ -146,8 +181,9 @@ class ReportExplorer extends Component {
             </FloatingActionButton>
             <UnitSelectDialog
               show={open}
-              onDismissed={() => this.setState({ open: false })}
+              onDismissed={this.handleDialogDismissed}
               onUnitClick={this.handleOnUnitClicked}
+              unitList={unitList}
             />
           </div>
         </div>
@@ -157,7 +193,13 @@ class ReportExplorer extends Component {
 }
 
 ReportExplorer.propTypes = {
-  reportList: PropTypes.array
+  reportList: PropTypes.array,
+  isLoading: PropTypes.bool.isRequired,
+  unitList: PropTypes.array,
+  unitsMetaDict: PropTypes.object,
+  currentUser: PropTypes.object,
+  reportsError: PropTypes.object,
+  unitsError: PropTypes.object
 }
 
 let reportsError
@@ -165,24 +207,46 @@ let unitsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
-  const reportsHandle = Meteor.subscribe(`${collectionName}.associatedWithMe`, {
-    onStop: (error) => {
-      reportsError = error
+  const handles = [
+    Meteor.subscribe(`${collectionName}.associatedWithMe`, {
+      onStop: (error) => {
+        reportsError = error
+      }
+    }),
+    Meteor.subscribe(`${unitCollName}.forBrowsing`, {
+      onStop: (error) => {
+        unitsError = error
+      }
+    }),
+    Meteor.subscribe('users.myBzLogin')
+  ]
+
+  if (handles.some(handle => !handle.ready())) return { isLoading: true }
+
+  const metaIndex = UnitMetaData.find().fetch().reduce((all, meta) => {
+    all[meta.bzId] = meta
+    return all
+  }, {})
+
+  const unitsMetaGroupings = Units.find().fetch().reduce((all, unitItem) => {
+    const metaData = (metaIndex[unitItem.id] || {})
+    all.dict[unitItem.name] = {
+      metaData,
+      isActive: unitItem.is_active
     }
+    all.list.push(Object.assign(unitItem, { metaData }))
+    return all
+  }, {
+    dict: {},
+    list: []
   })
-  const unitsHandle = Meteor.subscribe(`${unitCollName}.forBrowsing`, {
-    onStop: (error) => {
-      unitsError = error
-    }
-  })
+
   return {
-    reportList: Reports.find().fetch().map(report => ({
-      isActive: (Units.findOne({ name: report.selectedUnit }) || {}).is_active,
-      unitMetaData: report.unitMetaData(),
-      ...report
-    })),
-    isLoading: !reportsHandle.ready() || !unitsHandle.ready(),
-    currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
+    reportList: Reports.find().fetch(),
+    isLoading: false,
+    currentUser: Meteor.user(),
+    unitList: unitsMetaGroupings.list,
+    unitsMetaDict: unitsMetaGroupings.dict,
     reportsError,
     unitsError
   }

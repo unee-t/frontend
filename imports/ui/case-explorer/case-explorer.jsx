@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import PropTypes from 'prop-types'
+import _ from 'lodash'
 import UnverifiedWarning from '../components/unverified-warning'
 import { withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
@@ -65,6 +66,16 @@ class CaseExplorer extends Component {
     this.primeCaseId = null
     this.props.dispatch(navigationGranted())
   }
+
+  createCaseUrlGen = bzId => `/case/new?unit=${bzId}`
+
+  expandedCasesRenderer = ({ allItems }) => (
+    <CaseList
+      allCases={allItems}
+    />
+  )
+
+  handleDialogDismissed = () => this.setState({ showUnitDialog: false })
 
   makeCaseUpdateTimeDict = memoizeOne(
     allNotifications => allNotifications.reduce((dict, curr) => {
@@ -143,6 +154,8 @@ class CaseExplorer extends Component {
           } else {
             return true
           }
+        } else if (key === 'unitsMetaDict') {
+          return _.isEqual(aAttr, bAttr)
         } else if (aAttr && bAttr && Array.isArray(aAttr)) {
           return aAttr.length === bAttr.length
         } else {
@@ -193,7 +206,7 @@ class CaseExplorer extends Component {
   )
   render () {
     const {
-      isLoading, caseList, allNotifications, unreadNotifications, searchText, searchActive, unitsMetaDict
+      isLoading, caseList, allNotifications, unreadNotifications, searchText, searchActive, unitsMetaDict, unitList
     } = this.props
     const { selectedRoleFilter, sortBy, showUnitDialog } = this.state
     if (isLoading) return <Preloader />
@@ -230,12 +243,8 @@ class CaseExplorer extends Component {
             ? (
               <UnitGroupList
                 unitGroupList={caseGrouping}
-                creationUrlGenerator={bzId => `/case/new?unit=${bzId}`}
-                expandedListRenderer={({ allItems }) => (
-                  <CaseList
-                    allCases={allItems}
-                  />)
-                }
+                creationUrlGenerator={this.createCaseUrlGen}
+                expandedListRenderer={this.expandedCasesRenderer}
                 name={'case'}
               />
             ) : (<NoItemMsg item={'case'} iconType={'card_travel'} buttonOption />)
@@ -247,8 +256,9 @@ class CaseExplorer extends Component {
           </FloatingActionButton>
           <UnitSelectDialog
             show={showUnitDialog}
-            onDismissed={() => this.setState({ showUnitDialog: false })}
+            onDismissed={this.handleDialogDismissed}
             onUnitClick={this.handleOnUnitClicked}
+            unitList={unitList}
           />
         </div>
       </div>
@@ -260,11 +270,12 @@ CaseExplorer.propTypes = {
   caseList: PropTypes.array,
   isLoading: PropTypes.bool,
   casesError: PropTypes.object,
-  allNotifications: PropTypes.array.isRequired,
-  unreadNotifications: PropTypes.array.isRequired,
+  allNotifications: PropTypes.array,
+  unreadNotifications: PropTypes.array,
   dispatchLoadingResult: PropTypes.func.isRequired,
   navigationRequested: PropTypes.bool,
-  unitsMetaDict: PropTypes.object
+  unitsMetaDict: PropTypes.object,
+  unitList: PropTypes.array
 }
 
 let casesError
@@ -287,24 +298,42 @@ const connectedWrapper = connect(
       unitsError = error
     }
   })
+  const userLoginHandle = Meteor.subscribe('users.myBzLogin')
+
+  const isLoading = !casesHandle.ready() || !notifsHandle.ready() || !unitsHandle.ready() || !userLoginHandle.ready()
+  if (isLoading) return { isLoading }
+
   const caseList = Cases.find().fetch()
-  const unitsMetaDict = caseList.reduce((all, caseItem) => {
-    if (!all[caseItem.selectedUnit]) {
-      const { unitType, bzId } = (UnitMetaData.findOne({ bzName: caseItem.selectedUnit }) || {})
-      const { is_active: isActive } = (Units.findOne({ _id: caseItem.selectedUnit }) || {})
-      all[caseItem.selectedUnit] = { unitType, bzId, isActive }
-    }
+
+  const metaIndex = UnitMetaData.find().fetch().reduce((all, meta) => {
+    all[meta.bzId] = meta
     return all
   }, {})
+
+  const unitsMetaGroupings = Units.find().fetch().reduce((all, unitItem) => {
+    const metaData = (metaIndex[unitItem.id] || {})
+    all.dict[unitItem.name] = {
+      unitType: metaData.unitType,
+      bzId: metaData.bzId,
+      isActive: unitItem.is_active
+    }
+    all.list.push(Object.assign(unitItem, { metaData }))
+    return all
+  }, {
+    dict: {},
+    list: []
+  })
+
   return {
-    allNotifications: notifsHandle.ready() ? CaseNotifications.find().fetch() : [],
-    unreadNotifications: notifsHandle.ready() ? CaseNotifications.find({
+    allNotifications: CaseNotifications.find().fetch(),
+    unreadNotifications: CaseNotifications.find({
       markedAsRead: { $ne: true }
-    }).fetch() : [],
-    isLoading: !casesHandle.ready() || !notifsHandle.ready() || !unitsHandle.ready(),
-    currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
+    }).fetch(),
+    isLoading: false,
+    currentUser: Meteor.user(),
+    unitsMetaDict: unitsMetaGroupings.dict,
+    unitList: unitsMetaGroupings.list,
     caseList,
-    unitsMetaDict,
     casesError,
     unitsError
   }
