@@ -207,7 +207,6 @@ let unitsError
 export default connect(
   () => ({}) // map redux state to props
 )(createContainer(() => { // map meteor state to props
-
   const handles = [
     Meteor.subscribe(`${collectionName}.associatedWithMe`, {
       onStop: (error) => {
