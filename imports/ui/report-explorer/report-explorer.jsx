@@ -84,7 +84,7 @@ class ReportExplorer extends Component {
       const unitDict = reportList.reduce((dict, reportItem) => {
         if (creatorFilter(reportItem)) {
           // const { selectedUnit: unitBzName, unitMetaData: metaData, isActive } = reportItem
-          const { metaData, isActive } = unitsMetaDict[reportItem.selectedUnit]
+          const { metaData, isActive } = unitsMetaDict[reportItem.selectedUnit] || {}
           const unitType = metaData ? metaData.unitType : 'not_listed'
           const bzId = metaData ? metaData.bzId : 'not_listed'
           const unitTitle = metaData && metaData.displayName ? metaData.displayName : reportItem.selectedUnit
