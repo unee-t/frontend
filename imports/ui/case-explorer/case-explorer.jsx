@@ -111,7 +111,7 @@ class CaseExplorer extends Component {
       const unitsDict = cases.reduce((dict, caseItem) => {
         if (assignedFilter(caseItem) && !isClosed(caseItem)) { // Filtering only the cases that match the selection
           const { selectedUnit: unitTitle } = caseItem
-          const { bzId, unitType, isActive } = unitsMetaDict[unitTitle]
+          const { bzId, unitType, isActive } = unitsMetaDict[unitTitle] || {}
 
           // Pulling the existing or creating a new dictionary entry if none
           const unitDesc = dict[unitTitle] = dict[unitTitle] || { cases: [], bzId, unitType, isActive }
