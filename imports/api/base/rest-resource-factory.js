@@ -84,8 +84,10 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
         subHandle.onStop(() => {
           doPayloadAction(payload, item => {
             const idStr = idResolver(item)
-            const handleInd = changedHandles[idStr].indexOf(subHandle)
-            changedHandles[idStr].splice(handleInd, 1)
+            if (changedHandles[idStr]) {
+              const handleInd = changedHandles[idStr].indexOf(subHandle)
+              changedHandles[idStr].splice(handleInd, 1)
+            }
           })
         })
 
