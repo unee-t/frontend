@@ -2,6 +2,7 @@ version: '2'
 services:
     meteor:
         image: ulexus/meteor:build
+        mem_limit: 1g
         ports:
             - "8080:3000"
         environment:
