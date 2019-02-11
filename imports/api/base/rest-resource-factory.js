@@ -16,7 +16,7 @@ const defaultIdResolver = item => item.id.toString()
 export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }) => {
   // Storing all handles for use in live updates
   const addedMatcherDescriptors = []
-  const changedHandles = {}
+  const changedHandlesMap = {}
   const matchersStore = addedMatcherFactory => {
     let matchersDict
     if (addedMatcherFactory) matchersDict = {}
@@ -46,6 +46,7 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
       }
     }
   }
+  const defaultIdentityResolver = (handle, query) => JSON.stringify(query)
   const basePublish = (subHandle, url, resolver, payload = {}) => {
     const { callAPI } = bugzillaApi
 
@@ -75,7 +76,7 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
         doPayloadAction(payload, item => {
           const idStr = idResolver(item)
           if (!handleStopped) {
-            const resourceHandles = changedHandles[idStr] = changedHandles[idStr] || []
+            const resourceHandles = changedHandlesMap[idStr] = changedHandlesMap[idStr] || []
             resourceHandles.push(subHandle)
           }
           subHandle.added(collectionName, idStr, item)
@@ -84,9 +85,9 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
         subHandle.onStop(() => {
           doPayloadAction(payload, item => {
             const idStr = idResolver(item)
-            if (changedHandles[idStr]) {
-              const handleInd = changedHandles[idStr].indexOf(subHandle)
-              changedHandles[idStr].splice(handleInd, 1)
+            if (changedHandlesMap[idStr]) {
+              const handleInd = changedHandlesMap[idStr].indexOf(subHandle)
+              changedHandlesMap[idStr].splice(handleInd, 1)
             }
           })
         })
@@ -129,14 +130,14 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
       }
     },
     // TODO: Add tests for this
-    publishByCustomQuery ({ uriTemplate, addedMatcherFactory, queryBuilder }) {
+    publishByCustomQuery ({ uriTemplate, addedMatcherFactory, queryBuilder, requestIdentityResolver = defaultIdentityResolver }) {
       const store = matchersStore(addedMatcherFactory)
       return function () {
         const query = queryBuilder(this, ...arguments)
         const accepted = basePublish(this, uriTemplate(query), data => dataResolver(data, query), query)
 
         if (accepted) {
-          store(this, JSON.stringify(query))
+          store(this, requestIdentityResolver(this, query, ...arguments))
         }
       }
     },
@@ -147,14 +148,54 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
         .reduce((flatList, desc) => flatList.concat(desc.handles), [])
         .forEach(handle => handle.added(collectionName, item.id.toString(), item))
     },
-    handleChanged (resourceId, itemDiff) {
-      const idStr = resourceId.toString()
-      const handles = changedHandles[idStr]
-      if (handles) { // unlikely to be false, but I can imagine some edge cases
-        handles.forEach(handle => {
-          handle.changed(collectionName, idStr, itemDiff)
+    handleChanged (item, fieldNames) {
+      const idStr = item.id.toString()
+
+      // Picking just the fields that were announced as changed for better bandwidth usage when calling the handles' "changed" hook
+      const fields = Object.keys(item).reduce((all, key) => {
+        if (fieldNames.includes(key)) {
+          all[key] = item[key]
+        }
+        return all
+      }, {})
+
+      const changedHandles = changedHandlesMap[idStr]
+      if (changedHandles) { // unlikely to be false, but I can imagine some edge cases
+        changedHandles.forEach(handle => { // Notifying the change to all handles subscribed to this item
+          handle.changed(collectionName, idStr, fields)
         })
       }
+
+      // Sorting descriptors to two classes: one that the item can potentially be added to, and the other - removed from
+      const descClasses = addedMatcherDescriptors.reduce((all, desc) => {
+        if (desc.matcher(item)) {
+          all.added.push(desc)
+        } else {
+          all.removed.push(desc)
+        }
+        return all
+      }, { added: [], removed: [] })
+
+      // For the potentially added - calling "added" for all client handles that weren't notified of the change (they're not subscribed to the item yet)
+      descClasses.added
+        .reduce((flatList, desc) => flatList.concat(desc.handles), [])
+        .forEach(handle => {
+          if (!changedHandles.includes(handle)) {
+            handle.added(collectionName, idStr, item)
+            changedHandles.push(handle)
+          }
+        })
+
+      // For the potentially removed - calling "removed" for all client handles that were notified of the change (they are subscribed to this item already)
+      descClasses.removed
+        .reduce((flatList, desc) => flatList.concat(desc.handles), [])
+        .forEach(handle => {
+          const handleIdx = changedHandles.indexOf(handle)
+          if (handleIdx !== -1) {
+            handle.removed(collectionName, idStr)
+            changedHandles.splice(handleIdx, 1)
+          }
+        })
     },
     handleRemoved (resourceId, itemId) {
       // TODO: complete implementation

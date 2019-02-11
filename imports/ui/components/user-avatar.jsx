@@ -1,4 +1,5 @@
 // @flow
+/* global TimeoutID */
 import * as React from 'react'
 
 // $FlowFixMe
@@ -26,12 +27,18 @@ export default class UserAvatar extends React.Component<Props, State> {
     effectPending: false
   }
 
+  effectTimeout: TimeoutID
+
   componentDidMount () {
-    setTimeout(() => {
+    this.effectTimeout = setTimeout(() => {
       this.setState({
         effectPending: true
       })
     }, 200)
+  }
+
+  componentWillUnmount () {
+    clearTimeout(this.effectTimeout)
   }
   render () {
     const { user, isSmall, isBig, additionalClasses, imageUrl } = this.props

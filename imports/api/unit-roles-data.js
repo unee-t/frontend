@@ -72,7 +72,7 @@ Meteor.methods({
         method: `${collectionName}.addNewMember`,
         user: Meteor.userId(),
         args: [firstName, lastName, email, roleType, isOccupant, unitBzId]
-      })
+      }, true)
 
       // Creating an invitation token for invitee access
       const accessToken = randToken.generate(24)

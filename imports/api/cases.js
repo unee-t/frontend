@@ -193,13 +193,8 @@ if (Meteor.isServer) {
   reloadCaseFields = (caseId, fieldNames) => {
     const caseData = bugzillaApi.callAPI('get', idUrlTemplate(caseId), {}, true, true)
     const caseItem = transformCaseForClient(caseData.data.bugs[0])
-    const fields = Object.keys(caseItem).reduce((all, key) => {
-      if (fieldNames.includes(key)) {
-        all[key] = caseItem[key]
-      }
-      return all
-    }, {})
-    publicationObj.handleChanged(caseId, fields)
+
+    publicationObj.handleChanged(caseItem, fieldNames)
   }
   const associationFactory = makeAssociationFactory(collectionName)
 
@@ -251,12 +246,24 @@ if (Meteor.isServer) {
           ]
         )
       },
-      addedMatcherFactory: strQuery => {
-        const { v1: userIdentifier } = JSON.parse(strQuery)
-        return caseItem => {
-          const { assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
+      requestIdentityResolver: (subHandle, query, options = {}) => {
+        const { showOpenOnly } = options
+        const currUser = Meteor.users.findOne(subHandle.userId)
+        return JSON.stringify({
+          userBzLogin: currUser.bugzillaCreds.login,
+          type: 'associatedWithMe',
+          showOpenOnly
+        })
+      },
+      addedMatcherFactory: strIdentity => {
+        const { userBzLogin: userIdentifier, showOpenOnly } = JSON.parse(strIdentity)
+        return rawCase => {
+          const caseItem = transformCaseForClient(rawCase)
+          const { assignee, creator, involvedList, keywords } = caseItem
+          const statusCheck = showOpenOnly ? x => !isClosed(x) : () => true
           return (
-            !(keywords && REPORT_EL_TYPES.some(type => keywords.includes(type))) && (
+            !(keywords && REPORT_EL_TYPES.some(type => keywords.includes(type))) && statusCheck(caseItem) &&
+            (
               userIdentifier === assignee ||
               userIdentifier === creator ||
               involvedList.includes(userIdentifier)
@@ -306,8 +313,16 @@ if (Meteor.isServer) {
         ]
       )
     },
-    addedMatcherFactory: strQuery => {
-      const { v1: unitName, v3: userIdentifier } = JSON.parse(strQuery)
+    requestIdentityResolver: (subHandle, query, unitName) => {
+      const currUser = Meteor.users.findOne(subHandle.userId)
+      return JSON.stringify({
+        userBzLogin: currUser.bugzillaCreds.login,
+        type: 'byUnitName',
+        unitName
+      })
+    },
+    addedMatcherFactory: strIdentity => {
+      const { unitName, userBzLogin: userIdentifier } = JSON.parse(strIdentity)
       return caseItem => {
         const { selectedUnit, assignee, creator, involvedList, keywords } = transformCaseForClient(caseItem)
         return (
@@ -322,7 +337,7 @@ if (Meteor.isServer) {
   }))
 }
 
-export const fieldEditMethodMaker = ({ editableFields, methodName, publicationObj, clientCollection }) =>
+export const fieldEditMethodMaker = ({ editableFields, methodName, publicationObj }) =>
   (caseId, changeSet) => {
     check(caseId, Number)
     Object.keys(changeSet).forEach(fieldName => {
@@ -358,7 +373,7 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
           all[key] = caseItem[caseServerFieldMapping[key]]
           return all
         }, {})
-        publicationObj.handleChanged(caseId, updatedSet)
+        publicationObj.handleChanged(caseItem, updatedSet)
       } catch (e) {
         logger.error({
           user: Meteor.userId(),
@@ -456,7 +471,6 @@ Meteor.methods({
         const { data } = callAPI('post', '/rest/bug', normalizedParams, false, true)
         newCaseId = data.id
         logger.info(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
-        // TODO: Add real time update handler usage
       } catch (e) {
         logger.error({
           user: Meteor.userId(),
@@ -488,6 +502,20 @@ Meteor.methods({
           })
           throw new Meteor.Error(`API Error: ${e.response.data.message}`)
         }
+      }
+
+      try {
+        const resp = callAPI('get', idUrlTemplate(newCaseId), { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
+        const caseItem = factoryOptions.dataResolver(resp.data)[0]
+        publicationObj.handleAdded(caseItem)
+      } catch (e) {
+        logger.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.insert`,
+          args: [params, { newUserEmail, newUserIsOccupant, parentReportId }],
+          step: 'Fetching case data for live update, proceeding with no error',
+          error: e
+        })
       }
 
       if (newUserEmail) {
@@ -561,6 +589,22 @@ Meteor.methods({
             error: e
           })
           throw new Meteor.Error('API error')
+        }
+
+        try {
+          const resp = callAPI('get', idUrlTemplate(caseId), { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
+          const caseItem = factoryOptions.dataResolver(resp.data)[0]
+
+          // Using "added" as the assigned person might be unaware of the case's existence yet
+          publicationObj.handleAdded(caseItem)
+        } catch (e) {
+          logger.error({
+            user: Meteor.userId(),
+            method: `${collectionName}.changeAssignee`,
+            args: [user, caseId],
+            step: 'Fetching case data for live update, proceeding with no error',
+            error: e
+          })
         }
       }
     }

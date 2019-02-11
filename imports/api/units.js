@@ -120,7 +120,7 @@ export const getUnitRoles = unit => {
   )
 }
 
-export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}) => {
+export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}, doLiveUpdate) => {
   // Creating matching invitation records
   const invitationObj = {
     invitedBy: invitingUser.bugzillaCreds.id,
@@ -216,55 +216,67 @@ export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType
       defaultAssigneeId: inviteeUser._id
     }
   })
+
+  if (doLiveUpdate) {
+    try {
+      const response = callAPI('get', `/rest/product?ids=${unitBzId}`, {}, true, true)
+      const unitItem = factoryOptions.dataResolver(response.data)[0]
+      pubObj.handleChanged(unitItem, ['components'])
+    } catch (e) {
+      logger.error({
+        ...errorLogParams,
+        step: 'Fetching unit info for live update after invite, proceeding with no error',
+        error: e
+      })
+    }
+  }
 }
 
+export let pubObj
 if (Meteor.isServer) {
-  const factory = publicationFactory(factoryOptions)
+  pubObj = publicationFactory(factoryOptions)
   const associationFactory = makeAssociationFactory(collectionName)
 
-  const makeUnitListPublisher = ({ apiUrl, funcName, additionalFields }) =>
-    Meteor.publish(`${collectionName}.${funcName}`, function () {
-      let ids
-      if (this.userId) {
-        const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(this.userId)
-        try {
-          const listResponse = callAPI('get', apiUrl, { api_key: apiKey }, false, true)
-          ids = listResponse.data.ids
-          if (!ids) throw new Meteor.Error({ message: 'Malformed API response', response: listResponse })
-        } catch (e) {
-          logger.error('API error encountered', `${collectionName}.${funcName}`, this.userId)
-          this.ready()
-          this.error(new Meteor.Error({ message: 'REST API error', origError: e }))
-        }
-      }
-      if (ids.length === 0) {
-        this.ready()
-      } else {
-        associationFactory(
-          factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
-            uriTemplate: ids => {
-              const idsQueryParams = ids.map(id => `ids=${id}&`).join('')
-              return `/rest/product?${idsQueryParams}&include_fields=${['name,id,is_active'].concat(additionalFields).join(',')}`
-            }
-          }),
-          withMetaData({
-            bzId: 1,
-            displayName: 1,
-            moreInfo: 1,
-            unitType: 1,
-            ownerIds: {
-              $elemMatch: {
-                $in: [this.userId]
-              }
-            },
-            disabled: 1
+  const makeUnitListPublisher = ({ unitType, funcName, additionalFields }) =>
+    Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
+      pubObj.publishByCustomQuery({ // It would work exactly the same for the name according to the BZ API docs
+        uriTemplate: () => '/rest/product',
+        queryBuilder: () => ({
+          type: unitType,
+          include_fields: ['name,id,is_active'].concat(additionalFields).join(',')
+        }),
+        requestIdentityResolver: (subHandle, query) => {
+          if (!subHandle.userId) return JSON.stringify(query)
+          return JSON.stringify({
+            unitType,
+            user: subHandle.userId
           })
-        ).call(this, ids || [])
-      }
-    })
+        },
+        addedMatcherFactory: identityStr => {
+          const idObj = JSON.parse(identityStr)
+          const { bugzillaCreds: { login } } = Meteor.users.findOne({ _id: idObj.user })
+          return unitItem => {
+            const roles = getUnitRoles(unitItem)
+            return roles.some(role => role.login === login)
+          }
+        }
+      }),
+      withMetaData({
+        bzId: 1,
+        displayName: 1,
+        moreInfo: 1,
+        unitType: 1,
+        ownerIds: {
+          $elemMatch: {
+            $in: [this.userId]
+          }
+        },
+        disabled: 1
+      })
+    ))
   const makeUnitPublisherWithAssocs = ({ funcName, uriBuilder, assocFuncs }) => {
     Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
-      factory.publishById({ // It would work exactly the same for the name according to the BZ API docs
+      pubObj.publishById({ // It would work exactly the same for the name according to the BZ API docs
         uriTemplate: uriBuilder
       }),
       ...assocFuncs
@@ -340,12 +352,12 @@ if (Meteor.isServer) {
 
   // TODO: remove this if it doesn't get reused by other UI components
   makeUnitListPublisher({
-    apiUrl: '/rest/product_enterable',
+    unitType: 'enterable',
     funcName: 'forReporting',
     additionalFields: 'components'
   })
   makeUnitListPublisher({
-    apiUrl: '/rest/product_selectable',
+    unitType: 'selectable',
     funcName: 'forBrowsing',
     additionalFields: 'description'
   })
@@ -361,6 +373,13 @@ Meteor.methods({
     const {
       type, name, role, moreInfo = '', streetAddress = '', city = '', state = '', zipCode = '', country = '', isOccupant
     } = creationArgs
+    check(moreInfo, String)
+    check(streetAddress, String)
+    check(city, String)
+    check(state, String)
+    check(zipCode, String)
+    check(country, String)
+    check(isOccupant, Boolean)
 
     // Mandatory fields and values validation
     check(name, String)
@@ -440,7 +459,21 @@ Meteor.methods({
         user: Meteor.userId(),
         method: `${collectionName}.insert`,
         args: [creationArgs]
-      })
+      }, false)
+
+      try {
+        const resp = callAPI('get', `/rest/product?ids=${unitBzId}`, { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
+        const unitItem = factoryOptions.dataResolver(resp.data)[0]
+        pubObj.handleAdded(unitItem)
+      } catch (e) {
+        logger.error({
+          user: Meteor.userId(),
+          method: `${collectionName}.insert`,
+          args: [creationArgs],
+          step: 'Fetching unit data for live update, proceeding with no error',
+          error: e
+        })
+      }
 
       return { newUnitId: unitBzId }
     }

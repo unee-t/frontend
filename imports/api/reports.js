@@ -454,7 +454,18 @@ Meteor.methods({
         })
         throw new Meteor.Error('API error')
       }
-      publicationObj.handleChanged(reportId, { status: REPORT_FINAL_STATUS })
+
+      try {
+        const response = callAPI('get', idUrlTemplate(reportId), {}, true, true)
+        const reportItem = factoryOptions.dataResolver(response.data)[0]
+        publicationObj.handleChanged(reportItem, ['status'])
+      } catch (e) {
+        logger.error({
+          step: 'Fetching report data for live update after change, proceeding with no error',
+          error: e,
+          ...errorLogParams
+        })
+      }
 
       populateReportDependees(reportItem, apiKey, {
         user: Meteor.userId(),
