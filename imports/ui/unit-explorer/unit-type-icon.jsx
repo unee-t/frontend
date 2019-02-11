@@ -12,7 +12,8 @@ const unitTypes = [
   { icon: 'hotel', categories: ['hotel', 'Hotel', 'Hotel Room'] },
   { icon: 'business', categories: ['Office'] },
   { icon: 'location_city', categories: ['Warehouse'] },
-  { icon: 'restaurant', categories: ['Restaurant/Cafe'] }
+  { icon: 'restaurant', categories: ['Restaurant/Cafe'] },
+  { icon: 'not_listed_location', categories: ['Other'] }
 ]
 
 const iconDict = unitTypes.reduce((all, def) => {
