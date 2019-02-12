@@ -30,3 +30,4 @@ services:
             options:
                 awslogs-region: ap-southeast-1
                 awslogs-group: meteor
+                awslogs-stream-prefix: ecs
