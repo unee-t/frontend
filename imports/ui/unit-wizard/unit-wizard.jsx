@@ -71,7 +71,7 @@ class UnitWizard extends Component {
       city: '',
       state: '',
       zipCode: '',
-      country: null,
+      country: '',
       isOccupant: false,
       searchText: null,
       countryValid: null
