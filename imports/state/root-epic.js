@@ -26,6 +26,7 @@ import { retryReportAttachment } from './epics/retry-report-attachment'
 import { generateReportHTMLPreview } from './epics/generate-report-html-preview'
 import { sendReportPdf } from './epics/send-report-pdf'
 import { inviteNewUserToUnit } from './epics/invite-new-user-to-unit'
+import { removeUserFromUnit } from './epics/remove-user-from-unit'
 import { uploadReportsLogo } from './epics/upload-reports-logo'
 import { changeLogoUrl } from './epics/change-logo-url'
 import { resetLogoUrl } from './epics/reset-reports-logo'
@@ -66,5 +67,6 @@ export const rootEpic = combineEpics(
   resetLogoUrl,
   editProfileField,
   uploadAvatarImage,
-  changeAvatarUrl
+  changeAvatarUrl,
+  removeUserFromUnit
 )

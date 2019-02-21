@@ -18,7 +18,8 @@ export const makeAssociationFactory = collectionName => (publisher, ...associate
   return publisher.call(this, unitName)
 }
 export const withDocs = ({ cursorMaker, collectionName }) => (publishedItem, addingFn, subHandle) => {
-  const cursor = cursorMaker(publishedItem)
+  // Calling the cursor maker with the publishedItem and optional param of the userId for advanced queries
+  const cursor = cursorMaker(publishedItem, subHandle.userId)
 
   // Observing changes to the cursor in case the users are added or changed while the sub is still live
   const handle = cursor.observeChanges({

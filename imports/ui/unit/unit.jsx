@@ -9,6 +9,7 @@ import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
+import IconButton from 'material-ui/IconButton'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import moment from 'moment'
@@ -17,6 +18,7 @@ import Cases, { isClosed, collectionName as casesCollName } from '../../api/case
 import Reports, { collectionName as reportsCollName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
+import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
@@ -28,10 +30,13 @@ import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
 import { Sorter } from '../explorer-components/sorter'
 import { StatusFilter } from '../explorer-components/status-filter'
 import { RoleFilter } from '../explorer-components/role-filter'
+import { removeFromUnit, removeCleared } from '/imports/state/actions/unit-invite.actions'
 
 import {
   menuItemDivStyle
 } from '../general.mui-styles'
+import CircularProgress from 'material-ui/CircularProgress'
+import ErrorDialog from '../dialogs/error-dialog'
 
 function NoItem ({ item, iconType }) {
   return (
@@ -72,7 +77,9 @@ class Unit extends Component {
       sortedCases: [],
       selectedStatusFilter: null,
       selectedRoleFilter: null,
-      sortBy: null
+      sortBy: null,
+      userToRemove: null,
+      showRemovalConfirmation: false
     }
   }
 
@@ -118,7 +125,12 @@ class Unit extends Component {
     dispatch(push(`${match.url}/${viewsOrder[val]}`))
   }
 
-  componentWillReceiveProps (nextProps) {
+  handleRemovalClearRequested = () => {
+    const ongoingRemoval = this.getOngoingRemoval(this.props, this.state)
+    this.props.dispatch(removeCleared(ongoingRemoval.userEmail, ongoingRemoval.unitBzId))
+  }
+
+  componentWillReceiveProps (nextProps, nextState) {
     const { caseList } = this.props
     if ((!caseList && nextProps.caseList) || (caseList && caseList.length !== nextProps.caseList.length)) {
       this.setState({
@@ -126,6 +138,11 @@ class Unit extends Component {
           severityIndex.indexOf(a.severity) - severityIndex.indexOf(b.severity)
         )
       })
+    }
+    const prevOngoingRemoval = this.getOngoingRemoval(this.props, this.state)
+    const nextOngoingRemoval = this.getOngoingRemoval(nextProps, nextState)
+    if (prevOngoingRemoval && nextOngoingRemoval && nextOngoingRemoval.complete) {
+      this.handleRemovalClearRequested()
     }
   }
 
@@ -169,11 +186,20 @@ class Unit extends Component {
     })
   }
 
+  getOngoingRemoval (props, state) {
+    const { userToRemove } = state
+    const { unitItem, removalProcesses } = props
+
+    return userToRemove ? removalProcesses.find(p => p.userEmail === userToRemove.email && p.unitBzId === unitItem.id) : null
+  }
+
   render () {
     const {
-      unitItem, isLoading, unitError, casesError, unitUsers, caseList, reportList, reportsError, dispatch, match
+      unitItem, isLoading, unitError, casesError, unitUsers, caseList, reportList, reportsError, dispatch, match, currentUser
     } = this.props
-    const { sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy } = this.state
+    const {
+      sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy, userToRemove, showRemovalConfirmation
+    } = this.state
     const { filteredCases } = this
     const rootMatch = match
     const { unitId } = match.params
@@ -195,10 +221,13 @@ class Unit extends Component {
         icon: 'add'
       }
     ]
+    const ongoingRemoval = this.getOngoingRemoval(this.props, this.state)
+    const currLoginName = currentUser.bugzillaCreds.login
 
     const metaData = unitItem.metaData() || {}
     const unitName = metaData.displayName || unitItem.name
 
+    const isOwner = metaData.ownerIds && metaData.ownerIds.includes(currentUser._id)
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar
@@ -340,12 +369,29 @@ class Unit extends Component {
                       <div className='fw5 silver lh-title'>
                         PEOPLE
                       </div>
-                      {unitUsers
-                        .filter(user => (
-                          !placeholderEmailMatcher(user.login)
-                        ))
+                      {ongoingRemoval && ongoingRemoval.pending ? (
+                        <div className='flex items-center justify-center pv4'>
+                          <CircularProgress size={70} thickness={5} />
+                        </div>
+                      ) : unitUsers
+                        .filter(user => !placeholderEmailMatcher(user.login))
+                        .sort((a, b) => a._id === currentUser._id // Sorting for the curr user to appear first
+                          ? 1
+                          : b._id === currentUser._id
+                            ? -1
+                            : 0
+                        )
                         .map(user => (
-                          <div className='mt1' key={user.login}>{userInfoItem(user)}</div>
+                          <div className='mt1' key={user.login}>
+                            {userInfoItem(user, isOwner && currLoginName !== user.login && (user => !!user.email && (
+                              <IconButton onClick={() => this.setState({
+                                userToRemove: user,
+                                showRemovalConfirmation: true
+                              })}>
+                                <FontIcon className='material-icons' color='#999'>close</FontIcon>
+                              </IconButton>
+                            )))}
+                          </div>
                         ))
                       }
                     </div>
@@ -369,6 +415,35 @@ class Unit extends Component {
             </div>
           )
         }} />
+        <ConfirmationDialog
+          show={!!showRemovalConfirmation}
+          onConfirm={() => {
+            this.setState({ showRemovalConfirmation: false })
+            dispatch(removeFromUnit(userToRemove.email, unitItem.id))
+          }}
+          onCancel={() => this.setState({ userToRemove: null, showRemovalConfirmation: false })}
+          confirmLabel='Remove User'
+          title={userToRemove ? (
+            <div>
+              <div className='tc fw3'>
+                Are you sure you want to remove
+                <span className='bondi-blue'> {userToRemove.name || userToRemove.login.split('@')[0]} </span>
+                from the unit
+                <span className='b'> {unitName}</span>
+                ?
+              </div>
+            </div>
+          ) : ''}
+        >
+          <div className='tc lh-copy'>
+            This person will not be able to create new cases, post any comments or receive any notifications for this unit.
+          </div>
+        </ConfirmationDialog>
+        <ErrorDialog
+          show={!!(ongoingRemoval && ongoingRemoval.error)}
+          text={ongoingRemoval && ongoingRemoval.error ? ongoingRemoval.error.message : 'Error'}
+          onDismissed={this.handleRemovalClearRequested}
+        />
       </div>
     )
   }
@@ -381,12 +456,13 @@ Unit.propTypes = {
   isLoading: PropTypes.bool,
   unitUsers: PropTypes.array,
   caseList: PropTypes.array,
-  reportList: PropTypes.array
+  reportList: PropTypes.array,
+  removalProcesses: PropTypes.array.isRequired
 }
 
 let unitError, casesError, reportsError
 export default connect(
-  () => ({})
+  ({ unitUserRemovalState }) => ({ removalProcesses: unitUserRemovalState })
 )(createContainer((props) => {
   const { unitId } = props.match.params
   const unitHandle = Meteor.subscribe(`${unitsCollName}.byIdWithUsers`, unitId, {
@@ -394,26 +470,32 @@ export default connect(
       unitError = error
     }
   })
-  const unitItem = unitHandle.ready() ? Units.findOne({ id: parseInt(unitId) }) : null
-  let casesHandle, reportsHandle
+  const handles = [
+    unitHandle,
+    Meteor.subscribe('users.myBzLogin')
+  ]
+  const unitItem = Units.findOne({ id: parseInt(unitId) })
   if (unitItem) {
-    casesHandle = Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
-      onStop: error => {
-        casesError = error
-      }
-    })
-    reportsHandle = Meteor.subscribe(`${reportsCollName}.byUnitName`, unitItem.name, {
-      onStop: error => {
-        reportsError = error
-      }
-    })
+    handles.push(
+      Meteor.subscribe(`${casesCollName}.byUnitName`, unitItem.name, {
+        onStop: error => {
+          casesError = error
+        }
+      }),
+      Meteor.subscribe(`${reportsCollName}.byUnitName`, unitItem.name, {
+        onStop: error => {
+          reportsError = error
+        }
+      })
+    )
   }
+
   return {
-    isLoading: !unitHandle.ready() || !casesHandle.ready() || !reportsHandle.ready(),
-    unitUsers: unitItem ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
-    caseList: unitItem ? Cases.find({ selectedUnit: unitItem.name }).fetch() : null,
-    reportList: unitItem ? Reports.find({ selectedUnit: unitItem.name }).fetch() : null,
-    currentUser: Meteor.subscribe('users.myBzLogin').ready() ? Meteor.user() : null,
+    isLoading: handles.some(h => !h.ready()),
+    unitUsers: unitHandle.ready() ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
+    caseList: unitHandle.ready() ? Cases.find({ selectedUnit: unitItem.name }).fetch() : null,
+    reportList: unitHandle.ready() ? Reports.find({ selectedUnit: unitItem.name }).fetch() : null,
+    currentUser: Meteor.user(),
     reportsError,
     casesError,
     unitError,

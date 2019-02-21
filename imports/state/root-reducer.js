@@ -20,6 +20,7 @@ import reportSharingState from './reducers/report-sharing-state'
 import unitInvitationState from './reducers/unit-invitation-state'
 import logoChangingState from './reducers/logo-changing-state'
 import avatarChangingState from './reducers/avatar-changing-state'
+import unitUserRemovalState from './reducers/unit-user-removal-state'
 
 const rootReducer = combineReducers({
   showLoginError,
@@ -42,6 +43,7 @@ const rootReducer = combineReducers({
   unitInvitationState,
   logoChangingState,
   avatarChangingState,
+  unitUserRemovalState,
   router
 })
 

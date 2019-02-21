@@ -14,7 +14,7 @@ delete confirmationCustomContentStyle.transform
 const confirmationTitleStyle = Object.assign({}, modalTitleStyle)
 delete confirmationTitleStyle.marginRight
 
-const ConfirmationDialog = ({ show, title, onConfirm, onCancel, children }) => (
+const ConfirmationDialog = ({ show, title, onConfirm, onCancel, children, confirmLabel }) => (
   <Dialog
     open={show}
     title={title}
@@ -37,9 +37,9 @@ const ConfirmationDialog = ({ show, title, onConfirm, onCancel, children }) => (
         primary
         onClick={onConfirm}
       >
-        <span className='white'>
-          Confirm
-        </span>
+        <div className='white ph3'>
+          {confirmLabel || 'Confirm'}
+        </div>
       </RaisedButton>
     </div>
   </Dialog>
@@ -47,9 +47,10 @@ const ConfirmationDialog = ({ show, title, onConfirm, onCancel, children }) => (
 
 ConfirmationDialog.propTypes = {
   show: PropTypes.bool.isRequired,
-  title: PropTypes.string.isRequired,
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.element]).isRequired,
   onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired
+  onCancel: PropTypes.func.isRequired,
+  confirmLabel: PropTypes.string
 }
 
 export default ConfirmationDialog

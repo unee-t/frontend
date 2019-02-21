@@ -47,11 +47,11 @@ const makeInvitationMatcher = unitItem => ({
 })
 
 const unitAssocHelper = (coll, collName, idFieldName) => fields => withDocs({
-  cursorMaker: publishedItem =>
+  cursorMaker: (publishedItem, userId) =>
     coll.find({
       [idFieldName]: publishedItem.id
     }, {
-      fields
+      fields: typeof fields === 'function' ? fields(userId) : fields // If 'fields' is a function, call it with userId
     }),
   collectionName: collName
 })
@@ -261,18 +261,18 @@ if (Meteor.isServer) {
           }
         }
       }),
-      withMetaData({
+      withMetaData(userId => ({
         bzId: 1,
         displayName: 1,
         moreInfo: 1,
         unitType: 1,
         ownerIds: {
           $elemMatch: {
-            $in: [this.userId]
+            $in: [userId]
           }
         },
         disabled: 1
-      })
+      }))
     ))
   const makeUnitPublisherWithAssocs = ({ funcName, uriBuilder, assocFuncs }) => {
     Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
@@ -292,9 +292,18 @@ if (Meteor.isServer) {
           (query, unitItem) => ({ $or: [makeInvitationMatcher(unitItem), query] }),
           (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
         ),
-        withMetaData(metaDataFields || {
-          ownerIds: 0
-        }),
+        withMetaData(metaDataFields || (userId => ({
+          bzId: 1,
+          displayName: 1,
+          moreInfo: 1,
+          unitType: 1,
+          ownerIds: {
+            $elemMatch: {
+              $in: [userId]
+            }
+          },
+          disabled: 1
+        }))),
         withRolesData({
           unitBzId: 1,
           roleType: 1,
