@@ -360,8 +360,9 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
     } else { // is server
       const { callAPI } = bugzillaApi
       const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({ _id: Meteor.userId() })
+      const changedFields = Object.keys(changeSet)
       try {
-        const normalizedSet = Object.keys(changeSet).reduce((all, key) => {
+        const normalizedSet = changedFields.reduce((all, key) => {
           all[caseServerFieldMapping[key]] = changeSet[key]
           return all
         }, {})
@@ -369,11 +370,7 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
         const { data: { bugs: [caseItem] } } = callAPI(
           'get', `/rest/bug/${caseId}`, { api_key: apiKey }, false, true
         )
-        const updatedSet = Object.keys(changeSet).reduce((all, key) => {
-          all[key] = caseItem[caseServerFieldMapping[key]]
-          return all
-        }, {})
-        publicationObj.handleChanged(caseItem, updatedSet)
+        publicationObj.handleChanged(caseItem, changedFields)
       } catch (e) {
         logger.error({
           user: Meteor.userId(),
