@@ -1,0 +1,29 @@
+version: 0.2
+
+env:
+  variables:
+    APP: "frontend"
+    ACCOUNT: "812644853088"
+
+phases:
+  pre_build:
+    commands:
+      - $(aws ecr get-login --no-include-email --region ${AWS_REGION})
+  install:
+    commands:
+      - echo Installing Meteor
+      - curl https://install.meteor.com/ | sh
+  build:
+    commands:
+      - meteor npm install
+      - 'sed -i "s,<\!-- COMMIT: -->,<\!-- COMMIT: $CODEBUILD_SOURCE_VERSION $CODEBUILD_RESOLVED_SOURCE_VERSION -->,g" client/main.html'
+      - meteor build --directory /tmp/export-meteor/build --allow-superuser
+      - printf "FROM ulexus/meteor:build\nCOPY build /home/meteor/www\nRUN chown -R meteor:meteor /home/meteor/\n" >/tmp/export-meteor/Dockerfile
+      - cd /tmp/export-meteor
+      - docker build -t ${APP} -t ${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION .
+      - docker tag ${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker tag ${APP}:latest ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:latest
+  post_build:
+    commands:
+      - docker push ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker push ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:latest
