@@ -28,7 +28,6 @@ hasse:tachyons
 simple:json-routes
 pauldowman:dotenv
 dburles:collection-helpers
-force-ssl@1.1.0
 percolate:migrations
 underscore@1.0.10
 email@1.2.3
