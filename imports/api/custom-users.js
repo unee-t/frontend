@@ -41,7 +41,21 @@ export const baseUserSchema = Object.freeze({
     assignedExistingCase: true,
     invitedToCase: true,
     caseNewMessage: true,
-    caseUpdate: false
+    caseUpdate: false,
+    caseUpdate_types: {
+      'Next Step': true,
+      'Solution': true,
+      'Deadline': true,
+      'StatusResolved': true
+    },
+    caseNewMessage_types: {
+      'Tenant': true,
+      'Owner/Landlord': true,
+      'Contractor': true,
+      'Management Company': true,
+      'Agent': true
+    },
+    severityOverrideThreshold: null
   },
   customReportLogoEnabled: true
 }) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation

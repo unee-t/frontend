@@ -44,13 +44,21 @@ export const caseServerFieldMapping = {
   additionalComments: 'whiteboard'
 }
 
+export const severityIndex = [
+  'DEAL BREAKER!',
+  'critical',
+  'major',
+  'normal',
+  'minor'
+]
+
 export const REPORT_KEYWORD = 'inspection_report'
 export const REPORT_ROOM_KEYWORD = 'room'
 export const REPORT_ITEM_KEYWORD = 'item'
 
 const REPORT_EL_TYPES = [REPORT_KEYWORD, REPORT_ITEM_KEYWORD, REPORT_ROOM_KEYWORD]
 
-const CLOSED_STATUS_TYPES = ['RESOLVED', 'VERIFIED', 'CLOSED']
+export const CLOSED_STATUS_TYPES = ['RESOLVED', 'VERIFIED', 'CLOSED']
 export const isClosed = caseItem => CLOSED_STATUS_TYPES.includes(caseItem.status)
 
 export const caseClientFieldMapping = Object.assign(

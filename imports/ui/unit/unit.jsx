@@ -14,7 +14,7 @@ import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
-import Cases, { isClosed, collectionName as casesCollName } from '../../api/cases'
+import Cases, { isClosed, severityIndex, collectionName as casesCollName } from '../../api/cases'
 import Reports, { collectionName as reportsCollName, REPORT_DRAFT_STATUS } from '../../api/reports'
 import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
@@ -61,14 +61,6 @@ function NoItem ({ item, iconType }) {
 }
 
 const viewsOrder = ['cases', 'reports', 'overview']
-
-const severityIndex = [
-  'DEAL BREAKER!',
-  'critical',
-  'major',
-  'normal',
-  'minor'
-]
 
 class Unit extends Component {
   constructor () {
