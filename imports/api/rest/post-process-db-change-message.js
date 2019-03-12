@@ -215,10 +215,18 @@ export default (req, res) => {
       })
     }
 
+    let emailPrevented
     if (!recipient.emails[0].verified) {
       logger.error(`User with bz id ${userId} has no verified email address, skipping notification`)
-      return
+      emailPrevented = true
     }
+
+    if (recipient.emails[0].invalid) {
+      logger.error(`User with bz id ${userId} has an invalid email address (bounced) of '${recipient.emails[0].address}', skipping notification`)
+      emailPrevented = true
+    }
+
+    if (emailPrevented) return
 
     // Recursively resolving whether a specific main/sub setting overrides (case/ unit) are set for this user/notification
     let settingOverride = (function checkLevel (matcherLevels, overrides = {}) {
