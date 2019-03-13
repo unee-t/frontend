@@ -74,5 +74,3 @@ matrix:
 env:
   global:
     - COMMIT=${TRAVIS_COMMIT::7}
-
-if: tag IS NOT present
