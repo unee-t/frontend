@@ -10,6 +10,7 @@
 * You can either go the demo environment, described [here](https://documentation.unee-t.com/2018/03/01/introduction-to-the-demo-environment/) for the functionalities that we currently in production.
 * You can also go to Figma to see the things we are currently working on.
 	* [Manage Notifications](https://www.figma.com/proto/SgLcXdmBih1JxVq1lupMiPtr/Unee-T-Designs?node-id=1969%3A62&scaling=scale-down).
+	* [Creating a new inventory for a unit and adding an item to that inventory](https://new.figma.com/proto/SgLcXdmBih1JxVq1lupMiPtr/Unee-T-Designs?node-id=1483%3A3763&scaling=scale-down&redirected=1).
 * Figma also has an android and iPhone version: Figma Mirror.
 
 # Environment variables
