@@ -5,6 +5,13 @@
 * [How to test with Bugzilla in a local environment](https://unee-t-media.s3-accelerate.amazonaws.com/frontend/MEFE.mp4)
 * [ECS deploy](https://unee-t-media.s3-accelerate.amazonaws.com/2017/ecs-deploy.mp4) with `./deploy.sh`
 
+# Demo - How to see how it works:
+
+* You can either go the demo environment, described [here](https://documentation.unee-t.com/2018/03/01/introduction-to-the-demo-environment/) for the functionalities that we currently in production.
+* You can also go to Figma to see the things we are currently working on.
+	* [Manage Notifications](https://www.figma.com/proto/SgLcXdmBih1JxVq1lupMiPtr/Unee-T-Designs?node-id=1969%3A62&scaling=scale-down).
+* Figma also has an android and iPhone version: Figma Mirror.
+
 # Environment variables
 
 They are securely managed in AWS's [parameter store](https://ap-southeast-1.console.aws.amazon.com/ec2/v2/home?region=ap-southeast-1#Parameters:sort=Name). The variables are retrieved via [an environment setup script](https://github.com/unee-t/frontend/blob/master/aws-env.dev), which is utilised by `deploy.sh`.
