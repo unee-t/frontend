@@ -372,6 +372,107 @@ if (Meteor.isServer) {
   })
 }
 
+export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddress = '', city = '', state = '', zipCode = '', country = '', ownerId) {
+  check(moreInfo, String)
+  check(streetAddress, String)
+  check(city, String)
+  check(state, String)
+  check(zipCode, String)
+  check(country, String)
+
+  // Mandatory fields and values validation
+  check(name, String)
+  check(type, String)
+  check(creatorId, String)
+
+  if (!unitTypes.map(t => t.name).includes(type)) {
+    throw new Meteor.Error(`Unrecognized unit type "${type}"`)
+  }
+
+  if (Meteor.isServer) {
+    const unitMongoId = randToken.generate(17)
+    ownerId = ownerId || creatorId
+    const owner = Meteor.users.findOne(ownerId)
+    let unitBzId, unitBzName
+    try {
+      const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
+        data: [{
+          'mefe_unit_id': unitMongoId,
+          'mefe_creator_user_id': owner._id,
+          'bzfe_creator_user_id': owner.bugzillaCreds.id,
+          'classification_id': 2, // The current only classification value used for MEFE units
+          'unit_name': name,
+          'unit_description_details': moreInfo
+        }],
+        headers: {
+          Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+        }
+      })
+      unitBzId = apiResult.data[0].id
+      unitBzName = apiResult.data[0].name
+      logger.info(`BZ Unit ${name} was created successfully`)
+    } catch (e) {
+      logger.error({
+        user: Meteor.userId(),
+        method: `${collectionName}.insert`,
+        args: [creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId],
+        step: 'UNIT CREATE lambda request',
+        error: e
+      })
+      throw new Meteor.Error('Unit creation API Lambda error', e)
+    }
+
+    // Adding the meta data to the collection
+    UnitMetaData.insert({
+      _id: unitMongoId,
+      bzId: unitBzId,
+      bzName: unitBzName,
+      displayName: name,
+      unitType: type,
+      ownerIds: [owner._id],
+      creatorId: creatorId,
+      createdAt: new Date(),
+      streetAddress,
+      city,
+      zipCode,
+      state,
+      country,
+      moreInfo
+    })
+
+    // Populating the roles for the new unit
+    possibleRoles.forEach(({ name: roleName }) => {
+      UnitRolesData.insert({
+        unitId: unitMongoId,
+        roleType: roleName,
+        defaultAssigneeId: -1,
+        members: [],
+        unitBzId
+      })
+    })
+
+    const liveUpdateFunc = () => {
+      if (Meteor.isServer) {
+        try {
+          const resp = callAPI('get', `/rest/product?ids=${unitBzId}`, { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
+          const unitItem = factoryOptions.dataResolver(resp.data)[0]
+          pubObj.handleAdded(unitItem)
+        } catch (e) {
+          logger.error({
+            user: Meteor.userId(),
+            method: `${collectionName}.insert`,
+            args: [creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId],
+            step: 'Fetching unit data for live update, proceeding with no error',
+            error: e
+          })
+        }
+      }
+    }
+
+    return { unitBzId, owner, liveUpdateFunc }
+  }
+}
+
 Meteor.methods({
   [`${collectionName}.insert`] (creationArgs) {
     // Making sure the user is logged in before creating a unit
@@ -380,109 +481,28 @@ Meteor.methods({
     }
 
     const {
-      type, name, role, moreInfo = '', streetAddress = '', city = '', state = '', zipCode = '', country = '', isOccupant
+      role, isOccupant, type, name, moreInfo, streetAddress, city, state, zipCode, country
     } = creationArgs
-    check(moreInfo, String)
-    check(streetAddress, String)
-    check(city, String)
-    check(state, String)
-    check(zipCode, String)
-    check(country, String)
     check(isOccupant, Boolean)
 
-    // Mandatory fields and values validation
-    check(name, String)
     if (!possibleRoles.map(r => r.name).includes(role)) {
       throw new Meteor.Error(`Unrecognized role "${role}"`)
-    }
-    if (!unitTypes.map(t => t.name).includes(type)) {
-      throw new Meteor.Error(`Unrecognized unit type "${type}"`)
     }
     if (isOccupant && !possibleRoles.find(r => r.name === role).canBeOccupant) {
       throw new Meteor.Error(`Not allowed to set 'isOccupant=true' for role "${role}"`)
     }
+    const result = createUnitItem(Meteor.userId(), name, type, moreInfo, streetAddress, city, state, zipCode, country)
 
     // The next part can't be simulated on the client
     if (Meteor.isServer) {
-      const unitMongoId = randToken.generate(17)
-      const owner = Meteor.users.findOne(Meteor.userId())
-      let unitBzId, unitBzName
-
-      try {
-        const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
-          data: [{
-            'mefe_unit_id': unitMongoId,
-            'mefe_creator_user_id': owner._id,
-            'bzfe_creator_user_id': owner.bugzillaCreds.id,
-            'classification_id': 2, // The current only classification value used for MEFE units
-            'unit_name': name,
-            'unit_description_details': moreInfo
-          }],
-          headers: {
-            Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
-          }
-        })
-        unitBzId = apiResult.data[0].id
-        unitBzName = apiResult.data[0].name
-        logger.info(`BZ Unit ${name} was created successfully`)
-      } catch (e) {
-        logger.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.insert`,
-          args: [creationArgs],
-          step: 'UNIT CREATE lambda request',
-          error: e
-        })
-        throw new Meteor.Error('Unit creation API Lambda error', e)
-      }
-
-      // Adding the meta data to the collection
-      UnitMetaData.insert({
-        _id: unitMongoId,
-        bzId: unitBzId,
-        bzName: unitBzName,
-        displayName: name,
-        unitType: type,
-        ownerIds: [owner._id],
-        createdAt: new Date(),
-        streetAddress,
-        city,
-        zipCode,
-        state,
-        country,
-        moreInfo
-      })
-
-      // Populating the roles for the new unit
-      possibleRoles.forEach(({ name: roleName }) => {
-        UnitRolesData.insert({
-          unitId: unitMongoId,
-          roleType: roleName,
-          defaultAssigneeId: -1,
-          members: [],
-          unitBzId
-        })
-      })
-
+      const { unitBzId, owner, liveUpdateFunc } = result
       addUserToRole(owner, owner, unitBzId, role, REPLACE_DEFAULT, isOccupant, {
         user: Meteor.userId(),
         method: `${collectionName}.insert`,
         args: [creationArgs]
       }, false)
 
-      try {
-        const resp = callAPI('get', `/rest/product?ids=${unitBzId}`, { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
-        const unitItem = factoryOptions.dataResolver(resp.data)[0]
-        pubObj.handleAdded(unitItem)
-      } catch (e) {
-        logger.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.insert`,
-          args: [creationArgs],
-          step: 'Fetching unit data for live update, proceeding with no error',
-          error: e
-        })
-      }
+      liveUpdateFunc()
 
       return { newUnitId: unitBzId }
     }
