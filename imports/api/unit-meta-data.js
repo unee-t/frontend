@@ -9,6 +9,9 @@ export const unitTypes = Object.freeze([
     name: 'House'
   },
   {
+    name: 'Room'
+  },
+  {
     name: 'Villa'
   },
   {
