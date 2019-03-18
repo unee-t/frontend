@@ -413,7 +413,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
       logger.info(`BZ Unit ${name} was created successfully`)
     } catch (e) {
       logger.error({
-        user: Meteor.userId(),
+        user: creatorId,
         method: `${collectionName}.insert`,
         args: [creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId],
         step: 'UNIT CREATE lambda request',
@@ -459,7 +459,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
           pubObj.handleAdded(unitItem)
         } catch (e) {
           logger.error({
-            user: Meteor.userId(),
+            user: creatorId,
             method: `${collectionName}.insert`,
             args: [creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId],
             step: 'Fetching unit data for live update, proceeding with no error',
@@ -469,7 +469,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
       }
     }
 
-    return { unitBzId, owner, liveUpdateFunc }
+    return { unitBzId, owner, liveUpdateFunc, unitMongoId }
   }
 }
 
