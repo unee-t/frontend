@@ -37,17 +37,6 @@ script:
 
 matrix:
   include:
-    - env: DEPLOY=dev
-      if: branch = master
-      deploy:
-        provider: script
-        skip_cleanup: true
-        script:
-          - AWS_ACCESS_KEY_ID=$AWS_812644853088_ID
-            AWS_SECRET_ACCESS_KEY=$AWS_812644853088_SECRET
-            ./deploy.sh
-        on:
-          branch: master
     - env: DEPLOY=demo
       if: tag IS present
       deploy:

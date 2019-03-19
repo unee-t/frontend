@@ -27,3 +27,7 @@ phases:
     commands:
       - docker push ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION
       - docker push ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:latest
+      - printf '[{"name":"%s","imageUri":"%s"}]' meteor ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION > $CODEBUILD_SRC_DIR/imagedefinitions.json
+
+artifacts:
+  files: imagedefinitions.json
