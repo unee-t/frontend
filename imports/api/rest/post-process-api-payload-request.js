@@ -3,6 +3,8 @@ import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 import { logger } from '../../util/logger'
 import { createUnitItem } from '../units'
+import { inviteUserToRole } from '../unit-roles-data'
+import UnitMetaData from '../unit-meta-data'
 
 function createUnitHandler (payload, res) {
   const {
@@ -10,7 +12,10 @@ function createUnitHandler (payload, res) {
   } = payload
   let result
   try {
-    result = createUnitItem(creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId)
+    result = createUnitItem(creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId, {
+      apiRequestType: 'CREATE_UNIT',
+      payload
+    })
     res.send(201, {
       unitMongoId: result.unitMongoId,
       timestamp: (new Date()).toISOString()
@@ -32,15 +37,12 @@ function createUserHandler (payload, res) {
     check(emailAddress, String, 'emailAddress must be a string')
     const existingUser = Accounts.findUserByEmail(emailAddress)
     if (existingUser) {
-      if (creatorId && existingUser.profile.creatorId === creatorId) {
-        res.send(200, {
-          userId: existingUser._id,
-          timestamp: existingUser.createdAt.toISOString()
-        })
-        return
-      } else {
-        res.send(403, `Can't create a duplicate user for email "${emailAddress}"`)
-      }
+      res.send(200, {
+        userId: existingUser._id,
+        isCreator: existingUser.profile.creatorId === creatorId,
+        timestamp: existingUser.createdAt.toISOString()
+      })
+      return
     }
     const profileObj = {
       isLimited: true
@@ -74,12 +76,59 @@ function createUserHandler (payload, res) {
     const userId = Accounts.createUser(userObject)
     res.send(201, {
       userId,
+      isCreator: true,
       timestamp: (new Date()).toISOString()
     })
   } catch (e) {
     logger.error(`An error occurred while processing a CREATE_USER API payload request: '${e.message}'`)
     res.send(400, e.message)
   }
+}
+
+function assignRoleHandler (payload, res) {
+  const {
+    requestorUserId, addedUserId, unitId, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility
+  } = payload
+
+  const errorLog = 'API payload request for ASSIGN_ROLE failed: '
+  const inviteeUser = Meteor.users.findOne({ _id: addedUserId })
+  if (!inviteeUser) {
+    const message = `No user found for addedUserId ${addedUserId}`
+    logger.log(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  const unitMetaData = UnitMetaData.findOne({ _id: unitId })
+  if (!unitMetaData) {
+    const message = `No unit found for id '${unitId}'`
+    logger.log(errorLog + message)
+    res.send(400, message)
+    return
+  }
+  if (!unitMetaData.ownerIds.includes(requestorUserId)) {
+    const message = `requestorUserId ${requestorUserId} is not an owner of unit ${unitId} and not allowed to assign roles`
+    logger.log(errorLog + message)
+    res.send(403, message)
+    return
+  }
+  try {
+    inviteUserToRole(
+      requestorUserId, unitId, inviteeUser, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility, {
+        apiRequestType: 'ASSIGN_ROLE',
+        payload
+      }
+    )
+  } catch (e) {
+    logger.log(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  logger.log(`API payload request success for ASSIGN_ROLE: user ${addedUserId} assigned as ${roleType} in unit ${unitId}`)
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
 }
 
 export default (req, res) => {
@@ -96,6 +145,9 @@ export default (req, res) => {
       break
     case 'CREATE_USER':
       createUserHandler(payload, res)
+      break
+    case 'ASSIGN_ROLE':
+      assignRoleHandler(payload, res)
       break
     default:
       const message = `Unrecognized actionType ${payload.actionType}`

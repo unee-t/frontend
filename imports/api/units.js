@@ -23,6 +23,15 @@ export const factoryOptions = {
 
 export let serverHelpers
 
+export const defaultRoleVisibility = {
+  'Tenant': true,
+  'Owner/Landlord': true,
+  'Contractor': true,
+  'Management Company': true,
+  'Agent': true,
+  'Occupant': true
+}
+
 if (Meteor.isServer) {
   serverHelpers = {
     getAPIUnitByName (unitName, apiKey) {
@@ -120,7 +129,14 @@ export const getUnitRoles = unit => {
   )
 }
 
-export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}, doLiveUpdate) => {
+export const addUserToRole = (
+  invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}, doLiveUpdate, isVisible = true,
+  isDefaultInvited = true, roleVisibility = defaultRoleVisibility
+) => {
+
+  // Filling up role visibility in case some of it is missing
+  roleVisibility = Object.assign({}, defaultRoleVisibility, roleVisibility)
+
   // Creating matching invitation records
   const invitationObj = {
     invitedBy: invitingUser.bugzillaCreds.id,
@@ -191,9 +207,10 @@ export const addUserToRole = (invitingUser, inviteeUser, unitBzId, role, invType
     $push: {
       members: {
         id: inviteeUser._id,
-        isVisible: true,
-        isDefaultInvited: false,
-        isOccupant
+        isVisible,
+        isDefaultInvited,
+        isOccupant,
+        roleVisibility
       }
     }
   })
@@ -372,7 +389,7 @@ if (Meteor.isServer) {
   })
 }
 
-export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddress = '', city = '', state = '', zipCode = '', country = '', ownerId) {
+export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddress = '', city = '', state = '', zipCode = '', country = '', ownerId, errorLogParams) {
   check(moreInfo, String)
   check(streetAddress, String)
   check(city, String)
@@ -391,8 +408,11 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
 
   if (Meteor.isServer) {
     const unitMongoId = randToken.generate(17)
+    const creator = Meteor.users.findOne(creatorId)
+    if (!creator) throw new Meteor.Error(`No Creator user found for id ${ownerId}`)
     ownerId = ownerId || creatorId
     const owner = Meteor.users.findOne(ownerId)
+    if (!owner) throw new Meteor.Error(`No Owner user found for id ${ownerId}`)
     let unitBzId, unitBzName
     try {
       const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
@@ -413,9 +433,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
       logger.info(`BZ Unit ${name} was created successfully`)
     } catch (e) {
       logger.error({
-        user: creatorId,
-        method: `${collectionName}.insert`,
-        args: [creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId],
+        ...errorLogParams,
         step: 'UNIT CREATE lambda request',
         error: e
       })
@@ -459,9 +477,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
           pubObj.handleAdded(unitItem)
         } catch (e) {
           logger.error({
-            user: creatorId,
-            method: `${collectionName}.insert`,
-            args: [creatorId, name, type, moreInfo, streetAddress, city, state, zipCode, country, ownerId],
+            ...errorLogParams,
             step: 'Fetching unit data for live update, proceeding with no error',
             error: e
           })
@@ -491,13 +507,18 @@ Meteor.methods({
     if (isOccupant && !possibleRoles.find(r => r.name === role).canBeOccupant) {
       throw new Meteor.Error(`Not allowed to set 'isOccupant=true' for role "${role}"`)
     }
-    const result = createUnitItem(Meteor.userId(), name, type, moreInfo, streetAddress, city, state, zipCode, country)
+    const userId = Meteor.userId()
+    const result = createUnitItem(userId, name, type, moreInfo, streetAddress, city, state, zipCode, country, userId, {
+      user: userId,
+      method: `${collectionName}.insert`,
+      args: [creationArgs]
+    })
 
     // The next part can't be simulated on the client
     if (Meteor.isServer) {
       const { unitBzId, owner, liveUpdateFunc } = result
       addUserToRole(owner, owner, unitBzId, role, REPLACE_DEFAULT, isOccupant, {
-        user: Meteor.userId(),
+        user: userId,
         method: `${collectionName}.insert`,
         args: [creationArgs]
       }, false)
