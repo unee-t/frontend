@@ -9,7 +9,7 @@ import randToken from 'rand-token'
 import { addUserToRole, defaultRoleVisibility } from './units'
 import { findOrCreateUser } from './custom-users'
 import UnitMetaData from './unit-meta-data'
-import PendingInvitations, { KEEP_DEFAULT, REMOVE_USER } from './pending-invitations'
+import PendingInvitations, { KEEP_DEFAULT, REMOVE_USER, REPLACE_DEFAULT } from './pending-invitations'
 import unitUserInvitedTemplate from '../email-templates/unit-user-invited'
 import { logger } from '../util/logger'
 
@@ -38,7 +38,7 @@ const UnitRolesData = new Mongo.Collection(collectionName)
 
 const roleDocMemberMatcher = memberId => roleDoc => roleDoc.members.find(member => member.id === memberId)
 
-export function inviteUserToRole (invitorId, unitMongoId, inviteeUser, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility, errorLogAttrs) {
+export function inviteUserToRole (invitorId, unitMongoId, inviteeUser, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility, setAsDefaultAssignee, errorLogAttrs) {
   const unitMetaData = UnitMetaData.findOne({ _id: unitMongoId })
   const unitRoles = UnitRolesData.find({ unitId: unitMongoId }).fetch()
 
@@ -52,7 +52,8 @@ export function inviteUserToRole (invitorId, unitMongoId, inviteeUser, roleType,
 
   const invitingUser = Meteor.users.findOne({ _id: invitorId })
   if (!invitingUser) throw new Meteor.Error(`No user was found for invitorId '${invitorId}'`)
-  addUserToRole(invitingUser, inviteeUser, unitMetaData.bzId, roleType, KEEP_DEFAULT, isOccupant, errorLogAttrs, true, isVisible, isDefaultInvited, roleVisibility)
+  const invitationType = setAsDefaultAssignee ? REPLACE_DEFAULT : KEEP_DEFAULT
+  addUserToRole(invitingUser, inviteeUser, unitMetaData.bzId, roleType, invitationType, isOccupant, errorLogAttrs, true, isVisible, isDefaultInvited, roleVisibility)
 
   // Creating an invitation token for invitee access
   const accessToken = randToken.generate(24)
@@ -83,7 +84,7 @@ Meteor.methods({
       // Checking if a user exists for this email, create a new one if he isn't
       const inviteeUser = findOrCreateUser(email)
 
-      const { accessToken } = inviteUserToRole(Meteor.userId(), unitMetaData._id, inviteeUser, roleType, isOccupant, true, false, defaultRoleVisibility, {
+      const { accessToken } = inviteUserToRole(Meteor.userId(), unitMetaData._id, inviteeUser, roleType, isOccupant, true, false, defaultRoleVisibility, false, {
         method: `${collectionName}.addNewMember`,
         user: Meteor.userId(),
         args: [firstName, lastName, email, roleType, isOccupant, unitBzId]

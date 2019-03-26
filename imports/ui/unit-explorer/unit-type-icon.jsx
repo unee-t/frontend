@@ -6,14 +6,14 @@ import {
 } from '../case-explorer/case-explorer.mui-styles'
 
 const unitTypes = [
-  { icon: 'home', categories: ['House', 'Apartment/Flat', 'Villa', 'Condominium', 'Apartment Block'] },
+  { icon: 'home', categories: ['House', 'Apartment/Flat', 'Villa', 'Condominium', 'Apartment Block', 'Room'] },
   { icon: 'store', categories: ['Shop', 'Salon'] },
   { icon: 'shopping_cart', categories: ['Shopping Mall'] },
   { icon: 'hotel', categories: ['hotel', 'Hotel', 'Hotel Room'] },
   { icon: 'business', categories: ['Office'] },
   { icon: 'location_city', categories: ['Warehouse'] },
   { icon: 'restaurant', categories: ['Restaurant/Cafe'] },
-  { icon: 'not_listed_location', categories: ['Other'] }
+  { icon: 'not_listed_location', categories: ['Other', 'Unknown'] }
 ]
 
 const iconDict = unitTypes.reduce((all, def) => {

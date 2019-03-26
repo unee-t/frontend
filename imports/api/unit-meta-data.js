@@ -46,6 +46,9 @@ export const unitTypes = Object.freeze([
   },
   {
     name: 'Other'
+  },
+  {
+    name: 'Unknown'
   }
 ])
 

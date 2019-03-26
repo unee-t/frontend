@@ -133,7 +133,6 @@ export const addUserToRole = (
   invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}, doLiveUpdate, isVisible = true,
   isDefaultInvited = true, roleVisibility = defaultRoleVisibility
 ) => {
-
   // Filling up role visibility in case some of it is missing
   roleVisibility = Object.assign({}, defaultRoleVisibility, roleVisibility)
 
@@ -203,7 +202,8 @@ export const addUserToRole = (
     roleType: role,
     unitBzId
   }
-  UnitRolesData.update(unitRoleQuery, {
+
+  const unitRoleModifier = {
     $push: {
       members: {
         id: inviteeUser._id,
@@ -213,7 +213,9 @@ export const addUserToRole = (
         roleVisibility
       }
     }
-  })
+  }
+
+  UnitRolesData.update(unitRoleQuery, unitRoleModifier)
 
   // Matching the role if the defaultAssigneeId is not defined and sets it to the current user. Does nothing otherwise
   let doForceAssigneeUpdate

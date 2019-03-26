@@ -86,8 +86,20 @@ function createUserHandler (payload, res) {
 }
 
 function assignRoleHandler (payload, res) {
+  // Handling faulty boolean values sent by the API consumer and coercing them to be normal boolean values
+  Object.assign(payload, {
+    isOccupant: !!payload.isOccupant,
+    isVisible: !!payload.isVisible,
+    isDefaultInvited: !!payload.isDefaultInvited,
+    isDefaultAssignee: !!payload.isDefaultAssignee,
+    roleVisibility: Object.keys(payload.roleVisibility).reduce((all, key) => {
+      all[key] = !!payload.roleVisibility[key]
+      return all
+    }, {})
+  })
+
   const {
-    requestorUserId, addedUserId, unitId, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility
+    requestorUserId, addedUserId, unitId, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility, isDefaultAssignee
   } = payload
 
   const errorLog = 'API payload request for ASSIGN_ROLE failed: '
@@ -114,7 +126,7 @@ function assignRoleHandler (payload, res) {
   }
   try {
     inviteUserToRole(
-      requestorUserId, unitId, inviteeUser, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility, {
+      requestorUserId, unitId, inviteeUser, roleType, isOccupant, isVisible, isDefaultInvited, roleVisibility, isDefaultAssignee, {
         apiRequestType: 'ASSIGN_ROLE',
         payload
       }
@@ -137,7 +149,13 @@ export default (req, res) => {
     return
   }
 
-  const payload = req.body
+  // Helps to ignore null values
+  const payload = Object.keys(req.body).reduce((all, key) => {
+    if (req.body[key] !== null) {
+      all[key] = req.body[key]
+    }
+    return all
+  }, {})
 
   switch (payload.actionType) {
     case 'CREATE_UNIT':
