@@ -5,6 +5,8 @@ import { logger } from '../../util/logger'
 import { createUnitItem } from '../units'
 import { inviteUserToRole } from '../unit-roles-data'
 import UnitMetaData from '../unit-meta-data'
+import { callAPI } from '../../util/bugzilla-api'
+import { emailValidator } from '../../util/validators'
 
 function createUnitHandler (payload, res) {
   const {
@@ -143,9 +145,115 @@ function assignRoleHandler (payload, res) {
   })
 }
 
+function editUserHandler (payload, res) {
+  const {
+    requestorUserId, userId, creatorId, emailAddress, bzfeEmailAddress, firstName, lastName, phoneNumber
+  } = payload
+
+  const errorLog = 'API payload request for EDIT_USER failed: '
+  const attrErrors = []
+  const requestor = Meteor.users.findOne(requestorUserId)
+  if (!requestor) {
+    attrErrors.push(`No user found for requestorUserId ${requestorUserId}`)
+  }
+
+  const editee = Meteor.users.findOne(userId)
+  if (!editee) {
+    attrErrors.push(`No user found for user to edit userId ${userId}`)
+  }
+
+  if ([creatorId, emailAddress, bzfeEmailAddress, firstName, lastName, phoneNumber].every(attr => !attr)) {
+    attrErrors.push('No attribute was provided for modifying the specified user')
+  }
+
+  if (creatorId) {
+    const newCreator = Meteor.users.findOne({ _id: creatorId })
+    if (!newCreator) {
+      attrErrors.push(`No user found for proposed creatorId ${creatorId}`)
+    }
+  }
+
+  if (emailAddress && !emailValidator(emailAddress)) {
+    attrErrors.push(`emailAddress ${emailAddress} is not a valid email address`)
+  }
+
+  if (bzfeEmailAddress && !emailValidator(bzfeEmailAddress)) {
+    attrErrors.push(`emailAddress ${emailAddress} is not a valid email address`)
+  }
+
+  if (attrErrors.length) {
+    const errorsString = attrErrors.join('; ')
+    logger.log(errorLog + errorsString)
+    res.send(400, errorsString)
+    return
+  }
+
+  if (requestorUserId !== userId && editee.profile.creatorId !== requestorUserId) {
+    const message = `requestorUserId ${requestorUserId} isn't the creator of userId ${userId}, so it is prohibited from modifying it`
+    logger.log(errorLog + message)
+    res.send(403, message)
+    return
+  }
+
+  // Editing user's profile object
+  const profileEditObj = [
+    ['creatorId', creatorId],
+    ['firstName', firstName],
+    ['lastName', lastName],
+    ['phoneNumber', phoneNumber]
+  ].reduce((obj, attrDef) => {
+    if (attrDef[1]) {
+      obj[`profile.${attrDef[0]}`] = attrDef[1]
+    }
+    return obj
+  }, {})
+  if (firstName && lastName) {
+    profileEditObj['profile.name'] = `${firstName} ${lastName}`
+  } else if (firstName) {
+    profileEditObj['profile.name'] = `${firstName}${editee.profile.lastName ? ' ' + editee.profile.lastName : ''}`
+  } else if (lastName) {
+    profileEditObj['profile.name'] = `${editee.profile.firstName ? editee.profile.firstName + ' ' : ''}${lastName}`
+  }
+  if (Object.keys(profileEditObj).length) {
+    Meteor.users.update({ _id: userId }, {
+      $set: profileEditObj
+    })
+  }
+
+  // Editing user's email address
+  if (emailAddress) {
+    Accounts.removeEmail(userId, editee.emails[0].address)
+    Accounts.addEmail(userId, emailAddress)
+  }
+
+  // Editing user's BZ login email address
+  if (bzfeEmailAddress) {
+    try {
+      callAPI('put', `/rest/user/${editee.bugzillaCreds.id}`, {
+        email: bzfeEmailAddress
+      }, true, true)
+    } catch (e) {
+      const message = `BZ API request for email address modification failed: ${JSON.stringify(e)}`
+      logger.error(errorLog + message)
+      res.send(500, message)
+      return
+    }
+
+    Meteor.users.update({ _id: userId }, {
+      $set: {
+        'bugzillaCreds.login': bzfeEmailAddress
+      }
+    })
+  }
+
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
+}
+
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
-    res.send(401)
+    res.send(401, 'Invalid access token')
     return
   }
 
@@ -166,6 +274,9 @@ export default (req, res) => {
       break
     case 'ASSIGN_ROLE':
       assignRoleHandler(payload, res)
+      break
+    case 'EDIT_USER':
+      editUserHandler(payload, res)
       break
     default:
       const message = `Unrecognized actionType ${payload.actionType}`
