@@ -1,10 +1,11 @@
 import { Accounts } from 'meteor/accounts-base'
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
+import countries from 'iso-3166-1-codes'
 import { logger } from '../../util/logger'
 import { createUnitItem } from '../units'
 import { inviteUserToRole } from '../unit-roles-data'
-import UnitMetaData from '../unit-meta-data'
+import UnitMetaData, { unitTypes } from '../unit-meta-data'
 import { callAPI } from '../../util/bugzilla-api'
 import { emailValidator } from '../../util/validators'
 
@@ -251,21 +252,112 @@ function editUserHandler (payload, res) {
   })
 }
 
+function editUnitHandler (payload, res) {
+  const errorLog = 'API payload request for EDIT_UNIT failed: '
+  try {
+    check(payload, {
+      requestorUserId: String,
+      unitId: String,
+      creatorId: Match.Maybe(String),
+      type: Match.Maybe(String),
+      name: Match.Maybe(String),
+      moreInfo: Match.Maybe(String),
+      streetAddress: Match.Maybe(String),
+      city: Match.Maybe(String),
+      state: Match.Maybe(String),
+      zipCode: Match.Maybe(String),
+      country: Match.Maybe(String)
+    })
+  } catch (e) {
+    logger.warn(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  const {
+    requestorUserId, unitId, creatorId, type, name, moreInfo, streetAddress, city, state, zipCode, country
+  } = payload
+
+  const metaData = UnitMetaData.findOne(unitId)
+  if (!metaData) {
+    const message = `No unit found for unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+  if (metaData.creatorId !== requestorUserId && !metaData.ownerIds.includes(requestorUserId)) {
+    const message = `requestorUserId ${requestorUserId} is not allowed to edit unit ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(403, message)
+    return
+  }
+
+  if (creatorId) {
+    const creator = Meteor.users.findOne({ _id: creatorId })
+    if (!creator) {
+      const message = `No user found for creatorId ${creatorId}`
+      logger.warn(errorLog + message)
+      res.send(400, message)
+      return
+    }
+  }
+
+  if (type && !unitTypes.some(({ name }) => name === type)) {
+    const message = `Unrecognized unit type of ${type}, please use one of the existing values`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  if (country && !countries.some(({ name }) => name === country)) {
+    const message = `Unrecognized country name of ${country}. Please use the country's name as mentioned in the ISO-3166 standard`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  const attrObj = {
+    unitType: type,
+    displayName: name,
+    moreInfo,
+    streetAddress,
+    city,
+    zipCode,
+    state,
+    country,
+    creatorId
+  }
+
+  const updateObj = Object.keys(attrObj).reduce((all, key) => {
+    if (attrObj[key]) {
+      all[key] = attrObj[key]
+    }
+    return all
+  }, {})
+
+  UnitMetaData.update({ _id: unitId }, { $set: updateObj })
+
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
+}
+
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
     res.send(401, 'Invalid access token')
     return
   }
 
+  const { actionType, ...innerPayload } = req.body
   // Helps to ignore null values
-  const payload = Object.keys(req.body).reduce((all, key) => {
+  const payload = Object.keys(innerPayload).reduce((all, key) => {
     if (req.body[key] !== null) {
       all[key] = req.body[key]
     }
     return all
   }, {})
 
-  switch (payload.actionType) {
+  switch (actionType) {
     case 'CREATE_UNIT':
       createUnitHandler(payload, res)
       break
@@ -275,11 +367,14 @@ export default (req, res) => {
     case 'ASSIGN_ROLE':
       assignRoleHandler(payload, res)
       break
+    case 'EDIT_UNIT':
+      editUnitHandler(payload, res)
+      break
     case 'EDIT_USER':
       editUserHandler(payload, res)
       break
     default:
-      const message = `Unrecognized actionType ${payload.actionType}`
+      const message = `Unrecognized actionType ${actionType}`
       res.send(400, message)
       logger.log(message)
   }
