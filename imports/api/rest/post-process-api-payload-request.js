@@ -255,7 +255,7 @@ function editUserHandler (payload, res) {
 function editUnitHandler (payload, res) {
   const errorLog = 'API payload request for EDIT_UNIT failed: '
   try {
-    check(payload, {
+    check(payload, Match.ObjectIncluding({
       requestorUserId: String,
       unitId: String,
       creatorId: Match.Maybe(String),
@@ -267,7 +267,7 @@ function editUnitHandler (payload, res) {
       state: Match.Maybe(String),
       zipCode: Match.Maybe(String),
       country: Match.Maybe(String)
-    })
+    }))
   } catch (e) {
     logger.warn(errorLog + e.message)
     res.send(400, e.message)
