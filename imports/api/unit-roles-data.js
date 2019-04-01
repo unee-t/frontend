@@ -69,6 +69,96 @@ export function inviteUserToRole (invitorId, unitMongoId, inviteeUser, roleType,
   return { accessToken }
 }
 
+export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) {
+  const unitRoles = UnitRolesData.find({ unitBzId }).fetch()
+  if (unitRoles.length === 0) throw new Meteor.Error('The specified unit doesn\'t exists, or not properly imported from BZ')
+
+  // Validating current user's permission to add
+  const removerRole = unitRoles.find(roleDocMemberMatcher(requestorId))
+  if (!removerRole) throw new Meteor.Error('You are not listed as a role holder in this unit')
+
+  const userToRemove = Accounts.findUserByEmail(email)
+  const toRemoveRole = unitRoles.find(roleDocMemberMatcher(userToRemove._id))
+  if (!toRemoveRole) throw new Meteor.Error('The specified user is not listed as role holder in this unit')
+
+  // Extra check to avoid critical future usability issues
+  const unitOwners = UnitMetaData.findOne({ bzId: unitBzId }, { ownerIds: 1 }).ownerIds
+  if (!unitOwners.includes(requestorId)) {
+    throw new Meteor.Error('You can\'t remove users from the unit if you\'re not an owner of this unit')
+  }
+
+  const requestorUser = Meteor.users.findOne({ _id: requestorId })
+
+  const { invitationId } = userToRemove.receivedInvites.find(i => i.unitId === unitBzId)
+
+  const invitationObj = {
+    invitedBy: requestorUser.bugzillaCreds.id,
+    invitee: userToRemove.bugzillaCreds.id,
+    type: REMOVE_USER,
+    unitId: unitBzId,
+    role: toRemoveRole.roleType,
+    isOccupant: toRemoveRole.members.find(mem => mem.id === userToRemove._id).isOccupant,
+    _id: Random.id()
+  }
+
+  // Adding to the user to a role on BZ using lambda
+  try {
+    HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
+      data: [invitationObj],
+      headers: {
+        Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
+      }
+    })
+  } catch (e) {
+    logger.error({
+      ...errorLogParams,
+      step: 'INVITE lambda request',
+      error: e
+    })
+    throw new Meteor.Error('Invite API Lambda error', e)
+  }
+
+  // Removing the user's received invite
+  Meteor.users.update({ _id: userToRemove._id }, {
+    $pull: {
+      receivedInvites: {
+        invitationId: invitationId
+      }
+    }
+  })
+
+  // Removing the invitation document
+  PendingInvitations.remove({ _id: invitationId })
+
+  // Removing the user from the unit's owners list if it was included
+  if (unitOwners.includes(userToRemove._id)) {
+    UnitMetaData.update({ bzId: unitBzId }, {
+      ownerIds: userToRemove._id
+    })
+  }
+
+  // Removing the user from the role's members list
+  const modifierObj = {
+    $pull: {
+      members: {
+        id: userToRemove._id
+      }
+    }
+  }
+
+  // Resetting the default assignee id if the uninvited user was it
+  if (toRemoveRole.defaultAssigneeId === userToRemove._id) {
+    Object.assign(modifierObj, {
+      $set: {
+        defaultAssigneeId: -1
+      }
+    })
+  }
+
+  // Executing the update query
+  UnitRolesData.update({ _id: toRemoveRole._id }, modifierObj)
+}
+
 Meteor.methods({
   [`${collectionName}.addNewMember`] (firstName, lastName, email, roleType, isOccupant, unitBzId) {
     if (!Meteor.userId()) throw new Meteor.Error('not-authorized')
@@ -126,93 +216,11 @@ Meteor.methods({
     if (!Meteor.userId()) throw new Meteor.Error('not-authorized')
 
     if (Meteor.isServer) {
-      const unitRoles = UnitRolesData.find({ unitBzId }).fetch()
-      if (unitRoles.length === 0) throw new Meteor.Error('The specified unit doesn\'t exists, or not properly imported from BZ')
-
-      // Validating current user's permission to add
-      const removerRole = unitRoles.find(roleDocMemberMatcher(Meteor.userId()))
-      if (!removerRole) throw new Meteor.Error('You are not listed as a role holder in this unit')
-
-      const userToRemove = Accounts.findUserByEmail(email)
-      const toRemoveRole = unitRoles.find(roleDocMemberMatcher(userToRemove._id))
-      if (!toRemoveRole) throw new Meteor.Error('The specified user is not listed as role holder in this unit')
-
-      // Extra check to avoid critical future usability issues
-      const unitOwners = UnitMetaData.findOne({ bzId: unitBzId }, { ownerIds: 1 }).ownerIds
-      if (!unitOwners.includes(Meteor.userId())) {
-        throw new Meteor.Error('You can\'t remove users from the unit if you\'re not an owner of this unit')
-      }
-
-      const { invitationId } = userToRemove.receivedInvites.find(i => i.unitId === unitBzId)
-
-      const invitationObj = {
-        invitedBy: Meteor.user().bugzillaCreds.id,
-        invitee: userToRemove.bugzillaCreds.id,
-        type: REMOVE_USER,
-        unitId: unitBzId,
-        role: toRemoveRole.roleType,
-        isOccupant: toRemoveRole.members.find(mem => mem.id === userToRemove._id).isOccupant,
-        _id: Random.id()
-      }
-
-      // Adding to the user to a role on BZ using lambda
-      try {
-        HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
-          data: [invitationObj],
-          headers: {
-            Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
-          }
-        })
-      } catch (e) {
-        logger.error({
-          method: `${collectionName}.removeMember`,
-          user: Meteor.userId(),
-          args: [email, unitBzId],
-          step: 'INVITE lambda request',
-          error: e
-        })
-        throw new Meteor.Error('Invite API Lambda error', e)
-      }
-
-      // Removing the user's received invite
-      Meteor.users.update({ _id: userToRemove._id }, {
-        $pull: {
-          receivedInvites: {
-            invitationId: invitationId
-          }
-        }
+      removeRoleMember(Meteor.userId(), unitBzId, email, {
+        method: `${collectionName}.removeMember`,
+        user: Meteor.userId(),
+        args: [email, unitBzId]
       })
-
-      // Removing the invitation document
-      PendingInvitations.remove({ _id: invitationId })
-
-      // Removing the user from the unit's owners list if it was included
-      if (unitOwners.includes(userToRemove._id)) {
-        UnitMetaData.update({ bzId: unitBzId }, {
-          ownerIds: userToRemove._id
-        })
-      }
-
-      // Removing the user from the role's members list
-      const modifierObj = {
-        $pull: {
-          members: {
-            id: userToRemove._id
-          }
-        }
-      }
-
-      // Resetting the default assignee id if the uninvited user was it
-      if (toRemoveRole.defaultAssigneeId === userToRemove._id) {
-        Object.assign(modifierObj, {
-          $set: {
-            defaultAssigneeId: -1
-          }
-        })
-      }
-
-      // Executing the update query
-      UnitRolesData.update({ _id: toRemoveRole._id }, modifierObj)
     }
   }
 })

@@ -4,7 +4,7 @@ import { check, Match } from 'meteor/check'
 import countries from 'iso-3166-1-codes'
 import { logger } from '../../util/logger'
 import { createUnitItem } from '../units'
-import { inviteUserToRole } from '../unit-roles-data'
+import { inviteUserToRole, removeRoleMember } from '../unit-roles-data'
 import UnitMetaData, { unitTypes } from '../unit-meta-data'
 import { callAPI } from '../../util/bugzilla-api'
 import { emailValidator } from '../../util/validators'
@@ -342,6 +342,60 @@ function editUnitHandler (payload, res) {
   })
 }
 
+function deassignRoleHandler (payload, res) {
+  const errorLog = 'API payload request for DEASSIGN_ROLE failed: '
+  try {
+    check(payload, Match.ObjectIncluding({
+      requestorUserId: String,
+      userId: String,
+      unitId: String
+    }))
+  } catch (e) {
+    logger.warn(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  const { requestorUserId, userId, unitId } = payload
+
+  const unitMeta = UnitMetaData.findOne(unitId)
+  if (!unitMeta) {
+    const message = `No unit exists for unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  if (unitMeta.creatorId !== requestorUserId && !unitMeta.ownerIds.includes(requestorUserId)) {
+    const message = `requestorUserId ${requestorUserId} is not allowed to modify roles on unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(403, message)
+    return
+  }
+  const userToRemove = Meteor.users.findOne({ _id: userId })
+  if (!userToRemove) {
+    const message = `No user found for userId ${userId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  try {
+    removeRoleMember(requestorUserId, unitMeta.bzId, userToRemove.emails[0].address, {
+      apiRequestType: 'DEASSIGN_ROLE',
+      payload
+    })
+  } catch (e) {
+    logger.warn(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
+}
+
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
     res.send(401, 'Invalid access token')
@@ -372,6 +426,9 @@ export default (req, res) => {
       break
     case 'EDIT_USER':
       editUserHandler(payload, res)
+      break
+    case 'DEASSIGN_ROLE':
+      deassignRoleHandler(payload, res)
       break
     default:
       const message = `Unrecognized actionType ${actionType}`
