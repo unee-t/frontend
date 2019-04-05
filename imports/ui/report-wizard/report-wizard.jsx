@@ -107,7 +107,7 @@ class ReportWizard extends Component {
 
   render () {
     const {
-      unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachments, attachmentUploads
+      unitItem, reportItem, isLoading, user, dispatch, childCases, match, attachments, attachmentUploads, unitRoles
     } = this.props
 
     if (isLoading) {
@@ -130,7 +130,7 @@ class ReportWizard extends Component {
       role: matchingMongoRole.roleType,
       isOccupant: matchingMongoRole.members.find(memberIdMatcher).isOccupant
     } : makeMatchingUser(
-      getUnitRoles(unitItem).find(desc => desc.login === user.bugzillaCreds.login)
+      unitRoles.find(desc => desc.login === user.bugzillaCreds.login)
     )
     return (
       <div className='full-height flex flex-column'>
@@ -322,7 +322,8 @@ ReportWizard.propTypes = {
   childCases: PropTypes.array,
   user: PropTypes.object,
   attachments: PropTypes.array,
-  attachmentUploads: PropTypes.array.isRequired
+  attachmentUploads: PropTypes.array.isRequired,
+  unitRoles: PropTypes.array
 }
 
 export default connect(
@@ -343,13 +344,15 @@ export default connect(
         caseId => Meteor.subscribe(`${casesCollName}.byId`, caseId)
       )
     }
+    const currUnit = reportItem ? Units.findOne({ name: reportItem.selectedUnit }) : null
     return {
       isLoading: !reportHandle.ready() ||
         (unitHandle && !unitHandle.ready()) ||
         !bzLoginHandle.ready() ||
         !commentsHandle.ready() ||
         childHandles.filter(handle => !handle.ready()).length > 0,
-      unitItem: reportItem ? Units.findOne({ name: reportItem.selectedUnit }) : null,
+      unitItem: currUnit,
+      unitRoles: currUnit ? getUnitRoles(currUnit, Meteor.userId()) : null,
       childCases: reportItem ? Cases.find({
         id: {
           $in: reportItem.depends_on

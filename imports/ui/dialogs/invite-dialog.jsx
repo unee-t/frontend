@@ -89,7 +89,7 @@ class InviteDialog extends Component {
     const {
       basePath, relPath, invitationState, selectControlsRenderer, potentialInvitees,
       title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser,
-      mainOperationSuccessContent, dispatch
+      mainOperationSuccessContent, dispatch, isUnitOwner, unitRoleType
     } = this.props
     const { selectedRole, isOccupant, inputErrorModalOpen, inviteeEmail, currMaxHeight } = this.state
     return (
@@ -177,6 +177,7 @@ class InviteDialog extends Component {
                   isOccupant={isOccupant}
                   onOccupantToggled={isIt => this.setState({ isOccupant: isIt })}
                   disabled={invitationState.disabled}
+                  availableRolesTypes={!isUnitOwner ? [unitRoleType] : null}
                 />
                 <div className='flex justify-space mt3'>
                   <button
@@ -232,7 +233,9 @@ InviteDialog.propTypes = {
   onMainOperation: PropTypes.func.isRequired,
   linkLabelForNewUser: PropTypes.string.isRequired,
   disableMainOperation: PropTypes.bool,
-  mainOperationSuccessContent: PropTypes.element
+  mainOperationSuccessContent: PropTypes.element,
+  isUnitOwner: PropTypes.bool,
+  unitRoleType: PropTypes.string
 }
 
 export default connect(() => ({}))(InviteDialog)

@@ -2,9 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import bugzillaApi from '../util/bugzilla-api'
-import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
-import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
+import { makeAssociationFactory, withDocs } from './base/associations-helper'
 import { serverHelpers } from './units'
 import UnitMetaData, { collectionName as unitMetaCollName } from './unit-meta-data'
 import { emailValidator } from '../util/validators'
@@ -206,12 +205,9 @@ if (Meteor.isServer) {
   }
   const associationFactory = makeAssociationFactory(collectionName)
 
-  Meteor.publish(`${collectionName}.byId`, associationFactory(
-    publicationObj.publishById({
-      uriTemplate: idUrlTemplate
-    }),
-    withUsers(caseItem => _.flatten(Object.values(getCaseUsers(caseItem))).map(u => u.login))
-  ))
+  Meteor.publish(`${collectionName}.byId`, publicationObj.publishById({
+    uriTemplate: idUrlTemplate
+  }))
 
   const noReportsExp = {
     field: 'keywords',

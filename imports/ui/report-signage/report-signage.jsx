@@ -178,7 +178,7 @@ export default connect(
     unitHandle = Meteor.subscribe(`${unitsCollName}.byNameWithUsers`, reportItem.selectedUnit)
     unitItem = Units.findOne({ name: reportItem.selectedUnit })
     if (unitHandle.ready() && unitItem) {
-      unitRoles = getUnitRoles(unitItem)
+      unitRoles = getUnitRoles(unitItem, Meteor.userId())
     }
   }
   return {

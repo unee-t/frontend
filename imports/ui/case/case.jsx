@@ -54,7 +54,7 @@ export class Case extends Component {
   render () {
     const {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
-      attachmentUploads, match, userBzLogin, dispatch, unitUsers, invitationState, caseUserTypes,
+      attachmentUploads, match, userBzLogin, userId, dispatch, unitUsers, invitationState, caseUserTypes,
       loadingPendingInvitations, pendingInvitations, /* showWelcomeDialog, invitedByDetails, */
       cfvDictionary, loadingCfv, cfvError, caseUsersState
     } = this.props
@@ -117,6 +117,8 @@ export class Case extends Component {
                     caseItem,
                     comments,
                     unitUsers,
+                    userBzLogin,
+                    userId,
                     invitationState,
                     unitItem,
                     caseUserTypes,
@@ -178,7 +180,8 @@ Case.propTypes = {
   // showWelcomeDialog: PropTypes.bool,
   // invitedByDetails: PropTypes.object,
   caseUsersState: PropTypes.object.isRequired,
-  ancestorPath: PropTypes.string
+  ancestorPath: PropTypes.string,
+  userId: PropTypes.string
 }
 
 let caseError, commentsError, unitError, cfvError
@@ -214,7 +217,8 @@ const CaseContainer = createContainer(props => {
   const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
 
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
-  const unitRoles = currUnit && getUnitRoles(currUnit)
+  const unitRoles = currUnit && getUnitRoles(currUnit, Meteor.userId())
+  const user = bzLoginHandle.ready() ? Meteor.user() : null
   return {
     loadingCase: !caseHandle.ready(),
     caseError,
@@ -225,7 +229,8 @@ const CaseContainer = createContainer(props => {
       const creatorUser = Meteor.users.findOne({ 'bugzillaCreds.login': comment.creator })
       return { ...comment, creatorUser }
     }),
-    userBzLogin: bzLoginHandle.ready() ? Meteor.user().bugzillaCreds.login : null,
+    userBzLogin: user ? user.bugzillaCreds.login : null,
+    userId: user ? user._id : null,
     loadingUnit: !unitHandle || !unitHandle.ready(),
     unitError,
     unitItem: currUnit,
@@ -237,7 +242,13 @@ const CaseContainer = createContainer(props => {
         return role ? Object.assign(matchingUser, { role: role.role }) : matchingUser
       }
       all[userType] = Array.isArray(caseUserTypes[userType])
-        ? caseUserTypes[userType].map(mapUser)
+        ? caseUserTypes[userType].reduce((all, user) => {
+          const mappedUser = mapUser(user)
+          if (mappedUser.role) {
+            all.push(mappedUser)
+          }
+          return all
+        }, [])
         : mapUser(caseUserTypes[userType])
       return all
     }, {}),

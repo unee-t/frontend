@@ -5,6 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { reloadCaseFields } from '../cases'
 import UnitRolesData from '../unit-roles-data'
 import { logger } from '../../util/logger'
+import { defaultRoleVisibility } from '../units'
 
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
@@ -72,7 +73,8 @@ export default (req, res) => {
             id: invitee._id,
             isVisible: true,
             isDefaultInvited: false,
-            isOccupant: invitee.receivedInvites[0].isOccupant
+            isOccupant: invitee.receivedInvites[0].isOccupant,
+            roleVisibility: defaultRoleVisibility
           }
         }
       })

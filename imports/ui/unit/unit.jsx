@@ -484,7 +484,7 @@ export default connect(
 
   return {
     isLoading: handles.some(h => !h.ready()),
-    unitUsers: unitHandle.ready() ? getUnitRoles(unitItem).map(makeMatchingUser) : null,
+    unitUsers: unitHandle.ready() ? getUnitRoles(unitItem, Meteor.userId()).map(makeMatchingUser) : null,
     caseList: unitHandle.ready() ? Cases.find({ selectedUnit: unitItem.name }).fetch() : null,
     reportList: unitHandle.ready() ? Reports.find({ selectedUnit: unitItem.name }).fetch() : null,
     currentUser: Meteor.user(),

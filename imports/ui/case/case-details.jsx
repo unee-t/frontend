@@ -143,7 +143,7 @@ class CaseDetails extends Component {
     </div>
   )
 
-  renderAssignedTo = (assignedUser, normalizedUnitUsers, pendingInvitations) => {
+  renderAssignedTo = (assignedUser, normalizedUnitUsers, pendingInvitations, isUnitOwner, unitRoleType) => {
     const { match, invitationState, onResetInvitation, onNewUserAssigned, onExistingUserAssigned } = this.props
     const { chosenAssigned } = this.state
     const pendingUsers = pendingInvitations.map(inv => {
@@ -169,7 +169,7 @@ class CaseDetails extends Component {
           </Link>
         ))}
         <InviteDialog
-          {...{ invitationState, onResetInvitation }}
+          {...{ invitationState, onResetInvitation, isUnitOwner, unitRoleType }}
           onNewUserInvited={onNewUserAssigned}
           basePath={match.url} relPath='assign'
           title='Who should be assigned?'
@@ -207,7 +207,7 @@ class CaseDetails extends Component {
 
   renderPeopleInvolved = (
     caseItem, unitItem, { creator, assignee, subscribed }, normalizedUnitUsers, pendingInvitations,
-    successAdded, addUsersError
+    successAdded, addUsersError, isUnitOwner, unitRoleType
   ) => {
     const {
       match, onNewUserInvited, invitationState, onResetInvitation, onRoleUserRemoved, onRoleUsersInvited,
@@ -237,7 +237,7 @@ class CaseDetails extends Component {
           <AddUserControlLine instruction='Invite users to case' />
         </Link>
         <InviteDialog
-          {...{ onNewUserInvited, invitationState }}
+          {...{ onNewUserInvited, invitationState, isUnitOwner, unitRoleType }}
           basePath={match.url} relPath='invite'
           title='Who should be invited?'
           onMainOperation={() => {
@@ -362,13 +362,16 @@ class CaseDetails extends Component {
   }
 
   render () {
-    const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, cfvDictionary, caseUsersState } = this.props
+    const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, cfvDictionary, caseUsersState, userId, userBzLogin } = this.props
     const { normalizedUnitUsers } = this.state
     let successfullyAddedUsers, addUsersError
     if (parseInt(caseUsersState.caseId) === parseInt(caseItem.id)) {
       successfullyAddedUsers = caseUsersState.added
       addUsersError = caseUsersState.error
     }
+    const isUnitOwner = unitItem.metaData().ownerIds && unitItem.metaData().ownerIds.includes(userId)
+    const role = normalizedUnitUsers.find(u => u.login === userBzLogin)
+    const unitRoleType = role ? role.role : null
     return (
       <div className='flex-grow overflow-auto h-100'>
         {this.renderTitle(caseItem)}
@@ -378,10 +381,12 @@ class CaseDetails extends Component {
         {this.renderCategoriesLine(caseItem)}
         {this.renderPrioritySeverityLine(caseItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
-        {this.renderAssignedTo(caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations)}
+        {this.renderAssignedTo(
+          caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations, isUnitOwner, unitRoleType
+        )}
         {this.renderPeopleInvolved(
           caseItem, unitItem, caseUserTypes, normalizedUnitUsers, pendingInvitations,
-          successfullyAddedUsers, addUsersError
+          successfullyAddedUsers, addUsersError, isUnitOwner, unitRoleType
         )}
         {this.renderResolutions(caseItem)}
         {this.renderMediaSection(comments)}
@@ -429,7 +434,8 @@ CaseDetails.propTypes = {
   onFieldEdit: PropTypes.func.isRequired,
   cfvDictionary: PropTypes.object.isRequired,
   caseUsersState: PropTypes.object.isRequired,
-  pendingInvitations: PropTypes.array
+  pendingInvitations: PropTypes.array,
+  userBzLogin: PropTypes.string.isRequired
 }
 
 export default withRouter(CaseDetails)

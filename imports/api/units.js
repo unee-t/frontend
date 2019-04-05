@@ -55,41 +55,66 @@ const makeInvitationMatcher = unitItem => ({
   }
 })
 
-const unitAssocHelper = (coll, collName, idFieldName) => fields => withDocs({
-  cursorMaker: (publishedItem, userId) =>
-    coll.find({
-      [idFieldName]: publishedItem.id
-    }, {
-      fields: typeof fields === 'function' ? fields(userId) : fields // If 'fields' is a function, call it with userId
-    }),
-  collectionName: collName
-})
+const unitAssocHelper = (coll, collName, idFieldName) => (fields, selectionSpecifier = {}) => {
+  return withDocs({
+    cursorMaker: (publishedItem, userId) => {
+      return coll.find({
+        [idFieldName]: publishedItem.id,
+        ...(typeof selectionSpecifier === 'function' ? selectionSpecifier(userId, publishedItem) : selectionSpecifier)
+      }, {
+        fields: typeof fields === 'function' ? fields(userId, publishedItem) : fields // If 'fields' is a function, call it with userId
+      })
+    },
+    collectionName: collName
+  })
+}
 
 const withMetaData = unitAssocHelper(UnitMetaData, unitMetaCollName, 'bzId')
 const withRolesData = unitAssocHelper(UnitRolesData, unitRolesCollName, 'unitBzId')
 
-export const getUnitRoles = unit => {
+export const getUnitRoles = (unit, userId) => {
   // Resolving roles via the newer mongo collection
-  const roleDocs = UnitRolesData.find({ unitBzId: unit.id }).fetch()
+  let roleDocs = UnitRolesData.find({ unitBzId: unit.id }).fetch()
+
+  const unitMeta = UnitMetaData.findOne({ bzId: unit.id })
+
+  // Locate the user's role member definition
+  let userRoleMemObj
+  roleDocs.some(role => {
+    userRoleMemObj = role.members.find(({ id }) => id === userId)
+    return !!userRoleMemObj
+  })
+
+  // Filter out the roleDocs the member is not allowed to see (done mostly for server invocations, as it's already filtered on the client)
+  roleDocs = roleDocs.filter(roleDocs => userRoleMemObj.roleVisibility[roleDocs.roleType])
+
+  const memberVisCheck = memberDesc => unitMeta.ownerIds.includes(userId) ||
+    (memberDesc.isVisible && (!memberDesc.isOccupant || (memberDesc.isOccupant && userRoleMemObj.roleVisibility['Occupant']))) ||
+    memberDesc.id === userId
 
   // Prefetching all user docs to optimize query performance (single query vs one for each user)
-  const userIds = roleDocs.reduce((all, roleObj) => all.concat(roleObj.members.map(mem => mem.id)), [])
+  const userIds = roleDocs.reduce((all, roleObj) => all.concat(
+    roleObj.members.reduce((mems, mem) => memberVisCheck(mem) ? mems.concat([mem.id]) : mems, [])
+  ), [])
+
   const userDocs = Meteor.users.find({ _id: { $in: userIds } }).fetch()
 
   // Constructing the user role objects array similar to the way it is done from BZ's product components below
   const roleUsers = roleDocs.reduce((all, roleObj) => {
     roleObj.members.forEach(memberDesc => {
-      // Using the prefetched array to find the user doc
-      const user = userDocs.find(doc => doc._id === memberDesc.id)
-      all.push({
-        userId: user._id,
-        login: user.bugzillaCreds.login,
-        email: user.emails[0].address,
-        name: user.profile.name,
-        role: roleObj.roleType,
-        isOccupant: memberDesc.isOccupant,
-        avatarUrl: user.profile.avatarUrl
-      })
+      if (memberVisCheck(memberDesc)) {
+        // Using the prefetched array to find the user doc
+        const user = userDocs.find(doc => doc._id === memberDesc.id)
+        all.push({
+          userId: user._id,
+          login: user.bugzillaCreds.login,
+          email: user.emails[0].address,
+          name: user.profile.name,
+          role: roleObj.roleType,
+          isOccupant: memberDesc.isOccupant,
+          avatarUrl: user.profile.avatarUrl
+        })
+      }
     })
     return all
   }, [])
@@ -251,6 +276,49 @@ export const addUserToRole = (
   }
 }
 
+const rolesProjByOwnership = (userId, unitItem) => {
+  return {
+    unitBzId: 1,
+    roleType: 1,
+    members: 1,
+    defaultAssigneeId: 1
+  }
+}
+
+const rolesSelectionByOwnership = (userId, unitItem) => {
+  const unitMeta = UnitMetaData.findOne({
+    bzId: unitItem.id
+  })
+  if (unitMeta.ownerIds.includes(userId)) { // An owner can see all roles
+    return {}
+  } else {
+    // Finding this user's role member definition
+    const meRole = UnitRolesData.findOne({
+      unitBzId: unitItem.id,
+      'members.id': userId
+    }, {
+      fields: {
+        'members.$': 1
+      }
+    })
+    const { roleVisibility } = meRole.members[0]
+
+    // Extract an array of all the roles this user is allowed to see
+    const types = possibleRoles.reduce((all, roleDef) => {
+      if (roleVisibility[roleDef.name]) {
+        all.push(roleDef.name)
+      }
+      return all
+    }, [])
+
+    return {
+      roleType: {
+        $in: types
+      }
+    }
+  }
+}
+
 export let pubObj
 if (Meteor.isServer) {
   pubObj = publicationFactory(factoryOptions)
@@ -275,23 +343,19 @@ if (Meteor.isServer) {
           const idObj = JSON.parse(identityStr)
           const { bugzillaCreds: { login } } = Meteor.users.findOne({ _id: idObj.user })
           return unitItem => {
-            const roles = getUnitRoles(unitItem)
+            const roles = getUnitRoles(unitItem, idObj.user)
             return roles.some(role => role.login === login)
           }
         }
       }),
-      withMetaData(userId => ({
+      withMetaData({
         bzId: 1,
         displayName: 1,
         moreInfo: 1,
         unitType: 1,
-        ownerIds: {
-          $elemMatch: {
-            $in: [userId]
-          }
-        },
+        ownerIds: 1,
         disabled: 1
-      }))
+      })
     ))
   const makeUnitPublisherWithAssocs = ({ funcName, uriBuilder, assocFuncs }) => {
     Meteor.publish(`${collectionName}.${funcName}`, associationFactory(
@@ -306,28 +370,20 @@ if (Meteor.isServer) {
     makeUnitPublisherWithAssocs({
       assocFuncs: [
         withUsers(
-          unitItem => getUnitRoles(unitItem).map(u => u.login),
+          (unitItem, userId) => getUnitRoles(unitItem, userId).map(u => u.login),
           // Should rely both on completed invitations and unit information (which is why the "$or" is there)
           (query, unitItem) => ({ $or: [makeInvitationMatcher(unitItem), query] }),
           (projection, unitItem) => Object.assign(makeInvitationMatcher(unitItem), projection)
         ),
-        withMetaData(metaDataFields || (userId => ({
+        withMetaData(metaDataFields || {
           bzId: 1,
           displayName: 1,
           moreInfo: 1,
           unitType: 1,
-          ownerIds: {
-            $elemMatch: {
-              $in: [userId]
-            }
-          },
+          ownerIds: 1,
           disabled: 1
-        }))),
-        withRolesData({
-          unitBzId: 1,
-          roleType: 1,
-          members: 1
-        })
+        }),
+        withRolesData(rolesProjByOwnership, rolesSelectionByOwnership)
       ],
       funcName,
       uriBuilder
@@ -360,9 +416,10 @@ if (Meteor.isServer) {
     withMetaData({
       bzId: 1,
       displayName: 1,
-      unitType: 1
+      unitType: 1,
+      ownerIds: 1
     }),
-    withRolesData({})
+    withRolesData(rolesProjByOwnership, rolesSelectionByOwnership)
   ]
   const rolesFieldsParams = {
     include_fields: 'name,id,components' // 'components' is only added as a fallback in case the roles are missing

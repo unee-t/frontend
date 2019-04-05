@@ -356,7 +356,7 @@ Meteor.methods({
       }
       const currUser = Meteor.user()
 
-      const currUserRole = getUnitRoles(unitItem).find(role => role.login === currUser.bugzillaCreds.login)
+      const currUserRole = getUnitRoles(unitItem, currUser._id).find(role => role.login === currUser.bugzillaCreds.login)
 
       if (!currUserRole) {
         const errorMsg = 'not-authorized: The user must have a role in this unit'

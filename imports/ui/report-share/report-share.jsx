@@ -175,7 +175,7 @@ export default connect(
     }
     return {
       isLoading: !reportHandle.ready() || (unitHandle && !unitHandle.ready()) || !snapHandle.ready(),
-      unitUsers: unitItem && getUnitRoles(unitItem),
+      unitUsers: unitItem && getUnitRoles(unitItem, Meteor.userId()),
       pdfUrl: snapHandle.ready() ? ReportSnapshots.findOne({ 'reportItem.id': reportId }).pdfUrl : '',
       reportItem
     }

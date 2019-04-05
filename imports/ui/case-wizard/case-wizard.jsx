@@ -14,6 +14,7 @@ import CircularProgress from 'material-ui/CircularProgress'
 import CaseFieldValues, { collectionName as fieldValsCollName } from '../../api/case-field-values'
 import Reports, { collectionName as reportsCollName } from '../../api/reports'
 import UnitMetaData from '../../api/unit-meta-data'
+import UnitRolesData from '../../api/unit-roles-data'
 import Checkbox from 'material-ui/Checkbox'
 import { parseQueryString } from '../../util/parsers'
 import InnerAppBar from '../components/inner-app-bar'
@@ -62,18 +63,36 @@ class CaseWizard extends Component {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
     }
-    const { unitItem, userBzLogin } = this.props
+    const { availableRoles } = this.props
     const { inputValues } = this.state
-    if (unitItem && prevProps.unitItem === null) {
-      const defaultValue = unitItem.components.find(({ default_assigned_to: assignedTo }) => assignedTo === userBzLogin).name
+    if (availableRoles && prevProps.availableRoles === null) {
+      const defaultRole = availableRoles.find(roleObj => roleObj.assignedToYou).type
       this.setState({
         inputValues: Object.assign({}, inputValues, {
           mandatory: Object.assign({}, inputValues.mandatory, {
-            assignedUnitRole: defaultValue
+            assignedUnitRole: defaultRole
           })
         })
       })
     }
+  }
+
+  renderRadioButtons = () => {
+    const { unitItem, userId, inProgress, availableRoles } = this.props
+    const roleRenderer = ({ type, assignedToYou }) => (
+      <RadioButton
+        key={type} value={type} label={type + (assignedToYou ? ' (you)' : '')} disabled={inProgress}
+      />
+    )
+    let rolesToRender
+    if (unitItem.ownerIds && unitItem.ownerIds.includes(userId)) {
+      rolesToRender = availableRoles
+    } else {
+      // A non-owner is not allowed to assign the contractor in any case, and can't assign to empty roles.
+      // The last bool is used in case of no default assignee, but role is assigned to user (not sure if it's possible)
+      rolesToRender = availableRoles.filter(role => role.type !== 'Contractor' && (role.hasDefaultAssignee || role.assignedToYou))
+    }
+    return rolesToRender.map(roleRenderer)
   }
 
   handleRoleChanged = (evt, val) => {
@@ -122,7 +141,7 @@ class CaseWizard extends Component {
   }
 
   render () {
-    const { isLoading, fieldValues, unitItem, userBzLogin, dispatch, error, inProgress, reportItem } = this.props
+    const { isLoading, fieldValues, unitItem, dispatch, error, inProgress, reportItem } = this.props
     if (isLoading) {
       return <Preloader />
     }
@@ -237,14 +256,7 @@ class CaseWizard extends Component {
               onChange={this.handleRoleChanged}
               valueSelected={assignedUnitRole}
             >
-              {
-                unitItem.components
-                  .map(({ id, name, default_assigned_to: assignedTo }) => ( // TODO: enhance later
-                    <RadioButton
-                      key={id} value={name} label={name + (assignedTo === userBzLogin ? ' (you)' : '')} disabled={inProgress}
-                    />
-                  ))
-              }
+              {this.renderRadioButtons()}
             </RadioButtonGroup>
             {needsNewUser && (
               <div className='mt3'>
@@ -302,7 +314,9 @@ CaseWizard.propTypes = {
   userBzLogin: PropTypes.string,
   fieldValues: PropTypes.object,
   preferredUnitId: PropTypes.string,
-  reportItem: PropTypes.object
+  reportItem: PropTypes.object,
+  userId: PropTypes.string,
+  availableRoles: PropTypes.array
 }
 
 export default withRouter(connect(
@@ -335,6 +349,12 @@ export default withRouter(connect(
         ? Object.assign(Units.findOne({ id: unitIdInt }), UnitMetaData.findOne({ bzId: unitIdInt }))
         : null,
       userBzLogin: bzLoginHandle.ready() ? Meteor.user().bugzillaCreds.login : null,
+      userId: bzLoginHandle.ready() ? Meteor.userId() : null,
+      availableRoles: unitHandle.ready() ? UnitRolesData.find({ unitBzId: unitIdInt }).fetch().map(roleObj => ({
+        type: roleObj.roleType,
+        hasDefaultAssignee: roleObj.defaultAssigneeId !== -1,
+        assignedToYou: !!roleObj.members.find(({ id }) => id === Meteor.userId())
+      })) : [],
       reportItem: Reports.findOne({ id: reportIdInt }),
       fieldValues: enumFields.reduce((all, name) => {
         all[name] = CaseFieldValues.findOne({ name })

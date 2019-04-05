@@ -15,6 +15,16 @@ import {
 } from './form-controls.mui-styles'
 
 class UnitRoleSelect extends Component {
+  renderOptions () {
+    const { availableRolesTypes } = this.props
+
+    const relevantRoles = availableRolesTypes
+      ? possibleRoles.filter(role => availableRolesTypes.includes(role.name))
+      : possibleRoles
+    return relevantRoles.map(type => (
+      <MenuItem key={type.name} value={type} primaryText={type.name} />
+    ))
+  }
   render () {
     const { selectedRole, onRoleSelected, isOccupant, onOccupantToggled, disabled, showRequired } = this.props
     return (
@@ -36,9 +46,7 @@ class UnitRoleSelect extends Component {
           disabled={disabled}
           errorText={showRequired ? 'Select a role before proceeding' : ''}
         >
-          {possibleRoles.map(type => (
-            <MenuItem key={type.name} value={type} primaryText={type.name} />
-          ))}
+          {this.renderOptions()}
         </SelectField>
         {selectedRole && selectedRole.canBeOccupant && (
           <Checkbox
@@ -60,7 +68,8 @@ UnitRoleSelect.propTypes = {
   isOccupant: PropTypes.bool,
   onOccupantToggled: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
-  showRequired: PropTypes.bool
+  showRequired: PropTypes.bool,
+  availableRolesTypes: PropTypes.array
 }
 
 export default UnitRoleSelect

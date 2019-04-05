@@ -40,9 +40,9 @@ export const withDocs = ({ cursorMaker, collectionName }) => (publishedItem, add
 
 export const withUsers = (loginNamesGetter, customQuery = _.identity, customProj = _.identity) =>
   withDocs({
-    cursorMaker: publishedItem => Meteor.users.find(
+    cursorMaker: (publishedItem, userId) => Meteor.users.find(
       customQuery({
-        'bugzillaCreds.login': { $in: loginNamesGetter(publishedItem) }
+        'bugzillaCreds.login': { $in: loginNamesGetter(publishedItem, userId) }
       }, publishedItem), {
         fields: customProj({ 'profile.name': 1, 'bugzillaCreds.login': 1, 'emails.address': 1 }, publishedItem)
       }
