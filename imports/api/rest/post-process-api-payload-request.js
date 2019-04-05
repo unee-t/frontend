@@ -396,6 +396,127 @@ function deassignRoleHandler (payload, res) {
   })
 }
 
+function addUnitOwnerHandler (payload, res) {
+  const errorLog = 'API payload request for ADD_UNIT_OWNER failed: '
+  try {
+    check(payload, Match.ObjectIncluding({
+      requestorUserId: String,
+      ownerId: String,
+      unitId: String
+    }))
+  } catch (e) {
+    logger.warn(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  const { requestorUserId, ownerId, unitId } = payload
+  const unitMeta = UnitMetaData.findOne({ _id: unitId })
+  if (!unitMeta) {
+    const message = `No unit found for unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  if (!unitMeta.ownerIds.includes(requestorUserId) && unitMeta.creatorId !== requestorUserId) {
+    const message = `The requestorUserId ${requestorUserId} is not an owner or creator of unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(403, message)
+    return
+  }
+
+  if (unitMeta.ownerIds.includes(ownerId)) {
+    res.send(200, {
+      timestamp: (new Date()).toISOString(),
+      additionalInfo: `The ownerId ${ownerId} is already an owner of unitId ${unitId}, and doesn't need to be added`
+    })
+    return
+  }
+
+  const newOwnerUser = Meteor.users.findOne({ _id: ownerId })
+  if (!newOwnerUser) {
+    const message = `No user found for ownerId ${ownerId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  UnitMetaData.update({ _id: unitId }, {
+    $push: {
+      ownerIds: ownerId
+    }
+  })
+
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
+}
+
+function removeUnitOwnerHandler (payload, res) {
+  const errorLog = 'API payload request for REMOVE_UNIT_OWNER failed: '
+  try {
+    check(payload, Match.ObjectIncluding({
+      requestorUserId: String,
+      ownerId: String,
+      unitId: String
+    }))
+  } catch (e) {
+    logger.warn(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  const { requestorUserId, ownerId, unitId } = payload
+
+  const unitMeta = UnitMetaData.findOne({ _id: unitId })
+  if (!unitMeta) {
+    const message = `No unit found for unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  if (!unitMeta.ownerIds.includes(requestorUserId) && unitMeta.creatorId !== requestorUserId) {
+    const message = `The requestorUserId ${requestorUserId} is not an owner or creator of unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(403, message)
+    return
+  }
+  const ownerUserToRemove = Meteor.users.findOne({ _id: ownerId })
+  if (!ownerUserToRemove) {
+    const message = `No user found for ownerId ${ownerId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  if (!unitMeta.ownerIds.includes(ownerId)) {
+    res.send(200, {
+      timestamp: (new Date()).toISOString(),
+      additionalInfo: `The ownerId ${ownerId} is not an owner of unitId ${unitId}, and doesn't need to be removed`
+    })
+    return
+  }
+
+  if (unitMeta.ownerIds.length === 1) {
+    const message = `Can't remove the last remaining owner of unitId ${unitId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  UnitMetaData.update({ _id: unitId }, {
+    $pull: {
+      ownerIds: ownerId
+    }
+  })
+
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
+}
+
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
     res.send(401, 'Invalid access token')
@@ -429,6 +550,12 @@ export default (req, res) => {
       break
     case 'DEASSIGN_ROLE':
       deassignRoleHandler(payload, res)
+      break
+    case 'ADD_UNIT_OWNER':
+      addUnitOwnerHandler(payload, res)
+      break
+    case 'REMOVE_UNIT_OWNER':
+      removeUnitOwnerHandler(payload, res)
       break
     default:
       const message = `Unrecognized actionType ${actionType}`
