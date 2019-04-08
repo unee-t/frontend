@@ -35,28 +35,30 @@ const verifyUserLogin = handle => {
   return true
 }
 
-export const baseUserSchema = Object.freeze({
-  notificationSettings: {
-    assignedNewCase: true,
-    assignedExistingCase: true,
-    invitedToCase: true,
-    caseNewMessage: true,
-    caseUpdate: false,
-    caseUpdate_types: {
-      'Next Step': true,
-      'Solution': true,
-      'Deadline': true,
-      'StatusResolved': true
-    },
-    caseNewMessage_types: {
-      'Tenant': true,
-      'Owner/Landlord': true,
-      'Contractor': true,
-      'Management Company': true,
-      'Agent': true
-    },
-    severityOverrideThreshold: null
+export const defaultNotificationSettings = {
+  // assignedNewCase: true,
+  assignedExistingCase: true,
+  invitedToCase: true,
+  caseNewMessage: true,
+  caseUpdate: false,
+  caseUpdate_types: {
+    'Next Step': true,
+    'Solution': true,
+    'Deadline': true,
+    'StatusResolved': true
   },
+  caseNewMessage_types: {
+    'Tenant': true,
+    'Owner/Landlord': true,
+    'Contractor': true,
+    'Management Company': true,
+    'Agent': true
+  },
+  severityOverrideThreshold: null
+}
+
+export const baseUserSchema = Object.freeze({
+  notificationSettings: defaultNotificationSettings,
   customReportLogoEnabled: true
 }) // excludes the default parts like profile, services and emails, and the added "bugzillaCreds" that's set on creation
 
@@ -94,7 +96,7 @@ if (Meteor.isServer) {
 }
 
 const notifSettsNames = [
-  'assignedNewCase',
+  // 'assignedNewCase',
   'assignedExistingCase',
   'invitedToCase',
   'caseNewMessage',

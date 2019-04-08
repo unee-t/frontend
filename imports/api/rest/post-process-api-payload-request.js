@@ -8,6 +8,9 @@ import { inviteUserToRole, removeRoleMember } from '../unit-roles-data'
 import UnitMetaData, { unitTypes } from '../unit-meta-data'
 import { callAPI } from '../../util/bugzilla-api'
 import { emailValidator } from '../../util/validators'
+import { defaultNotificationSettings } from '../custom-users'
+import { idUrlTemplate } from '../cases'
+import NotificationSettingsOverrides from '../notification-settings-overrides'
 
 function createUnitHandler (payload, res) {
   const {
@@ -517,6 +520,119 @@ function removeUnitOwnerHandler (payload, res) {
   })
 }
 
+function schemaReductor (targetObj) {
+  return (all, key) => {
+    if (typeof targetObj[key] === 'boolean') {
+      all[key] = Match.Maybe(Boolean)
+    } else if (targetObj[key] === null) {
+      all[key] = Match.Maybe(String)
+    } else if (typeof targetObj[key] === 'object') {
+      all[key] = Match.Maybe(Object.keys(targetObj[key]).reduce(schemaReductor(targetObj[key]), {}))
+    }
+    return all
+  }
+}
+
+const notificationSettingsSchema = Object.keys(defaultNotificationSettings).reduce(schemaReductor(defaultNotificationSettings), {})
+
+function setUserScopePrefsHandler (payload, res) {
+  const errorLog = 'API payload request for SET_USER_SCOPE_PREFS failed: '
+  try {
+    check(payload, Match.ObjectIncluding({
+      requestorUserId: String,
+      userId: String,
+      notificationSettings: notificationSettingsSchema
+    }))
+    try {
+      check(payload, Match.OneOf(
+        Match.ObjectIncluding({ unitId: String }),
+        Match.ObjectIncluding({ caseId: Match.Integer })
+      ))
+    } catch (e) {
+      throw new Meteor.Error('Payload must contain unitId(String) or caseId(Integer)')
+    }
+  } catch (e) {
+    logger.warn(errorLog + e.message)
+    res.send(400, e.message)
+    return
+  }
+
+  const { requestorUserId, userId, notificationSettings, unitId, caseId } = payload
+
+  const requestorUser = Meteor.users.findOne({ _id: requestorUserId })
+  if (!requestorUser) {
+    const message = `No user found for requestorUserId ${requestorUserId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  const user = Meteor.users.findOne({ _id: userId })
+  if (!user) {
+    const message = `Mo user found for userId ${userId}`
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  if (user.profile.creatorId !== requestorUserId && user._id !== requestorUserId) {
+    const message = `requestorUserId ${requestorUserId} is not allowed to set the preferences for userId ${userId}`
+    logger.warn(errorLog + message)
+    res.send(403, message)
+    return
+  }
+
+  const notifSetsQuery = {
+    userBzId: user.bugzillaCreds.id
+    // settings: notificationSettings
+  }
+
+  if (caseId) {
+    let caseData
+    try {
+      caseData = callAPI('get', idUrlTemplate(caseId), {}, true, true)
+    } catch (e) {
+      logger.warn(errorLog + e.message)
+      res.send(500, e.message)
+      return
+    }
+    if (!caseData) {
+      const message = `No case found for caseId ${caseId}`
+      logger.warn(errorLog + message)
+      res.send(400, message)
+      return
+    }
+    notifSetsQuery.caseId = caseId
+  } else if (unitId) {
+    const unitMeta = UnitMetaData.findOne({ _id: unitId })
+    if (!unitMeta) {
+      const message = `No unit found for unitId ${unitId}`
+      logger.warn(errorLog + message)
+      res.send(400, message)
+      return
+    }
+    notifSetsQuery.unitBzId = unitMeta.bzId
+  }
+
+  const existingSettingsDoc = NotificationSettingsOverrides.findOne(notifSetsQuery)
+  if (existingSettingsDoc) {
+    const combinedSettings = { ...existingSettingsDoc.settings, ...notificationSettings }
+    NotificationSettingsOverrides.update(notifSetsQuery, {
+      ...notifSetsQuery,
+      settings: combinedSettings
+    })
+  } else {
+    NotificationSettingsOverrides.insert({
+      ...notifSetsQuery,
+      settings: notificationSettings
+    })
+  }
+
+  res.send(200, {
+    timestamp: (new Date()).toISOString()
+  })
+}
+
 export default (req, res) => {
   if (req.query.accessToken !== process.env.API_ACCESS_TOKEN) {
     res.send(401, 'Invalid access token')
@@ -524,13 +640,16 @@ export default (req, res) => {
   }
 
   const { actionType, ...innerPayload } = req.body
-  // Helps to ignore null values
-  const payload = Object.keys(innerPayload).reduce((all, key) => {
-    if (req.body[key] !== null) {
-      all[key] = req.body[key]
-    }
-    return all
-  }, {})
+  const payload = (function redactNulls (obj) {
+    return Object.keys(obj).reduce((all, key) => {
+      if (obj[key] !== null && typeof obj[key] === 'object') {
+        all[key] = redactNulls(obj[key])
+      } else if (obj[key] !== null) {
+        all[key] = obj[key]
+      }
+      return all
+    }, {})
+  })(innerPayload)
 
   switch (actionType) {
     case 'CREATE_UNIT':
@@ -556,6 +675,9 @@ export default (req, res) => {
       break
     case 'REMOVE_UNIT_OWNER':
       removeUnitOwnerHandler(payload, res)
+      break
+    case 'SET_USER_SCOPE_PREFS':
+      setUserScopePrefsHandler(payload, res)
       break
     default:
       const message = `Unrecognized actionType ${actionType}`
