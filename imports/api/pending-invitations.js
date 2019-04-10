@@ -160,7 +160,6 @@ if (Meteor.isServer) {
     check(caseId, Number)
 
     if (!this.userId) {
-      this.ready()
       this.error('Unauthorized')
       return
     }

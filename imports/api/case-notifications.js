@@ -31,7 +31,6 @@ Meteor.methods({
 if (Meteor.isServer) {
   Meteor.publish(`${collectionName}.myUpdates`, function () {
     if (!this.userId) {
-      this.ready()
       this.error(new Meteor.Error('Must be logged in first'))
     }
     return CaseNotifications.find({

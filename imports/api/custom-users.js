@@ -28,7 +28,6 @@ export const findOrCreateUser = email => {
 
 const verifyUserLogin = handle => {
   if (!handle.userId) {
-    handle.ready()
     handle.error(new Meteor.Error({ message: 'Authentication required' }))
     return false
   }

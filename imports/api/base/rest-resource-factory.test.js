@@ -112,7 +112,7 @@ if (Meteor.isServer) {
         expect(context.added).to.have.been.calledThrice()
         expect(context.ready).to.have.been.calledOnce()
       })
-      it('should use the "ready" and "error" triggers if an API error has occurred', (done) => {
+      it('should use the "error" trigger if an API error has occurred', (done) => {
         const context = {
           userId: 2132,
           error: sinon.spy(),
@@ -125,7 +125,7 @@ if (Meteor.isServer) {
         publishFunc.call(context, 444)
 
         process.nextTick(() => {
-          expect(context.ready).to.have.been.calledOnce()
+          // expect(context.ready).to.have.been.calledOnce()
           expect(context.error).to.have.been.calledOnce()
           done()
         })

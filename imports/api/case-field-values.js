@@ -14,7 +14,6 @@ const clientLocalFieldMapping = Object.assign({}, caseClientFieldMapping, { bug_
 if (Meteor.isServer) {
   Meteor.publish(`${collectionName}.fetchByName`, function (name) {
     if (!this.userId) {
-      this.ready()
       this.error(new Meteor.Error({ message: 'Authentication required' }))
       return false
     }
@@ -28,7 +27,6 @@ if (Meteor.isServer) {
       this.ready()
     } catch (e) {
       logger.error('API error encountered', e, `${collectionName}.fetchByName`, this.userId)
-      this.ready()
       this.error(new Meteor.Error({ message: 'API Error' }))
     }
   })

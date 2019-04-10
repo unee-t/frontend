@@ -52,7 +52,6 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
 
     // Checking if the user is authenticated
     if (!subHandle.userId) {
-      subHandle.ready()
       subHandle.error(new Meteor.Error({ message: 'Authentication required' }))
       return false
     }
@@ -101,7 +100,6 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
            in an error:`,
           err
         )
-        subHandle.ready()
         subHandle.error(new Meteor.Error({ message: 'REST API error', origError: err }))
       })
     subHandle.onStop(() => {
