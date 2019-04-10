@@ -1,9 +1,11 @@
 import { HTTP } from 'meteor/http'
+import { logger } from '../util/logger'
 
 export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync = false) {
   const base = process.env.BUGZILLA_URL || 'http://localhost:8081'
   const finalPayload = isAdmin ? Object.assign({ api_key: process.env.BUGZILLA_ADMIN_KEY }, payload) : payload
   const options = {}
+  let startTime
   if (method.toLowerCase() === 'get') {
     options.params = finalPayload
   } else {
@@ -11,17 +13,41 @@ export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync
   }
   let innerResolve, innerReject
   const callback = isSync ? undefined : (err, result) => {
+    const logPayload = {
+      method,
+      endpoint,
+      payload,
+      duration: Date.now() - startTime
+    }
     if (err) {
       innerReject(err)
+      logger.request({
+        error: err,
+        ...logPayload
+      })
     } else {
       innerResolve(result.data)
+      logger.request({
+        statusCode: result.statusCode,
+        ...logPayload
+      })
     }
   }
   const returnedPromise = !isSync && new Promise((resolve, reject) => {
     innerResolve = resolve
     innerReject = reject
   })
-  const httpCall = HTTP.call(method, base + endpoint, options, callback)
+  startTime = Date.now()
+  let httpCall = HTTP.call(method, base + endpoint, options, callback)
+  if (!callback) {
+    logger.request({
+      method,
+      endpoint,
+      payload,
+      statusCode: httpCall.statusCode,
+      duration: Date.now() - startTime
+    })
+  }
   return returnedPromise || httpCall
 }
 
