@@ -11,6 +11,7 @@ import UnitRolesData, { possibleRoles, collectionName as unitRolesCollName } fro
 import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
 import { logger } from '../util/logger'
+import FailedUnitCreations from './failed-unit-creations'
 
 export const collectionName = 'units'
 
@@ -473,16 +474,17 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
     const owner = Meteor.users.findOne(ownerId)
     if (!owner) throw new Meteor.Error(`No Owner user found for id ${ownerId}`)
     let unitBzId, unitBzName
+    const lambdaPayload = {
+      'mefe_unit_id': unitMongoId,
+      'mefe_creator_user_id': owner._id,
+      'bzfe_creator_user_id': owner.bugzillaCreds.id,
+      'classification_id': 2, // The current only classification value used for MEFE units
+      'unit_name': name,
+      'unit_description_details': moreInfo
+    }
     try {
       const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
-        data: [{
-          'mefe_unit_id': unitMongoId,
-          'mefe_creator_user_id': owner._id,
-          'bzfe_creator_user_id': owner.bugzillaCreds.id,
-          'classification_id': 2, // The current only classification value used for MEFE units
-          'unit_name': name,
-          'unit_description_details': moreInfo
-        }],
+        data: [lambdaPayload],
         headers: {
           Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
         }
@@ -495,6 +497,24 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
         ...errorLogParams,
         step: 'UNIT CREATE lambda request',
         error: e
+      })
+      FailedUnitCreations.insert({
+        lambdaPayload,
+        error: e.message,
+        attemptedAt: new Date(),
+        inputData: {
+          creatorId,
+          name,
+          type,
+          moreInfo,
+          streetAddress,
+          city,
+          state,
+          zipCode,
+          country,
+          ownerId
+        },
+        intendedMongoId: unitMongoId
       })
       throw new Meteor.Error('Unit creation API Lambda error', e)
     }
