@@ -6,18 +6,14 @@ export const logger = require('tracer')
     // format: "{timestamp: '{{timestamp}}', title: '{{title}}', file: '{{file}}', line:'{{line}}', method: '{{method}}', message: '{{message}}' }"
       transport: function (data) {
         if (process.env.ROOT_URL !== 'http://localhost:3000/') {
-          if (typeof data.message === 'object') {
-            console.log(JSON.stringify(data.message))
-          } else {
-            console.log(JSON.stringify({
-              message: data.message,
-              timestamp: data.timestamp,
-              method: data.method,
-              title: data.title,
-              file: data.file,
-              line: data.line
-            }))
-          }
+          console.log(JSON.stringify({
+            message: data.message,
+            timestamp: data.timestamp,
+            method: data.method,
+            title: data.title,
+            file: data.file,
+            line: data.line
+          }))
         } else {
           console[data.method] ? console[data.method](data.message) : console.log(data.message)
         }

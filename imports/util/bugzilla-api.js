@@ -20,17 +20,17 @@ export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync
       duration: Date.now() - startTime
     }
     if (err) {
-      innerReject(err)
       logger.request({
         error: err,
         ...logPayload
       })
+      innerReject(err)
     } else {
-      innerResolve(result.data)
       logger.request({
         statusCode: result.statusCode,
         ...logPayload
       })
+      innerResolve(result.data)
     }
   }
   const returnedPromise = !isSync && new Promise((resolve, reject) => {
