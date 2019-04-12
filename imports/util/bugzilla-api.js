@@ -43,7 +43,6 @@ export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync
     logger.request({
       method,
       endpoint,
-      payload,
       statusCode: httpCall.statusCode,
       duration: Date.now() - startTime
     })
