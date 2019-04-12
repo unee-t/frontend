@@ -16,7 +16,6 @@ export function callAPI (method, endpoint, payload = {}, isAdmin = false, isSync
     const logPayload = {
       method,
       endpoint,
-      payload,
       duration: Date.now() - startTime
     }
     if (err) {
