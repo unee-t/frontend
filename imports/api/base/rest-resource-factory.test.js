@@ -33,13 +33,11 @@ if (Meteor.isServer) {
         callAPIStub.restore()
         usersFindOneStub.restore()
       })
-      it('should return use the "ready" and "error" triggers if the user is not authenticated, and not try to fetch the user', () => {
+      it('should use "error" trigger if the user is not authenticated, and not try to fetch the user', () => {
         const publishFunc = publishFactory({}).publishById({ uriTemplate: () => '/route' })
-        const ready = sinon.spy()
         const error = sinon.spy()
-        publishFunc.call({ userId: null, ready, error }, 11)
+        publishFunc.call({ userId: null, error }, 11)
 
-        expect(ready).to.have.been.calledOnce()
         expect(error).to.have.been.calledOnce()
         expect(usersFindOneStub).to.not.have.been.called()
         expect(callAPIStub).to.not.have.been.called()

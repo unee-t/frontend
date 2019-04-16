@@ -54,6 +54,7 @@ if (Meteor.isServer) {
       expect(HTTP.call).to.have.been.calledWith(sinon.match.string, sinon.match.string, sinon.match({ params: { api_key: 'someDummyKeyExample' } }), sinon.match.func)
     })
     it('should not call HTTP.call with a callback function, if "isSync" is set to true', () => {
+      HTTP.call.returns({ statusCode: 200 })
       callAPI('get', '/dummy', {}, false, true)
 
       expect(HTTP.call).to.have.been.calledWith(sinon.match.string, sinon.match.string, sinon.match.object, sinon.match.falsy)
