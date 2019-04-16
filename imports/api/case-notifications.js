@@ -33,14 +33,21 @@ if (Meteor.isServer) {
     if (!this.userId) {
       this.error(new Meteor.Error('Must be logged in first'))
     }
+
     return CaseNotifications.find({
       userId: this.userId
     }, {
-      caseId: 1,
-      unitBzId: 1,
-      type: 1,
-      createdAt: 1,
-      markedAsRead: 1
+      fields: {
+        caseId: 1,
+        unitBzId: 1,
+        type: 1,
+        createdAt: 1,
+        markedAsRead: 1
+      },
+      sort: {
+        createdAt: -1
+      },
+      limit: 100
     })
   })
 }
