@@ -1,5 +1,6 @@
 import URL from 'url'
 import { URL as url2 } from 'meteor/url'
+import { Meteor } from 'meteor/meteor'
 import { footer } from '../../ui/util/marketing'
 
 export function resolveUserName (user) {
@@ -15,6 +16,16 @@ export function createEngagementLink (params) {
   const engagementURL = URL.parse(resolveServiceDomain('e'))
   engagementURL.search = url2._encodeParams(params)
   return URL.format(engagementURL)
+}
+
+export function getCaseAccessPath (recipient, caseId) {
+  if (recipient.profile.isLimited) {
+    const relevantInvite = recipient.receivedInvites.find(inv => inv.caseId === caseId)
+    if (!relevantInvite) throw new Meteor.Error(`No invite found for user to notify ${recipient._id} for case ${caseId}`)
+    return `/invitation?code=${relevantInvite.accessToken}`
+  } else {
+    return `/case/${caseId}`
+  }
 }
 
 function resolveServiceDomain (service) {
