@@ -70,22 +70,18 @@ export function inviteUserToRole (invitorId, unitMongoId, inviteeUser, roleType,
 }
 
 export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) {
+  const unitMeta = UnitMetaData.findOne({ bzId: unitBzId })
   const unitRoles = UnitRolesData.find({ unitBzId }).fetch()
   if (unitRoles.length === 0) throw new Meteor.Error('The specified unit doesn\'t exists, or not properly imported from BZ')
 
-  // Validating current user's permission to add
-  const removerRole = unitRoles.find(roleDocMemberMatcher(requestorId))
-  if (!removerRole) throw new Meteor.Error('You are not listed as a role holder in this unit')
+  // Validating current user's permission to remove
+  if (!unitMeta.ownerIds.includes(requestorId) || unitMeta.creatorId !== requestorId) {
+    throw new Meteor.Error(`You are not allowed to remove users from unit with bz ID ${unitBzId}`)
+  }
 
   const userToRemove = Accounts.findUserByEmail(email)
   const toRemoveRole = unitRoles.find(roleDocMemberMatcher(userToRemove._id))
   if (!toRemoveRole) throw new Meteor.Error('The specified user is not listed as role holder in this unit')
-
-  // Extra check to avoid critical future usability issues
-  const unitOwners = UnitMetaData.findOne({ bzId: unitBzId }, { ownerIds: 1 }).ownerIds
-  if (!unitOwners.includes(requestorId)) {
-    throw new Meteor.Error('You can\'t remove users from the unit if you\'re not an owner of this unit')
-  }
 
   const requestorUser = Meteor.users.findOne({ _id: requestorId })
 
@@ -131,7 +127,7 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
   PendingInvitations.remove({ _id: invitationId })
 
   // Removing the user from the unit's owners list if it was included
-  if (unitOwners.includes(userToRemove._id)) {
+  if (unitMeta.ownerIds.includes(userToRemove._id)) {
     UnitMetaData.update({ bzId: unitBzId }, {
       ownerIds: userToRemove._id
     })
