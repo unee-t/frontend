@@ -129,7 +129,9 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
   // Removing the user from the unit's owners list if it was included
   if (unitMeta.ownerIds.includes(userToRemove._id)) {
     UnitMetaData.update({ bzId: unitBzId }, {
-      ownerIds: userToRemove._id
+      $pull: {
+        ownerIds: userToRemove._id
+      }
     })
   }
 
