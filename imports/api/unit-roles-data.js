@@ -9,9 +9,10 @@ import randToken from 'rand-token'
 import { addUserToRole, defaultRoleVisibility } from './units'
 import { findOrCreateUser } from './custom-users'
 import UnitMetaData from './unit-meta-data'
-import PendingInvitations, { KEEP_DEFAULT, REMOVE_USER, REPLACE_DEFAULT } from './pending-invitations'
+import PendingInvitations, { KEEP_DEFAULT, REMOVE_USER, REPLACE_DEFAULT, collectionName as pendingInvitaitonsCollName } from './pending-invitations'
 import unitUserInvitedTemplate from '../email-templates/unit-user-invited'
 import { logger } from '../util/logger'
+import { getIncrementFor } from './increment-counters'
 
 export const collectionName = 'unitRolesData'
 export const possibleRoles = [
@@ -90,6 +91,7 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
   const invitationObj = {
     invitedBy: requestorUser.bugzillaCreds.id,
     invitee: userToRemove.bugzillaCreds.id,
+    mefeInvitationIdIntValue: getIncrementFor(pendingInvitaitonsCollName),
     type: REMOVE_USER,
     unitId: unitBzId,
     role: toRemoveRole.roleType,

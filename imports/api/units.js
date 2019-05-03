@@ -8,10 +8,11 @@ import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
 import UnitMetaData, { unitTypes, collectionName as unitMetaCollName } from './unit-meta-data'
 import UnitRolesData, { possibleRoles, collectionName as unitRolesCollName } from './unit-roles-data'
-import PendingInvitations, { REPLACE_DEFAULT } from './pending-invitations'
+import PendingInvitations, { REPLACE_DEFAULT, collectionName as pendingInvitationsCollName } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
 import { logger } from '../util/logger'
 import FailedUnitCreations from './failed-unit-creations'
+import { getIncrementFor } from './increment-counters'
 
 export const collectionName = 'units'
 
@@ -166,6 +167,7 @@ export const addUserToRole = (
   const invitationObj = {
     invitedBy: invitingUser.bugzillaCreds.id,
     invitee: inviteeUser.bugzillaCreds.id,
+    mefeInvitationIdIntValue: getIncrementFor(pendingInvitationsCollName),
     type: invType,
     unitId: unitBzId,
     role,
@@ -473,6 +475,9 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
     ownerId = ownerId || creatorId
     const owner = Meteor.users.findOne(ownerId)
     if (!owner) throw new Meteor.Error(`No Owner user found for id ${ownerId}`)
+
+    const intIdForSql = getIncrementFor(unitMetaCollName)
+
     let unitBzId, unitBzName
     const lambdaPayload = {
       'mefe_unit_id': unitMongoId,
@@ -480,7 +485,8 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
       'bzfe_creator_user_id': owner.bugzillaCreds.id,
       'classification_id': 2, // The current only classification value used for MEFE units
       'unit_name': name,
-      'unit_description_details': moreInfo
+      'unit_description_details': moreInfo,
+      'mefeUnitIdIntValue': intIdForSql
     }
     try {
       const apiResult = HTTP.call('POST', process.env.UNIT_CREATE_LAMBDA_URL, {
@@ -529,6 +535,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
       ownerIds: [owner._id],
       creatorId: creatorId,
       createdAt: new Date(),
+      intIdForSql,
       streetAddress,
       city,
       zipCode,

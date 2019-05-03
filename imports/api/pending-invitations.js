@@ -7,6 +7,7 @@ import { callAPI } from '../util/bugzilla-api'
 import { HTTP } from 'meteor/http'
 import { findOrCreateUser } from './custom-users'
 import { logger } from '../util/logger'
+import { getIncrementFor } from './increment-counters'
 
 export const collectionName = 'pendingInvitations'
 
@@ -107,6 +108,7 @@ export const createPendingInvitation = (email, role, isOccupant, caseId, unitId,
   const invitationId = PendingInvitations.insert({
     invitedBy: currUser.bugzillaCreds.id,
     invitee: inviteeUser.bugzillaCreds.id,
+    mefeInvitationIdIntValue: getIncrementFor(collectionName),
     role,
     isOccupant,
     caseId,
