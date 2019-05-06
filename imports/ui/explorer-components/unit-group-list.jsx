@@ -28,12 +28,12 @@ export class UnitGroupList extends PureComponent {
       stateMutation = {
         expandedUnits: expandedUnits.filter(title => title !== unitTitle)
       }
-      this.calculatedHeights[bzId] = UNIT_ROW_HEIGHT
+      this.calculatedHeights[unitTitle] = UNIT_ROW_HEIGHT
     } else {
       stateMutation = {
         expandedUnits: expandedUnits.concat([unitTitle])
       }
-      this.calculatedHeights[bzId] = UNIT_ROW_HEIGHT + (items.length * ITEM_ROW_HEIGHT)
+      this.calculatedHeights[unitTitle] = UNIT_ROW_HEIGHT + (items.length * ITEM_ROW_HEIGHT)
     }
     this.setState(stateMutation)
   }
@@ -63,9 +63,9 @@ export class UnitGroupList extends PureComponent {
             // Finding the first row index that should be rendered for the current scroll position
             let rowIndex = 0
             // "As long as the current row's height doesn't exceed the remainder"
-            while (requestedBeforeHeight - this.calculatedHeights[unitGroupList[rowIndex].bzId.toString()] > 0) {
+            while (requestedBeforeHeight - this.calculatedHeights[unitGroupList[rowIndex].unitTitle.toString()] > 0) {
               // Subtracting the current row's height from the remainder
-              requestedBeforeHeight -= this.calculatedHeights[unitGroupList[rowIndex].bzId.toString()]
+              requestedBeforeHeight -= this.calculatedHeights[unitGroupList[rowIndex].unitTitle.toString()]
               // Counting to the next row
               rowIndex++
             }
@@ -100,7 +100,7 @@ export class UnitGroupList extends PureComponent {
 
   calcHeightForData = data => {
     return data.reduce((sum, d) => {
-      return sum + this.calculatedHeights[d.bzId.toString()]
+      return sum + this.calculatedHeights[d.unitTitle.toString()]
     }, 0)
   }
 
@@ -110,7 +110,7 @@ export class UnitGroupList extends PureComponent {
     this.beforeHeight = 0
     if (unitGroupList.length) {
       unitGroupList.forEach((item, idx) => {
-        const strId = item.bzId.toString()
+        const strId = item.unitTitle.toString()
         if (!this.calculatedHeights[strId]) {
           this.calculatedHeights[strId] = UNIT_ROW_HEIGHT
         }
