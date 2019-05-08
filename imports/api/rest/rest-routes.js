@@ -8,6 +8,7 @@ import postProcessDbChangeMessage from './post-process-db-change-message'
 import postSesNotification from './post-ses-notification'
 import getPdfDownload from './get-pdf-download'
 import postProcessApiPayloadRequest from './post-process-api-payload-request'
+import getUnits from './get-units'
 
 JsonRoutes.Middleware.use(json())
 JsonRoutes.Middleware.use((req, res, next) => {
@@ -34,4 +35,5 @@ createRoute('put', '/pending-invitations/done', putPendingInvitations)
 createRoute('post', '/db-change-message/process', postProcessDbChangeMessage)
 createRoute('post', '/ses', postSesNotification)
 createRoute('get', '/report-pdf-download', getPdfDownload)
+createRoute('get', '/units', getUnits)
 createRoute('post', '/process-api-payload', postProcessApiPayloadRequest)
