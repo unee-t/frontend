@@ -353,7 +353,7 @@ function editUnitHandler (payload, res) {
   }
 
   const updateObj = Object.keys(attrObj).reduce((all, key) => {
-    if (attrObj[key]) {
+    if (typeof attrObj[key] !== 'undefined') {
       all[key] = attrObj[key]
     }
     return all
