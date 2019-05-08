@@ -2,6 +2,7 @@ import { Accounts } from 'meteor/accounts-base'
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import countries from 'iso-3166-1-codes'
+import randToken from 'rand-token'
 import { logger } from '../../util/logger'
 import { createUnitItem } from '../units'
 import { inviteUserToRole, removeRoleMember } from '../unit-roles-data'
@@ -39,14 +40,25 @@ function createUserHandler (payload, res) {
   const {
     creatorId, emailAddress, firstName, lastName, phoneNumber
   } = payload
+  const newApiKey = {
+    key: randToken.generate(24),
+    generatedAt: new Date(),
+    generatedBy: creatorId
+  }
   try {
     check(emailAddress, String, 'emailAddress must be a string')
     const existingUser = Accounts.findUserByEmail(emailAddress)
     if (existingUser) {
+      Meteor.users.update({ _id: existingUser._id }, {
+        $push: {
+          mefeApiKeys: newApiKey
+        }
+      })
       res.send(200, {
         userId: existingUser._id,
         isCreator: existingUser.profile.creatorId === creatorId,
-        timestamp: existingUser.createdAt.toISOString()
+        timestamp: existingUser.createdAt.toISOString(),
+        mefeApiKey: newApiKey.key
       })
       return
     }
@@ -80,10 +92,19 @@ function createUserHandler (payload, res) {
       profileObj.creatorId = creatorId
     }
     const userId = Accounts.createUser(userObject)
+    Meteor.users.update({ _id: userId }, {
+      $push: {
+        mefeApiKeys: newApiKey
+      },
+      $set: {
+        'emails.0.verified': true
+      }
+    })
     res.send(201, {
       userId,
       isCreator: true,
-      timestamp: (new Date()).toISOString()
+      timestamp: (new Date()).toISOString(),
+      mefeApiKey: newApiKey.key
     })
   } catch (e) {
     logger.error(`An error occurred while processing a CREATE_USER API payload request: '${e.message}'`)
