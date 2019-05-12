@@ -51,6 +51,8 @@ export const severityIndex = [
   'minor'
 ]
 
+export const caseBzApiRoute = '/rest/bug'
+
 export const REPORT_KEYWORD = 'inspection_report'
 export const REPORT_ROOM_KEYWORD = 'room'
 export const REPORT_ITEM_KEYWORD = 'item'
@@ -141,7 +143,7 @@ const denormalizeUser = ({ login, name, email }) => ({
   email
 })
 
-const transformCaseForClient = bug => Object.keys(bug).reduce((all, key) => ({
+export const transformCaseForClient = bug => Object.keys(bug).reduce((all, key) => ({
   ...all,
   [caseClientFieldMapping[key] || key]: bug[key]
 }), {})
@@ -172,7 +174,7 @@ export const toggleParticipants = (loginNames, isAdd, caseId, clientCollection, 
       }
     }
     try {
-      callAPI('put', `/rest/bug/${caseId}`, payload, false, true)
+      callAPI('put', `${caseBzApiRoute}/${caseId}`, payload, false, true)
 
       reloadFunc()
       loginNames.forEach(email => logger.info(`${email} was ${isAdd ? '' : 'un'}subscribed to BZ case ${caseId}`))
@@ -191,10 +193,21 @@ export const factoryOptions = {
   collectionName,
   dataResolver: data => data.bugs.map(transformCaseForClient)
 }
-export const idUrlTemplate = caseId => `/rest/bug/${caseId}`
+export const idUrlTemplate = caseId => `${caseBzApiRoute}/${caseId}`
 
 export let reloadCaseFields
 let publicationObj
+
+export const noReportsExp = {
+  field: 'keywords',
+  operator: 'nowords',
+  value: REPORT_EL_TYPES.join(',')
+}
+export const openOnlyExp = {
+  field: 'bug_status',
+  operator: 'nowords',
+  value: CLOSED_STATUS_TYPES.join(',')
+}
 if (Meteor.isServer) {
   publicationObj = publicationFactory(factoryOptions)
   reloadCaseFields = (caseId, fieldNames) => {
@@ -209,21 +222,10 @@ if (Meteor.isServer) {
     uriTemplate: idUrlTemplate
   }))
 
-  const noReportsExp = {
-    field: 'keywords',
-    operator: 'nowords',
-    value: REPORT_EL_TYPES.join(',')
-  }
-  const openOnlyExp = {
-    field: 'bug_status',
-    operator: 'nowords',
-    value: CLOSED_STATUS_TYPES.join(',')
-  }
-
   // TODO: Add tests for this
   Meteor.publish(`${collectionName}.associatedWithMe`, associationFactory(
     publicationObj.publishByCustomQuery({
-      uriTemplate: () => '/rest/bug',
+      uriTemplate: () => caseBzApiRoute,
       queryBuilder: (subHandle, options = {}) => {
         if (!subHandle.userId) {
           return {}
@@ -290,7 +292,7 @@ if (Meteor.isServer) {
     })
   ))
   Meteor.publish(`${collectionName}.byUnitName`, publicationObj.publishByCustomQuery({
-    uriTemplate: () => '/rest/bug',
+    uriTemplate: () => caseBzApiRoute,
     queryBuilder: (subHandle, unitName) => {
       if (!subHandle.userId) {
         return {}
@@ -370,9 +372,9 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
           all[caseServerFieldMapping[key]] = changeSet[key]
           return all
         }, {})
-        callAPI('put', `/rest/bug/${caseId}`, Object.assign({ api_key: apiKey }, normalizedSet), false, true)
+        callAPI('put', `${caseBzApiRoute}/${caseId}`, Object.assign({ api_key: apiKey }, normalizedSet), false, true)
         const { data: { bugs: [caseItem] } } = callAPI(
-          'get', `/rest/bug/${caseId}`, { api_key: apiKey }, false, true
+          'get', `${caseBzApiRoute}/${caseId}`, { api_key: apiKey }, false, true
         )
         publicationObj.handleChanged(caseItem, changedFields)
       } catch (e) {
@@ -469,7 +471,7 @@ Meteor.methods({
       normalizedParams.api_key = apiKey
       let newCaseId
       try {
-        const { data } = callAPI('post', '/rest/bug', normalizedParams, false, true)
+        const { data } = callAPI('post', caseBzApiRoute, normalizedParams, false, true)
         newCaseId = data.id
         logger.info(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
       } catch (e) {
@@ -492,7 +494,7 @@ Meteor.methods({
           }
         }
         try {
-          callAPI('put', `/rest/bug/${newCaseId}`, payload, false, true)
+          callAPI('put', `${caseBzApiRoute}/${newCaseId}`, payload, false, true)
         } catch (e) {
           logger.error({
             user: Meteor.userId(),
@@ -576,7 +578,7 @@ Meteor.methods({
         const { callAPI } = bugzillaApi
         const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({ _id: Meteor.userId() })
         try {
-          callAPI('put', `/rest/bug/${caseId}`, {
+          callAPI('put', `${caseBzApiRoute}/${caseId}`, {
             [caseServerFieldMapping.assignee]: user.login,
             api_key: apiKey
           }, false, true)

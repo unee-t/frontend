@@ -9,6 +9,7 @@ import postSesNotification from './post-ses-notification'
 import getPdfDownload from './get-pdf-download'
 import postProcessApiPayloadRequest from './post-process-api-payload-request'
 import getUnits from './get-units'
+import getCases from './get-cases'
 
 JsonRoutes.Middleware.use(json())
 JsonRoutes.Middleware.use((req, res, next) => {
@@ -36,4 +37,5 @@ createRoute('post', '/db-change-message/process', postProcessDbChangeMessage)
 createRoute('post', '/ses', postSesNotification)
 createRoute('get', '/report-pdf-download', getPdfDownload)
 createRoute('get', '/units', getUnits)
+createRoute('get', '/cases', getCases)
 createRoute('post', '/process-api-payload', postProcessApiPayloadRequest)
