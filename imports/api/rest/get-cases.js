@@ -112,14 +112,14 @@ export default userApiKey((req, res) => {
         userRelevance.push('Reporter')
       }
 
-      const involvedIdList = cc.map(ccItem => generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': ccItem })))
-      if (involvedIdList.some(involved => involved.userId === user._id)) {
+      const involvedList = cc.map(ccItem => generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': ccItem })))
+      if (involvedList.some(involved => involved.userId === user._id)) {
         userRelevance.push('Invited To')
       }
       return {
         assignee: assigneeObj,
         reporter: reporterObj,
-        involvedIdList,
+        involvedList,
         userRelevance,
         creationTime,
         ...transformCaseForClient(relevantBugFields)
