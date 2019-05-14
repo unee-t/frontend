@@ -11,6 +11,7 @@ import {
   transformCaseForClient
 } from '../cases'
 import UnitMetaData from '../unit-meta-data'
+import UnitRolesData from '../unit-roles-data'
 
 export default userApiKey((req, res) => {
   const { user, apiKeyDetails } = req
@@ -50,52 +51,88 @@ export default userApiKey((req, res) => {
     return
   }
 
-  const unitGroupDict = bugs.reduce((all, bug) => {
+  const productGroupDict = bugs.reduce((all, bug) => {
     all[bug.product] = all[bug.product] || []
-
-    const {
-      product,
-      assigned_to: assignedTo,
-      assigned_to_detail: a,
-      cc,
-      cc_detail: b,
-      creator,
-      creator_detail: c,
-      creation_time: creationTime,
-      ...relevantBugFields
-    } = bug
-    const assigneeUser = Meteor.users.findOne({ 'bugzillaCreds.login': assignedTo })
-    const assigneeId = assigneeUser ? assigneeUser._id : null
-    const creatorUser = Meteor.users.findOne({ 'bugzillaCreds.login': creator })
-    const creatorId = creatorUser ? creatorUser._id : null
-    const involvedIdList = cc.map(ccItem => {
-      const ccUser = Meteor.users.findOne({ 'bugzillaCreds.login': ccItem })
-      return ccUser ? ccUser._id : null
-    })
-    const caseItem = {
-      assigneeId,
-      creatorId,
-      involvedIdList,
-      creationTime,
-      ...transformCaseForClient(relevantBugFields)
-    }
-    all[bug.product].push(caseItem)
+    all[bug.product].push(bug)
     return all
   }, {})
 
   const unitsMeta = UnitMetaData.find({
     bzName: {
-      $in: Object.keys(unitGroupDict)
+      $in: Object.keys(productGroupDict)
     },
     ownerIds: apiKeyDetails.generatedBy
   })
 
   let unitDataGroups = []
   unitsMeta.forEach(unitMeta => {
+    const unitRolesDict = UnitRolesData.find({
+      unitId: unitMeta._id
+    }, {
+      fields: {
+        'members.id': 1,
+        roleType: 1
+      }
+    }).fetch().reduce((all, role) => {
+      role.members.forEach(member => {
+        all[member._id] = role.roleType
+      })
+      return all
+    }, {})
+    const generateUserObj = userDoc => {
+      const userObj = {}
+      if (userDoc) {
+        userObj._id = userDoc._id
+        if (userDoc.profile.name) {
+          userObj.name = userDoc.profile.name
+        } else {
+          userObj.emailPrefix = userDoc.emails[0].address.split('@')[0]
+        }
+        userObj.role = unitRolesDict[userDoc._id] || null
+      }
+      return userObj
+    }
+
+    const cases = productGroupDict[unitMeta.bzName].map(bug => {
+      const {
+        product,
+        assigned_to: assignedTo,
+        assigned_to_detail: a,
+        cc,
+        cc_detail: b,
+        creator,
+        creator_detail: c,
+        creation_time: creationTime,
+        ...relevantBugFields
+      } = bug
+      const userRelevance = []
+      const assigneeObj = generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': assignedTo }))
+      if (user._id === assigneeObj._id) {
+        userRelevance.push('Assignee')
+      }
+
+      const reporterObj = generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': creator }))
+      if (user._id === reporterObj._id) {
+        userRelevance.push('Reporter')
+      }
+
+      const involvedIdList = cc.map(ccItem => generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': ccItem })))
+      if (involvedIdList.some(involved => involved._id === user._id)) {
+        userRelevance.push('Invited To')
+      }
+      return {
+        assignee: assigneeObj,
+        reporter: reporterObj,
+        involvedIdList,
+        userRelevance,
+        creationTime,
+        ...transformCaseForClient(relevantBugFields)
+      }
+    })
     unitDataGroups.push({
-      _id: unitMeta._id,
+      unitId: unitMeta._id,
       name: unitMeta.displayName || unitMeta.bzName,
-      cases: unitGroupDict[unitMeta.bzName]
+      cases
     })
   })
 
