@@ -83,11 +83,7 @@ export default userApiKey((req, res) => {
       const userObj = {}
       if (userDoc) {
         userObj._id = userDoc._id
-        if (userDoc.profile.name) {
-          userObj.name = userDoc.profile.name
-        } else {
-          userObj.emailPrefix = userDoc.emails[0].address.split('@')[0]
-        }
+        userObj.name = userDoc.profile.name || userDoc.emails[0].address.split('@')[0]
         userObj.role = unitRolesDict[userDoc._id] || null
       }
       return userObj
