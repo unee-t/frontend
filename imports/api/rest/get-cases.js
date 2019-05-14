@@ -82,7 +82,7 @@ export default userApiKey((req, res) => {
     const generateUserObj = userDoc => {
       const userObj = {}
       if (userDoc) {
-        userObj._id = userDoc._id
+        userObj.userId = userDoc._id
         userObj.name = userDoc.profile.name || userDoc.emails[0].address.split('@')[0]
         userObj.role = unitRolesDict[userDoc._id] || null
       }
@@ -103,17 +103,17 @@ export default userApiKey((req, res) => {
       } = bug
       const userRelevance = []
       const assigneeObj = generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': assignedTo }))
-      if (user._id === assigneeObj._id) {
+      if (user._id === assigneeObj.userId) {
         userRelevance.push('Assignee')
       }
 
       const reporterObj = generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': creator }))
-      if (user._id === reporterObj._id) {
+      if (user._id === reporterObj.userId) {
         userRelevance.push('Reporter')
       }
 
       const involvedIdList = cc.map(ccItem => generateUserObj(Meteor.users.findOne({ 'bugzillaCreds.login': ccItem })))
-      if (involvedIdList.some(involved => involved._id === user._id)) {
+      if (involvedIdList.some(involved => involved.userId === user._id)) {
         userRelevance.push('Invited To')
       }
       return {
