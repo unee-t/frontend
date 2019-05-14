@@ -75,7 +75,7 @@ export default userApiKey((req, res) => {
       }
     }).fetch().reduce((all, role) => {
       role.members.forEach(member => {
-        all[member._id] = role.roleType
+        all[member.id] = role.roleType
       })
       return all
     }, {})
