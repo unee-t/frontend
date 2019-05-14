@@ -92,6 +92,7 @@ export default userApiKey((req, res) => {
     const cases = productGroupDict[unitMeta.bzName].map(bug => {
       const {
         product,
+        id,
         assigned_to: assignedTo,
         assigned_to_detail: a,
         cc,
@@ -119,6 +120,7 @@ export default userApiKey((req, res) => {
       return {
         assignee: assigneeObj,
         reporter: reporterObj,
+        caseId: id,
         involvedList,
         userRelevance,
         creationTime,
