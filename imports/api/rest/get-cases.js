@@ -31,11 +31,12 @@ export default userApiKey((req, res) => {
       'assigned_to',
       'creation_time',
       'cf_ipi_clust_1_next_step',
+      'cf_ipi_clust_1_next_step_by',
       'description',
       'cf_ipi_clust_1_solution',
       'deadline',
       'cc',
-      'rep_platform',
+      'platform',
       'cf_ipi_clust_6_claim_type',
       'creator'
     ]
@@ -50,6 +51,8 @@ export default userApiKey((req, res) => {
     res.send(500, e.message)
     return
   }
+
+  console.log('bug sample', bugs[0])
 
   const productGroupDict = bugs.reduce((all, bug) => {
     all[bug.product] = all[bug.product] || []
