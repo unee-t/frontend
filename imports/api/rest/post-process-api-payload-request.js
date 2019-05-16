@@ -246,7 +246,7 @@ function editUserHandler (payload, res) {
   }
 
   // Editing user's email address
-  if (emailAddress) {
+  if (emailAddress && editee.emails[0].address !== emailAddress) {
     Accounts.removeEmail(userId, editee.emails[0].address)
     Accounts.addEmail(userId, emailAddress)
   }
