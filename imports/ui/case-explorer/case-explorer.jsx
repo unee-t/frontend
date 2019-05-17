@@ -110,10 +110,10 @@ class CaseExplorer extends Component {
       const unitsDict = cases.reduce((dict, caseItem) => {
         if (assignedFilter(caseItem) && !isClosed(caseItem)) { // Filtering only the cases that match the selection
           const { selectedUnit: unitTitle } = caseItem
-          const { bzId, unitType, isActive } = unitsMetaDict[unitTitle] || {}
+          const { bzId, unitType, isActive, displayName } = unitsMetaDict[unitTitle] || {}
 
           // Pulling the existing or creating a new dictionary entry if none
-          const unitDesc = dict[unitTitle] = dict[unitTitle] || { cases: [], bzId, unitType, isActive }
+          const unitDesc = dict[unitTitle] = dict[unitTitle] || { cases: [], bzId, unitType, isActive, displayName }
           const caseIdStr = caseItem.id.toString()
 
           // Adding the latest update time to the case for easier sorting later
@@ -128,7 +128,7 @@ class CaseExplorer extends Component {
       }, {})
       const sortType = sortBy ? sorters[sortBy] : sorters[SORT_BY.LATEST_UPDATE]
       return Object.keys(unitsDict).reduce((all, unitTitle) => {
-        const { bzId, cases, unitType, isActive } = unitsDict[unitTitle]
+        const { bzId, cases, unitType, isActive, displayName } = unitsDict[unitTitle]
         // Sorting cases within a unit by the order descending order of last update
         cases.sort(sortType)
         all.push({
@@ -136,7 +136,7 @@ class CaseExplorer extends Component {
           hasUnread: !!cases.find(caseItem => !!caseItem.unreadCounts), // true if any case has unreads
           items: cases,
           unitType,
-          unitTitle,
+          unitTitle: displayName || unitTitle,
           bzId,
           isActive
         })
@@ -309,7 +309,8 @@ const connectedWrapper = connect(
     all.dict[unitItem.name] = {
       unitType: metaData.unitType,
       bzId: metaData.bzId,
-      isActive: unitItem.is_active
+      isActive: unitItem.is_active,
+      displayName: metaData.displayName
     }
     all.list.push(Object.assign(unitItem, { metaData }))
     return all
