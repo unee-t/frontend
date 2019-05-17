@@ -248,7 +248,7 @@ function editUserHandler (payload, res) {
   // Editing user's email address
   if (emailAddress && editee.emails[0].address !== emailAddress) {
     Accounts.removeEmail(userId, editee.emails[0].address)
-    Accounts.addEmail(userId, emailAddress)
+    Accounts.addEmail(userId, emailAddress, true)
   }
 
   // Editing user's BZ login email address
