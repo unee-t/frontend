@@ -43,6 +43,7 @@ export const fetchInvitationCredentials = action$ => action$
             // showWelcomeMessage: !Meteor.user().profile.name,
             invitedByDetails
           })
+          meteorResult$.next(push(`/`))
           if (caseId) { // Invitation to a case
             meteorResult$.next(push(`/case/${caseId}`))
           } else {
