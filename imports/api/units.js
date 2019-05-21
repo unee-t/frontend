@@ -107,15 +107,19 @@ export const getUnitRoles = (unit, userId) => {
       if (memberVisCheck(memberDesc)) {
         // Using the prefetched array to find the user doc
         const user = userDocs.find(doc => doc._id === memberDesc.id)
-        all.push({
-          userId: user._id,
-          login: user.bugzillaCreds.login,
-          email: user.emails[0].address,
-          name: user.profile.name,
-          role: roleObj.roleType,
-          isOccupant: memberDesc.isOccupant,
-          avatarUrl: user.profile.avatarUrl
-        })
+
+        // Checking in case the role is visible, but the user is not (on the client)
+        if (user) {
+          all.push({
+            userId: user._id,
+            login: user.bugzillaCreds.login,
+            email: user.emails[0].address,
+            name: user.profile.name,
+            role: roleObj.roleType,
+            isOccupant: memberDesc.isOccupant,
+            avatarUrl: user.profile.avatarUrl
+          })
+        }
       }
     })
     return all
