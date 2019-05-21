@@ -157,12 +157,10 @@ export default ({ collectionName, dataResolver, idResolver = defaultIdResolver }
         return all
       }, {})
 
-      const changedHandles = changedHandlesMap[idStr]
-      if (changedHandles) { // unlikely to be false, but I can imagine some edge cases
-        changedHandles.forEach(handle => { // Notifying the change to all handles subscribed to this item
-          handle.changed(collectionName, idStr, fields)
-        })
-      }
+      const changedHandles = changedHandlesMap[idStr] || []
+      changedHandles.forEach(handle => { // Notifying the change to all handles subscribed to this item
+        handle.changed(collectionName, idStr, fields)
+      })
 
       // Sorting descriptors to two classes: one that the item can potentially be added to, and the other - removed from
       const descClasses = addedMatcherDescriptors.reduce((all, desc) => {
