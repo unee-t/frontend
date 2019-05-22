@@ -23,7 +23,8 @@ const simpleControlClasses = 'bg-bondi-blue white br1 b--none pv2 lh-title dim'
 const simpleButtonClasses = 'button-reset ph3 ' + simpleControlClasses
 const simpleLinkClasses = 'link dib ' + simpleControlClasses
 
-const DIALOG_PADDING = 40
+const DIALOG_PADDING = 100
+const DIALOG_INTERNAL_PADDING = 24 // because padding-bottom: 1.5rem
 
 const successWrapper = content => (
   <div className='tc'>
@@ -122,7 +123,7 @@ class InviteDialog extends Component {
             <Route exact path={`${basePath}/${relPath}`} render={() => mainOperationSuccessContent
               ? successWrapper(mainOperationSuccessContent)
               : (
-                <div className='mt2 flex flex-column flex-grow'>
+                <div className='mt2 flex flex-column flex-grow' style={{ maxHeight: currMaxHeight - DIALOG_INTERNAL_PADDING }}>
                   {selectControlsRenderer({
                     users: potentialInvitees,
                     inputRefFn: el => { this.inputToFocus = el }
