@@ -47,7 +47,7 @@ matrix:
             AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET
             ./deploy.sh -d
         on:
-          branch: master
+          tags: true
     - env: DEPLOY=prod
       if: tag IS present
       deploy:
