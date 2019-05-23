@@ -16,6 +16,7 @@ import '../imports/api/failed-unit-creations'
 import '../imports/api/increment-counters'
 import '../imports/api/hooks/on-create-user'
 import '../imports/api/hooks/on-login'
+import '../imports/api/hooks/on-login-failure'
 import '../imports/api/rest/rest-routes'
 import '../imports/config/email'
 
