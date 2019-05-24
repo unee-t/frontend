@@ -76,7 +76,7 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
   if (unitRoles.length === 0) throw new Meteor.Error('The specified unit doesn\'t exists, or not properly imported from BZ')
 
   // Validating current user's permission to remove
-  if (!unitMeta.ownerIds.includes(requestorId) || unitMeta.creatorId !== requestorId) {
+  if (!unitMeta.ownerIds.includes(requestorId) && unitMeta.creatorId !== requestorId) {
     throw new Meteor.Error(`You are not allowed to remove users from unit with bz ID ${unitBzId}`)
   }
 
