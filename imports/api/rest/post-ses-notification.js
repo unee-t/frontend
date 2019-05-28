@@ -8,6 +8,10 @@ export default (req, res) => {
   }
 
   const message = req.body
+  if (!message.bounce) {
+    logger.info('Ignored', message)
+    return res.send(200)
+  }
 
   switch (message.bounce.bounceType) {
     case 'Permanent':
