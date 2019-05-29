@@ -33,7 +33,7 @@ class ReportSignage extends Component {
     }
   }
   render () {
-    const { dispatch, match, reportItem, isLoading, isLoadingRoles, unitRoles, unitName, unitBzId, inviteState } = this.props
+    const { dispatch, match, reportItem, isLoading, isLoadingRoles, unitRoles, unitName, unitBzId, inviteState, isUnitOwner } = this.props
     const { chosenUser, signPadOpen, signatureMap, confirmationOpen } = this.state
     if (isLoading) return <Preloader />
 
@@ -96,22 +96,26 @@ class ReportSignage extends Component {
                   }
                   return all
                 }, [])}
-                <Link to={`${match.url}/invite`} className='link outline-0 db mt3'>
-                  <AddUserControlLine instruction='Invite a new user to sign' />
-                </Link>
-                <Route exact path={`${match.url}/invite`} children={({ match }) => (
-                  <InviteNewUserDialog
-                    open={!!match}
-                    title='Who should be invited?'
-                    currentInvitees={unitRoles}
-                    onCloseRequested={() => dispatch(goBack())}
-                    activeInvites={inviteState.filter(i => i.unitBzId === unitBzId)}
-                    onSubmitted={({ firstName, lastName, inviteeEmail, inviteeRole, isOccupant }) => dispatch(
-                      inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole.name, isOccupant)
-                    )}
-                    onErrorDismissed={userEmail => dispatch(inviteCleared(userEmail, unitBzId))}
-                  />
-                )} />
+                {isUnitOwner && (
+                  <Link to={`${match.url}/invite`} className='link outline-0 db mt3'>
+                    <AddUserControlLine instruction='Invite a new user to sign' />
+                  </Link>
+                )}
+                {isUnitOwner && (
+                  <Route exact path={`${match.url}/invite`} children={({ match }) => (
+                    <InviteNewUserDialog
+                      open={!!match}
+                      title='Who should be invited?'
+                      currentInvitees={unitRoles}
+                      onCloseRequested={() => dispatch(goBack())}
+                      activeInvites={inviteState.filter(i => i.unitBzId === unitBzId)}
+                      onSubmitted={({ firstName, lastName, inviteeEmail, inviteeRole, isOccupant }) => dispatch(
+                        inviteToUnit(inviteeEmail, firstName, lastName, unitBzId, inviteeRole.name, isOccupant)
+                      )}
+                      onErrorDismissed={userEmail => dispatch(inviteCleared(userEmail, unitBzId))}
+                    />
+                  )} />
+                )}
               </div>
             )}
           </div>
@@ -164,7 +168,8 @@ ReportSignage.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   isLoadingRoles: PropTypes.bool.isRequired,
   inviteState: PropTypes.array,
-  unitRoles: PropTypes.array
+  unitRoles: PropTypes.array,
+  isUnitOwner: PropTypes.bool
 }
 
 export default connect(
@@ -181,11 +186,13 @@ export default connect(
       unitRoles = getUnitRoles(unitItem, Meteor.userId())
     }
   }
+  const unitMeta = unitItem && unitItem.metaData()
   return {
     isLoading: !reportHandle.ready(),
     isLoadingRoles: !unitHandle || !unitHandle.ready(),
-    unitName: unitItem ? ((unitItem.metaData() && unitItem.metaData().displayName) || unitItem.name) : '',
+    unitName: unitItem ? ((unitMeta && unitMeta.displayName) || unitItem.name) : '',
     unitBzId: unitItem && unitItem.id,
+    isUnitOwner: unitMeta && unitMeta.ownerIds.includes(Meteor.userId()),
     reportItem,
     unitRoles
   }
