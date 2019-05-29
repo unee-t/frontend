@@ -12,6 +12,7 @@ import { emailValidator } from '../../util/validators'
 import { defaultNotificationSettings } from '../custom-users'
 import { idUrlTemplate } from '../cases'
 import NotificationSettingsOverrides from '../notification-settings-overrides'
+import InternalApiPayloads from '../internal-api-payloads'
 
 function createUnitHandler (payload, res) {
   const {
@@ -660,7 +661,66 @@ export default (req, res) => {
     return
   }
 
-  const { actionType, ...innerPayload } = req.body
+  try {
+    check(req.body, Match.ObjectIncluding({
+      mefeAPIRequestId: Number,
+      actionType: String
+    }))
+  } catch (e) {
+    logger.error('Failed to process incoming API payload request: ', e.message)
+    return res.send(400, e.message)
+  }
+
+  const { actionType, mefeAPIRequestId, ...innerPayload } = req.body
+  const requestId = mefeAPIRequestId.toString()
+
+  const existingPayload = InternalApiPayloads.findOne({ _id: requestId })
+  if (existingPayload) {
+    if (!existingPayload.done && Date.now() - existingPayload.acceptedAt.getTime() < 5000) {
+      logger.error(`API request ${requestId} is still being  processed. Blocking retried request`)
+      return res.send(503, 'Processing similar payload')
+    } else if (!existingPayload.done) {
+      logger.warn(`API request ${requestId} has been pending for more than 5s. Retry request initiated a retrial attempt`)
+      InternalApiPayloads.update({
+        _id: requestId
+      }, {
+        $set: {
+          lastRetriedAt: new Date()
+        },
+        $inc: {
+          retriesCount: 1
+        }
+      })
+    } else {
+      logger.log(`Sending a cached response for API request ${requestId} as it is a retried request`)
+      return res.send(existingPayload.response.code, existingPayload.response.data, existingPayload.response.headers)
+    }
+  } else {
+    InternalApiPayloads.insert({
+      _id: requestId,
+      payload: req.body,
+      acceptedAt: new Date()
+    })
+  }
+
+  const origSend = res.send
+  res.send = (code, data, headers = {}) => {
+    InternalApiPayloads.update({
+      _id: requestId
+    }, {
+      $set: {
+        done: true,
+        respondedAt: new Date(),
+        response: {
+          code,
+          data,
+          headers
+        }
+      }
+    })
+    origSend(code, data, headers)
+  }
+
   const payload = (function redactNulls (obj) {
     return Object.keys(obj).reduce((all, key) => {
       if (obj[key] !== null && typeof obj[key] === 'object') {
