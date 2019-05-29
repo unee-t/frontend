@@ -4,6 +4,7 @@ env:
   variables:
     APP: "frontend"
     ACCOUNT: "812644853088"
+    METEOR_ALLOW_SUPERUSER: 1
 
 phases:
   pre_build:
@@ -15,7 +16,21 @@ phases:
       - curl https://install.meteor.com/ | sh
   build:
     commands:
+      - apt-get update
+
+      # Install apt-transport-https
+      - apt-get install -y apt-transport-https
+
+      # Use apt to install the Chrome dependencies
+      - apt-get install -y libxcursor1
+      - apt-get install -y libgtk-3-dev
+      - apt-get install -y libxss1
+      - apt-get install -y libasound2
+      - apt-get install -y libnspr4
+      - apt-get install -y libnss3
+      - apt-get install -y libx11-xcb1
       - meteor npm install
+      - npm t
       - 'sed -i "s,<\!-- COMMIT: -->,<\!-- COMMIT: $CODEBUILD_SOURCE_VERSION $CODEBUILD_RESOLVED_SOURCE_VERSION -->,g" client/main.html'
       - meteor build --directory /tmp/export-meteor/build --allow-superuser
       - printf "FROM ulexus/meteor:build\nCOPY build /home/meteor/www\nRUN chown -R meteor:meteor /home/meteor/\n" >/tmp/export-meteor/Dockerfile
@@ -31,3 +46,4 @@ phases:
 
 artifacts:
   files: imagedefinitions.json
+

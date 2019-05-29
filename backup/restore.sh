@@ -48,7 +48,8 @@ fi
 
 if test $AWS_PROFILE == uneet-localhost
 then
-	echo mongorestore -h 127.0.0.1 --drop --port 27017 $dir
+	# assuming you're running meteor locally, port is 3001 oddly
+	mongorestore -h 127.0.0.1 --drop --port 3001 $dir
 else
 	MONGO_PASSWORD=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
 	MONGO_CONNECT=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
