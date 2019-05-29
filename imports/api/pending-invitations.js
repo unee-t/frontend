@@ -8,6 +8,7 @@ import { HTTP } from 'meteor/http'
 import { findOrCreateUser } from './custom-users'
 import { logger } from '../util/logger'
 import { getIncrementFor } from './increment-counters'
+import UnitMetaData from './unit-meta-data'
 
 export const collectionName = 'pendingInvitations'
 
@@ -196,6 +197,10 @@ Meteor.methods({
     if (!Meteor.userId()) throw new Meteor.Error('not-authorized')
     if (!allowedTypes.includes(type)) {
       throw new Meteor.Error('Invalid invitation type')
+    }
+    const unitMeta = UnitMetaData.findOne({ bzId: unitId })
+    if (unitMeta && !unitMeta.ownerIds.includes(Meteor.userId())) {
+      throw new Meteor.Error(`You are not an owner of this unit, so you're not allowed to invite new users`)
     }
     if (Meteor.isServer) {
       const conflictMessage = findUnitRoleConflictErrors(unitId, email, role, isOccupant)

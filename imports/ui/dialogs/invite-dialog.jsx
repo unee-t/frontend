@@ -136,83 +136,87 @@ class InviteDialog extends Component {
                         {mainOperationText}
                       </span>
                     </RaisedButton>
-                    <p className='tc i mid-gray lh-title mt3 mb0'>
-                      Can't find who you're looking for?&nbsp;
-                      <a
-                        className='link b bondi-blue'
-                        onClick={() => {
-                          dispatch(replace(`${basePath}/${relPath}/new`))
-                        }}
-                      >
-                        {linkLabelForNewUser}
-                      </a>
-                    </p>
+                    {isUnitOwner && (
+                      <p className='tc i mid-gray lh-title mt3 mb0'>
+                        Can't find who you're looking for?&nbsp;
+                        <a
+                          className='link b bondi-blue'
+                          onClick={() => {
+                            dispatch(replace(`${basePath}/${relPath}/new`))
+                          }}
+                        >
+                          {linkLabelForNewUser}
+                        </a>
+                      </p>
+                    )}
                   </div>
                 </div>
               )
             } />
-            <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? successWrapper(
-              <div>
-                <p className='f4 mv0'>
-              Awesome! We just sent an invite to <span className='fw5'>{invitationState.email}</span> so you could collaborate on this case.
-                </p>
-                <button className={simpleButtonClasses + ' mt4'} onClick={this.handleAdditionalOpsClick}>
-                  {additionalOperationText}
-                </button>
-              </div>
-            ) : (
-              <div className='pt1 mt2'>
-                <EmailInput
-                  label='Email of the user to invite'
-                  onEmailChanged={email => this.setState({ inviteeEmail: email })}
-                  email={inviteeEmail}
-                  invalidReasonMessage='This email belongs to a user listed in the previous step'
-                  invalidEmails={potentialInvitees.map(i => i.email)}
-                  onValidityChanged={isValid => this.setState({ emailError: !isValid })}
-                  inputRef={input => { this.inputToFocus = input }}
-                  disabled={invitationState.loading}
-                />
-                <UnitRoleSelect
-                  selectedRole={selectedRole}
-                  onRoleSelected={role => this.setState({ selectedRole: role })}
-                  isOccupant={isOccupant}
-                  onOccupantToggled={isIt => this.setState({ isOccupant: isIt })}
-                  disabled={invitationState.disabled}
-                  availableRolesTypes={!isUnitOwner ? [unitRoleType] : null}
-                />
-                <div className='flex justify-space mt3'>
-                  <button
-                    className={simpleButtonClasses + ' relative' + (invitationState.loading ? ' o-60' : '')}
-                    onClick={this.handleSendInviteClick}
-                    disabled={invitationState.loading}
-                  >
-                    {invitationState.loading && (
-                      <div className='absolute top-0 right-0 bottom-0 left-0'>
-                        <CircularProgress color='white' size={30} />
-                      </div>
-                    )}
-                    <span className={invitationState.loading ? 'o-0' : ''}>
-                      Send Invitation
-                    </span>
+            {isUnitOwner && (
+              <Route path={`${basePath}/${relPath}/new`} render={() => invitationState.completed ? successWrapper(
+                <div>
+                  <p className='f4 mv0'>
+                    Awesome! We just sent an invite to <span className='fw5'>{invitationState.email}</span> so you could collaborate on this case.
+                  </p>
+                  <button className={simpleButtonClasses + ' mt4'} onClick={this.handleAdditionalOpsClick}>
+                    {additionalOperationText}
                   </button>
-                  <a
-                    className={simpleLinkClasses + ' ph3' + (invitationState.loading ? ' disabled o-60' : '')}
-                    onClick={() => {
-                      dispatch(replace(`${basePath}/${relPath}`))
-                    }}
-                  >
-                    Back
-                  </a>
                 </div>
-                <ErrorDialog
-                  show={!!invitationState.errorText || inputErrorModalOpen}
-                  text={invitationState.errorText || 'Please fill in all the details properly' || ''}
-                  onDismissed={
-                    inputErrorModalOpen ? () => this.setState({ inputErrorModalOpen: false }) : this.handleAdditionalOpsClick
-                  }
-                />
-              </div>
-            )} />
+              ) : (
+                <div className='pt1 mt2'>
+                  <EmailInput
+                    label='Email of the user to invite'
+                    onEmailChanged={email => this.setState({ inviteeEmail: email })}
+                    email={inviteeEmail}
+                    invalidReasonMessage='This email belongs to a user listed in the previous step'
+                    invalidEmails={potentialInvitees.map(i => i.email)}
+                    onValidityChanged={isValid => this.setState({ emailError: !isValid })}
+                    inputRef={input => { this.inputToFocus = input }}
+                    disabled={invitationState.loading}
+                  />
+                  <UnitRoleSelect
+                    selectedRole={selectedRole}
+                    onRoleSelected={role => this.setState({ selectedRole: role })}
+                    isOccupant={isOccupant}
+                    onOccupantToggled={isIt => this.setState({ isOccupant: isIt })}
+                    disabled={invitationState.disabled}
+                    availableRolesTypes={!isUnitOwner ? [unitRoleType] : null}
+                  />
+                  <div className='flex justify-space mt3'>
+                    <button
+                      className={simpleButtonClasses + ' relative' + (invitationState.loading ? ' o-60' : '')}
+                      onClick={this.handleSendInviteClick}
+                      disabled={invitationState.loading}
+                    >
+                      {invitationState.loading && (
+                        <div className='absolute top-0 right-0 bottom-0 left-0'>
+                          <CircularProgress color='white' size={30} />
+                        </div>
+                      )}
+                      <span className={invitationState.loading ? 'o-0' : ''}>
+                        Send Invitation
+                      </span>
+                    </button>
+                    <a
+                      className={simpleLinkClasses + ' ph3' + (invitationState.loading ? ' disabled o-60' : '')}
+                      onClick={() => {
+                        dispatch(replace(`${basePath}/${relPath}`))
+                      }}
+                    >
+                      Back
+                    </a>
+                  </div>
+                  <ErrorDialog
+                    show={!!invitationState.errorText || inputErrorModalOpen}
+                    text={invitationState.errorText || 'Please fill in all the details properly' || ''}
+                    onDismissed={
+                      inputErrorModalOpen ? () => this.setState({ inputErrorModalOpen: false }) : this.handleAdditionalOpsClick
+                    }
+                  />
+                </div>
+              )} />
+            )}
           </Dialog>
         )
       }} />
