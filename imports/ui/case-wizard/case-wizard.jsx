@@ -240,7 +240,7 @@ class CaseWizard extends Component {
                   })}
                 >
                   {fieldValues.subCategory.values.reduce((all, { name, visibility_values: [relatedCategory] }) => {
-                    if (relatedCategory === category) {
+                    if (relatedCategory === category || !relatedCategory) {
                       all.push(
                         <MenuItem key={name} value={name} primaryText={name} />
                       )
