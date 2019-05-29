@@ -20,3 +20,8 @@ export const logger = require('tracer')
       },
       methods: ['request']
     })
+
+export function log (level, message, fields = {}) {
+  const entry = { level, message, fields }
+  console.log(JSON.stringify(entry))
+}

@@ -8,7 +8,7 @@ import caseAssigneeUpdateTemplate from '../../email-templates/case-assignee-upda
 import caseUpdatedTemplate from '../../email-templates/case-updated'
 import caseNewMessageTemplate from '../../email-templates/case-new-message'
 import caseUserInvitedTemplate from '../../email-templates/case-user-invited'
-import { logger } from '../../util/logger'
+import { log } from '../../util/logger'
 import UnitRolesData from '../unit-roles-data'
 import { CLOSED_STATUS_TYPES, severityIndex } from '../cases'
 
@@ -55,9 +55,15 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId) {
   }
   try {
     Email.send(Object.assign(emailProps, emailContent))
-    logger.info('Sent', emailAddr, 'notification:', notificationId)
+    log('info', 'sent', {
+      'emailAddr': emailAddr,
+      'notificationId': notificationId
+    })
   } catch (e) {
-    logger.error(`An error ${e} occurred while sending an email to ${emailAddr}`)
+    log('error', 'sending email', {
+      'e': e,
+      'emailAddr': emailAddr
+    })
   }
 }
 
@@ -77,17 +83,21 @@ export default (req, res) => {
   const message = req.body
 
   if (message.notification_type === 'case_updated' && !updatedWhatWhiteList.includes(message.update_what)) {
-    logger.info(`Ignoring "case_updated" notification type with "${message.update_what}" update subject`)
+    log('info', 'ignoring', {
+      'message.notification.id': message.notification_id,
+      'message.notification_type': message.notification_type,
+      'message.update_what': message.update_what
+    })
     res.send(200)
     return
   }
   if (MessagePayloads.findOne({ notification_id: message.notification_id })) {
-    logger.info(`Duplicate message ${message.notification_id}`)
+    log('info', 'duplicate', { 'message.notification.id': message.notification_id })
     res.send(400, `Duplicate message ${message.notification_id}`)
     return
   }
 
-  logger.info('Incoming to /api/db-change-message/process', message.notification_id)
+  log('info', 'incoming to /api/db-change-message/process', { 'message.notification.id': message.notification_id })
   const payloadId = MessagePayloads.insert(message)
 
   // Common between https://github.com/unee-t/lambda2sns/tree/master/tests/events
@@ -164,7 +174,10 @@ export default (req, res) => {
         if (!CLOSED_STATUS_TYPES.includes(message.old_value) && CLOSED_STATUS_TYPES.includes(message.new_value)) {
           settingSubType = 'StatusResolved'
         } else {
-          logger.info(`Ignoring "case_updated" notification type with "Status" update subject when the case is hasn't changed to a resolved status`)
+          log('info', 'ignoring update subject when the case is has not changed to a resolved status', {
+            'type': type,
+            'message.update_what': message.update_what
+          })
           res.send(200)
           return
         }
@@ -181,25 +194,19 @@ export default (req, res) => {
       break
 
     default:
-      logger.info('Unimplemented type:', type)
+      log('info', 'unimplemented', { 'type': type })
       res.send(400)
       return
   }
 
   // Getting the setting type to check via static mapping
   const settingType = settingTypeMapping[type]
-  let logMsg
-  if (settingSubType) {
-    logMsg = `Checking and assembling notification of type '${settingType}' and sub type '${settingSubType}' for each user`
-  } else {
-    logMsg = `Checking and assembling notification of type '${settingType}' for each user`
-  }
-  logger.info(logMsg)
+  log('info', 'checking and assembling notification of type for each user', { 'settingType': settingType, 'settingSubType': settingSubType })
 
   ;(new Set(userIds)).forEach(userId => {
     const recipient = getUserByBZId(userId)
     if (!recipient) {
-      logger.error(`User with bz id ${userId} was not found in mongo`)
+      log('error', 'user was not found in mongo', { 'bzuserId': userId })
       return
     }
 
@@ -217,12 +224,12 @@ export default (req, res) => {
 
     let emailPrevented
     if (!recipient.emails[0].verified) {
-      logger.error(`User with bz id ${userId} has no verified email address, skipping notification`)
+      log('error', 'no verified email address, skipping notification', { 'bzuserId': userId })
       emailPrevented = true
     }
 
     if (recipient.emails[0].invalid) {
-      logger.error(`User with bz id ${userId} has an invalid email address (bounced) of '${recipient.emails[0].address}', skipping notification`)
+      log('error', 'has an invalid email address (bounced), skipping notification', { 'bzuserId': userId, 'email': recipient.emails[0].address })
       emailPrevented = true
     }
 
@@ -243,7 +250,11 @@ export default (req, res) => {
         ) {
           // Setting "main" to overrides from the user+matcher doc definition
           overrides.main = notifOverride.settings[settingType]
-          logger.info(`A setting override for '${settingType}' notification was found for user ${userId} at ${JSON.stringify(currLevel)}`)
+          log('info', 'setting override', {
+            'settingType': settingType,
+            'userId': userId,
+            'currLevel': currLevel
+          })
         }
 
         // Checking if a setting sub type is used AND an override from a lower level was not found yet AND it is defined on this level
@@ -255,7 +266,11 @@ export default (req, res) => {
         ) {
           // Setting "sub" to overrides from the user+matcher doc definition
           overrides.sub = notifOverride.settings[`${settingType}_types`][settingSubType]
-          logger.info(`A sub type setting override for '${settingSubType}' notification was found for user ${userId} at ${JSON.stringify(currLevel)}`)
+          log('info', 'sub type setting override', {
+            'settingType': settingType,
+            'userId': userId,
+            'currLevel': currLevel
+          })
         }
 
         if (
@@ -310,9 +325,11 @@ export default (req, res) => {
     const notificationEnabled = (severityOverrideThreshold && severityIndex.indexOf(message.current_severity) <= severityIndex.indexOf(severityOverrideThreshold)) ||
       (mainSettingEnabled && subSettingCheckPassed)
     if (!notificationEnabled) {
-      logger.info(
-        `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications` + (settingSubType ? ` with '${settingSubType}' sub type` : '')
-      )
+      log('info', 'user opted out of notification', {
+        'settingType': settingType,
+        'settingSubType': settingSubType,
+        'recipient.bugzillaCreds.login': recipient.bugzillaCreds.login
+      })
     } else {
       const emailContent = emailTemplateFn(...[recipient, notificationId, settingType].concat(emailTemplateParams))
       sendEmail(recipient, emailContent, notificationId, caseId)
