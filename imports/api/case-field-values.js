@@ -23,7 +23,13 @@ if (Meteor.isServer) {
       const { data: { fields: [fieldMeta] } } = callAPI(
         'get', `/rest/field/bug/${serverName}`, { api_key: apiKey }, false, true
       )
-      this.added(collectionName, fieldMeta.id.toString(), { ...fieldMeta, name: clientLocalFieldMapping[fieldMeta.name] })
+      const { values, ...fieldMetaRest } = fieldMeta
+      const filteredMeta = {
+        ...fieldMetaRest,
+        values: values.filter(val => val.sortkey !== 9999)
+      }
+
+      this.added(collectionName, filteredMeta.id.toString(), { ...filteredMeta, name: clientLocalFieldMapping[fieldMeta.name] })
       this.ready()
     } catch (e) {
       logger.error('API error encountered', e, `${collectionName}.fetchByName`, this.userId)
