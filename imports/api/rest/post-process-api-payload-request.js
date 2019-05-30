@@ -672,7 +672,7 @@ export default (req, res) => {
   }
 
   const { actionType, mefeAPIRequestId, ...innerPayload } = req.body
-  const requestId = mefeAPIRequestId.toString()
+  const requestId = mefeAPIRequestId.toString() + '_' + actionType
 
   const existingPayload = InternalApiPayloads.findOne({ _id: requestId })
   if (existingPayload) {
