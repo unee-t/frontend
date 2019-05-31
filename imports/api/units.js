@@ -305,7 +305,8 @@ const rolesSelectionByOwnership = (userId, unitItem) => {
       'members.id': userId
     }, {
       fields: {
-        'members.$': 1
+        'members.$': 1,
+        roleType: 1
       }
     })
     const { roleVisibility } = meRole.members[0]
@@ -317,6 +318,10 @@ const rolesSelectionByOwnership = (userId, unitItem) => {
       }
       return all
     }, [])
+
+    if (!types.includes(meRole.roleType)) {
+      types.push(meRole.roleType)
+    }
 
     return {
       roleType: {

@@ -22,7 +22,7 @@ import ErrorDialog from '../dialogs/error-dialog'
 import Preloader from '../preloader/preloader'
 import Units, { collectionName as unitsCollName } from '../../api/units'
 import { createCase, clearError } from './case-wizard.actions'
-import { placeholderEmailMatcher, roleCanBeOccupantMatcher } from '../../util/matchers'
+import { roleCanBeOccupantMatcher } from '../../util/matchers'
 import { emailValidator } from '../../util/validators'
 import InputRow from '../components/input-row'
 import { infoItemMembers } from '../util/static-info-rendering'
@@ -65,7 +65,7 @@ class CaseWizard extends Component {
     }
     const { availableRoles } = this.props
     const { inputValues } = this.state
-    if (availableRoles && prevProps.availableRoles === null) {
+    if (availableRoles.length && !prevProps.availableRoles.length) {
       const defaultRole = availableRoles.find(roleObj => roleObj.assignedToYou).type
       this.setState({
         inputValues: Object.assign({}, inputValues, {
@@ -79,11 +79,6 @@ class CaseWizard extends Component {
 
   renderRadioButtons = () => {
     const { unitItem, userId, inProgress, availableRoles } = this.props
-    const roleRenderer = ({ type, assignedToYou }) => (
-      <RadioButton
-        key={type} value={type} label={type + (assignedToYou ? ' (you)' : '')} disabled={inProgress}
-      />
-    )
     let rolesToRender
     if (unitItem.ownerIds && unitItem.ownerIds.includes(userId)) {
       rolesToRender = availableRoles
@@ -92,12 +87,16 @@ class CaseWizard extends Component {
       // The last bool is used in case of no default assignee, but role is assigned to user (not sure if it's possible)
       rolesToRender = availableRoles.filter(role => role.type !== 'Contractor' && (role.hasDefaultAssignee || role.assignedToYou))
     }
-    return rolesToRender.map(roleRenderer)
+    return rolesToRender.map(({ type, assignedToYou }) => (
+      <RadioButton
+        key={type} value={type} label={type + (assignedToYou ? ' (you)' : '')} disabled={inProgress}
+      />
+    ))
   }
 
   handleRoleChanged = (evt, val) => {
     const { inputValues } = this.state
-    const { default_assigned_to: assignedTo } = this.props.unitItem.components.find(({ name }) => name === val)
+    const needsNewUser = !this.props.availableRoles.find(role => role.type === val).hasDefaultAssignee
 
     this.setState({
       inputValues: Object.assign({}, inputValues, {
@@ -105,7 +104,7 @@ class CaseWizard extends Component {
           assignedUnitRole: val
         })
       }),
-      needsNewUser: placeholderEmailMatcher(assignedTo),
+      needsNewUser,
       newUserCanBeOccupant: roleCanBeOccupantMatcher(val),
       newUserIsOccupant: false
     })
@@ -141,7 +140,7 @@ class CaseWizard extends Component {
   }
 
   render () {
-    const { isLoading, fieldValues, unitItem, dispatch, error, inProgress, reportItem } = this.props
+    const { isLoading, fieldValues, unitItem, dispatch, error, inProgress, reportItem, availableRoles } = this.props
     if (isLoading) {
       return <Preloader />
     }
@@ -251,13 +250,23 @@ class CaseWizard extends Component {
               </div>
             </div>
             <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
-            <RadioButtonGroup
-              name='assignedUnitRole'
-              onChange={this.handleRoleChanged}
-              valueSelected={assignedUnitRole}
-            >
-              {this.renderRadioButtons()}
-            </RadioButtonGroup>
+            {availableRoles.length < 2 ? (
+              <p className='f7 gray ma0 mt1'>
+                {
+                  availableRoles.length === 0
+                    ? 'This case can\'t be created as you aren\'t allowed to assign anyone to it'
+                    : `This case will be assigned to${availableRoles[0].assignedToYou ? ' you as' : ''} the ${availableRoles[0].type} of this unit`
+                }
+              </p>
+            ) : (
+              <RadioButtonGroup
+                name='assignedUnitRole'
+                onChange={this.handleRoleChanged}
+                valueSelected={assignedUnitRole}
+              >
+                {this.renderRadioButtons()}
+              </RadioButtonGroup>
+            )}
             {needsNewUser && (
               <div className='mt3'>
                 <p className='mv0 pv0 f7 warn-crimson lh-copy'>
