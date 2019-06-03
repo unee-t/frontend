@@ -86,7 +86,11 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
 
   const requestorUser = Meteor.users.findOne({ _id: requestorId })
 
-  const { invitationId } = userToRemove.receivedInvites.find(i => i.unitId === unitBzId)
+  let invitationId
+  const receivedInvite = userToRemove.receivedInvites.find(i => i.unitId === unitBzId)
+  if (receivedInvite) {
+    invitationId = receivedInvite.invitationId
+  }
 
   const invitationObj = {
     invitedBy: requestorUser.bugzillaCreds.id,
@@ -116,17 +120,19 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
     throw new Meteor.Error('Invite API Lambda error', e)
   }
 
-  // Removing the user's received invite
-  Meteor.users.update({ _id: userToRemove._id }, {
-    $pull: {
-      receivedInvites: {
-        invitationId: invitationId
+  if (invitationId) {
+    // Removing the user's received invite
+    Meteor.users.update({ _id: userToRemove._id }, {
+      $pull: {
+        receivedInvites: {
+          invitationId: invitationId
+        }
       }
-    }
-  })
+    })
 
-  // Removing the invitation document
-  PendingInvitations.remove({ _id: invitationId })
+    // Removing the invitation document
+    PendingInvitations.remove({ _id: invitationId })
+  }
 
   // Removing the user from the unit's owners list if it was included
   if (unitMeta.ownerIds.includes(userToRemove._id)) {
