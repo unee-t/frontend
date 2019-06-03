@@ -663,7 +663,7 @@ export default (req, res) => {
 
   try {
     check(req.body, Match.ObjectIncluding({
-      mefeAPIRequestId: Number,
+      mefeAPIRequestId: Match.OneOf(Number, String),
       actionType: String
     }))
   } catch (e) {
