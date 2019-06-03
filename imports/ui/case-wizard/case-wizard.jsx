@@ -78,18 +78,10 @@ class CaseWizard extends Component {
   }
 
   renderRadioButtons = () => {
-    const { unitItem, userId, inProgress, availableRoles } = this.props
-    let rolesToRender
-    if (unitItem.ownerIds && unitItem.ownerIds.includes(userId)) {
-      rolesToRender = availableRoles
-    } else {
-      // A non-owner is not allowed to assign the contractor in any case, and can't assign to empty roles.
-      // The last bool is used in case of no default assignee, but role is assigned to user (not sure if it's possible)
-      rolesToRender = availableRoles.filter(role => role.type !== 'Contractor' && (role.hasDefaultAssignee || role.assignedToYou))
-    }
-    return rolesToRender.map(({ type, assignedToYou }) => (
+    const { inProgress } = this.props
+    return this.filterRolesBasedOnOwnership().map(({ type, areYouDefAssignee }) => (
       <RadioButton
-        key={type} value={type} label={type + (assignedToYou ? ' (you)' : '')} disabled={inProgress}
+        key={type} value={type} label={type + (areYouDefAssignee ? ' (you)' : '')} disabled={inProgress}
       />
     ))
   }
@@ -139,8 +131,21 @@ class CaseWizard extends Component {
     )
   }
 
+  filterRolesBasedOnOwnership = () => {
+    let filteredRoles
+    const { unitItem, userId, availableRoles } = this.props
+    if (unitItem.ownerIds && unitItem.ownerIds.includes(userId)) {
+      filteredRoles = availableRoles
+    } else {
+      // A non-owner is not allowed to assign the contractor in any case, and can't assign to empty roles.
+      // The last bool is used in case of no default assignee, but role is assigned to user (not sure if it's possible)
+      filteredRoles = availableRoles.filter(role => role.type !== 'Contractor' && (role.hasDefaultAssignee || role.assignedToYou))
+    }
+    return filteredRoles
+  }
+
   render () {
-    const { isLoading, fieldValues, unitItem, dispatch, error, inProgress, reportItem, availableRoles } = this.props
+    const { isLoading, fieldValues, unitItem, dispatch, error, inProgress, reportItem } = this.props
     if (isLoading) {
       return <Preloader />
     }
@@ -148,6 +153,8 @@ class CaseWizard extends Component {
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
     const { category, subCategory } = optional
+
+    const rolesToRender = this.filterRolesBasedOnOwnership()
     return (
       <div className='full-height flex flex-column'>
         <InnerAppBar title='New Case' onBack={() => dispatch(goBack())} />
@@ -250,12 +257,12 @@ class CaseWizard extends Component {
               </div>
             </div>
             <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
-            {availableRoles.length < 2 ? (
+            {rolesToRender.length < 2 ? (
               <p className='f7 gray ma0 mt1'>
                 {
-                  availableRoles.length === 0
+                  rolesToRender.length === 0
                     ? 'This case can\'t be created as you aren\'t allowed to assign anyone to it'
-                    : `This case will be assigned to${availableRoles[0].assignedToYou ? ' you as' : ''} the ${availableRoles[0].type} of this unit`
+                    : `This case will be assigned to${rolesToRender[0].areYouDefAssignee ? ' you as' : ''} the ${rolesToRender[0].type} of this unit`
                 }
               </p>
             ) : (
@@ -362,7 +369,8 @@ export default withRouter(connect(
       availableRoles: unitHandle.ready() ? UnitRolesData.find({ unitBzId: unitIdInt }).fetch().map(roleObj => ({
         type: roleObj.roleType,
         hasDefaultAssignee: roleObj.defaultAssigneeId !== -1,
-        assignedToYou: !!roleObj.members.find(({ id }) => id === Meteor.userId())
+        assignedToYou: !!roleObj.members.find(({ id }) => id === Meteor.userId()),
+        areYouDefAssignee: roleObj.defaultAssigneeId === Meteor.userId()
       })) : [],
       reportItem: Reports.findOne({ id: reportIdInt }),
       fieldValues: enumFields.reduce((all, name) => {
