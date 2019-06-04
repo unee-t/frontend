@@ -82,7 +82,7 @@ export const getUnitRoles = (unit, userId) => {
 
   // Locate the user's role member definition
   let userRoleMemObj
-  const userRole = roleDocs.some(role => {
+  const userRole = roleDocs.find(role => {
     userRoleMemObj = role.members.find(({ id }) => id === userId)
     return !!userRoleMemObj
   })
