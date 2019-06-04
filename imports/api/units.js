@@ -82,21 +82,23 @@ export const getUnitRoles = (unit, userId) => {
 
   // Locate the user's role member definition
   let userRoleMemObj
-  roleDocs.some(role => {
+  const userRole = roleDocs.some(role => {
     userRoleMemObj = role.members.find(({ id }) => id === userId)
     return !!userRoleMemObj
   })
 
   // Filter out the roleDocs the member is not allowed to see (done mostly for server invocations, as it's already filtered on the client)
-  roleDocs = roleDocs.filter(roleDocs => userRoleMemObj.roleVisibility[roleDocs.roleType])
+  // Also, a user should always see their own role, even if configured otherwise
+  roleDocs = roleDocs.filter(roleDoc => userRole.roleType === roleDoc.roleType || userRoleMemObj.roleVisibility[roleDoc.roleType])
 
-  const memberVisCheck = memberDesc => unitMeta.ownerIds.includes(userId) ||
+  const memberVisCheck = (memberDesc, roleType) => unitMeta.ownerIds.includes(userId) || // Owner sees all
+    (roleType === userRole.roleType && roleType !== 'Contractor') || // Can see all members in the same role, aside from contractors
     (memberDesc.isVisible && (!memberDesc.isOccupant || (memberDesc.isOccupant && userRoleMemObj.roleVisibility['Occupant']))) ||
     memberDesc.id === userId
 
   // Prefetching all user docs to optimize query performance (single query vs one for each user)
   const userIds = roleDocs.reduce((all, roleObj) => all.concat(
-    roleObj.members.reduce((mems, mem) => memberVisCheck(mem) ? mems.concat([mem.id]) : mems, [])
+    roleObj.members.reduce((mems, mem) => memberVisCheck(mem, roleObj.roleType) ? mems.concat([mem.id]) : mems, [])
   ), [])
 
   const userDocs = Meteor.users.find({ _id: { $in: userIds } }).fetch()
@@ -104,7 +106,7 @@ export const getUnitRoles = (unit, userId) => {
   // Constructing the user role objects array similar to the way it is done from BZ's product components below
   const roleUsers = roleDocs.reduce((all, roleObj) => {
     roleObj.members.forEach(memberDesc => {
-      if (memberVisCheck(memberDesc)) {
+      if (memberVisCheck(memberDesc, roleObj.roleType)) {
         // Using the prefetched array to find the user doc
         const user = userDocs.find(doc => doc._id === memberDesc.id)
 
