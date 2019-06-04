@@ -31,3 +31,4 @@ dburles:collection-helpers
 percolate:migrations
 underscore@1.0.10
 email@1.2.3
+accounts-base
