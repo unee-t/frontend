@@ -107,11 +107,21 @@ Meteor.methods({
     if (Meteor.isServer) {
       // Reusable matcher object for the next mongo queries
       const codeMatcher = {
-        receivedInvites: {
-          $elemMatch: {
-            accessToken: code
+        $or: [
+          {
+            receivedInvites: {
+              $elemMatch: {
+                accessToken: code
+              }
+            }
+          }, {
+            receivedInvites: {
+              $elemMatch: {
+                'casesTokens.accessToken': code
+              }
+            }
           }
-        }
+        ]
       }
 
       // Finding the user for this invite code (and checking whether one-click login is still allowed for it)
@@ -119,22 +129,25 @@ Meteor.methods({
         'profile.isLimited': true
       }, codeMatcher), {
         fields: Object.assign({
-          emails: 1
-        }, codeMatcher)
+          emails: 1,
+          receivedInvites: 1
+        })
       })
       if (!invitedUser) {
         logger.info('The code is invalid or login is required first')
         throw new Meteor.Error('The code is invalid or login is required first')
       }
 
+      const receivedInviteInd = invitedUser.receivedInvites.findIndex(inv => inv.accessToken === code || (inv.casesTokens && inv.casesTokens.some(tok => tok.accessToken === code)))
+
       // Track accesses
       AccessInvitations.upsert({
         userId: invitedUser._id,
-        unitId: invitedUser.receivedInvites[0].unitId
+        unitId: invitedUser.receivedInvites[receivedInviteInd].unitId
       }, {
         $set: {
           userId: invitedUser._id,
-          unitId: invitedUser.receivedInvites[0].unitId
+          unitId: invitedUser.receivedInvites[receivedInviteInd].unitId
         },
         $push: {
           dates: new Date()
@@ -143,11 +156,10 @@ Meteor.methods({
 
       // Keeping track of how many times the user used this invitation to access the system
       Meteor.users.update({
-        _id: invitedUser._id,
-        'receivedInvites.accessToken': code
+        _id: invitedUser._id
       }, {
         $inc: {
-          'receivedInvites.$.accessedCount': 1
+          [`receivedInvites.${receivedInviteInd}.accessedCount`]: 1
         },
         $set: {
           'emails.0.verified': true
@@ -161,7 +173,7 @@ Meteor.methods({
 
       const invitedByDetails = (() => {
         const { emails: [{ address: email }], profile: { name } } =
-          Meteor.users.findOne(invitedUser.receivedInvites[0].invitedBy)
+          Meteor.users.findOne(invitedUser.receivedInvites[receivedInviteInd].invitedBy)
         return {
           email,
           name
@@ -170,8 +182,8 @@ Meteor.methods({
       return {
         email: invitedUser.emails[0].address,
         pw: randPass,
-        caseId: invitedUser.receivedInvites[0].caseId,
-        unitId: invitedUser.receivedInvites[0].unitId,
+        caseId: invitedUser.receivedInvites[receivedInviteInd].caseId,
+        unitId: invitedUser.receivedInvites[receivedInviteInd].unitId,
         invitedByDetails
       }
     }
