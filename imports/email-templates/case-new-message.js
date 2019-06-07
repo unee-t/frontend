@@ -1,39 +1,37 @@
 import url from 'url'
-import { createEngagementLink, resolveUserName, optOutHtml, optOutText, getCaseAccessPath } from './components/helpers'
+import { createEngagementLink, resolveUserName, getCaseAccessPath } from './components/helpers'
+import notificationEmailLayout from './components/notification-email-layout'
 
-export default (assignee, notificationId, settingType, caseTitle, caseId, user, message) => {
+export default (assignee, notificationId, settingType, unitMeta, caseTitle, caseId, user, message) => {
   const casePath = getCaseAccessPath(assignee, caseId)
+  const accessUrl = createEngagementLink({
+    url: url.resolve(process.env.ROOT_URL, casePath),
+    id: notificationId,
+    email: assignee.emails[0].address
+  })
+  const optOutUrl = createEngagementLink({
+    url: url.resolve(process.env.ROOT_URL, '/notification-settings'),
+    id: notificationId,
+    email: assignee.emails[0].address
+  })
   return {
-    subject: `New message on case "${caseTitle}"`,
-    html: `
-<img src="cid:logo@unee-t.com"/>
-<p>Hi ${resolveUserName(assignee)},</p>
-<p>New message by ${resolveUserName(user)}:</p>
-<p><strong>${message}</strong></p>
-<p>Please follow <a href='${createEngagementLink({
-    url: url.resolve(process.env.ROOT_URL, casePath),
-    id: notificationId,
-    email: assignee.emails[0].address
-  })}'>${url.resolve(process.env.ROOT_URL, casePath)}</a> to participate.</p>
-  ` + optOutHtml(settingType, notificationId, assignee),
-    text: `
-
-Hi ${resolveUserName(assignee)},
-
-New message by ${resolveUserName(user)}:
-
- > ${message}
-
-  Please follow ${createEngagementLink({
-    url: url.resolve(process.env.ROOT_URL, casePath),
-    id: notificationId,
-    email: assignee.emails[0].address
-  })} to participate.
-
-  ` + optOutText(settingType, notificationId, assignee),
-    attachments: [{
-      path: 'https://s3-ap-southeast-1.amazonaws.com/prod-media-unee-t/2018-06-14/unee-t_logo_email.png',
-      cid: 'logo@unee-t.com'
-    }]
+    subject: `New message on case ${caseTitle} in ${unitMeta.displayName} at ${unitMeta.streetAddress}`,
+    ...notificationEmailLayout({
+      typeTitle: 'New message on a case',
+      user: assignee,
+      mainContentHtml: `
+        <p>New message by ${resolveUserName(user)}:</p>
+        <p><strong>"${message}"</strong></p>
+      `,
+      mainContentText: `
+        New message by ${resolveUserName(user)}:
+        
+        "${message}"
+        
+      `,
+      reasonExplanation: 'you have a new message on a case',
+      accessUrl,
+      optOutUrl
+    })
   }
 }

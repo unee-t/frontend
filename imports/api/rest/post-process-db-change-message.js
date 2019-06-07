@@ -11,6 +11,7 @@ import caseUserInvitedTemplate from '../../email-templates/case-user-invited'
 import { logger } from '../../util/logger'
 import UnitRolesData from '../unit-roles-data'
 import { CLOSED_STATUS_TYPES, severityIndex } from '../cases'
+import UnitMetaData from '../unit-meta-data'
 
 const updatedWhatWhiteList = [
   'Status',
@@ -37,12 +38,21 @@ function getUserByBZId (idStr) {
 const fromEmail = process.env.FROM_EMAIL
 const emailDomain = process.env.STAGE ? `case.${process.env.STAGE}.${process.env.DOMAIN}` : `case.${process.env.DOMAIN}`
 
-function sendEmail (assignee, emailContent, notificationId, responseBugId) {
+function sendEmail (assignee, emailContent, notificationId, responseBugId, unitCreator) {
   const emailAddr = assignee.emails[0].address
   const bzId = assignee.bugzillaCreds.id
+
+  let fromEmailVariant = fromEmail
+  if (unitCreator && unitCreator.customEmailBrandingConfig && unitCreator.customEmailBrandingConfig.brandName) {
+    const { brandName } = unitCreator.customEmailBrandingConfig
+    const matchAddress = fromEmail.match(/<(.*@.*)>$/)
+    const justEmailAddress = matchAddress ? matchAddress[1] : fromEmail
+    fromEmailVariant = `Unee-T for ${brandName}<${justEmailAddress}>`
+  }
+
   const emailProps = {
     to: emailAddr,
-    from: fromEmail
+    from: fromEmailVariant
   }
 
   if (responseBugId) {
@@ -99,6 +109,13 @@ export default (req, res) => {
     notification_id: notificationId
   } = message
 
+  const unitMeta = UnitMetaData.findOne({ bzId: unitId }) || {
+    displayName: `Unit ID ${unitId}`,
+    streetAddress: 'Unknown'
+  }
+
+  const unitCreator = unitMeta.creatorId && Meteor.users.findOne({ _id: unitMeta.creatorId })
+
   let userIds, emailTemplateParams, emailTemplateFn, objectTemplate, settingSubType
   switch (type) {
     case 'case_assignee_updated':
@@ -148,7 +165,7 @@ export default (req, res) => {
       ]).filter(id => id !== message.user_id)
       emailTemplateFn = caseUpdatedTemplate
       const updater = getUserByBZId(message.user_id)
-      emailTemplateParams = [caseTitle, caseId, message.update_what, updater]
+      emailTemplateParams = [caseTitle, caseId, message, updater]
       objectTemplate = {
         type: 'update',
         typeSpecific: {
@@ -314,8 +331,8 @@ export default (req, res) => {
         `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications` + (settingSubType ? ` with '${settingSubType}' sub type` : '')
       )
     } else {
-      const emailContent = emailTemplateFn(...[recipient, notificationId, settingType].concat(emailTemplateParams))
-      sendEmail(recipient, emailContent, notificationId, caseId)
+      const emailContent = emailTemplateFn(...[recipient, notificationId, settingType, unitMeta, unitCreator].concat(emailTemplateParams))
+      sendEmail(recipient, emailContent, notificationId, caseId, unitCreator)
     }
   })
 

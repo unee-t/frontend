@@ -1,36 +1,37 @@
 import url from 'url'
-import { createEngagementLink, resolveUserName, optOutHtml, optOutText, getCaseAccessPath } from './components/helpers'
+import { createEngagementLink, resolveUserName, getCaseAccessPath } from './components/helpers'
+import notificationEmailLayout from './components/notification-email-layout'
 
-export default (assignee, notificationId, settingType, caseTitle, caseId, updateWhat, user) => {
+export default (assignee, notificationId, settingType, unitMeta, caseTitle, caseId, message, user) => {
   const casePath = getCaseAccessPath(assignee, caseId)
+
+  const optOutUrl = createEngagementLink({
+    url: url.resolve(process.env.ROOT_URL, '/notification-settings'),
+    id: notificationId,
+    email: assignee.emails[0].address
+  })
+
+  const accessUrl = createEngagementLink({
+    url: url.resolve(process.env.ROOT_URL, casePath),
+    id: notificationId,
+    email: assignee.emails[0].address
+  })
   return {
-    subject: `Case updated "${caseTitle}"`,
-    html: `
-<img src="cid:logo@unee-t.com"/>
-<p>Hi ${resolveUserName(assignee)},</p>
-<p>The case <strong>${caseTitle}</strong> has had a ${updateWhat} made by ${resolveUserName(user)}.</p>
-<p>Please follow <a href='${createEngagementLink({
-    url: url.resolve(process.env.ROOT_URL, casePath),
-    id: notificationId,
-    email: assignee.emails[0].address
-  })}'>${url.resolve(process.env.ROOT_URL, casePath)}</a> to participate.</p>
-  ` + optOutHtml(settingType, notificationId, assignee),
-    text: `
-
-Hi ${resolveUserName(assignee)},
-
-  ${caseTitle} has has a ${updateWhat} made by ${resolveUserName(user)}.
-
-  Please follow ${createEngagementLink({
-    url: url.resolve(process.env.ROOT_URL, casePath),
-    id: notificationId,
-    email: assignee.emails[0].address
-  })} to participate.
-
-  ` + optOutText(settingType, notificationId, assignee),
-    attachments: [{
-      path: 'https://s3-ap-southeast-1.amazonaws.com/prod-media-unee-t/2018-06-14/unee-t_logo_email.png',
-      cid: 'logo@unee-t.com'
-    }]
+    subject: `Case updated ${caseTitle} in ${unitMeta.displayName} at ${unitMeta.streetAddress}`,
+    ...notificationEmailLayout({
+      typeTitle: 'Case updated',
+      user: assignee,
+      mainContentHtml: `
+        <p>
+          The case <strong>${caseTitle}</strong> in ${unitMeta.displayName} at ${unitMeta.streetAddress} has had a change in <strong>${message.update_what}</strong> from <strong>'${message.old_value}'</strong> to <strong>'${message.new_value}'</strong> made by ${resolveUserName(user)}.
+        </p>
+      `,
+      mainContentText: `
+        The case ${caseTitle} in ${unitMeta.displayName} at ${unitMeta.streetAddress} has had a change in ${message.update_what} from '${message.old_value}' to '${message.new_value}' made by ${resolveUserName(user)}.      
+      `,
+      reasonExplanation: 'there has been an update on a case',
+      optOutUrl,
+      accessUrl
+    })
   }
 }
