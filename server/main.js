@@ -20,7 +20,6 @@ import '../imports/api/hooks/on-login'
 import '../imports/api/hooks/on-login-failure'
 import '../imports/api/rest/rest-routes'
 import '../imports/config/email'
-
 import '../imports/migrations'
 
 const publicClientEnvVars = ['CLOUDINARY_URL', 'CLOUDINARY_PRESET']
