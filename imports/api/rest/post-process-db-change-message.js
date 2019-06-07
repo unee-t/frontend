@@ -109,9 +109,16 @@ export default (req, res) => {
     notification_id: notificationId
   } = message
 
-  const unitMeta = UnitMetaData.findOne({ bzId: unitId }) || {
+  const unitMeta = UnitMetaData.findOne({ bzId: unitId }, {
+    fields: {
+      displayName: 1,
+      streetAddress: 1,
+      bzId: 1
+    }
+  }) || {
     displayName: `Unit ID ${unitId}`,
-    streetAddress: 'Unknown'
+    streetAddress: 'Unknown',
+    bzId: unitId
   }
 
   const unitCreator = unitMeta.creatorId && Meteor.users.findOne({ _id: unitMeta.creatorId })
@@ -331,8 +338,12 @@ export default (req, res) => {
         `Skipping ${recipient.bugzillaCreds.login} as opted out from '${settingType}' notifications` + (settingSubType ? ` with '${settingSubType}' sub type` : '')
       )
     } else {
-      const emailContent = emailTemplateFn(...[recipient, notificationId, settingType, unitMeta, unitCreator].concat(emailTemplateParams))
-      sendEmail(recipient, emailContent, notificationId, caseId, unitCreator)
+      try {
+        const emailContent = emailTemplateFn(...[recipient, notificationId, settingType, unitMeta, unitCreator].concat(emailTemplateParams))
+        sendEmail(recipient, emailContent, notificationId, caseId, unitCreator)
+      } catch (e) {
+        logger.warn(`Sending email notification to user ${userId} failed due to ${e.message}`)
+      }
     }
   })
 

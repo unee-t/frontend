@@ -2,8 +2,8 @@ import url from 'url'
 import { createEngagementLink, resolveUserName, getCaseAccessPath } from './components/helpers'
 import notificationEmailLayout from './components/notification-email-layout'
 
-export default (assignee, notificationId, settingType, unitMeta, caseTitle, caseId, user, message) => {
-  const casePath = getCaseAccessPath(assignee, caseId)
+export default (assignee, notificationId, settingType, unitMeta, unitCreator, caseTitle, caseId, user, message) => {
+  const casePath = getCaseAccessPath(assignee, caseId, unitMeta.bzId)
   const accessUrl = createEngagementLink({
     url: url.resolve(process.env.ROOT_URL, casePath),
     id: notificationId,
@@ -30,6 +30,7 @@ export default (assignee, notificationId, settingType, unitMeta, caseTitle, case
         
       `,
       reasonExplanation: 'you have a new message on a case',
+      unitCreator,
       accessUrl,
       optOutUrl
     })

@@ -2,8 +2,8 @@ import url from 'url'
 import { createEngagementLink, resolveUserName, getCaseAccessPath } from './components/helpers'
 import notificationEmailLayout from './components/notification-email-layout'
 
-export default (assignee, notificationId, settingType, unitMeta, caseTitle, caseId, message, user) => {
-  const casePath = getCaseAccessPath(assignee, caseId)
+export default (assignee, notificationId, settingType, unitMeta, unitCreator, caseTitle, caseId, message, user) => {
+  const casePath = getCaseAccessPath(assignee, caseId, unitMeta.bzId)
 
   const optOutUrl = createEngagementLink({
     url: url.resolve(process.env.ROOT_URL, '/notification-settings'),
@@ -30,6 +30,7 @@ export default (assignee, notificationId, settingType, unitMeta, caseTitle, case
         The case ${caseTitle} in ${unitMeta.displayName} at ${unitMeta.streetAddress} has had a change in ${message.update_what} from '${message.old_value}' to '${message.new_value}' made by ${resolveUserName(user)}.      
       `,
       reasonExplanation: 'there has been an update on a case',
+      unitCreator,
       optOutUrl,
       accessUrl
     })

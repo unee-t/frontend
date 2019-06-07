@@ -2,8 +2,8 @@ import url from 'url'
 import { createEngagementLink, getCaseAccessPath } from './components/helpers'
 import notificationEmailLayout from './components/notification-email-layout'
 
-export default (invitee, notificationId, settingType, unitMeta, caseTitle, caseId) => {
-  const casePath = getCaseAccessPath(invitee, caseId)
+export default (invitee, notificationId, settingType, unitMeta, unitCreator, caseTitle, caseId) => {
+  const casePath = getCaseAccessPath(invitee, caseId, unitMeta.bzId)
 
   const optOutUrl = createEngagementLink({
     url: url.resolve(process.env.ROOT_URL, '/notification-settings'),
@@ -31,6 +31,7 @@ export default (invitee, notificationId, settingType, unitMeta, caseTitle, caseI
         You've been invited to collaborate on the case ${caseTitle} in ${unitMeta.displayName} at ${unitMeta.streetAddress}.
       `,
       reasonExplanation: 'you have been invited to collaborate on a case',
+      unitCreator,
       optOutUrl,
       accessUrl
     })

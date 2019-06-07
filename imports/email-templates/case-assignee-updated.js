@@ -3,7 +3,7 @@ import { createEngagementLink, getCaseAccessPath } from './components/helpers'
 import notificationEmailLayout from './components/notification-email-layout'
 
 export default (assignee, notificationId, settingType, unitMeta, unitCreator, caseTitle, caseId) => {
-  const casePath = getCaseAccessPath(assignee, caseId)
+  const casePath = getCaseAccessPath(assignee, caseId, unitMeta.bzId)
 
   const optOutUrl = createEngagementLink({
     url: url.resolve(process.env.ROOT_URL, '/notification-settings'),
