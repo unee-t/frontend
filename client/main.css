@@ -304,6 +304,10 @@
   margin: auto
 }
 
+.mb05 {
+  margin-bottom: 0.125rem;
+}
+
 .flex{
   display: flex;
 }

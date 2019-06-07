@@ -23,6 +23,7 @@ import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
 import { RoleFilter } from '../explorer-components/role-filter'
 import { Sorter } from '../explorer-components/sorter'
 import { finishSearch, startSearch, updateSearch, navigationRequested, navigationGranted } from '../case/case-search.actions'
+import FlatButton from 'material-ui/FlatButton'
 
 class CaseExplorer extends Component {
   constructor () {
@@ -67,6 +68,8 @@ class CaseExplorer extends Component {
   }
 
   createCaseUrlGen = bzId => `/case/new?unit=${bzId}`
+
+  showSelectionDialog = () => this.setState({ showUnitDialog: true })
 
   expandedCasesRenderer = ({ allItems }) => (
     <CaseList
@@ -243,9 +246,16 @@ class CaseExplorer extends Component {
           expandedListRenderer={this.expandedCasesRenderer}
           itemType='case'
           noItemsIconType='card_travel'
+          renderAfter={(
+            <FlatButton primary fullWidth onClick={this.showSelectionDialog}>
+              <div className='bondi-blue underline b'>
+                Add case to another unit
+              </div>
+            </FlatButton>
+          )}
         />
         <div className='absolute right-1 bottom-2'>
-          <FloatingActionButton onClick={() => this.setState({ showUnitDialog: true })}>
+          <FloatingActionButton onClick={this.showSelectionDialog}>
             <FontIcon className='material-icons'>add</FontIcon>
           </FloatingActionButton>
           <UnitSelectDialog

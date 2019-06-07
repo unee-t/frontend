@@ -27,7 +27,7 @@ export function CaseList ({ allCases }) {
   return (
     <div>
       {allCases.map(caseItem =>
-        <li key={caseItem.id} className='h2-5 bt b--black-10'>
+        <li key={caseItem.id} className='h2-5 bb b--black-10'>
           <div className='flex items-center'>
             <Link
               className={

@@ -6,6 +6,8 @@ import { connect } from 'react-redux'
 import { createContainer } from 'meteor/react-meteor-data'
 import { push } from 'react-router-redux'
 import FontIcon from 'material-ui/FontIcon'
+import FlatButton from 'material-ui/FlatButton'
+import { Link } from 'react-router-dom'
 import RootAppBar from '../components/root-app-bar'
 import Preloader from '../preloader/preloader'
 import { setDrawerState } from '../general-actions'
@@ -164,18 +166,26 @@ class UnitExplorer extends Component {
             />
           </div>
           <div className='flex-grow flex flex-column overflow-auto'>
-            <div className='flex-grow bb b--very-light-gray bg-white pb6'>
+            <div className='flex-grow bb b--very-light-gray bg-very-light-gray pb6'>
               { units.length === 0 ? (
                 <NoItemMsg item={'unit'} iconType={'location_on'} />
               ) : (
-                <FilteredUnits
-                  filteredUnits={units}
-                  handleUnitClicked={this.handleUnitClicked}
-                  handleAddCaseClicked={this.handleAddCaseClicked}
-                  showAddBtn
-                />
-              )
-              }
+                <div className='flex flex-grow flex-column'>
+                  <FilteredUnits
+                    filteredUnits={units}
+                    handleUnitClicked={this.handleUnitClicked}
+                    handleAddCaseClicked={this.handleAddCaseClicked}
+                    showAddBtn
+                  />
+                  <Link to='/unit/new'>
+                    <FlatButton primary fullWidth>
+                      <div className='bondi-blue underline b'>
+                        Add another unit
+                      </div>
+                    </FlatButton>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

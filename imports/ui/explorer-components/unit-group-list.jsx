@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import { NoItemMsg } from './no-item-msg'
 
 const UNIT_ROW_LIMIT = 25 // How many rows to render at a time - too low shows rendering occur in view, too high is slower
-const UNIT_ROW_HEIGHT = 64 // The height of a rendered unit row in pixels
+const UNIT_ROW_HEIGHT = 66 // The height of a rendered unit row in pixels
 const ITEM_ROW_HEIGHT = 48 // The height of a rendered sub-item row in pixels
 
 // Using "PureComponent" to prevent unnecessary re-renders
@@ -15,7 +15,8 @@ export class UnitGroupList extends PureComponent {
     super(props)
     this.state = {
       expandedUnits: [],
-      viewedData: []
+      viewedData: [],
+      renderingLast: false
     }
     this.calculatedHeights = {}
   }
@@ -89,7 +90,8 @@ export class UnitGroupList extends PureComponent {
             })
 
             this.setState({
-              viewedData
+              viewedData,
+              renderingLast: viewedData.slice(-1)[0] === unitGroupList.slice(-1)[0]
             })
           }
         })
@@ -124,12 +126,14 @@ export class UnitGroupList extends PureComponent {
       const viewedData = unitGroupList.slice(0, UNIT_ROW_LIMIT)
       this.viewedHeight = this.calcHeightForData(viewedData)
       this.setState({
-        viewedData
+        viewedData,
+        renderingLast: viewedData.slice(-1)[0] === unitGroupList.slice(-1)[0]
       })
     } else {
       this.viewedHeight = 0
       this.setState({
-        viewedData: []
+        viewedData: [],
+        renderingLast: true
       })
     }
   }
@@ -145,8 +149,10 @@ export class UnitGroupList extends PureComponent {
   }
 
   render () {
-    const { unitGroupList, itemType, expandedListRenderer, creationUrlGenerator, noItemsIconType } = this.props
-    const { expandedUnits, viewedData } = this.state
+    const {
+      unitGroupList, itemType, expandedListRenderer, creationUrlGenerator, noItemsIconType, renderAfter
+    } = this.props
+    const { expandedUnits, viewedData, renderingLast } = this.state
     const isExpanded = (unitTitle) => expandedUnits.includes(unitTitle)
 
     return (
@@ -159,8 +165,8 @@ export class UnitGroupList extends PureComponent {
             {viewedData.map(unitItem => {
               const { unitTitle, unitType, bzId, items, hasUnread, isActive } = unitItem
               return (
-                <div key={unitTitle}>
-                  <div className='flex items-center h3 bt b--light-gray bg-white'
+                <div key={unitTitle} className='mb05'>
+                  <div className='flex items-center h3 bg-white card-shadow-1'
                     onClick={evt => this.handleExpandUnit(evt, unitItem)}
                   >
                     <div className='mh3'>
@@ -200,6 +206,7 @@ export class UnitGroupList extends PureComponent {
                 </div>
               )
             })}
+            {renderingLast && renderAfter}
           </div>
         )
           : (<NoItemMsg item={itemType} iconType={noItemsIconType} buttonOption />)
@@ -214,5 +221,6 @@ UnitGroupList.propTypes = {
   itemType: PropTypes.string.isRequired,
   expandedListRenderer: PropTypes.func.isRequired,
   creationUrlGenerator: PropTypes.func.isRequired,
-  noItemsIconType: PropTypes.string.isRequired
+  noItemsIconType: PropTypes.string.isRequired,
+  renderAfter: PropTypes.element
 }
