@@ -35,10 +35,10 @@ const verifyUserLogin = handle => {
 }
 
 export const defaultNotificationSettings = {
-  // assignedNewCase: true,
   assignedExistingCase: true,
   invitedToCase: true,
   caseNewMessage: true,
+  assignedNewCase: true,
   caseUpdate: false,
   caseUpdate_types: {
     'Next Step': true,
@@ -95,9 +95,9 @@ if (Meteor.isServer) {
 }
 
 const notifSettsNames = [
-  // 'assignedNewCase',
   'assignedExistingCase',
   'invitedToCase',
+  'assignedNewCase',
   'caseNewMessage',
   'caseUpdate'
 ]

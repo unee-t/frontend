@@ -28,7 +28,13 @@ class NotificationSettings extends Component {
             <div className={!settings ? 'o-40' : ''}>
               <Toggle
                 className='mt2' labelStyle={toggleLabelStyle}
-                label='When assigned to a case'
+                label='When assigned to a new case'
+                toggled={!!settings && settings.assignedNewCase}
+                onToggle={(evt, isChecked) => this.handleSettingToggled('assignedNewCase', isChecked)}
+              />
+              <Toggle
+                className='mt2' labelStyle={toggleLabelStyle}
+                label='When assigned to an existing case'
                 toggled={!!settings && settings.assignedExistingCase}
                 onToggle={(evt, isChecked) => this.handleSettingToggled('assignedExistingCase', isChecked)}
               />

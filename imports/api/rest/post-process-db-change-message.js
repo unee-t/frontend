@@ -8,6 +8,7 @@ import caseAssigneeUpdateTemplate from '../../email-templates/case-assignee-upda
 import caseUpdatedTemplate from '../../email-templates/case-updated'
 import caseNewMessageTemplate from '../../email-templates/case-new-message'
 import caseUserInvitedTemplate from '../../email-templates/case-user-invited'
+import newCaseAssignedTemplate from '../../email-templates/new-case-assigned'
 import { logger } from '../../util/logger'
 import UnitRolesData from '../unit-roles-data'
 import { CLOSED_STATUS_TYPES, severityIndex } from '../cases'
@@ -74,6 +75,7 @@ function sendEmail (assignee, emailContent, notificationId, responseBugId, unitC
 const settingTypeMapping = {
   case_assignee_updated: 'assignedExistingCase',
   case_new_message: 'caseNewMessage',
+  case_new: 'assignedNewCase',
   case_updated: 'caseUpdate',
   case_user_invited: 'invitedToCase'
 }
@@ -194,7 +196,6 @@ export default (req, res) => {
         }
       }
 
-      // TODO: find out how this piece of code should know if "status" has changed to "resolved"
       break
 
     case 'case_user_invited':
@@ -204,6 +205,19 @@ export default (req, res) => {
       emailTemplateParams = [caseTitle, caseId]
       break
 
+    case 'case_new':
+
+      // Not notifying if the reporter is the assignee (that would be pointless)
+      if (message.assignee_user_id !== message.reporter_user_id) {
+        userIds = [message.assignee_user_id]
+      } else {
+        userIds = []
+      }
+
+      emailTemplateFn = newCaseAssignedTemplate
+      emailTemplateParams = [caseTitle, caseId]
+
+      break
     default:
       logger.info('Unimplemented type:', type)
       res.send(400)
