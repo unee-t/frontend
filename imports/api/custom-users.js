@@ -213,6 +213,7 @@ Meteor.methods({
     if (Meteor.isServer) {
       try {
         const user = Accounts.findUserByEmail(userEmail)
+
         let lastResetTime
         if (user) {
           lastResetTime = user.lastPassResetAt
@@ -226,7 +227,7 @@ Meteor.methods({
         // Checking if there was no last time the pass was reset (also if no user) or more than a minute has passed
         if (!lastResetTime || Date.now() - lastResetTime.getTime() > 6e4) {
           logger.info('Sending password reset email to ', userEmail)
-          return Accounts.sendResetPasswordEmail(user._id, userEmail)
+          return Accounts.sendResetPasswordEmail(user._id)
         } else {
           throw new Meteor.Error('Please wait up to 1 minute before trying again')
         }
