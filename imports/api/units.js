@@ -213,7 +213,7 @@ export const addUserToRole = (
       step: 'INVITE lambda request, unit cleanup might be necessary',
       error: e
     })
-    throw new Meteor.Error('Invite API Lambda error', e)
+    throw new Meteor.Error('Invite API Lambda error', e, { lambdaStatusCode: e.response.statusCode })
   }
 
   // Marking the pending invitation as "done", now that the API responded with success
@@ -533,7 +533,7 @@ export function createUnitItem (creatorId, name, type, moreInfo = '', streetAddr
         },
         intendedMongoId: unitMongoId
       })
-      throw new Meteor.Error('Unit creation API Lambda error', e)
+      throw new Meteor.Error('Unit creation API Lambda error', e, { lambdaStatusCode: e.response.statusCode })
     }
 
     // Adding the meta data to the collection

@@ -30,7 +30,8 @@ function createUnitHandler (payload, res) {
     })
   } catch (e) {
     logger.error(`An error occurred while processing a CREATE_UNIT API payload request: '${e.message}'`)
-    res.send(400, e.message)
+    const code = e.details && e.details.lambdaStatusCode ? e.details.lambdaStatusCode : 400
+    res.send(code, e.message)
   }
   if (result) {
     result.liveUpdateFunc()
@@ -109,7 +110,8 @@ function createUserHandler (payload, res) {
     })
   } catch (e) {
     logger.error(`An error occurred while processing a CREATE_USER API payload request: '${e.message}'`)
-    res.send(400, e.message)
+    const code = e.details && e.details.lambdaStatusCode ? e.details.lambdaStatusCode : 400
+    res.send(code, e.message)
   }
 }
 
@@ -161,7 +163,8 @@ function assignRoleHandler (payload, res) {
     )
   } catch (e) {
     logger.log(errorLog + e.message)
-    res.send(400, e.message)
+    const code = e.details && e.details.lambdaStatusCode ? e.details.lambdaStatusCode : 400
+    res.send(code, e.message)
     return
   }
 
@@ -412,7 +415,8 @@ function deassignRoleHandler (payload, res) {
     })
   } catch (e) {
     logger.warn(errorLog + e.message)
-    res.send(400, e.message)
+    const code = e.details && e.details.lambdaStatusCode ? e.details.lambdaStatusCode : 400
+    res.send(code, e.message)
     return
   }
 
@@ -676,16 +680,24 @@ export default (req, res) => {
 
   const existingPayload = InternalApiPayloads.findOne({ _id: requestId })
   if (existingPayload) {
-    if (!existingPayload.done && Date.now() - existingPayload.acceptedAt.getTime() < 5000) {
+    if (existingPayload.isProcessing) {
       logger.error(`API request ${requestId} is still being  processed. Blocking retried request`)
+      InternalApiPayloads.update({
+        _id: requestId
+      }, {
+        $inc: {
+          blockedResponsesCount: 1
+        }
+      })
       return res.send(503, 'Processing similar payload')
     } else if (!existingPayload.done) {
-      logger.warn(`API request ${requestId} has been pending for more than 5s. Retry request initiated a retrial attempt`)
+      logger.warn(`Repeated request initiated a retrial attempt for API payload ${requestId}`)
       InternalApiPayloads.update({
         _id: requestId
       }, {
         $set: {
-          lastRetriedAt: new Date()
+          lastRetriedAt: new Date(),
+          isProcessing: true
         },
         $inc: {
           retriesCount: 1
@@ -693,31 +705,61 @@ export default (req, res) => {
       })
     } else {
       logger.log(`Sending a cached response for API request ${requestId} as it is a retried request`)
+      InternalApiPayloads.update({
+        _id: requestId
+      }, {
+        $inc: {
+          cachedResponsesCount: 1
+        }
+      })
       return res.send(existingPayload.response.code, existingPayload.response.data, existingPayload.response.headers)
     }
   } else {
     InternalApiPayloads.insert({
       _id: requestId,
       payload: req.body,
-      acceptedAt: new Date()
+      acceptedAt: new Date(),
+      isProcessing: true
     })
   }
 
   const origSend = res.send
   res.send = (code, data, headers = {}) => {
+    const modifier = {
+      $unset: {
+        isProcessing: 1
+      }
+    }
+    if (code < 500) {
+      Object.assign(modifier, {
+        $set: {
+          done: true,
+          respondedAt: new Date(),
+          response: {
+            code,
+            data,
+            headers
+          }
+        }
+      })
+    } else {
+      Object.assign(modifier, {
+        $push: {
+          error500Responses: {
+            respondedAt: new Date(),
+            response: {
+              code,
+              data,
+              headers
+            }
+          }
+        }
+      })
+    }
     InternalApiPayloads.update({
       _id: requestId
-    }, {
-      $set: {
-        done: true,
-        respondedAt: new Date(),
-        response: {
-          code,
-          data,
-          headers
-        }
-      }
-    })
+    }, modifier)
+
     origSend(code, data, headers)
   }
 

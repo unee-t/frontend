@@ -117,7 +117,7 @@ export function removeRoleMember (requestorId, unitBzId, email, errorLogParams) 
       step: 'INVITE lambda request',
       error: e
     })
-    throw new Meteor.Error('Invite API Lambda error', e)
+    throw new Meteor.Error('Invite API Lambda error', e, { lambdaStatusCode: e.response.statusCode })
   }
 
   if (invitationId) {

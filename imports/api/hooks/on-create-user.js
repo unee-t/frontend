@@ -58,10 +58,7 @@ export function onCreateUser (options, user) {
       error: e,
       userId
     })
-    throw new Meteor.Error({
-      message: 'Lambda REST API error',
-      origError: e
-    })
+    throw new Meteor.Error('Lambda REST API error', e.message, { lambdaStatusCode: e.response.statusCode })
   }
   Object.assign(customizedUser.bugzillaCreds, {
     apiKey: userApiKey,
