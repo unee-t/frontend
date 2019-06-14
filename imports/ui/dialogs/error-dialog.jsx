@@ -5,9 +5,10 @@ import { modalTitleStyle } from './generic-dialog.mui-styles'
 
 const ErrorDialog = ({ show, text, onDismissed }) => (
   <Dialog
-    title={text}
+    title={text.length < 200 ? text : text.slice(0, 200) + '...'}
     titleStyle={modalTitleStyle}
     open={show}
+    onRequestClose={onDismissed}
   >
     <div className='tr'>
       <button

@@ -47,14 +47,16 @@ class CaseWizard extends Component {
         optional: {
           details: '',
           category: null,
-          subCategory: null
+          subCategory: null,
+          assignee: null
         }
       },
       needsNewUser: false,
       newUserEmail: '',
       newUserCanBeOccupant: false,
       newUserIsOccupant: false,
-      initDone: false
+      initDone: false,
+      selectedRole: null
     }
   }
 
@@ -63,43 +65,70 @@ class CaseWizard extends Component {
       this.refs.scrollPane.scrollTop = this.refs.scrollPane.scrollHeight
       this.emailInputEl.focus()
     }
-    const { availableRoles } = this.props
+    const { availableRoles, userBzLogin } = this.props
     const { inputValues } = this.state
     if (availableRoles.length && !prevProps.availableRoles.length) {
       const defaultRole = availableRoles.find(roleObj => roleObj.assignedToYou).type
+
       this.setState({
         inputValues: Object.assign({}, inputValues, {
           mandatory: Object.assign({}, inputValues.mandatory, {
             assignedUnitRole: defaultRole
+          }),
+          optional: Object.assign({}, inputValues.optional, {
+            assignee: userBzLogin
           })
-        })
+        }),
+        selectedRole: 'myself'
       })
     }
   }
 
   renderRadioButtons = () => {
     const { inProgress } = this.props
-    return this.filterRolesBasedOnOwnership().map(({ type, areYouDefAssignee }) => (
+    return this.filterRolesBasedOnOwnership().map(({ type }) => (
       <RadioButton
-        key={type} value={type} label={type + (areYouDefAssignee ? ' (you)' : '')} disabled={inProgress}
+        key={type} value={type} label={type} disabled={inProgress}
       />
     ))
   }
 
   handleRoleChanged = (evt, val) => {
     const { inputValues } = this.state
-    const needsNewUser = !this.props.availableRoles.find(role => role.type === val).hasDefaultAssignee
+    const { userBzLogin } = this.props
 
-    this.setState({
-      inputValues: Object.assign({}, inputValues, {
-        mandatory: Object.assign({}, inputValues.mandatory, {
-          assignedUnitRole: val
-        })
-      }),
-      needsNewUser,
-      newUserCanBeOccupant: roleCanBeOccupantMatcher(val),
-      newUserIsOccupant: false
-    })
+    if (val === 'myself') {
+      const myRole = this.props.availableRoles.find(role => role.assignedToYou)
+      this.setState({
+        inputValues: Object.assign({}, inputValues, {
+          mandatory: Object.assign({}, inputValues.mandatory, {
+            assignedUnitRole: myRole.type
+          }),
+          optional: Object.assign({}, inputValues.optional, {
+            assignee: userBzLogin
+          })
+        }),
+        needsNewUser: false,
+        selectedRole: 'myself'
+      })
+    } else {
+      const needsNewUser = !this.props.availableRoles.find(role => role.type === val).hasDefaultAssignee
+
+      this.setState({
+        inputValues: Object.assign({}, inputValues, {
+          mandatory: Object.assign({}, inputValues.mandatory, {
+            assignedUnitRole: val
+          }),
+          optional: Object.assign({}, inputValues.optional, {
+            assignee: null
+          })
+        }),
+        needsNewUser,
+        newUserCanBeOccupant: roleCanBeOccupantMatcher(val),
+        newUserIsOccupant: false,
+        selectedRole: val
+      })
+    }
   }
 
   handleSubmit = evt => {
@@ -149,7 +178,7 @@ class CaseWizard extends Component {
     if (isLoading) {
       return <Preloader />
     }
-    const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant } = this.state
+    const { inputValues, needsNewUser, newUserEmail, newUserIsOccupant, newUserCanBeOccupant, selectedRole } = this.state
     const { mandatory, optional } = inputValues
     const { title, details, assignedUnitRole } = mandatory
     const { category, subCategory } = optional
@@ -256,7 +285,6 @@ class CaseWizard extends Component {
                 </SelectField>
               </div>
             </div>
-            <p className='pv0 f6 bondi-blue'>Assign this case to *</p>
             {rolesToRender.length < 2 ? (
               <p className='f7 gray ma0 mt1'>
                 {
@@ -266,13 +294,29 @@ class CaseWizard extends Component {
                 }
               </p>
             ) : (
-              <RadioButtonGroup
-                name='assignedUnitRole'
-                onChange={this.handleRoleChanged}
-                valueSelected={assignedUnitRole}
-              >
-                {this.renderRadioButtons()}
-              </RadioButtonGroup>
+              <div>
+                <p className='pv0 f6 bondi-blue'>Assign this case to:</p>
+                <RadioButtonGroup
+                  name='selectedRole'
+                  onChange={this.handleRoleChanged}
+                  valueSelected={selectedRole}
+                >
+                  <RadioButton
+                    value='myself' label='Myself' disabled={inProgress}
+                  />
+                </RadioButtonGroup>
+                <p className='pv0 f6 bondi-blue'>
+                  <span className='b'>OR </span>
+                  Assign this case to:
+                </p>
+                <RadioButtonGroup
+                  name='selectedRole'
+                  onChange={this.handleRoleChanged}
+                  valueSelected={selectedRole}
+                >
+                  {this.renderRadioButtons()}
+                </RadioButtonGroup>
+              </div>
             )}
             {needsNewUser && (
               <div className='mt3'>

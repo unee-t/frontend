@@ -470,11 +470,7 @@ Meteor.methods({
 
       normalizedParams.api_key = apiKey
       let newCaseId
-      try {
-        const { data } = callAPI('post', caseBzApiRoute, normalizedParams, false, true)
-        newCaseId = data.id
-        logger.info(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
-      } catch (e) {
+      const handleError = (e, message) => {
         logger.error({
           user: Meteor.userId(),
           method: `${collectionName}.insert`,
@@ -482,8 +478,21 @@ Meteor.methods({
           step: 'post /rest/bug bugzilla API',
           error: e
         })
-        throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+        throw new Meteor.Error(`API Error: ${message}`)
       }
+      let data
+      try {
+        data = callAPI('post', caseBzApiRoute, normalizedParams, false, true).data
+      } catch (e) {
+        handleError(e, e.response.data.message)
+      }
+      if (data.error) {
+        handleError(data, data.message)
+      }
+
+      newCaseId = data.id
+
+      logger.info(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
 
       // Creating report's dependency on this case
       if (parentReportId) {
