@@ -111,11 +111,12 @@ export default (req, res) => {
     notification_id: notificationId
   } = message
 
-  const unitMeta = UnitMetaData.findOne({ bzId: unitId }, {
+  const unitMeta = UnitMetaData.findOne({ bzId: parseInt(unitId) }, {
     fields: {
       displayName: 1,
       streetAddress: 1,
-      bzId: 1
+      bzId: 1,
+      creatorId: 1
     }
   }) || {
     displayName: `Unit ID ${unitId}`,
