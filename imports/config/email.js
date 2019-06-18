@@ -14,10 +14,10 @@ const getBrandConfig = user => {
     userCreator = Meteor.users.findOne({ _id: user.profile.creatorId })
     if (!userCreator) logger.warn(`No user found for user's creatorId ${user.profile.creatorId}`)
   }
-  return userCreator ? userCreator.customEmailBrandingConfig : {}
+  return (userCreator && userCreator.customEmailBrandingConfig) || {}
 }
 const verifyReasonExplanation = 'you have signed up to Unee-T with this email address'
-const unsubText = 'If you think you should\'nt be receiving this email, kindly let us know at support@unee-t.com'
+const unsubText = 'If you think you shouldn\'t be receiving this email, kindly let us know at support@unee-t.com'
 Accounts.emailTemplates.verifyEmail = {
   subject () {
     return 'Verify Your Email'
