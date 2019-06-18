@@ -40,7 +40,7 @@ ${url}
       mainContentHtml: `
         <p>Thanks for joining Unee-T!</p>
         <p>To verify your account email, simply click the link below.</p>
-        <a href=${url}>${url}</a>
+        <p><a href=${url}>${url}</a></p>
       `,
       title: 'Account verification step',
       brandConfig: getBrandConfig(user),
@@ -75,7 +75,7 @@ ${url}
     return getHtml({
       mainContentHtml: `
         <p>Set a new password in one more simple step by clicking on this link:</p>
-        <a href=${url}>${url}</a>
+        <p><a href=${url}>${url}</a></p>
       `,
       title: 'Password reset email',
       unsubClauseHtml: `
