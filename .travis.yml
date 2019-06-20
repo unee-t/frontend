@@ -5,7 +5,8 @@ node_js:
   - lts/*
 
 before_install:
-  - pyenv global 2.7.14  # For removing SNIMissingWarning warnings
+  # Removed command as pyenv is no longer found during deploy
+  #- pyenv global 2.7.14  # For removing SNIMissingWarning warnings
   - curl https://install.meteor.com | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
