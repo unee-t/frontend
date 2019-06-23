@@ -1,10 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import MenuItem from 'material-ui/MenuItem'
-import UserAvatar from './user-avatar'
-
-import { resetMenuItemDivStyle } from '../general.mui-styles'
-import { getColorForUser } from '/imports/util/user'
+import UserMenuItem from './user-menu-item'
 
 const UserSelectionBox = ({ usersList, userStatusRenderer, userClassNames, onUserClick, emptyListMessage }) => (
   <div className='ba b--moon-gray flex-grow h5 overflow-auto'>
@@ -12,30 +8,14 @@ const UserSelectionBox = ({ usersList, userStatusRenderer, userClassNames, onUse
       {usersList.length ? (
         <ul className='list mv0 pa0 pt1 min-h-3'>
           {usersList.map((user, idx) => {
-            const userStatusComp = userStatusRenderer && userStatusRenderer(user)
+            const statusComponent = userStatusRenderer && userStatusRenderer(user)
             const extraClasses = userClassNames ? userClassNames(user) : ''
-            const emailId = user.login.split('@')[0]
             return (
-              <MenuItem key={idx} onClick={() => onUserClick(user)} innerDivStyle={resetMenuItemDivStyle}>
-                <div className={
-                  getColorForUser(user) + ' flex pv2 ph2 lh-title ' + extraClasses
-                }>
-                  <div className='ml1'>
-                    <UserAvatar user={user} imageUrl={user.avatarUrl} />
-                  </div>
-                  <div className='ml2 flex-grow overflow-hidden'>
-                    <div className={'f5 ellipsis ' + (user.pending ? 'i silver' : 'bondi-blue')}>
-                      { user.name || emailId }
-                    </div>
-                    <div className='f7 gray ellipsis'>{user.role}</div>
-                  </div>
-                  {userStatusComp && (
-                    <div className='ml2 flex flex-column justify-center'>
-                      {userStatusComp}
-                    </div>
-                  )}
-                </div>
-              </MenuItem>
+              <UserMenuItem key={idx}
+                onClick={() => onUserClick(user)}
+                innerDivExtraClasses={extraClasses}
+                {...{ user, statusComponent }}
+              />
             )
           })}
         </ul>

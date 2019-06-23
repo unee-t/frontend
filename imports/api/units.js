@@ -118,6 +118,7 @@ export const getUnitRoles = (unit, userId) => {
             email: user.emails[0].address,
             name: user.profile.name,
             role: roleObj.roleType,
+            isDefaultAssignee: roleObj.defaultAssigneeId === user._id,
             isOccupant: memberDesc.isOccupant,
             avatarUrl: user.profile.avatarUrl
           })
@@ -139,7 +140,8 @@ export const getUnitRoles = (unit, userId) => {
       if (assigned) {
         all.push({
           login: assigned,
-          role: name
+          role: name,
+          isDefaultAssignee: true
         })
       }
       return all
@@ -155,7 +157,8 @@ export const getUnitRoles = (unit, userId) => {
       .map(({ receivedInvites: [{ role, isOccupant }], bugzillaCreds: { login } }) => ({
         login,
         role,
-        isOccupant
+        isOccupant,
+        isDefaultAssignee: false
       }))
     ),
     ({ login }) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation

@@ -5,8 +5,10 @@
 .*/.meteor/local/build/programs/server/npm/.*
 .*/.meteor/local/build/programs/server/node_modules/.*
 .*/.meteor/local/build/programs/web.browser/app/.*
+.*/.meteor/local/plugin-cache/.*
 .*/.meteor/local/build/main.js
 .*/.meteor/packages/.*
+
 
 # This package can give you a lot of flow errors, better ignore it
 .*/node_modules/fbjs/.*

@@ -16,6 +16,7 @@ import EditableItem from '../components/editable-item'
 import ErrorDialog from '../dialogs/error-dialog'
 import { infoItemLabel, infoItemMembers, InfoItemContainer, InfoItemRow } from '../util/static-info-rendering'
 import AddUserControlLine from '../components/add-user-control-line'
+import AssigneeSelectionList from '../components/assignee-selection-list'
 
 const mediaItemsPadding = 4 // Corresponds with the classNames set to the media items
 const mediaItemRowCount = 3
@@ -158,6 +159,22 @@ class CaseDetails extends Component {
     })
     const resolvedAssignedUser = pendingUsers.find(u => u.type === TYPE_ASSIGNED) || assignedUser
     const resolvedChosenAssigned = chosenAssigned || resolvedAssignedUser
+
+    const usersClassifications = normalizedUnitUsers.reduce((classes, user) => {
+      if (user.login === resolvedAssignedUser.login) {
+        classes.assignee = user
+      } else if (user.isDefaultAssignee) {
+        classes.defaultRoleAssignees.push(user)
+      } else {
+        classes.otherRoleMembers.push(user)
+      }
+
+      return classes
+    }, {
+      assignee: null,
+      defaultRoleAssignees: [],
+      otherRoleMembers: []
+    })
     return (
       <InfoItemContainer>
         {infoItemLabel('Assigned to:')}
@@ -179,25 +196,13 @@ class CaseDetails extends Component {
           onMainOperation={() => onExistingUserAssigned(chosenAssigned)}
           additionalOperationText='Assign to someone else'
           potentialInvitees={normalizedUnitUsers.concat(pendingUsers.map(u => Object.assign({ pending: true }, u)))}
-          selectControlsRenderer={({ users, inputRefFn }) => (
-            <UsersSearchList
-              users={users}
-              onUserClick={user => this.setState({ chosenAssigned: user })}
-              searchInputRef={inputRefFn}
-              userClassNames={user => user.login === resolvedChosenAssigned.login ? 'bg-very-light-gray' : ''}
-              emptyListMessage={'We couldn\'t find any existing users to assign'}
-              userStatusRenderer={user => {
-                if (user.pending) {
-                  return (
-                    <span className='f7 silver i'>Pending</span>
-                  )
-                }
-                if (user.login === resolvedAssignedUser.login) {
-                  return (
-                    <span className='f7 gray b'>Assigned</span>
-                  )
-                }
-              }}
+          selectControlsRenderer={() => (
+            <AssigneeSelectionList
+              currentAssignee={usersClassifications.assignee}
+              defaultAssignees={usersClassifications.defaultRoleAssignees}
+              otherUsers={usersClassifications.otherRoleMembers}
+              currentSelectedUser={resolvedChosenAssigned}
+              onUserClicked={user => this.setState({ chosenAssigned: user })}
             />
           )}
         />
