@@ -7,7 +7,7 @@ import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
 import UnitMetaData, { unitTypes, collectionName as unitMetaCollName } from './unit-meta-data'
-import UnitRolesData, { possibleRoles, collectionName as unitRolesCollName } from './unit-roles-data'
+import UnitRolesData, { possibleRoles, roleEnum, collectionName as unitRolesCollName } from './unit-roles-data'
 import PendingInvitations, { REPLACE_DEFAULT, collectionName as pendingInvitationsCollName } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
 import { logger } from '../util/logger'
@@ -26,13 +26,21 @@ export const factoryOptions = {
 export let serverHelpers
 
 export const defaultRoleVisibility = {
-  'Tenant': true,
-  'Owner/Landlord': true,
-  'Contractor': true,
-  'Management Company': true,
-  'Agent': true,
+  [roleEnum.TENANT]: true,
+  [roleEnum.OWNER_LANDLORD]: true,
+  [roleEnum.CONTRACTOR]: true,
+  [roleEnum.MGT_COMPANY]: true,
+  [roleEnum.AGENT]: true,
   'Occupant': true
 }
+
+const roleSortOrder = [
+  roleEnum.TENANT,
+  roleEnum.OWNER_LANDLORD,
+  roleEnum.AGENT,
+  roleEnum.MGT_COMPANY,
+  roleEnum.CONTRACTOR
+]
 
 if (Meteor.isServer) {
   serverHelpers = {
@@ -76,7 +84,11 @@ const withRolesData = unitAssocHelper(UnitRolesData, unitRolesCollName, 'unitBzI
 
 export const getUnitRoles = (unit, userId) => {
   // Resolving roles via the newer mongo collection
-  let roleDocs = UnitRolesData.find({ unitBzId: unit.id }).fetch()
+  let roleDocs = UnitRolesData.find({ unitBzId: unit.id }).fetch().sort((a, b) => {
+    const aInd = roleSortOrder.indexOf(a.roleType)
+    const bInd = roleSortOrder.indexOf(b.roleType)
+    return aInd - bInd
+  })
 
   const unitMeta = UnitMetaData.findOne({ bzId: unit.id })
 
@@ -100,19 +112,21 @@ export const getUnitRoles = (unit, userId) => {
   const userIds = roleDocs.reduce((all, roleObj) => all.concat(
     roleObj.members.reduce((mems, mem) => memberVisCheck(mem, roleObj.roleType) ? mems.concat([mem.id]) : mems, [])
   ), [])
-
   const userDocs = Meteor.users.find({ _id: { $in: userIds } }).fetch()
+
+  // Creating a comparator for alphabetical name sort
+  const nameComparator = new Intl.Collator('en').compare
 
   // Constructing the user role objects array similar to the way it is done from BZ's product components below
   const roleUsers = roleDocs.reduce((all, roleObj) => {
-    roleObj.members.forEach(memberDesc => {
+    const users = roleObj.members.reduce((allUsers, memberDesc) => {
       if (memberVisCheck(memberDesc, roleObj.roleType)) {
         // Using the prefetched array to find the user doc
         const user = userDocs.find(doc => doc._id === memberDesc.id)
 
         // Checking in case the role is visible, but the user is not (on the client)
         if (user) {
-          all.push({
+          allUsers.push({
             userId: user._id,
             login: user.bugzillaCreds.login,
             email: user.emails[0].address,
@@ -124,7 +138,15 @@ export const getUnitRoles = (unit, userId) => {
           })
         }
       }
-    })
+      return allUsers
+    }, [])
+
+    // Sorting members alphabetically
+    all = all.concat(users.sort((a, b) => {
+      const aName = a.name || (a.login && a.login.split('@')[0])
+      const bName = b.name || (b.login && b.login.split('@')[0])
+      return nameComparator(aName, bName)
+    }))
     return all
   }, [])
 

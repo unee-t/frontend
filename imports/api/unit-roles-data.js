@@ -15,23 +15,30 @@ import { logger } from '../util/logger'
 import { getIncrementFor } from './increment-counters'
 
 export const collectionName = 'unitRolesData'
+export const roleEnum = {
+  TENANT: 'Tenant',
+  OWNER_LANDLORD: 'Owner/Landlord',
+  CONTRACTOR: 'Contractor',
+  MGT_COMPANY: 'Management Company',
+  AGENT: 'Agent'
+}
 export const possibleRoles = [
   {
-    name: 'Tenant',
+    name: roleEnum.TENANT,
     canBeOccupant: true
   },
   {
-    name: 'Owner/Landlord',
+    name: roleEnum.OWNER_LANDLORD,
     canBeOccupant: true
   },
   {
-    name: 'Contractor'
+    name: roleEnum.CONTRACTOR
   },
   {
-    name: 'Management Company'
+    name: roleEnum.MGT_COMPANY
   },
   {
-    name: 'Agent'
+    name: roleEnum.AGENT
   }
 ]
 
