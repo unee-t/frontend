@@ -10,6 +10,7 @@ import getPdfDownload from './get-pdf-download'
 import postProcessApiPayloadRequest from './post-process-api-payload-request'
 import getUnits from './get-units'
 import getCases from './get-cases'
+import postOtpToken from './post-otp-token'
 
 JsonRoutes.Middleware.use(json())
 JsonRoutes.Middleware.use((req, res, next) => {
@@ -38,4 +39,5 @@ createRoute('post', '/ses', postSesNotification)
 createRoute('get', '/report-pdf-download', getPdfDownload)
 createRoute('get', '/units', getUnits)
 createRoute('get', '/cases', getCases)
+createRoute('post', '/otp-token', postOtpToken)
 createRoute('post', '/process-api-payload', postProcessApiPayloadRequest)

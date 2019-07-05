@@ -33,6 +33,7 @@ import { resetLogoUrl } from './epics/reset-reports-logo'
 import { editProfileField } from './epics/edit-profile-field'
 import { uploadAvatarImage } from './epics/upload-avatar-image'
 import { changeAvatarUrl } from './epics/change-avatar-url'
+import { loginWithOtp } from './epics/login-with-otp'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -68,5 +69,6 @@ export const rootEpic = combineEpics(
   editProfileField,
   uploadAvatarImage,
   changeAvatarUrl,
-  removeUserFromUnit
+  removeUserFromUnit,
+  loginWithOtp
 )

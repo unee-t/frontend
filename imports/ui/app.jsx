@@ -1,8 +1,9 @@
-import React, { Component } from 'react'
+// @flow
+
+import * as React from 'react'
 import { Route, Switch, Redirect, withRouter } from 'react-router-dom'
 import { Meteor } from 'meteor/meteor'
 import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
 import { createContainer } from 'meteor/react-meteor-data'
 
 import { Dashboard } from './components/dashboard.jsx'
@@ -27,25 +28,73 @@ import ReportPreview from './report-preview/report-preview'
 import SideMenu from './side-menu/side-menu'
 import ErrorDialog from './dialogs/error-dialog'
 import ResetLinkSuccessDialog from './dialogs/reset-link-success-dialog'
-import { checkPassReset } from './app.actions'
+import { checkPassReset, loginWithOtp } from './app.actions'
 import { genericErrorCleared } from './general-actions'
 import { BrowserSupportMsg } from './login/browser-support-msg'
+import { parseQueryString } from '../util/parsers'
+import Preloader from './preloader/preloader'
+import { replace } from 'react-router-redux'
 
-class App extends Component {
+type Props = {
+  userLoggedIn: boolean,
+  errors: Array<Error>,
+  loginPending: boolean,
+  dispatch: (action: any) => void,
+  location: {
+    pathname: string
+  },
+  autoLoginParams: ?{
+    userId: string,
+    otp: string
+  }
+}
+
+class App extends React.Component<Props> {
   componentWillMount () {
     this.props.dispatch(checkPassReset())
   }
 
+  componentDidMount () {
+    const { loginPending, autoLoginParams, dispatch, location } = this.props
+    if (loginPending && autoLoginParams) {
+      const { userId, otp } = autoLoginParams
+      dispatch(loginWithOtp(userId, otp))
+    } else if (autoLoginParams) {
+      dispatch(replace(location.pathname))
+    }
+  }
+
+  componentWillUpdate (nextProps) {
+    const { loginPending, autoLoginParams, location, dispatch, errors } = nextProps
+    if ((!loginPending || errors.length < this.props.errors.length) && autoLoginParams) {
+      dispatch(replace(location.pathname))
+    }
+  }
+
   render () {
-    const { userLoggedIn, errors, dispatch } = this.props
+    const { userLoggedIn, errors, dispatch, loginPending } = this.props
     const firstError = errors.length ? errors[0] : ''
     var isIE = /*
     @cc_on!@
     */false || !!document.documentMode
+    if (isIE) {
+      return <BrowserSupportMsg />
+    }
+    if (loginPending) {
+      return (
+        <div>
+          <Preloader />
+          <ErrorDialog
+            show={!!firstError}
+            text={firstError}
+            onDismissed={() => dispatch(genericErrorCleared(0))}
+          />
+        </div>
+      )
+    }
     return (
       <div className='roboto'>
-        {isIE ? (<BrowserSupportMsg />
-        ) : (userLoggedIn ? (
+        {userLoggedIn ? (
           <div>
             <Switch>
               <Route exact path='/unit/new' component={UnitWizard} />
@@ -83,21 +132,26 @@ class App extends Component {
               <Redirect to='/' />
             </Switch>
             <ResetLinkSuccessDialog />
-          </div>)
+          </div>
         )}
       </div>
     )
   }
 }
 
-App.propTypes = {
-  userLoggedIn: PropTypes.bool,
-  errors: PropTypes.array.isRequired
-}
-
 // export default App
 export default withRouter(connect(
   ({ genericErrorState }) => ({ errors: genericErrorState }) // map redux state to props
-)(createContainer(() => ({ // map meteor state to props
-  userLoggedIn: !!Meteor.userId()
-}), App)))
+)(createContainer(props => {
+  const { userId, otp } = parseQueryString(props.location.search)
+
+  const autoLoginNeeded = !!(userId && otp)
+  return { // map meteor state to props
+    userLoggedIn: !!Meteor.userId(),
+    loginPending: autoLoginNeeded && Meteor.userId() !== userId,
+    autoLoginParams: autoLoginNeeded ? {
+      userId,
+      otp
+    } : null
+  }
+}, App)))

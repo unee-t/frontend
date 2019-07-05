@@ -1,26 +1,50 @@
+// @flow
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../util/logger'
+import type { Request, Response, NextFunc } from '../rest-types'
 
-export default next => (req, res) => {
-  if (!req.query.apiKey) {
-    res.send(400, 'Must provide "apiKey" as a request query param')
-    return
-  }
+type Extractor = {
+  func: (req:Request) => string|null,
+  errorMsg: string
+}
+export const queryExtractor:Extractor = {
+  func: req => req.query && req.query.apiKey,
+  errorMsg: 'Must provide "apiKey" as a request query param'
+}
+export const retrieveKey = (keyStr: string) => {
   const user = Meteor.users.findOne({
-    'mefeApiKeys.key': req.query.apiKey
+    'mefeApiKeys.key': keyStr
   })
-  const obfuscatedKey = `${req.query.apiKey.slice(0, 3)}***${req.query.apiKey.slice(-3)}`
+  const obfuscatedKey = `${keyStr.slice(0, 3)}***${keyStr.slice(-3)}`
   if (!user) {
     logger.warn(`No user found for apiKey ${obfuscatedKey}`)
-    res.send(400, 'No user found for the specified apiKey')
-    return
+    throw new Error('No user found for the specified apiKey')
   }
-  const relevantKey = user.mefeApiKeys.find(apiKey => apiKey.key === req.query.apiKey)
+  const relevantKey = user.mefeApiKeys.find(apiKeyRecord => apiKeyRecord.key === keyStr)
   if (relevantKey.revokedAt) {
     logger.warn(`Attempt to use revoked apiKey ${obfuscatedKey} for user ${user._id}`)
-    res.send(400, `The provided apiKey has been revoked`)
+    throw new Error('The provided apiKey has been revoked')
+  }
+
+  return { relevantKey, user }
+}
+
+export default (next: NextFunc, extractor:Extractor = queryExtractor) => (req: Request, res: Response) => {
+  const apiKey = extractor.func(req)
+  if (!apiKey) {
+    res.send(400, extractor.errorMsg)
     return
   }
+
+  let result
+  try {
+    result = retrieveKey(apiKey)
+  } catch (e) {
+    res.send(400, e.message)
+    return
+  }
+
+  const { relevantKey, user } = result
 
   Object.assign(req, {
     user,

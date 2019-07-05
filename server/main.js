@@ -19,6 +19,7 @@ import '../imports/api/hooks/on-create-user'
 import '../imports/api/hooks/on-login'
 import '../imports/api/hooks/on-login-failure'
 import '../imports/api/rest/rest-routes'
+import '../imports/server/auth/otp-authenticator'
 import '../imports/config/email'
 import '../imports/migrations'
 
