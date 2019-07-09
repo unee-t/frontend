@@ -285,13 +285,13 @@ class CaseWizard extends Component {
                 </SelectField>
               </div>
             </div>
-            {rolesToRender.length < 2 ? (
+            {rolesToRender.length === 1 && rolesToRender[0].areYouDefAssignee ? (
               <p className='f7 gray ma0 mt1'>
-                {
-                  rolesToRender.length === 0
-                    ? 'This case can\'t be created as you aren\'t allowed to assign anyone to it'
-                    : `This case will be assigned to${rolesToRender[0].areYouDefAssignee ? ' you as' : ''} the ${rolesToRender[0].type} of this unit`
-                }
+                This case will be assigned to you as the {rolesToRender[0].type} of this unit
+              </p>
+            ) : rolesToRender.length === 0 ? (
+              <p className='f7 gray ma0 mt1'>
+                This case can't be created as you aren't allowed to assign anyone to it
               </p>
             ) : (
               <div>
