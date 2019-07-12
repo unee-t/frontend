@@ -11,7 +11,9 @@ import Cases, { getCaseUsers, collectionName as casesCollName } from '../../api/
 import Comments, { collectionName as commentsCollName } from '../../api/comments'
 import Units, { getUnitRoles, collectionName as unitsCollName } from '../../api/units'
 import PendingInvitations, { collectionName as inviteCollName } from '../../api/pending-invitations'
-import CaseFieldValues, { collectionName as cfvCollName } from '../../api/case-field-values'
+import CaseFieldValues, {
+  collectionName as cfvCollName
+} from '../../api/case-field-values'
 import InnerAppBar from '../components/inner-app-bar'
 import actions, { markNotificationsAsRead } from './case.actions'
 import MaximizedAttachment from './maximized-attachment'
@@ -56,10 +58,10 @@ export class Case extends Component {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
       attachmentUploads, match, userBzLogin, userId, dispatch, unitUsers, invitationState, caseUserTypes,
       loadingPendingInvitations, pendingInvitations, /* showWelcomeDialog, invitedByDetails, */
-      cfvDictionary, loadingCfv, cfvError, caseUsersState
+      caseUsersState, caseFieldValues, loadingCaseFieldValues
     } = this.props
     const errors = [
-      [caseError, 'case'], [commentsError, 'comments'], [unitError, 'unit'], [cfvError, 'potential field values']
+      [caseError, 'case'], [commentsError, 'comments'], [unitError, 'unit']
     ].filter(pair => !!pair[0])
     if (errors.length) {
       return (
@@ -75,7 +77,7 @@ export class Case extends Component {
         </div>
       )
     }
-    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations || loadingCfv) return <Preloader />
+    if (loadingCase || loadingComments || loadingUnit || loadingPendingInvitations || loadingCaseFieldValues) return <Preloader />
 
     const { push } = routerRedux
     const {
@@ -123,8 +125,8 @@ export class Case extends Component {
                     unitItem,
                     caseUserTypes,
                     pendingInvitations,
-                    cfvDictionary,
-                    caseUsersState
+                    caseUsersState,
+                    caseFieldValues
                   }}
                   onRoleUsersInvited={userLogins => dispatch(addRoleUsers(userLogins, caseId))}
                   onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}
@@ -169,9 +171,6 @@ Case.propTypes = {
   loadingUnit: PropTypes.bool,
   unitError: PropTypes.object,
   unitItem: PropTypes.object,
-  loadingCfv: PropTypes.bool,
-  cfvDictionary: PropTypes.object,
-  cfvError: PropTypes.object,
   unitUsers: PropTypes.array,
   caseUserTypes: PropTypes.object,
   invitationState: PropTypes.object.isRequired,
@@ -181,11 +180,14 @@ Case.propTypes = {
   // invitedByDetails: PropTypes.object,
   caseUsersState: PropTypes.object.isRequired,
   ancestorPath: PropTypes.string,
-  userId: PropTypes.string
+  userId: PropTypes.string,
+  loadingCaseFieldValues: PropTypes.bool.isRequired,
+  caseFieldValues: PropTypes.object
 }
 
-let caseError, commentsError, unitError, cfvError
+let caseError, commentsError, unitError
 const CaseContainer = createContainer(props => {
+  const enumFields = ['category', 'subCategory', 'status', 'priority', 'severity']
   const { caseId } = props.match.params
 
   const caseHandle = Meteor.subscribe(`${casesCollName}.byId`, caseId, {
@@ -208,17 +210,16 @@ const CaseContainer = createContainer(props => {
     })
     currUnit = unitHandle.ready() ? Units.findOne({ name: currCase.selectedUnit }) : null
   }
-  const cfvHandle = Meteor.subscribe(`${cfvCollName}.fetchByName`, 'status', {
-    onStop: error => {
-      cfvError = error
-    }
-  })
 
   const bzLoginHandle = Meteor.subscribe('users.myBzLogin')
 
   const caseUserTypes = currCase ? getCaseUsers(currCase) : null
   const unitRoles = currUnit && getUnitRoles(currUnit, Meteor.userId())
   const user = bzLoginHandle.ready() ? Meteor.user() : null
+
+  const loadingCaseFieldValues = enumFields
+    .map(name => Meteor.subscribe(`${cfvCollName}.fetchByName`, name))
+    .filter(handle => !handle.ready()).length > 0
   return {
     loadingCase: !caseHandle.ready(),
     caseError,
@@ -252,10 +253,12 @@ const CaseContainer = createContainer(props => {
         : mapUser(caseUserTypes[userType])
       return all
     }, {}),
-    loadingCfv: !cfvHandle.ready(),
-    cfvDictionary: cfvHandle.ready() ? { status: CaseFieldValues.findOne({ name: 'status' }) } : null,
-    cfvError,
     loadingPendingInvitations: !Meteor.subscribe(`${inviteCollName}.byCaseId`, parseInt(caseId)).ready(),
+    loadingCaseFieldValues,
+    caseFieldValues: enumFields.reduce((all, name) => {
+      all[name] = CaseFieldValues.findOne({ name })
+      return all
+    }, {}),
     pendingInvitations: PendingInvitations.find({ caseId: parseInt(caseId) }).fetch().filter(inv => inv.inviteeUser())
   }
 }, Case)

@@ -14,7 +14,7 @@ import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
 import EditableItem from '../components/editable-item'
 import ErrorDialog from '../dialogs/error-dialog'
-import { infoItemLabel, infoItemMembers, InfoItemContainer, InfoItemRow } from '../util/static-info-rendering'
+import { infoItemLabel, InfoItemContainer, InfoItemRow } from '../util/static-info-rendering'
 import AddUserControlLine from '../components/add-user-control-line'
 import AssigneeSelectionList from '../components/assignee-selection-list'
 
@@ -65,7 +65,8 @@ class CaseDetails extends Component {
   ]))
 
   handleStatusEdit = val => {
-    const matchingValDef = this.props.cfvDictionary.status.values.find(({ name }) => name === val)
+    const { caseFieldValues, onFieldEdit } = this.props
+    const matchingValDef = caseFieldValues.status.values.find(({ name }) => name === val)
     this.setState({
       immediateStatusVal: val
     })
@@ -73,7 +74,7 @@ class CaseDetails extends Component {
     if (!matchingValDef.is_open) { // Means it needs a resolution
       changeSet.resolution = 'FIXED' // hardcoded for now
     }
-    this.props.onFieldEdit(changeSet)
+    onFieldEdit(changeSet)
   }
 
   renderTitle = ({ id, title }) => (
@@ -109,27 +110,55 @@ class CaseDetails extends Component {
     )
   }
 
-  renderCategoriesLine = ({ category, subCategory }) => (
+  renderCategoriesLine = ({ category, subCategory }, fieldValues) => (
     <InfoItemContainer>
       <div className='flex'>
         <div className='flex-grow'>
-          {infoItemMembers('Category:', category)}
+          <EditableItem
+            label='Category:'
+            initialValue={category}
+            selectionList={fieldValues.category.values.map(({ name }) => name)}
+            onEdit={val => this.props.onFieldEdit({
+              category: val,
+              subCategory: fieldValues.subCategory.values[0].name
+            })}
+          />
         </div>
-        <div className='flex-grow'>
-          {infoItemMembers('Sub-Category:', subCategory)}
+        <div className='flex-grow ml2'>
+          <EditableItem
+            label='Sub-Category:'
+            initialValue={subCategory}
+            selectionList={fieldValues.subCategory.values
+              .filter(
+                ({ name, visibility_values: [relatedCategory] }) => (relatedCategory === category || !relatedCategory)
+              )
+              .map(({ name }) => name)
+            }
+            onEdit={val => this.props.onFieldEdit({ subCategory: val })}
+          />
         </div>
       </div>
     </InfoItemContainer>
   )
 
-  renderPrioritySeverityLine = ({ priority, severity }) => (
+  renderPrioritySeverityLine = ({ priority, severity }, fieldValues) => (
     <InfoItemContainer>
       <div className='flex'>
         <div className='flex-grow'>
-          {infoItemMembers('Priority:', priority)}
+          <EditableItem
+            label='Priority:'
+            initialValue={priority}
+            selectionList={fieldValues.priority.values.map(({ name }) => name)}
+            onEdit={val => this.props.onFieldEdit({ priority: val })}
+          />
         </div>
-        <div className='flex-grow'>
-          {infoItemMembers('Severity:', severity)}
+        <div className='flex-grow ml2'>
+          <EditableItem
+            label='Severity:'
+            initialValue={severity}
+            selectionList={fieldValues.severity.values.map(({ name }) => name)}
+            onEdit={val => this.props.onFieldEdit({ severity: val })}
+          />
         </div>
       </div>
     </InfoItemContainer>
@@ -367,7 +396,7 @@ class CaseDetails extends Component {
   }
 
   render () {
-    const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, cfvDictionary, caseUsersState, userId, userBzLogin } = this.props
+    const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, caseUsersState, userId, userBzLogin, caseFieldValues } = this.props
     const { normalizedUnitUsers } = this.state
     let successfullyAddedUsers, addUsersError
     if (parseInt(caseUsersState.caseId) === parseInt(caseItem.id)) {
@@ -382,9 +411,9 @@ class CaseDetails extends Component {
         {this.renderTitle(caseItem)}
         {this.renderUnitName(unitItem)}
         {this.renderUnitDescription(unitItem)}
-        {this.renderStatusLine(caseItem, cfvDictionary)}
-        {this.renderCategoriesLine(caseItem)}
-        {this.renderPrioritySeverityLine(caseItem)}
+        {this.renderStatusLine(caseItem, caseFieldValues)}
+        {this.renderCategoriesLine(caseItem, caseFieldValues)}
+        {this.renderPrioritySeverityLine(caseItem, caseFieldValues)}
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(
           caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations, isUnitOwner, unitRoleType
@@ -437,10 +466,10 @@ CaseDetails.propTypes = {
   invitationState: PropTypes.object.isRequired,
   caseUserTypes: PropTypes.object.isRequired,
   onFieldEdit: PropTypes.func.isRequired,
-  cfvDictionary: PropTypes.object.isRequired,
   caseUsersState: PropTypes.object.isRequired,
   pendingInvitations: PropTypes.array,
-  userBzLogin: PropTypes.string.isRequired
+  userBzLogin: PropTypes.string.isRequired,
+  caseFieldValues: PropTypes.object.isRequired
 }
 
 export default withRouter(CaseDetails)
