@@ -11,6 +11,10 @@ export const queryExtractor:Extractor = {
   func: req => req.query && req.query.apiKey,
   errorMsg: 'Must provide "apiKey" as a request query param'
 }
+export const bodyExtractor:Extractor = {
+  func: req => req.body.apiKey,
+  errorMsg: '"apiKey" must be provided in the request\'s body'
+}
 export const retrieveKey = (keyStr: string) => {
   const user = Meteor.users.findOne({
     'mefeApiKeys.key': keyStr

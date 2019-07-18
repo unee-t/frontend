@@ -29,7 +29,7 @@ export const caseServerFieldMapping = {
   title: 'summary',
   details: 'description',
   nextSteps: 'cf_ipi_clust_1_next_step',
-  nextStepsBy: 'cf_ipi_clust_1_next_step_by',
+  nextStepsBy: 'cf_ipi_clust_1_next_step_date',
   solution: 'cf_ipi_clust_1_solution',
   solutionDeadline: 'deadline',
   involvedList: 'cc',
@@ -78,6 +78,146 @@ export const caseClientFieldMapping = Object.assign(
     platform: 'category'
   }
 )
+
+export const createCase = (
+  creatorUser,
+  unitItem,
+  {
+    assignedUnitRole,
+    title,
+    details,
+    category,
+    subCategory,
+    assignee,
+    parentReportId,
+    priority,
+    severity,
+    solution,
+    solutionDeadline,
+    nextSteps,
+    nextStepsBy
+  },
+  newUserEmail,
+  newUserIsOccupant
+) => { // Server side only
+  const { callAPI } = bugzillaApi
+
+  // Checking the role is valid
+  const relevantRole = unitItem.components.find(({ name }) => name === assignedUnitRole)
+  if (!relevantRole) {
+    throw new Meteor.Error(
+      `The designated role "${assignedUnitRole}" does not exist on the unit with BZ ID ${unitItem.id}`
+    )
+  }
+  if (newUserEmail) {
+    const conflictError = findUnitRoleConflictErrors(
+      unitItem.id,
+      newUserEmail,
+      assignedUnitRole,
+      newUserIsOccupant
+    )
+    if (conflictError) throw new Meteor.Error('Could not create case for new assignee: ' + conflictError)
+  }
+
+  const params = {
+    assignedUnitRole,
+    title,
+    details,
+    category,
+    subCategory,
+    assignee,
+    priority,
+    severity,
+    solution,
+    solutionDeadline,
+    nextSteps,
+    nextStepsBy,
+    selectedUnit: unitItem.name
+  }
+
+  logger.info('Creating case: ', params)
+  const normalizedParams = Object.keys(params).reduce((all, paramName) => {
+    all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
+    return all
+  }, {})
+
+  // Hardcoded values to avoid issues with BZ API "required" checks
+  normalizedParams.version = '---'
+  normalizedParams.op_sys = 'Unspecified' // NOTE: This might an actual value at a later evolution step of the app
+  normalizedParams[caseServerFieldMapping.category] = normalizedParams[caseServerFieldMapping.category] || '---'
+  normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
+
+  const { apiKey } = creatorUser.bugzillaCreds
+  normalizedParams.api_key = apiKey
+  let newCaseId
+  const handleError = (e, message) => {
+    logger.error({
+      user: creatorUser,
+      method: `${collectionName}.insert`,
+      args: [params],
+      step: 'post /rest/bug bugzilla API',
+      error: e
+    })
+    throw new Meteor.Error(`API Error: ${message}`)
+  }
+  let data
+  try {
+    data = callAPI('post', caseBzApiRoute, normalizedParams, false, true).data
+  } catch (e) {
+    handleError(e, e.response.data.message)
+  }
+  if (data.error) {
+    handleError(data, data.message)
+  }
+
+  newCaseId = data.id
+
+  logger.info(`a new case has been created by user ${creatorUser._id}, case id: ${newCaseId}`)
+
+  // Creating report's dependency on this case
+  if (parentReportId) {
+    const payload = {
+      api_key: apiKey,
+      blocks: {
+        set: [parentReportId]
+      }
+    }
+    try {
+      callAPI('put', `${caseBzApiRoute}/${newCaseId}`, payload, false, true)
+    } catch (e) {
+      logger.error({
+        user: creatorUser._id,
+        method: `${collectionName}.insert`,
+        args: [params],
+        step: 'put /rest/bug bugzilla API (creating report dependency)',
+        error: e
+      })
+      throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+    }
+  }
+
+  try {
+    const resp = callAPI('get', idUrlTemplate(newCaseId), { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
+    const caseItem = factoryOptions.dataResolver(resp.data)[0]
+    publicationObj.handleAdded(caseItem)
+  } catch (e) {
+    logger.error({
+      user: Meteor.userId(),
+      method: `${collectionName}.insert`,
+      args: [params, { newUserEmail, newUserIsOccupant, parentReportId }],
+      step: 'Fetching case data for live update, proceeding with no error',
+      error: e
+    })
+  }
+
+  if (newUserEmail) {
+    createPendingInvitation(
+      newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED
+    )
+  }
+
+  return newCaseId
+}
 
 export const getCaseUsers = (() => {
   const normalizeUser = ({ real_name: realName, email, name }) => ({
@@ -441,8 +581,7 @@ Meteor.methods({
       throw new Meteor.Error('not-authorized')
     }
     if (Meteor.isServer) {
-      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne(Meteor.userId())
-      const { callAPI } = bugzillaApi
+      const { bugzillaCreds: { apiKey } } = Meteor.user()
 
       let unitItem
       try {
@@ -452,102 +591,7 @@ Meteor.methods({
         throw new Meteor.Error('API error')
       }
 
-      // Checking the role is valid
-      const relevantRole = unitItem.components.find(({ name }) => name === params.assignedUnitRole)
-      if (!relevantRole) {
-        throw new Meteor.Error(
-          `The designated role "${params.assignedUnitRole}" does not exist on the unit "${params.selectedUnit}"`
-        )
-      }
-      if (newUserEmail) {
-        const conflictError = findUnitRoleConflictErrors(
-          unitItem.id,
-          newUserEmail,
-          params.assignedUnitRole,
-          newUserIsOccupant
-        )
-        if (conflictError) throw new Meteor.Error('Could not create case for new assignee: ' + conflictError)
-      }
-
-      logger.info('Creating case: %j foobar', params)
-      const normalizedParams = Object.keys(params).reduce((all, paramName) => {
-        all[caseServerFieldMapping[paramName] || paramName] = params[paramName]
-        return all
-      }, {})
-
-      // Hardcoded values to avoid issues with BZ API "required" checks
-      normalizedParams.version = '---'
-      normalizedParams.op_sys = 'Unspecified' // NOTE: This might an actual value at a later evolution step of the app
-      normalizedParams[caseServerFieldMapping.category] = normalizedParams[caseServerFieldMapping.category] || '---'
-      normalizedParams[caseServerFieldMapping.subCategory] = normalizedParams[caseServerFieldMapping.subCategory] || '---'
-
-      normalizedParams.api_key = apiKey
-      let newCaseId
-      const handleError = (e, message) => {
-        logger.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.insert`,
-          args: [params],
-          step: 'post /rest/bug bugzilla API',
-          error: e
-        })
-        throw new Meteor.Error(`API Error: ${message}`)
-      }
-      let data
-      try {
-        data = callAPI('post', caseBzApiRoute, normalizedParams, false, true).data
-      } catch (e) {
-        handleError(e, e.response.data.message)
-      }
-      if (data.error) {
-        handleError(data, data.message)
-      }
-
-      newCaseId = data.id
-
-      logger.info(`a new case has been created by user ${Meteor.userId()}, case id: ${newCaseId}`)
-
-      // Creating report's dependency on this case
-      if (parentReportId) {
-        const payload = {
-          api_key: apiKey,
-          blocks: {
-            set: [parentReportId]
-          }
-        }
-        try {
-          callAPI('put', `${caseBzApiRoute}/${newCaseId}`, payload, false, true)
-        } catch (e) {
-          logger.error({
-            user: Meteor.userId(),
-            method: `${collectionName}.insert`,
-            args: [params],
-            step: 'put /rest/bug bugzilla API (creating report dependency)',
-            error: e
-          })
-          throw new Meteor.Error(`API Error: ${e.response.data.message}`)
-        }
-      }
-
-      try {
-        const resp = callAPI('get', idUrlTemplate(newCaseId), { api_key: process.env.BUGZILLA_ADMIN_KEY }, false, true)
-        const caseItem = factoryOptions.dataResolver(resp.data)[0]
-        publicationObj.handleAdded(caseItem)
-      } catch (e) {
-        logger.error({
-          user: Meteor.userId(),
-          method: `${collectionName}.insert`,
-          args: [params, { newUserEmail, newUserIsOccupant, parentReportId }],
-          step: 'Fetching case data for live update, proceeding with no error',
-          error: e
-        })
-      }
-
-      if (newUserEmail) {
-        createPendingInvitation(
-          newUserEmail, params.assignedUnitRole, newUserIsOccupant, newCaseId, unitItem.id, TYPE_ASSIGNED
-        )
-      }
+      const newCaseId = createCase(Meteor.user(), unitItem, { parentReportId, ...params }, newUserEmail, newUserIsOccupant)
       return { newCaseId }
     }
   },
