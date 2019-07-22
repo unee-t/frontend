@@ -4,7 +4,7 @@ import { logger } from '../../../util/logger'
 import type { Request, Response, NextFunc } from '../rest-types'
 
 type Extractor = {
-  func: (req:Request) => string|null,
+  func: (req:Request) => ?string,
   errorMsg: string
 }
 export const queryExtractor:Extractor = {
@@ -15,10 +15,32 @@ export const bodyExtractor:Extractor = {
   func: req => req.body.apiKey,
   errorMsg: '"apiKey" must be provided in the request\'s body'
 }
+export const headerExtractor:Extractor = {
+  func: req => {
+    const authHeader = req.headers.Authorization || req.headers.authorization
+    if (authHeader) {
+      const match = authHeader.match(/Bearer (.+)/)
+      if (match) return match[1]
+    }
+  },
+  errorMsg: '"apiKey" must be provided in the request\'s headers as an "Authorization: Bearer..." token'
+}
+export const makeComposedExtractor = (...extractors: Array<Extractor>):Extractor => ({
+  func: req => {
+    let apiKey
+    return extractors.some(ext => {
+      apiKey = ext.func(req)
+      return apiKey
+    }) ? apiKey : null
+  },
+  errorMsg: 'The request must fulfill one of the following: ' + extractors.map(ext => ext.errorMsg).join('; ')
+})
+
 export const retrieveKey = (keyStr: string) => {
   const user = Meteor.users.findOne({
     'mefeApiKeys.key': keyStr
   })
+
   const obfuscatedKey = `${keyStr.slice(0, 3)}***${keyStr.slice(-3)}`
   if (!user) {
     logger.warn(`No user found for apiKey ${obfuscatedKey}`)

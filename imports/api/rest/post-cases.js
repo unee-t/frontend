@@ -1,6 +1,6 @@
 // @flow
 import { Meteor } from 'meteor/meteor'
-import userApiKey, { bodyExtractor } from './middleware/user-api-key-middleware'
+import userApiKey, { bodyExtractor, headerExtractor, makeComposedExtractor } from './middleware/user-api-key-middleware'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../util/logger'
 import { createCase } from '../cases'
@@ -190,4 +190,4 @@ export default userApiKey((req: Request, res: Response) => {
   }
 
   res.send(200, { id: newCaseId })
-}, bodyExtractor)
+}, makeComposedExtractor(bodyExtractor, headerExtractor))
