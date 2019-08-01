@@ -21,14 +21,15 @@ export const whiteInput = {
 export const whiteTextInputStyle = {
   backgroundColor: '#fff',
   borderRadius: '16px',
-  borderColor: 'var(--moon-gray)',
+  // borderColor: 'var(--moon-gray)',
   lineHeight: '1.5',
   paddingLeft: '1rem',
   paddingRight: '1rem',
   paddingTop: '0.25rem',
   paddingBottom: '0.25rem',
-  borderStyle: 'solid',
-  borderWidth: '1px',
+  // borderStyle: 'solid',
+  // borderWidth: '1px',
+  boxShadow: '0 0 0 1px var(--moon-gray)',
   display: 'inline-block',
   outline: '0',
   width: '100%'

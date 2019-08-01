@@ -12,7 +12,8 @@ import type { InputAction } from './base/file-upload-processor'
 
 type CustAction = {
   ...InputAction,
-  caseId: number
+  caseId: number,
+  preview: string
 }
 
 export const createAttachment = fileUploadProcessor(CREATE_ATTACHMENT, {
@@ -33,6 +34,9 @@ export const createAttachment = fileUploadProcessor(CREATE_ATTACHMENT, {
   }),
   complete: (action, fileUrl) => {
     const custAction: CustAction = (action: any)
+
+    const type = action.file.type.split('/')[0]
+
     return [
       {
         ...custAction,
@@ -40,7 +44,7 @@ export const createAttachment = fileUploadProcessor(CREATE_ATTACHMENT, {
       },
       {
         type: CREATE_COMMENT,
-        text: '[!attachment]\n' + fileUrl,
+        text: `[!attachment(${type})]\n${fileUrl}`,
         caseId: custAction.caseId
       }
     ]

@@ -25,7 +25,9 @@ if (Meteor.isClient) {
       processId: 12828,
       preview: 'someImageDataUrl',
       caseId: 371,
-      file: 'not really a file'
+      file: {
+        type: 'zombie'
+      }
     }
     const uploadedUrl = 'https://res.clodinary.com/someUrl'
     before(() => {
@@ -167,7 +169,7 @@ if (Meteor.isClient) {
         })
         expect(nextSpy.getCall(6)).to.have.been.calledWithMatch({
           type: CREATE_COMMENT,
-          text: '[!attachment]\n' + uploadedUrl,
+          text: '[!attachment(zombie)]\n' + uploadedUrl,
           caseId: 371
         })
 

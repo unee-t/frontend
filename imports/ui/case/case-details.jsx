@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
-import _, { negate, flow } from 'lodash'
+import { negate, flow } from 'lodash'
 import moment from 'moment'
 import { attachmentTextMatcher, placeholderEmailMatcher } from '../../util/matchers'
 import { userInfoItem } from '/imports/util/user.js'
@@ -22,6 +22,9 @@ const mediaItemsPadding = 4 // Corresponds with the classNames set to the media 
 const mediaItemRowCount = 3
 
 class CaseDetails extends Component {
+  audioRefs = {}
+  imageMediaContainer = null
+  audioMediaContainer = null
   constructor (props) {
     super(props)
     this.state = {
@@ -30,7 +33,11 @@ class CaseDetails extends Component {
       immediateStatusVal: props.caseItem.status,
       chosenAssigned: null,
       usersToBeInvited: [],
-      normalizedUnitUsers: null
+      normalizedUnitUsers: null,
+      audioDurations: {},
+      playingAudioId: null,
+      computedAudioMediaItemWidth: 100,
+      computedImageMediaItemWidth: 100
     }
   }
 
@@ -41,9 +48,11 @@ class CaseDetails extends Component {
   }
 
   componentDidMount () {
-    this.setState({
-      computedMediaItemWidth: Math.round((this.refs.media.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
-    })
+    this.recalcMediaItemsWidth()
+  }
+
+  componentDidUpdate () {
+    this.recalcMediaItemsWidth()
   }
 
   componentWillReceiveProps (nextProps) {
@@ -56,6 +65,31 @@ class CaseDetails extends Component {
       this.setState({
         normalizedUnitUsers: this.normalizeUnitUsers()
       })
+    }
+  }
+
+  recalcMediaItemsWidth = () => {
+    const changes = {}
+    const { computedImageMediaItemWidth, computedAudioMediaItemWidth } = this.state
+    if (this.imageMediaContainer) {
+      const currImageItemWidth = Math.round((this.imageMediaContainer.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
+      if (computedImageMediaItemWidth !== currImageItemWidth) {
+        Object.assign(changes, {
+          computedImageMediaItemWidth: currImageItemWidth
+        })
+      }
+    }
+    if (this.audioMediaContainer) {
+      const currAudioItemWidth = Math.round((this.audioMediaContainer.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
+      if (computedAudioMediaItemWidth !== currAudioItemWidth) {
+        Object.assign(changes, {
+          computedAudioMediaItemWidth: Math.round((this.audioMediaContainer.clientWidth - (2 * mediaItemsPadding)) / mediaItemRowCount)
+        })
+      }
+    }
+
+    if (Object.keys(changes).length > 0) {
+      this.setState(changes)
     }
   }
 
@@ -75,6 +109,68 @@ class CaseDetails extends Component {
       changeSet.resolution = 'FIXED' // hardcoded for now
     }
     onFieldEdit(changeSet)
+  }
+
+  handleAudioRef = (el, id) => {
+    if (!el) return
+    this.audioRefs[id] = el
+  }
+
+  handleAudioMetaDataLoaded = (evt, id) => {
+    const { audioDurations } = this.state
+
+    this.setState({
+      audioDurations: {
+        ...audioDurations,
+        [id.toString()]: evt.target.duration
+      }
+    })
+  }
+
+  handleAudioAttachmentClicked = id => {
+    const audio = this.audioRefs[id.toString()]
+    const { playingAudioId } = this.state
+    if (playingAudioId === id) {
+      audio.removeEventListener('ended', this.handleAudioEnded)
+      audio.pause()
+      audio.currentTime = 0
+      this.setState({
+        playingAudioId: null
+      })
+    } else {
+      if (playingAudioId) {
+        const prevAudio = this.audioRefs[playingAudioId.toString()]
+        prevAudio.removeEventListener('ended', this.handleAudioEnded)
+        prevAudio.pause()
+        prevAudio.currentTime = 0
+      }
+      audio.addEventListener('ended', this.handleAudioEnded)
+      audio.play()
+      this.setState({
+        playingAudioId: id
+      })
+    }
+  }
+
+  handleAudioEnded = evt => {
+    evt.target.removeEventListener('ended', this.handleAudioEnded)
+    this.setState({
+      playingAudioId: null
+    })
+  }
+
+  formatAudioDuration = (duration) => {
+    if (!duration) {
+      return '--:--.--'
+    } else {
+      const minutes = Math.floor(duration / 60)
+      const minutesNorm = (minutes < 99 ? minutes : 99).toString()
+      const minutesStr = minutesNorm.length === 2 ? minutesNorm : '0' + minutesNorm
+      const seconds = Math.floor(duration % 60).toString()
+      const secondsStr = seconds.length === 2 ? seconds : '0' + seconds
+      const millisStr = (duration % 1).toFixed(3).slice(2)
+      return `${minutesStr}:${secondsStr}.${millisStr}`
+    }
   }
 
   renderTitle = ({ id, title }) => (
@@ -428,23 +524,92 @@ class CaseDetails extends Component {
     )
   }
   renderMediaSection (comments) {
-    const attachments = _.chain(comments)
-      .filter(c => attachmentTextMatcher(c.text))
-      .map(c => [c.text.split('\n')[1], c.id])
-      .value()
-    const size = this.state.computedMediaItemWidth
+    const {
+      audioDurations, playingAudioId, computedAudioMediaItemWidth: audioSize, computedImageMediaItemWidth: imageSize
+    } = this.state
+    const attachments = comments
+      .reduce((all, c) => {
+        const type = attachmentTextMatcher(c.text)
+        if (type) {
+          switch (type) {
+            case 'image':
+              all.images.push([c.text.split('\n')[1], c.id])
+              break
+            case 'audio':
+              const creatorText = c.creatorUser
+                ? (c.creatorUser.profile.name || c.creatorUser.emails[0].address.split('@')[0])
+                : c.creator.split('@')[0]
+              all.audio.push([c.text.split('\n')[1], c.id, creatorText])
+          }
+        }
+
+        return all
+      }, { images: [], audio: [] })
+    // const size = this.state.computedMediaItemWidth
     return (
       <div className='bt bw3 b--light-gray'>
-        <InfoItemContainer>
-          {infoItemLabel('Attachments:')}
-          <div className='ma1 grid col3-1fr gap1 flow-row' ref='media'>
-            {attachments.map(([url, id], ind) => (
-              <img src={size && fitDimensions(url, size, size)} alt={url} key={ind}
-                onClick={() => this.props.onSelectAttachment(id)}
-              />
-            ))}
+        {Object.keys(attachments).some(attType => attachments[attType].length > 0) && (
+          <div>
+            <div className='pl3 mt2 fw5 silver'>
+              ATTACHMENTS
+            </div>
+            {attachments.images.length > 0 && (
+              <InfoItemContainer>
+                {infoItemLabel(`Images (${attachments.images.length})`)}
+                <div className='mv2 grid col3-1fr gap1 flow-row' ref={el => { this.imageMediaContainer = el }}>
+                  {attachments.images.map(([url, id], ind) => (
+                    <img
+                      className='overflow-hidden'
+                      src={imageSize && fitDimensions(url, imageSize, imageSize)}
+                      width={imageSize} height={imageSize} alt={url} key={ind}
+                      onClick={() => this.props.onSelectAttachment(id)}
+                    />
+                  ))}
+                </div>
+              </InfoItemContainer>
+            )}
+            {attachments.audio.length > 0 && (
+              <InfoItemContainer>
+                {infoItemLabel(`Voice Memos (${attachments.audio.length})`)}
+                <div className='mv2 grid col3-1fr gap1 flow-row' ref={el => { this.audioMediaContainer = el }}>
+                  {attachments.audio.map(([url, id, creatorText], ind) => (
+                    <div
+                      key={ind}
+                      className='bg-very-light-gray ba b--gray-93 flex flex-column items-center justify-center relative'
+                      style={{ width: audioSize + 'px', height: audioSize + 'px' }}
+                      onClick={() => this.handleAudioAttachmentClicked(id)}
+                    >
+                      {playingAudioId === id && (
+                        <div className='absolute bg-black-70 left-0 top-0 bottom-0 right-0 flex items-center justify-center'>
+                          <FontIcon className='material-icons' style={{ fontSize: '28px' }} color='#fff'>pause</FontIcon>
+                        </div>
+                      )}
+                      <FontIcon className='material-icons' color='#555'>keyboard_voice</FontIcon>
+                      <div className='mt1 f7 mid-gray fw5'>
+                        {creatorText}
+                      </div>
+                      <div className='mt1 flex items-center pr1'>
+                        <FontIcon
+                          className={'material-icons' + (playingAudioId === id ? ' o-0' : '')}
+                          style={{ fontSize: 16 }}
+                          color='#555'
+                        >
+                          play_arrow
+                        </FontIcon>
+                        <div className='ml1 f7 mid-gray'>{this.formatAudioDuration(audioDurations[id.toString()])}</div>
+                      </div>
+                      <audio
+                        src={url}
+                        onLoadedMetadata={evt => this.handleAudioMetaDataLoaded(evt, id)}
+                        ref={el => this.handleAudioRef(el, id)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </InfoItemContainer>
+            )}
           </div>
-        </InfoItemContainer>
+        )}
       </div>
     )
   }

@@ -20,7 +20,7 @@ import FileInput from '../components/file-input'
 import Preloader from '../preloader/preloader'
 import { infoItemMembers, infoItemLabel } from '../util/static-info-rendering'
 import { userInfoItem } from '../../util/user'
-import { imageInputEventHandler } from '../util/dom-api'
+import { fileInputReaderEventHandler } from '../util/dom-api'
 import { makeMatchingUser } from '../../api/custom-users'
 import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
@@ -231,7 +231,7 @@ class ReportWizard extends Component {
                           ))}
                           <div className='mt2'>
                             <MenuItem innerDivStyle={resetMenuItemDivStyle}>
-                              <FileInput onFileSelected={imageInputEventHandler(
+                              <FileInput onFileSelected={fileInputReaderEventHandler(
                                 (preview, file) => dispatch(addAttachment(reportItem.id, preview, file))
                               )}>
                                 <div className='h3-5 w3-5 flex flex-column items-center justify-center ba b--moon-gray'>

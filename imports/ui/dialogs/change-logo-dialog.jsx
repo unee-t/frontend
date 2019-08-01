@@ -8,7 +8,7 @@ import MenuItem from 'material-ui/MenuItem'
 import { resetMenuItemDivStyle } from '../general.mui-styles'
 import FileInput from '../components/file-input'
 import { UploadIcon } from '../components/generic-icons'
-import { imageInputEventHandler } from '../util/dom-api'
+import { fileInputReaderEventHandler } from '../util/dom-api'
 import {
   modalTitleStyle,
   modalBodyStyle,
@@ -51,7 +51,7 @@ class ChangeLogoDialog extends React.Component<Props, State> {
     }
   }
 
-  handleFileSelected = imageInputEventHandler(
+  handleFileSelected = fileInputReaderEventHandler(
     (preview: string, file: File) => {
       this.uploadedFile = file
       this.setState({

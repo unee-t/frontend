@@ -1,10 +1,17 @@
 import { Meteor } from 'meteor/meteor'
 
 export const attachmentTextMatcher = text => {
-  const cloudinaryDownloadUrl = Meteor.settings.public.CLOUDINARY_URL.replace('/api.', '/res.').replace('/v1_1', '')
-  const previewPrefix = 'data:image/'
-  const prefix = '[!attachment]\n'
-  return text.indexOf(prefix + cloudinaryDownloadUrl) === 0 || text.indexOf(prefix + previewPrefix) === 0
+  const cloudinaryDownloadUrl = Meteor.settings.public.CLOUDINARY_URL.replace('/api.', '/res.').replace(/\/v1_1(\/[^/]+\/).*/, '$1')
+  const attachmentRegexStr = '^\\[!attachment\\(([a-zA-Z]+)\\)\\]\\n'
+  const previewPrefixRegex = new RegExp(attachmentRegexStr + 'data:')
+  const blobPrefixRegex = new RegExp(attachmentRegexStr + 'blob:')
+  const cloudinaryPrefixRegex = new RegExp(attachmentRegexStr + cloudinaryDownloadUrl)
+  const legacyPrefixRegex = new RegExp('^\\[!attachment\\]\\n' + cloudinaryDownloadUrl)
+  const match = text.match(previewPrefixRegex) ||
+    text.match(cloudinaryPrefixRegex) ||
+    text.match(legacyPrefixRegex) ||
+    text.match(blobPrefixRegex)
+  return match && (match.length > 1 ? match[1] : 'image')
 }
 
 const isTemporaryEmail = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/

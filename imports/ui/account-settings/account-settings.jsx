@@ -13,7 +13,7 @@ import FlatButton from 'material-ui/FlatButton'
 
 import { infoItemMembers } from '../util/static-info-rendering'
 import FileInput from '../components/file-input'
-import { imageInputEventHandler } from '../util/dom-api'
+import { fileInputReaderEventHandler } from '../util/dom-api'
 import InputRow from '../components/input-row'
 import { editProfileField, uploadAvatarImage } from '/imports/state/actions/account-edit.actions'
 import { fitDimensions } from '../../util/cloudinary-transformations'
@@ -110,7 +110,7 @@ class AccountSettings extends React.Component<Props, State> {
                     {(user.profile.name || user.emails[0].address.split('@')[0]).charAt(0).toUpperCase()}
                   </div>
                 )}
-                <FileInput onFileSelected={imageInputEventHandler((preview, file) => {
+                <FileInput onFileSelected={fileInputReaderEventHandler((preview, file) => {
                   this.setState({
                     avatarPreview: preview
                   })

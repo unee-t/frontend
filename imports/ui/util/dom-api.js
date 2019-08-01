@@ -1,13 +1,13 @@
 /* global FileReader */
-export const imageInputEventHandler = handlerFunc => evt => {
+export const fileInputReaderEventHandler = handlerFunc => evt => {
   evt.persist()
   const file = evt.target.files[0]
   if (!file) return handlerFunc(null, null)
 
   const reader = new FileReader()
   reader.onload = evt => {
-    const preview = evt.target.result
-    handlerFunc(preview, file)
+    const content = evt.target.result
+    handlerFunc(content, file)
   }
   reader.readAsDataURL(file)
 }

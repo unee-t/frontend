@@ -19,11 +19,19 @@ export const retryButtonStyle = {
 }
 export const replayIconColor = '#fff'
 
-export const sendIconStyle = {
+const fabIconStyle = {
   height: 34,
   lineHeight: '34px',
-  width: 34,
+  width: 34
+}
+export const sendIconStyle = {
+  ...fabIconStyle,
   fontSize: 20
+}
+
+export const recButtonIconStyle = {
+  ...fabIconStyle,
+  fontSize: 30
 }
 
 export const infoIconStyle = {
