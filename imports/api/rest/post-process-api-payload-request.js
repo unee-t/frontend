@@ -680,7 +680,9 @@ export default (req, res) => {
 
   const existingPayload = InternalApiPayloads.findOne({ _id: requestId })
   if (existingPayload) {
-    if (existingPayload.isProcessing) {
+    const lastTrialTime = existingPayload.lastRetriedAt || existingPayload.acceptedAt
+    const hasExpired = existingPayload.isProcessing && (Date.now() - lastTrialTime.getTime() > 6e4)
+    if (existingPayload.isProcessing && !hasExpired) {
       logger.error(`API request ${requestId} is still being  processed. Blocking retried request`)
       InternalApiPayloads.update({
         _id: requestId
@@ -690,7 +692,10 @@ export default (req, res) => {
         }
       })
       return res.send(503, 'Processing similar payload')
-    } else if (!existingPayload.done) {
+    } else if (!existingPayload.done || hasExpired) {
+      if (hasExpired) {
+        logger.warn(`API payload ${requestId} has been processing for over 1 minute, so it is persumed to be in limbo and will be retried`)
+      }
       logger.warn(`Repeated request initiated a retrial attempt for API payload ${requestId}`)
       InternalApiPayloads.update({
         _id: requestId
