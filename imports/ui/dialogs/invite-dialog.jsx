@@ -3,11 +3,11 @@ import { connect } from 'react-redux'
 import { Route } from 'react-router-dom'
 import { replace, goBack } from 'react-router-redux'
 import PropTypes from 'prop-types'
-import Dialog from 'material-ui/Dialog'
 import FontIcon from 'material-ui/FontIcon'
 import CircularProgress from 'material-ui/CircularProgress'
 import RaisedButton from 'material-ui/RaisedButton'
 import ErrorDialog from './error-dialog'
+import HeightHackDialog from './height-hack-dialog'
 import EmailInput from '../components/email-input'
 import UnitRoleSelect from '../components/unit-role-select'
 
@@ -41,10 +41,8 @@ class InviteDialog extends Component {
       isOccupant: false,
       inputErrorModalOpen: false,
       inviteeEmail: '',
-      currMaxHeight: window.innerHeight - DIALOG_PADDING
+      dialogHeight: 400 - DIALOG_PADDING
     }
-
-    window.addEventListener('resize', this.handleWindowResize)
   }
 
   componentDidUpdate () {
@@ -54,16 +52,6 @@ class InviteDialog extends Component {
         this.inputToFocus.focus()
       }
     }, 300)
-  }
-
-  componentWillUnmount () {
-    window.removeEventListener('resize', this.handleWindowResize)
-  }
-
-  handleWindowResize = () => {
-    this.setState({
-      currMaxHeight: window.innerHeight - DIALOG_PADDING
-    })
   }
 
   handleSendInviteClick = () => {
@@ -92,11 +80,13 @@ class InviteDialog extends Component {
       title, additionalOperationText, mainOperationText, onMainOperation, disableMainOperation, linkLabelForNewUser,
       mainOperationSuccessContent, dispatch, isUnitOwner, unitRoleType
     } = this.props
-    const { selectedRole, isOccupant, inputErrorModalOpen, inviteeEmail, currMaxHeight } = this.state
+    const { selectedRole, isOccupant, inputErrorModalOpen, inviteeEmail, dialogHeight } = this.state
     return (
       <Route path={`${basePath}/${relPath}`} children={({ match }) => {
         return (
-          <Dialog
+          <HeightHackDialog
+            onHeightChange={val => this.setState({ dialogHeight: val })}
+            padding={DIALOG_PADDING}
             title={invitationState.loading ? 'Please wait... '
               : (!invitationState.completed && !mainOperationSuccessContent) ? title
                 : null
@@ -105,8 +95,7 @@ class InviteDialog extends Component {
             modal
             open={!!match}
             contentStyle={modalCustomContentStyle}
-            bodyStyle={Object.assign({ maxHeight: currMaxHeight }, modalBodyStyle)}
-            autoDetectWindowHeight={false}
+            bodyStyle={modalBodyStyle}
           >
             <a
               onClick={() => {
@@ -123,7 +112,7 @@ class InviteDialog extends Component {
             <Route exact path={`${basePath}/${relPath}`} render={() => mainOperationSuccessContent
               ? successWrapper(mainOperationSuccessContent)
               : (
-                <div className='mt2 flex flex-column flex-grow' style={{ maxHeight: currMaxHeight - DIALOG_INTERNAL_PADDING }}>
+                <div className='mt2 flex flex-column flex-grow' style={{ maxHeight: dialogHeight - DIALOG_INTERNAL_PADDING }}>
                   {selectControlsRenderer({
                     users: potentialInvitees,
                     inputRefFn: el => { this.inputToFocus = el }
@@ -217,7 +206,7 @@ class InviteDialog extends Component {
                 </div>
               )} />
             )}
-          </Dialog>
+          </HeightHackDialog>
         )
       }} />
     )

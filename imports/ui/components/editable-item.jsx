@@ -34,9 +34,13 @@ export default class EditableItem extends Component {
     this.props.onEdit(value)
   }
   render () {
-    const { label, isMultiLine, selectionList, disabled, name, underlineShow, inpRef } = this.props
+    const { label, isMultiLine, selectionList, disabled, name, underlineShow, inpRef, rowsMax } = this.props
     const { value } = this.state
 
+    const optionalAttrs = {}
+    if (rowsMax) {
+      optionalAttrs.rowsMax = rowsMax
+    }
     if (!selectionList) {
       return (
         <StickyTextField
@@ -52,6 +56,7 @@ export default class EditableItem extends Component {
           value={value}
           inpRef={inpRef}
           onChange={({ target: { value } }) => this.handleEdit(value)}
+          {...optionalAttrs}
         />
       )
     } else {
@@ -84,6 +89,7 @@ EditableItem.propTypes = {
   currentValue: PropTypes.string,
   selectionList: PropTypes.array,
   disabled: PropTypes.bool,
+  rowsMax: PropTypes.number,
   inpRef: PropTypes.func, // relevant only if "selectionList" is undefined
   underlineShow: PropTypes.bool // relevant only if "selectionList" is undefined
 }

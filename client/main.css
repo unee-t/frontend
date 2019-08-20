@@ -68,6 +68,10 @@
   color: var(--success-green);
 }
 
+.very-light-gray {
+  color: var(--very-light-gray);
+}
+
 .semi-dark-gray {
   color: var(--semi-dark-gray);
 }
@@ -170,6 +174,7 @@
 .h3 { height: 4rem; }
 .h4 { height: 8rem; }
 .h5 { height: 16rem; }
+.h6 { height: 32rem; }
 
 /* custom addition */
 .h40px { height: 40px; }

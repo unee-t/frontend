@@ -305,9 +305,7 @@ const MobileHeader = props => {
         )
       }} />
       <Route path={match.url} render={routeProps => (
-        <InnerAppBar
-          title={caseItem.title} onBack={() => handleBack()}
-        />
+        <InnerAppBar title={caseItem.title} onBack={() => handleBack()} />
       )} />
     </Switch>
   )

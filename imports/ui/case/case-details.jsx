@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Link, withRouter } from 'react-router-dom'
+import { Link, withRouter, Route } from 'react-router-dom'
+import { goBack } from 'react-router-redux'
+import { connect } from 'react-redux'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
@@ -17,9 +19,47 @@ import ErrorDialog from '../dialogs/error-dialog'
 import { infoItemLabel, InfoItemContainer, InfoItemRow } from '../util/static-info-rendering'
 import AddUserControlLine from '../components/add-user-control-line'
 import AssigneeSelectionList from '../components/assignee-selection-list'
+import CaseTargetAttrDialog from '../dialogs/case-target-attr-dialog'
 
 const mediaItemsPadding = 4 // Corresponds with the classNames set to the media items
 const mediaItemRowCount = 3
+
+const renderEditableTargetAttribute = (
+  {
+    attrName, value, targetDate, editUrl, showTime = false
+  }
+) => (
+  <InfoItemContainer>
+    {infoItemLabel(`${attrName}:`)}
+    <div className='flex items-end'>
+      <div className='flex-grow'>
+        {value
+          ? (
+            <div className='mid-gray lh-copy'>
+              {value}
+            </div>
+          ) : (
+            <div className='moon-gray i lh-copy'>
+              (Not specified)
+            </div>
+          )
+        }
+        {targetDate && (
+          <div className='mt2 f7 warn-crimson b'>
+            Deadline: {moment(targetDate).format('YYYY-MM-DD' + (showTime ? ', h:mm' : ''))}{showTime ? ' hrs' : ''}
+          </div>
+        )}
+      </div>
+      <div>
+        <Link to={editUrl} className='link outline-0'>
+          <IconButton>
+            <FontIcon className='material-icons' color='#999'>edit</FontIcon>
+          </IconButton>
+        </Link>
+      </div>
+    </div>
+  </InfoItemContainer>
+)
 
 class CaseDetails extends Component {
   audioRefs = {}
@@ -458,35 +498,61 @@ class CaseDetails extends Component {
       solutionDeadline
     }
   ) => {
-    const { onFieldEdit } = this.props
+    const { match, dispatch } = this.props
     return (
       <div className='bt bw3 b--very-light-gray'>
-        <InfoItemContainer>
-          <EditableItem
-            label='Solution'
+        <div className='pl3 mt2 fw5 silver'>
+          FOLLOW UP
+        </div>
+        {renderEditableTargetAttribute({
+          attrName: 'Solution',
+          value: solution,
+          targetDate: solutionDeadline && new Date(solutionDeadline),
+          editUrl: `${match.url}/solution`
+        })}
+        <Route path={`${match.url}/solution`} children={({ match: subMatch }) => (
+          <CaseTargetAttrDialog
+            show={!!subMatch}
+            attrName='Solution'
             initialValue={solution}
-            onEdit={val => onFieldEdit({ solution: val })}
-            isMultiLine
+            initialDate={solutionDeadline && new Date(solutionDeadline)}
+            onSubmit={(value, date) => {
+              this.props.onFieldEdit({
+                solution: value,
+                solutionDeadline: moment(date).format('YYYY-MM-DD')
+              })
+              dispatch(goBack())
+            }}
+            onCancel={() => {
+              dispatch(goBack())
+            }}
           />
-          {solutionDeadline && (
-            <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(solutionDeadline).format('YYYY-MM-DD, h:mm')} hrs
-            </div>
-          )}
-        </InfoItemContainer>
-        <InfoItemContainer>
-          <EditableItem
-            label='Next steps'
+        )} />
+        {renderEditableTargetAttribute({
+          attrName: 'Next steps',
+          value: nextSteps,
+          targetDate: nextStepsBy && new Date(nextStepsBy),
+          editUrl: `${match.url}/nextSteps`
+        })}
+        <Route path={`${match.url}/nextSteps`} children={({ match: subMatch }) => (
+          <CaseTargetAttrDialog
+            show={!!subMatch}
+            attrName='Next Steps'
             initialValue={nextSteps}
-            onEdit={val => onFieldEdit({ nextSteps: val })}
-            isMultiLine
+            initialDate={nextStepsBy && new Date(nextStepsBy)}
+            onSubmit={(value, date) => {
+              this.props.onFieldEdit({
+                nextSteps: value,
+                // nextStepsBy: date.toISOString().slice(0, -5) + 'Z' // Broken
+                nextStepsBy: moment(date).format('YYYY-MM-DD')
+              })
+              dispatch(goBack())
+            }}
+            onCancel={() => {
+              dispatch(goBack())
+            }}
           />
-          {solutionDeadline && (
-            <div className='mt2 f7 warn-crimson b'>
-              Deadline: {moment(nextStepsBy).format('YYYY-MM-DD, h:mm')} hrs
-            </div>
-          )}
-        </InfoItemContainer>
+        )} />
       </div>
     )
   }
@@ -637,4 +703,4 @@ CaseDetails.propTypes = {
   caseFieldValues: PropTypes.object.isRequired
 }
 
-export default withRouter(CaseDetails)
+export default connect(() => ({}))(withRouter(CaseDetails))

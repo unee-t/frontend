@@ -683,7 +683,9 @@ Meteor.methods({
     editableFields: [
       'title',
       'solution',
+      'solutionDeadline',
       'nextSteps',
+      'nextStepsBy',
       'status',
       'resolution',
       'category',
