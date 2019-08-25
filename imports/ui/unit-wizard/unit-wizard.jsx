@@ -17,6 +17,7 @@ import ErrorDialog from '../dialogs/error-dialog'
 import { possibleRoles } from '../../api/unit-roles-data'
 import { unitTypes } from '../../api/unit-meta-data'
 import { createUnit, clearError } from './unit-wizard.actions'
+import { countryListItems } from '../util/common-renderers'
 
 import { controlLabelStyle } from '../components/form-controls.mui-styles'
 
@@ -43,21 +44,6 @@ const objectTypeFields = [
   'type',
   'role'
 ]
-
-const countryList = countries.map(({ alpha2: code, name }) => {
-  // Manual ellipsis
-  const displayName = name.length > 34 // max tested length on an iphone 5 screen width
-    ? name.slice(0, 31) + '...'
-    : name
-  return (
-    {
-      text: displayName,
-      value: (
-        <MenuItem key={code} value={code} primaryText={displayName} />
-      )
-    }
-  )
-})
 
 class UnitWizard extends Component {
   constructor () {
@@ -199,7 +185,7 @@ class UnitWizard extends Component {
                 filter={AutoComplete.caseInsensitiveFilter}
                 maxSearchResults={4}
                 onNewRequest={this.handleNewRequest}
-                dataSource={countryList}
+                dataSource={countryListItems}
                 onUpdateInput={this.handleUpdateInput}
                 searchText={this.state.searchText}
                 errorText={this.state.countryValid}

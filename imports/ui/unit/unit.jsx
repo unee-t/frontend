@@ -9,34 +9,28 @@ import { Tabs, Tab } from 'material-ui/Tabs'
 import SwipeableViews from 'react-swipeable-views'
 import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
-import IconButton from 'material-ui/IconButton'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, severityIndex, collectionName as casesCollName } from '../../api/cases'
 import Reports, { collectionName as reportsCollName, REPORT_DRAFT_STATUS } from '../../api/reports'
-import { placeholderEmailMatcher } from '../../util/matchers'
 import InnerAppBar from '../components/inner-app-bar'
-import ConfirmationDialog from '../dialogs/confirmation-dialog'
 import CreateReportDialog from '../dialogs/create-report-dialog'
 import { makeMatchingUser } from '../../api/custom-users'
 import Preloader from '../preloader/preloader'
-import { infoItemMembers } from '../util/static-info-rendering'
-import { userInfoItem } from '../../util/user'
 import CaseMenuItem from '../components/case-menu-item'
 import { ReportIcon } from '../report/report-icon'
 import { SORT_BY, sorters, labels } from '../explorer-components/sort-items'
 import { Sorter } from '../explorer-components/sorter'
 import { StatusFilter } from '../explorer-components/status-filter'
 import { RoleFilter } from '../explorer-components/role-filter'
-import { removeFromUnit, removeCleared } from '/imports/state/actions/unit-invite.actions'
+import UnitOverviewTab from './unit-overview-tab'
 
 import {
   menuItemDivStyle
 } from '../general.mui-styles'
-import CircularProgress from 'material-ui/CircularProgress'
-import ErrorDialog from '../dialogs/error-dialog'
+import FlatButton from 'material-ui/FlatButton'
 
 function NoItem ({ item, iconType }) {
   return (
@@ -63,6 +57,8 @@ function NoItem ({ item, iconType }) {
 const viewsOrder = ['cases', 'reports', 'overview']
 
 class Unit extends Component {
+  saveHandler = null
+
   constructor () {
     super(...arguments)
     this.state = {
@@ -71,7 +67,8 @@ class Unit extends Component {
       selectedRoleFilter: null,
       sortBy: null,
       userToRemove: null,
-      showRemovalConfirmation: false
+      showRemovalConfirmation: false,
+      editingDetails: false
     }
   }
 
@@ -114,15 +111,11 @@ class Unit extends Component {
 
   handleChange = val => {
     const { match, dispatch } = this.props
+    this.setState({ editingDetails: false })
     dispatch(push(`${match.url}/${viewsOrder[val]}`))
   }
 
-  handleRemovalClearRequested = () => {
-    const ongoingRemoval = this.getOngoingRemoval(this.props, this.state)
-    this.props.dispatch(removeCleared(ongoingRemoval.userEmail, ongoingRemoval.unitBzId))
-  }
-
-  componentWillReceiveProps (nextProps, nextState) {
+  componentWillReceiveProps (nextProps) {
     const { caseList } = this.props
     if ((!caseList && nextProps.caseList) || (caseList && caseList.length !== nextProps.caseList.length)) {
       this.setState({
@@ -130,11 +123,6 @@ class Unit extends Component {
           severityIndex.indexOf(a.severity) - severityIndex.indexOf(b.severity)
         )
       })
-    }
-    const prevOngoingRemoval = this.getOngoingRemoval(this.props, this.state)
-    const nextOngoingRemoval = this.getOngoingRemoval(nextProps, nextState)
-    if (prevOngoingRemoval && nextOngoingRemoval && nextOngoingRemoval.complete) {
-      this.handleRemovalClearRequested()
     }
   }
 
@@ -178,19 +166,12 @@ class Unit extends Component {
     })
   }
 
-  getOngoingRemoval (props, state) {
-    const { userToRemove } = state
-    const { unitItem, removalProcesses } = props
-
-    return userToRemove ? removalProcesses.find(p => p.userEmail === userToRemove.email && p.unitBzId === unitItem.id) : null
-  }
-
   render () {
     const {
       unitItem, isLoading, unitError, casesError, unitUsers, caseList, reportList, reportsError, dispatch, match, currentUser
     } = this.props
     const {
-      sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy, userToRemove, showRemovalConfirmation
+      sortedCases, selectedStatusFilter, selectedRoleFilter, sortBy, editingDetails
     } = this.state
     const { filteredCases } = this
     const rootMatch = match
@@ -211,11 +192,14 @@ class Unit extends Component {
         color: 'var(--bondi-blue)',
         href: `${rootMatch.url}/${viewsOrder[1]}/new`,
         icon: 'add'
+      },
+      {
+        color: 'var(--bondi-blue)',
+        condition: () => isOwner,
+        action: () => this.setState({ editingDetails: !editingDetails }),
+        icon: editingDetails ? 'clear' : 'edit'
       }
     ]
-    const ongoingRemoval = this.getOngoingRemoval(this.props, this.state)
-    const currLoginName = currentUser.bugzillaCreds.login
-
     const metaData = unitItem.metaData() || {}
     const unitName = metaData.displayName || unitItem.name
 
@@ -226,6 +210,18 @@ class Unit extends Component {
           shadowless
           title={unitName}
           onBack={() => dispatch(push(match.url.split('/').slice(0, -1).join('/')))}
+          rightIconElement={editingDetails ? (
+            <FlatButton onClick={() => {
+              this.saveHandler && this.saveHandler()
+              this.setState({
+                editingDetails: false
+              })
+            }}>
+              <span className='f4 white'>
+                Save
+              </span>
+            </FlatButton>
+          ) : null}
         />
         <Route path={`${rootMatch.url}/:viewName`} children={({ match }) => {
           const viewIdx = match ? viewsOrder.indexOf(match.params.viewName) : 0
@@ -244,9 +240,9 @@ class Unit extends Component {
               <div className='flex-grow flex flex-column overflow-auto'>
                 <SwipeableViews
                   resistance
-                  style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}
                   containerStyle={{ flex: 1 }}
-                  slideStyle={{ display: 'flex', flexDirection: 'column' }}
+                  slideStyle={{ display: 'flex', flexDirection: 'column', maxHeight: '100%', overflowX: 'hidden' }}
                   index={viewIdx}
                   onChangeIndex={this.handleChange}
                 >
@@ -320,122 +316,33 @@ class Unit extends Component {
                       />
                     )} />
                   </div>
-                  <div className='flex-grow bg-very-light-gray'>
-                    <div className='bg-white card-shadow-1 pa3'>
-                      <div>
-                        {infoItemMembers('Unit name', unitName)}
-                      </div>
-                      <div className='mt3'>
-                        {infoItemMembers('Unit group', unitItem.classification)}
-                      </div>
-                      <div className='mt3'>
-                        {infoItemMembers('Unit type', metaData.unitType)}
-                      </div>
-                      <div className='mt3'>
-                        {infoItemMembers('Additional description', metaData.moreInfo || unitItem.description)}
-                      </div>
-                    </div>
-                    <div className='mt2 bg-white card-shadow-1 pa3'>
-                      <div className='fw5 silver lh-title'>
-                        ADDRESS
-                      </div>
-                      <div className='mt1'>
-                        {infoItemMembers('Address', metaData.streetAddress)}
-                      </div>
-                      <div className='mt3'>
-                        {infoItemMembers('City', metaData.city)}
-                      </div>
-                      <div className='mt3'>
-                        {infoItemMembers('Country', metaData.country)}
-                      </div>
-                      <div className='mt3 flex'>
-                        <div className='flex-grow'>
-                          {infoItemMembers('State', metaData.state)}
-                        </div>
-                        <div className='flex-grow'>
-                          {infoItemMembers('Zip / Postal code', metaData.zipCode)}
-                        </div>
-                      </div>
-                    </div>
-                    <div className='mt2 bg-white card-shadow-1 pa3'>
-                      <div className='fw5 silver lh-title'>
-                        PEOPLE
-                      </div>
-                      {ongoingRemoval && ongoingRemoval.pending ? (
-                        <div className='flex items-center justify-center pv4'>
-                          <CircularProgress size={70} thickness={5} />
-                        </div>
-                      ) : unitUsers
-                        .filter(user => !placeholderEmailMatcher(user.login))
-                        .sort((a, b) => a._id === currentUser._id // Sorting for the curr user to appear first
-                          ? 1
-                          : b._id === currentUser._id
-                            ? -1
-                            : 0
-                        )
-                        .map(user => (
-                          <div className='mt1' key={user.login}>
-                            {userInfoItem(user, isOwner && currLoginName !== user.login && (user => !!user.email && (
-                              <IconButton onClick={() => this.setState({
-                                userToRemove: user,
-                                showRemovalConfirmation: true
-                              })}>
-                                <FontIcon className='material-icons' color='#999'>close</FontIcon>
-                              </IconButton>
-                            )))}
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </div>
+                  <UnitOverviewTab
+                    isEditing={editingDetails}
+                    registerSaveHandler={handler => { this.saveHandler = handler }}
+                    {...{ unitItem, metaData, unitUsers, isOwner }}
+                  />
                 </SwipeableViews>
               </div>
 
-              {fabDescriptors.map((desc, ind) => (
-                <div key={ind} className='absolute bottom-1 right-1'>
-                  <CSSTransition in={viewIdx === ind} timeout={500} classNames='zoom-effect' unmountOnExit>
-                    <FloatingActionButton
-                      backgroundColor={desc.color}
-                      className='zoom-effect'
-                      onClick={() => dispatch(push(desc.href))}
-                    >
-                      <FontIcon className='material-icons'>{desc.icon}</FontIcon>
-                    </FloatingActionButton>
-                  </CSSTransition>
-                </div>
-              ))}
+              {fabDescriptors
+                .filter(desc => !desc.condition || desc.condition())
+                .map((desc, ind) => (
+                  <div key={ind} className='absolute bottom-1 right-1'>
+                    <CSSTransition in={viewIdx === ind} timeout={500} classNames='zoom-effect' unmountOnExit>
+                      <FloatingActionButton
+                        backgroundColor={desc.color}
+                        className='zoom-effect'
+                        onClick={() => desc.action ? desc.action() : dispatch(push(desc.href))}
+                      >
+                        <FontIcon className='material-icons'>{desc.icon}</FontIcon>
+                      </FloatingActionButton>
+                    </CSSTransition>
+                  </div>
+                ))
+              }
             </div>
           )
         }} />
-        <ConfirmationDialog
-          show={!!showRemovalConfirmation}
-          onConfirm={() => {
-            this.setState({ showRemovalConfirmation: false })
-            dispatch(removeFromUnit(userToRemove.email, unitItem.id))
-          }}
-          onCancel={() => this.setState({ userToRemove: null, showRemovalConfirmation: false })}
-          confirmLabel='Remove User'
-          title={userToRemove ? (
-            <div>
-              <div className='tc fw3'>
-                Are you sure you want to remove
-                <span className='bondi-blue'> {userToRemove.name || userToRemove.login.split('@')[0]} </span>
-                from the unit
-                <span className='b'> {unitName}</span>
-                ?
-              </div>
-            </div>
-          ) : ''}
-        >
-          <div className='tc lh-copy'>
-            This person will not be able to create new cases, post any comments or receive any notifications for this unit.
-          </div>
-        </ConfirmationDialog>
-        <ErrorDialog
-          show={!!(ongoingRemoval && ongoingRemoval.error)}
-          text={ongoingRemoval && ongoingRemoval.error ? ongoingRemoval.error.message : 'Error'}
-          onDismissed={this.handleRemovalClearRequested}
-        />
       </div>
     )
   }
@@ -448,14 +355,11 @@ Unit.propTypes = {
   isLoading: PropTypes.bool,
   unitUsers: PropTypes.array,
   caseList: PropTypes.array,
-  reportList: PropTypes.array,
-  removalProcesses: PropTypes.array.isRequired
+  reportList: PropTypes.array
 }
 
 let unitError, casesError, reportsError
-export default connect(
-  ({ unitUserRemovalState }) => ({ removalProcesses: unitUserRemovalState })
-)(createContainer((props) => {
+export default connect()(createContainer((props) => {
   const { unitId } = props.match.params
   const unitHandle = Meteor.subscribe(`${unitsCollName}.byIdWithUsers`, unitId, {
     onStop: error => {

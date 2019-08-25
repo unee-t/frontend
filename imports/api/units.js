@@ -420,7 +420,12 @@ if (Meteor.isServer) {
           moreInfo: 1,
           unitType: 1,
           ownerIds: 1,
-          disabled: 1
+          disabled: 1,
+          country: 1,
+          state: 1,
+          streetAddress: 1,
+          zipCode: 1,
+          city: 1
         }),
         withRolesData(rolesProjByOwnership, rolesSelectionByOwnership)
       ],
