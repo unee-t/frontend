@@ -48,6 +48,12 @@ export default class CaseTargetAttrDialog extends React.Component<Props, State> 
     hideDateRow: false
   }
 
+  textInput: ?{
+    getInputNode: () => {
+      setSelectionRange: (start: number, end: number) => void
+    }
+  } = null
+
   componentDidMount () {
     const { initialValue, initialDate } = this.props
     let initialTime
@@ -65,15 +71,18 @@ export default class CaseTargetAttrDialog extends React.Component<Props, State> 
   }
 
   componentDidUpdate (prevProps: Props) {
-    const { initialValue, initialDate } = this.props
+    const { initialValue, initialDate, show } = this.props
     const stateMutations = {}
-    if (prevProps.initialValue !== initialValue) {
+    const isClosing = !show && prevProps.show
+    if (prevProps.initialValue !== initialValue || isClosing) {
       Object.assign(stateMutations, {
         attrValue: initialValue
       })
     }
-    if ((!prevProps.initialDate && !!initialDate) || (
-      prevProps.initialDate && initialDate && prevProps.initialDate.getTime() !== initialDate.getTime())
+    if (
+      (!prevProps.initialDate && !!initialDate) ||
+      (prevProps.initialDate && initialDate && prevProps.initialDate.getTime() !== initialDate.getTime()) ||
+      (isClosing && initialDate)
     ) {
       const hours = initialDate.getHours()
       const minutes = initialDate.getMinutes()
@@ -132,6 +141,12 @@ export default class CaseTargetAttrDialog extends React.Component<Props, State> 
             label={attrName}
             onEdit={val => { this.setState({ attrValue: val }) }}
             currentValue={attrValue}
+            inpRef={el => { this.textInput = el }}
+            onFocus={() => {
+              setTimeout(() => {
+                this.textInput && this.textInput.getInputNode().setSelectionRange(0, attrValue.length)
+              }, 20)
+            }}
             rowsMax={3}
           />
           <div className='mt3 flex-grow'>

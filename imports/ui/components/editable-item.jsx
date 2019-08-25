@@ -34,7 +34,7 @@ export default class EditableItem extends Component {
     this.props.onEdit(value)
   }
   render () {
-    const { label, isMultiLine, selectionList, disabled, name, underlineShow, inpRef, rowsMax } = this.props
+    const { label, isMultiLine, selectionList, disabled, name, underlineShow, inpRef, rowsMax, onFocus } = this.props
     const { value } = this.state
 
     const optionalAttrs = {}
@@ -56,6 +56,7 @@ export default class EditableItem extends Component {
           value={value}
           inpRef={inpRef}
           onChange={({ target: { value } }) => this.handleEdit(value)}
+          onFocus={onFocus}
           {...optionalAttrs}
         />
       )
@@ -90,6 +91,7 @@ EditableItem.propTypes = {
   selectionList: PropTypes.array,
   disabled: PropTypes.bool,
   rowsMax: PropTypes.number,
+  onFocus: PropTypes.func, // relevant only if "selectionList" is undefined
   inpRef: PropTypes.func, // relevant only if "selectionList" is undefined
   underlineShow: PropTypes.bool // relevant only if "selectionList" is undefined
 }
