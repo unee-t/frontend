@@ -21,6 +21,7 @@ type Props = {
   attrName: string,
   initialValue?: string,
   initialDate?: Date,
+  dateLabel: string,
   onCancel: () => void,
   showTime?: boolean,
   onSubmit: (value: string, date: Date) => void
@@ -116,7 +117,7 @@ export default class CaseTargetAttrDialog extends React.Component<Props, State> 
   }
 
   render () {
-    const { show, onCancel, attrName, showTime } = this.props
+    const { show, onCancel, attrName, showTime, dateLabel } = this.props
     const { attrValue, attrDate, attrTime, isEditing, hideDateRow } = this.state
     const now = new Date()
     return (
@@ -150,7 +151,7 @@ export default class CaseTargetAttrDialog extends React.Component<Props, State> 
             rowsMax={3}
           />
           <div className='mt3 flex-grow'>
-            {!hideDateRow && infoItemLabel('Deadline')}
+            {!hideDateRow && infoItemLabel(dateLabel)}
             {!hideDateRow && (
               <div className='flex'>
                 <div className='flex-grow flex items-center'>

@@ -26,7 +26,7 @@ const mediaItemRowCount = 3
 
 const renderEditableTargetAttribute = (
   {
-    attrName, value, targetDate, editUrl, showTime = false
+    attrName, value, targetDate, editUrl, dateLabel, showTime = false
   }
 ) => (
   <InfoItemContainer>
@@ -46,7 +46,7 @@ const renderEditableTargetAttribute = (
         }
         {targetDate && (
           <div className='mt2 f7 warn-crimson b'>
-            Deadline: {moment(targetDate).format('YYYY-MM-DD' + (showTime ? ', h:mm' : ''))}{showTime ? ' hrs' : ''}
+            {dateLabel}: {moment(targetDate).format('YYYY-MM-DD' + (showTime ? ', h:mm' : ''))}{showTime ? ' hrs' : ''}
           </div>
         )}
       </div>
@@ -506,6 +506,7 @@ class CaseDetails extends Component {
         </div>
         {renderEditableTargetAttribute({
           attrName: 'Solution',
+          dateLabel: 'Deadline',
           value: solution,
           targetDate: solutionDeadline && new Date(solutionDeadline),
           editUrl: `${match.url}/solution`
@@ -514,6 +515,7 @@ class CaseDetails extends Component {
           <CaseTargetAttrDialog
             show={!!subMatch}
             attrName='Solution'
+            dateLabel='Deadline'
             initialValue={solution}
             initialDate={solutionDeadline && new Date(solutionDeadline)}
             onSubmit={(value, date) => {
@@ -531,6 +533,7 @@ class CaseDetails extends Component {
         {renderEditableTargetAttribute({
           attrName: 'Next steps',
           value: nextSteps,
+          dateLabel: 'Next Step Date',
           targetDate: nextStepsBy && new Date(nextStepsBy),
           editUrl: `${match.url}/nextSteps`
         })}
@@ -538,6 +541,7 @@ class CaseDetails extends Component {
           <CaseTargetAttrDialog
             show={!!subMatch}
             attrName='Next Steps'
+            dateLabel='Next Step Date'
             initialValue={nextSteps}
             initialDate={nextStepsBy && new Date(nextStepsBy)}
             onSubmit={(value, date) => {
