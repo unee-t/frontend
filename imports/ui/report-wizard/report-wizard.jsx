@@ -26,7 +26,7 @@ import CaseMenuItem from '../components/case-menu-item'
 import EditableItem from '../components/editable-item'
 import { editReportField, addAttachment, retryAttachment } from './report-wizard.actions'
 import { attachmentTextMatcher } from '../../util/matchers'
-import { fitDimensions } from '../../util/cloudinary-transformations'
+import { fillDimensions } from '../../util/cloudinary-transformations'
 import UploadPreloader from '../components/upload-preloader'
 
 import { resetMenuItemDivStyle } from '../general.mui-styles'
@@ -215,7 +215,7 @@ class ReportWizard extends Component {
                               >
                                 <img
                                   className='h3-5 border-box w3-5 ba b--moon-gray'
-                                  src={fitDimensions(text.split('\n')[1], 96, 96)} alt='X'
+                                  src={fillDimensions(text.split('\n')[1], 96, 96)} alt='X'
                                 />
                               </MenuItem>
                             </div>

@@ -11,14 +11,19 @@ import {
 
 type Props = {
   process: any,
-  handleRetryUpload: any => void
+  handleRetryUpload: any => void,
+  stickToTop?: boolean
 }
 
 export default class UploadPreloader extends React.Component<Props> {
   render () {
-    const { process, handleRetryUpload } = this.props
+    const { process, handleRetryUpload, stickToTop } = this.props
     return (
-      <div className='absolute z-999 w-100 h-100 flex flex-column items-center justify-center'>
+      <div
+        className={'absolute z-999 w-100 h-100 flex flex-column items-center justify-center' + (
+          stickToTop ? ' top-0' : ''
+        )}
+      >
         <div className='dib h40px w40px bg-black-20 br-100'>
           {process.error ? (
             <IconButton style={retryButtonStyle} onClick={evt => {

@@ -11,6 +11,7 @@ import MenuItem from 'material-ui/MenuItem'
 import FontIcon from 'material-ui/FontIcon'
 import { CSSTransition } from 'react-transition-group'
 import FloatingActionButton from 'material-ui/FloatingActionButton'
+import RaisedButton from 'material-ui/RaisedButton'
 import moment from 'moment'
 import Units, { collectionName as unitsCollName, getUnitRoles } from '../../api/units'
 import Cases, { isClosed, severityIndex, collectionName as casesCollName } from '../../api/cases'
@@ -30,7 +31,6 @@ import UnitOverviewTab from './unit-overview-tab'
 import {
   menuItemDivStyle
 } from '../general.mui-styles'
-import FlatButton from 'material-ui/FlatButton'
 
 function NoItem ({ item, iconType }) {
   return (
@@ -115,6 +115,13 @@ class Unit extends Component {
     dispatch(push(`${match.url}/${viewsOrder[val]}`))
   }
 
+  handleSaveClicked = () => {
+    this.saveHandler && this.saveHandler()
+    this.setState({
+      editingDetails: false
+    })
+  }
+
   componentWillReceiveProps (nextProps) {
     const { caseList } = this.props
     if ((!caseList && nextProps.caseList) || (caseList && caseList.length !== nextProps.caseList.length)) {
@@ -195,9 +202,9 @@ class Unit extends Component {
       },
       {
         color: 'var(--bondi-blue)',
-        condition: () => isOwner,
-        action: () => this.setState({ editingDetails: !editingDetails }),
-        icon: editingDetails ? 'clear' : 'edit'
+        condition: () => isOwner && !editingDetails,
+        action: () => this.setState({ editingDetails: true }),
+        icon: 'edit'
       }
     ]
     const metaData = unitItem.metaData() || {}
@@ -210,18 +217,6 @@ class Unit extends Component {
           shadowless
           title={unitName}
           onBack={() => dispatch(push(match.url.split('/').slice(0, -1).join('/')))}
-          rightIconElement={editingDetails ? (
-            <FlatButton onClick={() => {
-              this.saveHandler && this.saveHandler()
-              this.setState({
-                editingDetails: false
-              })
-            }}>
-              <span className='f4 white'>
-                Save
-              </span>
-            </FlatButton>
-          ) : null}
         />
         <Route path={`${rootMatch.url}/:viewName`} children={({ match }) => {
           const viewIdx = match ? viewsOrder.indexOf(match.params.viewName) : 0
@@ -323,7 +318,31 @@ class Unit extends Component {
                   />
                 </SwipeableViews>
               </div>
-
+              {editingDetails && (
+                <div className='bg-white scroll-shadow-2 pa3 tc z-999 flex items-center justify-center'>
+                  <div className='flex-grow'>
+                    <RaisedButton
+                      fullWidth
+                      onClick={() => this.setState({ editingDetails: false })}
+                    >
+                      <span className='bondi-blue mh4'>
+                        Cancel
+                      </span>
+                    </RaisedButton>
+                  </div>
+                  <div className='ml3 flex-grow'>
+                    <RaisedButton
+                      primary
+                      fullWidth
+                      onClick={this.handleSaveClicked}
+                    >
+                      <span className='white mh4'>
+                        Save
+                      </span>
+                    </RaisedButton>
+                  </div>
+                </div>
+              )}
               {fabDescriptors
                 .filter(desc => !desc.condition || desc.condition())
                 .map((desc, ind) => (

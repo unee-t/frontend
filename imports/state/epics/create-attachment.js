@@ -10,13 +10,12 @@ import {
 import { fileUploadProcessor } from './base/file-upload-processor'
 import type { InputAction } from './base/file-upload-processor'
 
-type CustAction = {
-  ...InputAction,
+type CustAction = InputAction & {
   caseId: number,
   preview: string
 }
 
-export const createAttachment = fileUploadProcessor(CREATE_ATTACHMENT, {
+export const createAttachment = fileUploadProcessor < CustAction > (CREATE_ATTACHMENT, {
   init: action => ({
     ...action,
     type: ATTACHMENT_UPLOADING
@@ -32,20 +31,18 @@ export const createAttachment = fileUploadProcessor(CREATE_ATTACHMENT, {
     errorMessage: 'Upload failed',
     error
   }),
-  complete: (action, fileUrl) => {
-    const custAction: CustAction = (action: any)
-
+  complete: (action: CustAction, fileUrl: string) => {
     const type = action.file.type.split('/')[0]
 
     return [
       {
-        ...custAction,
+        ...action,
         type: ATTACHMENT_UPLOAD_COMPLETED
       },
       {
         type: CREATE_COMMENT,
         text: `[!attachment(${type})]\n${fileUrl}`,
-        caseId: custAction.caseId
+        caseId: action.caseId
       }
     ]
   }

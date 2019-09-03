@@ -17,26 +17,26 @@ import 'rxjs/add/operator/bufferTime'
 import 'rxjs/add/operator/take'
 
 type Action = { type: string }
-export type InputAction = { ...Action, file: File }
-type ActionGenerators = {
-  init: (origAction: InputAction) => Action,
-  progress: (origAction: InputAction, percent: number) => Action,
-  error: (origAction: InputAction, error: {}) => Action,
-  complete: (origAction: InputAction, uploadedUrl: string) => Array<Action> | Action
+export type InputAction = Action & { file: File }
+type ActionGenerators<T> = {
+  init: (origAction: T) => Action,
+  progress: (origAction: T, percent: number) => Action,
+  error: (origAction: T, error: {}) => Action,
+  complete: (origAction: T, uploadedUrl: string) => Array<Action> | Action
 }
-export const fileUploadProcessor = (actionType: string, actionGenerators: ActionGenerators) =>
+export const fileUploadProcessor = <T: InputAction>(actionType: string, actionGenerators: ActionGenerators<T>) =>
   (action$: Observable, store: {}, deps: { ajax: (opts: {}) => Observable }) => {
     const { CLOUDINARY_URL, CLOUDINARY_PRESET } = Meteor.settings.public
 
     // Creating a stream to publish upload progress actions
-    const buildProgressStream = (action: InputAction) => {
+    const buildProgressStream = (action: T) => {
       return (new Subject())
         .filter(evt => evt.lengthComputable)
         .map(evt => actionGenerators.progress(action, Math.round(evt.loaded / evt.total * 100)))
     }
 
     // Creating a stream to execute the upload and chaining to publish completion, error and "CREATE_COMMENT"
-    const buildAjaxStream = (action: InputAction, progress$: Observable) => {
+    const buildAjaxStream = (action: T, progress$: Observable) => {
       // Creating the upload payload
       const formData = new FormData()
       formData.append('file', action.file)
@@ -62,7 +62,7 @@ export const fileUploadProcessor = (actionType: string, actionGenerators: Action
     return action$
       .ofType(actionType)
       .filter(() => !!Meteor.userId()) // fail safe, but shouldn't happen
-      .mergeMap((action: InputAction) => { // For any matching action
+      .mergeMap((action: T) => { // For any matching action
         const progress$ = buildProgressStream(action)
         const ajax$ = buildAjaxStream(action, progress$)
 

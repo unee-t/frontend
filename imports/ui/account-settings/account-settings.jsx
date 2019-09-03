@@ -16,7 +16,7 @@ import FileInput from '../components/file-input'
 import { fileInputReaderEventHandler } from '../util/dom-api'
 import InputRow from '../components/input-row'
 import { editProfileField, uploadAvatarImage } from '/imports/state/actions/account-edit.actions'
-import { fitDimensions } from '../../util/cloudinary-transformations'
+import { fillDimensions } from '../../util/cloudinary-transformations'
 
 type Props = {
   user: {
@@ -88,7 +88,7 @@ class AccountSettings extends React.Component<Props, State> {
                   <div className='w4 h4 br-100 relative overflow-hidden'>
                     <img
                       className={'obj-cover w-100' + (isUploadingAvatar ? ' o-60' : '')}
-                      src={avatarPreview || fitDimensions(user.profile.avatarUrl, 126, 126)}
+                      src={avatarPreview || fillDimensions(user.profile.avatarUrl, 126, 126)}
                       alt='Avatar Pic'
                     />
                     {isUploadingAvatar && (

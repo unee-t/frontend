@@ -4,7 +4,7 @@ import * as React from 'react'
 
 // $FlowFixMe
 import styles from './user-themes.mss'
-import { fitDimensions } from '../../util/cloudinary-transformations'
+import { fillDimensions } from '../../util/cloudinary-transformations'
 
 type Props = {
   user: {
@@ -61,7 +61,7 @@ export default class UserAvatar extends React.Component<Props, State> {
           <div className='absolute top-0 bottom-0 right-0 left-0'>
             <img
               className={'w-100 obj-cover transition-o-filter ' + ((!isImageLoaded && effectPending) ? 'o-0 blur-1' : 'o-100')}
-              src={fitDimensions(imageUrl, 64, 64)}
+              src={fillDimensions(imageUrl, 64, 64)}
               onLoad={() => this.setState({ isImageLoaded: true })}
             />
           </div>

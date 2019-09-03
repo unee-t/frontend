@@ -10,7 +10,7 @@ import { negate, flow } from 'lodash'
 import moment from 'moment'
 import { attachmentTextMatcher, placeholderEmailMatcher } from '../../util/matchers'
 import { userInfoItem } from '/imports/util/user.js'
-import { fitDimensions } from '../../util/cloudinary-transformations'
+import { fillDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
 import InviteDialog from '../dialogs/invite-dialog'
 import { TYPE_CC, TYPE_ASSIGNED } from '../../api/pending-invitations'
@@ -630,7 +630,7 @@ class CaseDetails extends Component {
                   {attachments.images.map(([url, id], ind) => (
                     <img
                       className='overflow-hidden'
-                      src={imageSize && fitDimensions(url, imageSize, imageSize)}
+                      src={imageSize && fillDimensions(url, imageSize, imageSize)}
                       width={imageSize} height={imageSize} alt={url} key={ind}
                       onClick={() => this.props.onSelectAttachment(id)}
                     />
