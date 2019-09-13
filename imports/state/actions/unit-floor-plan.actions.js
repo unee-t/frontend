@@ -8,11 +8,17 @@ export const UPLOAD_FLOOR_PLAN_COMPLETED = 'upload_unit_floor_plan_completed'
 export const CHANGE_FLOOR_PLAN_URL = 'change_unit_floor_plan_url'
 export const DISABLE_FLOOR_PLAN = 'disable_unit_floor_plan'
 
+export type Dimensions = {
+  width: number,
+  height: number
+}
+
 export type UnitFloorPlanInitAction = {
   type: string,
   preview: string,
   file: File,
-  unitMongoId: string
+  unitMongoId: string,
+  dimensions: Dimensions
 }
 
 export type UnitFloorPlanProcessAction = {
@@ -21,13 +27,15 @@ export type UnitFloorPlanProcessAction = {
   file?: File,
   preview?: string,
   percent?: number,
+  dimensions?: Dimensions,
   error?: {}
 }
 
 export type UnitFloorPlanCompleteAction = {
   type: string,
   unitMongoId: string,
-  url: string
+  url: string,
+  dimensions: Dimensions
 }
 
 export type UnitFloorPlanDisableAction = {
@@ -35,21 +43,23 @@ export type UnitFloorPlanDisableAction = {
   unitMongoId: string
 }
 
-export function uploadFloorPlan (unitMongoId: string, preview: string, file: File): UnitFloorPlanInitAction {
+export function uploadFloorPlan (unitMongoId: string, preview: string, file: File, dimensions: Dimensions): UnitFloorPlanInitAction {
   return {
     type: UPLOAD_FLOOR_PLAN,
     unitMongoId,
     preview,
-    file
+    file,
+    dimensions
   }
 }
 
-export function uploadFloorPlanStarted (unitMongoId: string, preview: string, file: File): UnitFloorPlanProcessAction {
+export function uploadFloorPlanStarted (unitMongoId: string, preview: string, file: File, dimensions: Dimensions): UnitFloorPlanProcessAction {
   return {
     type: UPLOAD_FLOOR_PLAN_STARTED,
     unitMongoId,
     preview,
-    file
+    file,
+    dimensions
   }
 }
 
@@ -76,11 +86,12 @@ export function uploadFloorPlanCompleted (unitMongoId: string): UnitFloorPlanPro
   }
 }
 
-export function changeFloorPlanUrl (unitMongoId: string, url: string): UnitFloorPlanCompleteAction {
+export function changeFloorPlanUrl (unitMongoId: string, url: string, dimensions: Dimensions): UnitFloorPlanCompleteAction {
   return {
     type: CHANGE_FLOOR_PLAN_URL,
     unitMongoId,
-    url
+    url,
+    dimensions
   }
 }
 

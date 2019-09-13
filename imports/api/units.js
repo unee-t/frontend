@@ -463,7 +463,8 @@ if (Meteor.isServer) {
       bzId: 1,
       displayName: 1,
       unitType: 1,
-      ownerIds: 1
+      ownerIds: 1,
+      floorPlanUrls: 1
     }),
     withRolesData(rolesProjByOwnership, rolesSelectionByOwnership)
   ]

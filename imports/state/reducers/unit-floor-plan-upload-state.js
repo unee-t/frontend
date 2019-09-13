@@ -1,5 +1,5 @@
 // @flow
-import type { UnitFloorPlanProcessAction } from '../actions/unit-floor-plan.actions'
+import type { Dimensions, UnitFloorPlanProcessAction } from '../actions/unit-floor-plan.actions'
 import {
   UPLOAD_FLOOR_PLAN_COMPLETED,
   UPLOAD_FLOOR_PLAN_ERROR,
@@ -11,6 +11,7 @@ type Process = {
   unitMongoId: string,
   preview: string,
   percent: number,
+  dimensions: ?Dimensions,
   error?: {}
 }
 
@@ -26,7 +27,8 @@ export default function (state: State = [], action: UnitFloorPlanProcessAction):
       const newProcess = {
         unitMongoId: action.unitMongoId,
         percent: 0,
-        preview: action.preview || ''
+        preview: action.preview || '',
+        dimensions: action.dimensions
       }
       if (processIndex === -1) {
         newState.push(newProcess)

@@ -1,4 +1,4 @@
-/* global FileReader */
+/* global FileReader, Image */
 export const fileInputReaderEventHandler = handlerFunc => evt => {
   evt.persist()
   const file = evt.target.files[0]
@@ -7,7 +7,14 @@ export const fileInputReaderEventHandler = handlerFunc => evt => {
   const reader = new FileReader()
   reader.onload = evt => {
     const content = evt.target.result
-    handlerFunc(content, file)
+    const imgEl = new Image()
+    imgEl.onload = evt => {
+      handlerFunc(content, file, {
+        width: imgEl.width,
+        height: imgEl.height
+      })
+    }
+    imgEl.src = content
   }
   reader.readAsDataURL(file)
 }

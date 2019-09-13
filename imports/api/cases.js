@@ -95,7 +95,8 @@ export const createCase = (
     solution,
     solutionDeadline,
     nextSteps,
-    nextStepsBy
+    nextStepsBy,
+    floorPlanPins
   },
   newUserEmail,
   newUserIsOccupant
@@ -193,6 +194,36 @@ export const createCase = (
         error: e
       })
       throw new Meteor.Error(`API Error: ${e.response.data.message}`)
+    }
+  }
+
+  if (floorPlanPins) {
+    console.log({ unitItem })
+
+    const metaData = UnitMetaData.findOne({ bzId: unitItem.id })
+    const lastFloorPlan = metaData.floorPlanUrls && metaData.floorPlanUrls.slice(-1)[0]
+    if (lastFloorPlan && !lastFloorPlan.disabled) {
+      const payload = {
+        comment: `[!floorPlan(${lastFloorPlan.id})]\n${floorPlanPins.map(({ x, y }) => `${x.toFixed(1)},${y.toFixed(1)}`).join(';')}`,
+        api_key: creatorUser.bugzillaCreds.apiKey
+      }
+
+      try {
+        // Creating the comment
+        const createData = callAPI('post', `/rest/bug/${newCaseId}/comment`, payload, false, true)
+        if (createData.data.error) {
+          throw new Meteor.Error(createData.data.error)
+        }
+      } catch (e) {
+        logger.error({
+          user: creatorUser._id,
+          method: `${collectionName}.insert`,
+          args: [params],
+          step: 'post /rest/bug/{id}/comment adding floor plan',
+          error: e
+        })
+        throw new Meteor.Error(`API Error: ${e.response ? e.response.data.message : e.message}`)
+      }
     }
   }
 

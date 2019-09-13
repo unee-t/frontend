@@ -25,6 +25,7 @@ import { formatDayText } from '../../util/formatters'
 import Preloader from '../preloader/preloader'
 import { makeMatchingUser } from '../../api/custom-users'
 import FloatingInfoBar from '../components/floating-info-bar'
+import UnitMetaData from '../../api/unit-meta-data'
 
 export class Case extends Component {
   componentDidMount () {
@@ -58,7 +59,7 @@ export class Case extends Component {
       caseItem, comments, loadingCase, loadingComments, loadingUnit, caseError, commentsError, unitError, unitItem,
       attachmentUploads, match, userBzLogin, userId, dispatch, unitUsers, invitationState, caseUserTypes,
       loadingPendingInvitations, pendingInvitations, /* showWelcomeDialog, invitedByDetails, */
-      caseUsersState, caseFieldValues, loadingCaseFieldValues
+      caseUsersState, caseFieldValues, loadingCaseFieldValues, unitMetaData
     } = this.props
     const errors = [
       [caseError, 'case'], [commentsError, 'comments'], [unitError, 'unit']
@@ -105,7 +106,7 @@ export class Case extends Component {
             <Switch>
               <Route exact path={match.url} render={() => (
                 <CaseMessages
-                  {...{ caseItem, comments, attachmentUploads, userBzLogin }}
+                  {...{ caseItem, comments, attachmentUploads, userBzLogin, unitMetaData }}
                   onCreateComment={text => dispatch(createComment(text, caseId))}
                   onCreateAttachment={(preview, file) => dispatch(createAttachment(preview, file, caseId))}
                   onRetryAttachment={process => dispatch(retryAttachment(process))}
@@ -182,7 +183,8 @@ Case.propTypes = {
   ancestorPath: PropTypes.string,
   userId: PropTypes.string,
   loadingCaseFieldValues: PropTypes.bool.isRequired,
-  caseFieldValues: PropTypes.object
+  caseFieldValues: PropTypes.object,
+  unitMetaData: PropTypes.object
 }
 
 let caseError, commentsError, unitError
@@ -235,6 +237,7 @@ const CaseContainer = createContainer(props => {
     loadingUnit: !unitHandle || !unitHandle.ready(),
     unitError,
     unitItem: currUnit,
+    unitMetaData: currUnit && UnitMetaData.findOne({ bzId: currUnit.id }),
     unitUsers: unitRoles && unitRoles.map(makeMatchingUser),
     caseUserTypes: caseUserTypes && unitRoles && Object.keys(caseUserTypes).reduce((all, userType) => {
       const mapUser = user => {

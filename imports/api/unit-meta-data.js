@@ -105,7 +105,7 @@ Meteor.methods({
 
     UnitMetaData.update({ _id: id }, { $set: unitFields })
   },
-  [`${collectionName}.updateFloorPlan`] (id, floorPlanUrl) {
+  [`${collectionName}.updateFloorPlan`] (id, floorPlanUrl, dimensions) {
     const metaData = UnitMetaData.findOne({ _id: id })
     if (!metaData) {
       throw new Meteor.Error(`No unit found for id ${id}`)
@@ -125,7 +125,8 @@ Meteor.methods({
           url: floorPlanUrl,
           addedBy: Meteor.userId(),
           addedAt: new Date(),
-          id: randToken.generate(17)
+          id: randToken.generate(17),
+          dimensions
         }
       }
     })

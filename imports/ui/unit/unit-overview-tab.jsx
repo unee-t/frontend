@@ -269,7 +269,7 @@ class UnitOverviewTab extends React.Component<Props, State> {
                       <UploadPreloader
                         stickToTop
                         process={floorPlanUploadProcess}
-                        handleRetryUpload={proc => dispatch(uploadFloorPlan(metaData._id, proc.preview, proc.file))}
+                        handleRetryUpload={proc => dispatch(uploadFloorPlan(metaData._id, proc.preview, proc.file, proc.dimensions))}
                       />
                     )}
                   </div>
@@ -278,7 +278,7 @@ class UnitOverviewTab extends React.Component<Props, State> {
                       <div className='flex-grow'>
                         <RaisedButton fullWidth>
                           <FileInput onFileSelected={fileInputReaderEventHandler(
-                            (preview, file) => dispatch(uploadFloorPlan(metaData._id, preview, file))
+                            (preview, file, dimensions) => dispatch(uploadFloorPlan(metaData._id, preview, file, dimensions))
                           )}>
                             <div className='flex items-center justify-center'>
                               <UploadIcon fillColor='var(--bondi-blue)' />
@@ -305,7 +305,7 @@ class UnitOverviewTab extends React.Component<Props, State> {
               ) : (
                 <RaisedButton fullWidth>
                   <FileInput onFileSelected={fileInputReaderEventHandler(
-                    (preview, file) => dispatch(uploadFloorPlan(metaData._id, preview, file))
+                    (preview, file, dimensions) => dispatch(uploadFloorPlan(metaData._id, preview, file, dimensions))
                   )}>
                     <div className='flex items-center justify-center'>
                       <UploadIcon fillColor='var(--bondi-blue)' />

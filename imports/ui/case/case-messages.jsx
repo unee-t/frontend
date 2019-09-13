@@ -12,7 +12,7 @@ import ContentAdd from 'material-ui/svg-icons/content/add'
 import Recorder from 'recorder-js'
 import { formatDayText } from '../../util/formatters'
 import { matchWidth } from '../../util/cloudinary-transformations'
-import { attachmentTextMatcher } from '../../util/matchers'
+import { attachmentTextMatcher, floorPlanTextMatcher } from '../../util/matchers'
 import UserAvatar from '../components/user-avatar'
 import FileInput from '../components/file-input'
 import UploadPreloader from '../components/upload-preloader'
@@ -379,7 +379,12 @@ class CaseMessages extends Component {
         ? this.attachmentRenderers[attachmentType]
         : this.renderMessageTextContent.bind(this)
     } else {
-      contentRenderer = this.renderMessageTextContent.bind(this)
+      const floorPlanAttrs = floorPlanTextMatcher(text)
+      if (floorPlanAttrs) {
+        contentRenderer = this.makeFloorPlanRenderer(floorPlanAttrs)
+      } else {
+        contentRenderer = this.renderMessageTextContent.bind(this)
+      }
     }
     let themeClass
     if (!isSelf) {
@@ -456,6 +461,61 @@ class CaseMessages extends Component {
         )}
       </div>
     )
+  }
+  makeFloorPlanRenderer = ({ id, pins }) => {
+    const { unitMetaData } = this.props
+    const floorPlan = unitMetaData.floorPlanUrls.find(obj => obj.id === id)
+    const floorPlanPinMap = {}
+    const handleFloorPlanImageLoaded = evt => {
+      const image = evt.target
+      const parent = image.parentNode
+
+      const widthRatio = parent.offsetWidth / image.offsetWidth
+      const heightRatio = parent.offsetHeight / image.offsetHeight
+      const imageScale = widthRatio > heightRatio ? heightRatio : widthRatio
+
+      const initWidth = image.offsetWidth * imageScale
+      const initHeight = image.offsetHeight * imageScale
+
+      const initScale = initWidth / floorPlan.dimensions.width
+      const imageX = (parent.offsetWidth / 2 - initWidth / 2)
+      const imageY = (parent.offsetHeight / 2 - initHeight / 2)
+
+      Object.assign(image.style, {
+        position: 'absolute',
+        left: imageX + 'px',
+        top: imageY + 'px',
+        width: initWidth + 'px',
+        height: initHeight + 'px'
+      })
+
+      pins.forEach((pin, idx) => {
+        const pinEl = floorPlanPinMap[idx]
+        Object.assign(pinEl.style, {
+          left: (imageX + (pin[0] * initScale) - 12) + 'px',
+          top: (imageY + (pin[1] * initScale) - 20) + 'px'
+        })
+      })
+    }
+    return ({ isSelf, text, creationTime }) => {
+      return (
+        <div className={
+          'w-80 br3 mh2 dib tc ph2 pt2 pb4 overflow-hidden h5 bg-white relative inline-flex items-center' + (isSelf ? ' ml-auto' : '')
+        }>
+          {floorPlan && (
+            <img className='w-100 obj-contain' src={floorPlan.url} alt={floorPlan.url} onLoad={handleFloorPlanImageLoaded} />
+          )}
+          {pins.map((pin, idx) => (
+            <div key={idx} className='absolute' ref={el => { floorPlanPinMap[idx] = el }}>
+              <FontIcon className='material-icons' color='var(--attention-red)' style={{ fontSize: '28px' }}>room</FontIcon>
+            </div>
+          ))}
+          <div className='fr f7 light-silver absolute bottom-0 right-0 lh-dbl pr2'>
+            {moment(creationTime).format('HH:mm')}
+          </div>
+        </div>
+      )
+    }
   }
 
   renderInputControls () {
@@ -588,7 +648,8 @@ CaseMessages.propTypes = {
   onCreateAttachment: PropTypes.func.isRequired,
   onRetryAttachment: PropTypes.func.isRequired,
   onThumbClicked: PropTypes.func.isRequired,
-  onMoreInfo: PropTypes.func
+  onMoreInfo: PropTypes.func,
+  unitMetaData: PropTypes.object
 }
 
 export default CaseMessages

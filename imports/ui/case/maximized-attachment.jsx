@@ -1,8 +1,8 @@
 // @flow
-/* global HTMLElement, MouseEvent, WheelEvent */
+/* global HTMLElement */
 import * as React from 'react'
-import Hammer from 'hammerjs'
 import CircularProgress from 'material-ui/CircularProgress'
+import { panZoomHandler } from '../util/pan-zoom-handler'
 
 type Props = {
   attachmentUrl: string
@@ -23,26 +23,23 @@ export default class MaximizedAttachment extends React.Component<Props, State> {
     })
 
     if (!this.imageContainer) return
-
     const image = this.imageContainer
     const parent:HTMLElement = (image.parentElement:any)
-    const ham = new Hammer(parent)
-    ham.get('pan').set({ direction: Hammer.DIRECTION_ALL })
-    ham.get('pinch').set({ enable: true })
 
     const widthRatio = parent.offsetWidth / image.offsetWidth
     const heightRatio = parent.offsetHeight / image.offsetHeight
     const imageScale = widthRatio > heightRatio ? heightRatio : widthRatio
 
-    const newWidth = image.offsetWidth * imageScale
-    const newHeight = image.offsetHeight * imageScale
+    const initWidth = image.offsetWidth * imageScale
+    const initHeight = image.offsetHeight * imageScale
     const imageCurrDims = {
-      x: (parent.offsetWidth / 2 - newWidth / 2),
-      y: (parent.offsetHeight / 2 - newHeight / 2),
-      width: newWidth,
-      height: newHeight,
+      x: (parent.offsetWidth / 2 - initWidth / 2),
+      y: (parent.offsetHeight / 2 - initHeight / 2),
+      width: initWidth,
+      height: initHeight,
       currScale: 1
     }
+
     Object.assign(image.style, {
       position: 'absolute',
       left: imageCurrDims.x + 'px',
@@ -50,89 +47,19 @@ export default class MaximizedAttachment extends React.Component<Props, State> {
       width: imageCurrDims.width + 'px',
       height: imageCurrDims.height + 'px'
     })
-    const handleMove = (dx, dy, isFinal) => {
-      const newX = imageCurrDims.x + dx
-      const newY = imageCurrDims.y + dy
-      Object.assign(image.style, {
-        left: newX + 'px',
-        top: newY + 'px'
-      })
-      if (isFinal) {
-        Object.assign(imageCurrDims, {
-          x: newX,
-          y: newY
+
+    panZoomHandler(parent, imageCurrDims, {
+      minZoom: 1,
+      maxZoom: 4
+    }, {
+      applyTransform: ({ x, y, scale }) => {
+        Object.assign(image.style, {
+          left: x + 'px',
+          top: y + 'px',
+          width: initWidth * scale + 'px',
+          height: initHeight * scale + 'px'
         })
       }
-    }
-    const calcScalePosition = (scale) => {
-      const newWidth = imageCurrDims.width * scale
-      const newHeight = imageCurrDims.height * scale
-
-      return {
-        width: newWidth,
-        height: newHeight,
-        x: imageCurrDims.x - (newWidth - imageCurrDims.width) * offsetRates.horizontal,
-        y: imageCurrDims.y - (newHeight - imageCurrDims.height) * offsetRates.vertical
-      }
-    }
-    let pinchStart = { x: 0, y: 0 }
-    let offsetRates = { horizontal: 0, vertical: 0 }
-    let isPinching = false
-    let debounceTimeout
-    const handleZoom = (center, scale) => {
-      if (!isPinching) {
-        pinchStart = center
-        offsetRates = {
-          horizontal: ((pinchStart.x - imageCurrDims.x) / imageCurrDims.width),
-          vertical: ((pinchStart.y - imageCurrDims.y) / imageCurrDims.height)
-        }
-      }
-      isPinching = true
-      const { width, height, x, y } = calcScalePosition(scale)
-      Object.assign(image.style, {
-        width: width + 'px',
-        height: height + 'px',
-        left: (x + center.x - pinchStart.x) + 'px',
-        top: (y + center.y - pinchStart.y) + 'px'
-      })
-    }
-
-    const handleZoomEnd = (center, scale, doDebounce = true) => {
-      const { width, height, x, y } = calcScalePosition(scale)
-      Object.assign(imageCurrDims, {
-        x: x + center.x - pinchStart.x,
-        y: y + center.y - pinchStart.y,
-        width,
-        height
-      })
-
-      if (doDebounce) {
-        if (debounceTimeout) {
-          clearTimeout(debounceTimeout)
-        }
-
-        debounceTimeout = setTimeout(() => {
-          isPinching = false
-          debounceTimeout = null
-        }, 100)
-      } else {
-        isPinching = false
-      }
-    }
-
-    ham.on('pinch', evt => handleZoom(evt.center, evt.scale))
-    ham.on('pinchend', evt => handleZoomEnd(evt.center, evt.scale))
-    ham.on('pan', ev => {
-      if (!isPinching) {
-        handleMove(ev.deltaX, ev.deltaY, ev.isFinal)
-      }
-    })
-    parent.addEventListener('mousedown', (evt: MouseEvent) => evt.preventDefault())
-    parent.addEventListener('wheel', (evt: WheelEvent) => {
-      const newScale = imageCurrDims.currScale * (1 - evt.deltaY / 1000)
-      const evtCenter = { x: evt.clientX, y: evt.clientY }
-      handleZoom(evtCenter, newScale)
-      handleZoomEnd(evtCenter, newScale, false)
     })
   }
   render () {

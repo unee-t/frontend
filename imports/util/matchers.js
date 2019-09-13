@@ -14,6 +14,14 @@ export const attachmentTextMatcher = text => {
   return match && (match.length > 1 ? match[1] : 'image')
 }
 
+export const floorPlanTextMatcher = text => {
+  const match = text.match(/^\[!floorPlan\(([a-zA-Z0-9]+)\)]\n(.+)/)
+  return match && {
+    id: match[1],
+    pins: match[2].split(';').map(textPoint => textPoint.split(',').map(str => parseFloat(str)))
+  }
+}
+
 const isTemporaryEmail = /^temporary\..+@.+\..+\.?.*\.{0,2}.*$/
 export const placeholderEmailMatcher = email => isTemporaryEmail.test(email)
 
