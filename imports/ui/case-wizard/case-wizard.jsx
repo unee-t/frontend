@@ -216,8 +216,6 @@ class CaseWizard extends Component {
           })
         })
       }
-    }, {
-      disableNormalPan: true
     })
   }
 
@@ -391,7 +389,7 @@ class CaseWizard extends Component {
                   className='mt3 w-100 h5 relative ba b--gray-93 overflow-hidden'
                   ref={el => { this.floorPlanContainer = el }}
                 >
-                  <div className='absolute top-0 left-0 right-0 bottom-0 overflow-hidden' onClick={this.handleFloorPlanContainerClicked}>
+                  <div className='absolute top-0 left-0 right-0 bottom-0 overflow-hidden' onDoubleClick={this.handleFloorPlanContainerClicked}>
                     <img
                       onLoad={this.handleFloorPlanLoaded}
                       className='obj-contain w-100'
@@ -415,7 +413,7 @@ class CaseWizard extends Component {
                   ))}
                 </div>
                 <div className='mt2 f7 gray lh-copy'>
-                  Tap on the floorplan to specify the location in the unit. Pinch or spread with two fingers to zoom. Tap an existing marker to remove it.
+                  <span className='b'>Double tap</span> on the floorplan to specify the location in the unit. Swipe to pan. Pinch or spread with two fingers to zoom. Tap an existing marker to remove it.
                 </div>
               </div>
             )}
