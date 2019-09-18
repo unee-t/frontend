@@ -1,33 +1,35 @@
+---
 version: 0.2
 
 env:
   variables:
-    APP: "frontend"
-    ACCOUNT: "812644853088"
+    IMAGE_REPO_NAME: uneet/frontend
+  parameter-store:
+    DOCKER_USERNAME: DOCKER_USERNAME
+    DOCKER_PASSWORD: DOCKER_PASSWORD
 
 phases:
   pre_build:
     commands:
-      - $(aws ecr get-login --no-include-email --region ${AWS_REGION})
-  install:
-    commands:
-      - echo Installing Meteor
-      - curl https://install.meteor.com/ | sh
+      - echo Logging into Docker Hub...
+      - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
   build:
     commands:
-      - meteor npm install
-      - 'sed -i "s,<\!-- COMMIT: -->,<\!-- COMMIT: $CODEBUILD_SOURCE_VERSION $CODEBUILD_RESOLVED_SOURCE_VERSION -->,g" client/main.html'
-      - meteor build --directory /tmp/export-meteor/build --allow-superuser
-      - printf "FROM ulexus/meteor:build\nCOPY build /home/meteor/www\nRUN chown -R meteor:meteor /home/meteor/\n" >/tmp/export-meteor/Dockerfile
-      - cd /tmp/export-meteor
-      - docker build -t ${APP} -t ${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION .
-      - docker tag ${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION
-      - docker tag ${APP}:latest ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:latest
+      - echo Build starting on `date`
+      - echo Build the Docker image...
+      - docker build -t $IMAGE_REPO_NAME:latest .
+      - docker tag $IMAGE_REPO_NAME:latest $IMAGE_REPO_NAME:$IMAGE_TAG
+
   post_build:
     commands:
-      - docker push ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION
-      - docker push ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:latest
-      - printf '[{"name":"%s","imageUri":"%s"}]' meteor ${ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com/${APP}:$CODEBUILD_RESOLVED_SOURCE_VERSION > $CODEBUILD_SRC_DIR/imagedefinitions.json
+      - if [ -z "$CODEBUILD_BUILD_SUCCEEDING" ]; then echo "Build Failing"; exit 1; else echo "CODEBUILD_BUILD_SUCCEEDING=$CODEBUILD_BUILD_SUCCEEDING"; fi
+      - echo Build complete on `date`
+      - echo Pushing build to Docker Hub...
+      - docker push $IMAGE_REPO_NAME:latest
+      - docker push $IMAGE_REPO_NAME:$IMAGE_TAG
+      - printf '[{"name":"%s","imageUri":"%s"}]' meteor $IMAGE_REPO_NAME:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imagedefinitions.json
 
 artifacts:
   files: imagedefinitions.json
