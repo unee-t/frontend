@@ -15,17 +15,21 @@ phases:
       - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 
+  install:
+    runtime-versions:
+      docker: 18
+
   build:
     commands:
       - echo Build starting on `date`
       - echo Build the Docker image...
+      - 'sed -i "s,<\!-- COMMIT: -->,<\!-- COMMIT: $CODEBUILD_RESOLVED_SOURCE_VERSION -->,g" client/main.html'
       - docker build -t $IMAGE_REPO_NAME:latest .
       - docker tag $IMAGE_REPO_NAME:latest $IMAGE_REPO_NAME:$IMAGE_TAG
 
   post_build:
     commands:
-      - if [ -z "$CODEBUILD_BUILD_SUCCEEDING" ]; then echo "Build Failing"; exit 1; else echo "CODEBUILD_BUILD_SUCCEEDING=$CODEBUILD_BUILD_SUCCEEDING"; fi
-      - echo Build complete on `date`
+      - test "$CODEBUILD_BUILD_SUCCEEDING" == "1" || exit 1
       - echo Pushing build to Docker Hub...
       - docker push $IMAGE_REPO_NAME:latest
       - docker push $IMAGE_REPO_NAME:$IMAGE_TAG
