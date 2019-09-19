@@ -57,7 +57,7 @@ matrix:
           - AWS_ACCESS_KEY_ID=$AWS_192458993663_ID
             AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET
             ./deploy.sh -p
-          - aws cloudfront create-invalidation
+          - AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET aws cloudfront create-invalidation
             --distribution-id E173XT6X8V4A18 --paths '/*'
         on:
           tags: true
