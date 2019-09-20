@@ -46,11 +46,16 @@ then
 	exit
 fi
 
-if test $AWS_PROFILE == uneet-localhost
+read -p "Restore $dir to $STAGE $MONGO_CONNECT ? " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]
 then
-	echo mongorestore -h 127.0.0.1 --drop --port 27017 $dir
-else
-	MONGO_PASSWORD=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
-	MONGO_CONNECT=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
-	mongorestore --drop --uri="mongodb://root:$MONGO_PASSWORD@$MONGO_CONNECT" $dir
+	if test $AWS_PROFILE == uneet-localhost
+	then
+		echo mongorestore -h 127.0.0.1 --drop --port 27017 $dir
+	else
+		MONGO_PASSWORD=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
+		MONGO_CONNECT=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
+		mongorestore --drop --uri="mongodb://root:$MONGO_PASSWORD@$MONGO_CONNECT" $dir
+	fi
 fi
