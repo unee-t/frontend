@@ -32,6 +32,7 @@ export const withDocs = ({ cursorMaker, collectionName }) => (publishedItem, add
     // TODO: Consider implementing "removed" for cases where docs are disassociated with an entity
   })
   cursor.forEach(doc => {
+    subHandle.removed(collectionName, doc._id) // Resetting existing items in case they exist to avoid revert sync issue -nbiton
     addingFn(collectionName, doc._id, doc)
   })
 

@@ -47,7 +47,12 @@ if (Meteor.isServer) {
     getAPIUnitByName (unitName, apiKey) {
       try {
         const requestUrl = `/rest/product?names=${encodeURIComponent(unitName)}`
-        const unitResult = callAPI('get', requestUrl, { api_key: apiKey }, false, true)
+        let unitResult
+        if (apiKey) {
+          unitResult = callAPI('get', requestUrl, { api_key: apiKey }, false, true)
+        } else {
+          unitResult = callAPI('get', requestUrl, {}, true, true)
+        }
         return unitResult.data.products[0]
       } catch (e) {
         // Pass through just to highlight this method can throw

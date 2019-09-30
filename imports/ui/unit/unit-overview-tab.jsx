@@ -1,5 +1,4 @@
 // @flow
-
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { createContainer } from 'meteor/react-meteor-data'
@@ -9,7 +8,6 @@ import IconButton from 'material-ui/IconButton'
 import FontIcon from 'material-ui/FontIcon'
 import { isEqual } from 'lodash'
 import AutoComplete from 'material-ui/AutoComplete'
-import RaisedButton from 'material-ui/RaisedButton'
 
 import { removeCleared, removeFromUnit } from '../../state/actions/unit-invite.actions'
 import { editUnitMetaData } from '../../state/actions/unit-meta-data.actions'
@@ -25,12 +23,7 @@ import { unitTypes } from '../../api/unit-meta-data'
 import MenuItem from 'material-ui/MenuItem'
 import SelectField from 'material-ui/SelectField'
 import { textInputFloatingLabelStyle, textInputUnderlineFocusStyle } from '../components/form-controls.mui-styles'
-import FileInput from '../components/file-input'
-import { UploadIcon } from '../components/generic-icons'
-import { fileInputReaderEventHandler } from '../util/dom-api'
-import { disableFloorPlan, uploadFloorPlan } from '../../state/actions/unit-floor-plan.actions'
-import { fitDimensions } from '../../util/cloudinary-transformations'
-import UploadPreloader from '../components/upload-preloader'
+import FloorPlanUploader from '../components/floor-plan-uploader'
 
 type UnitUser = {
   login: string,
@@ -195,21 +188,11 @@ class UnitOverviewTab extends React.Component<Props, State> {
     }))
   }
   render () {
-    const { unitItem, metaData, unitUsers, isOwner, currentUser, dispatch, isEditing, floorPlanUploadProcess } = this.props
+    const { unitItem, metaData, unitUsers, isOwner, currentUser, dispatch, isEditing } = this.props
     const { showRemovalConfirmation, userToRemove, countrySearchText, country, countryValidWarning, unitType } = this.state
     const ongoingRemoval = this.getOngoingRemoval(this.props, this.state)
     const unitName = metaData.displayName || unitItem.name
     const currLoginName = currentUser.bugzillaCreds.login
-
-    let floorPlanUrl
-    if (floorPlanUploadProcess) {
-      floorPlanUrl = floorPlanUploadProcess.preview
-    } else if (metaData.floorPlanUrls) {
-      const lastPlanUrl = metaData.floorPlanUrls.slice(-1)[0]
-      if (!lastPlanUrl.disabled) {
-        floorPlanUrl = fitDimensions(lastPlanUrl.url, window.innerWidth - 32, 256)
-      }
-    }
     return (
       (
         <div className='flex-grow bg-very-light-gray pb5'>
@@ -257,65 +240,9 @@ class UnitOverviewTab extends React.Component<Props, State> {
           <div className='mt2 bg-white card-shadow-1 pa3'>
             {infoItemLabel('Floor plan')}
             <div className='mt2'>
-              {floorPlanUrl ? (
-                <div>
-                  <div className='w-100 h5 relative ba b--gray-93'>
-                    <img
-                      className={'obj-contain w-100 h-100' + (floorPlanUploadProcess ? ' o-60' : '')}
-                      src={floorPlanUrl}
-                      alt='Floor Plan Thumbnail'
-                    />
-                    {floorPlanUploadProcess && (
-                      <UploadPreloader
-                        stickToTop
-                        process={floorPlanUploadProcess}
-                        handleRetryUpload={proc => dispatch(uploadFloorPlan(metaData._id, proc.preview, proc.file, proc.dimensions))}
-                      />
-                    )}
-                  </div>
-                  {!floorPlanUploadProcess && (
-                    <div className='flex relative'>
-                      <div className='flex-grow'>
-                        <RaisedButton fullWidth>
-                          <FileInput onFileSelected={fileInputReaderEventHandler(
-                            (preview, file, dimensions) => dispatch(uploadFloorPlan(metaData._id, preview, file, dimensions))
-                          )}>
-                            <div className='flex items-center justify-center'>
-                              <UploadIcon fillColor='var(--bondi-blue)' />
-                              <div className='ml1 bondi-blue fw5 f6'>
-                                Upload again
-                              </div>
-                            </div>
-                          </FileInput>
-                        </RaisedButton>
-                      </div>
-                      <div className='bl b--gray-93 flex-grow'>
-                        <RaisedButton fullWidth onClick={() => dispatch(disableFloorPlan(metaData._id))}>
-                          <div className='flex items-center justify-center'>
-                            <FontIcon className='material-icons' color='var(--bondi-blue)'>delete</FontIcon>
-                            <div className='ml1 bondi-blue fw5 f6'>
-                              Remove floor plan
-                            </div>
-                          </div>
-                        </RaisedButton>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <RaisedButton fullWidth>
-                  <FileInput onFileSelected={fileInputReaderEventHandler(
-                    (preview, file, dimensions) => dispatch(uploadFloorPlan(metaData._id, preview, file, dimensions))
-                  )}>
-                    <div className='flex items-center justify-center'>
-                      <UploadIcon fillColor='var(--bondi-blue)' />
-                      <div className='ml1 bondi-blue fw5 f6'>
-                        Upload floor plan
-                      </div>
-                    </div>
-                  </FileInput>
-                </RaisedButton>
-              )}
+              <FloorPlanUploader
+                unitMetaData={metaData}
+              />
             </div>
           </div>
           <div className='mt2 bg-white card-shadow-1 pa3'>

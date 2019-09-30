@@ -127,7 +127,8 @@ export class Case extends Component {
                     caseUserTypes,
                     pendingInvitations,
                     caseUsersState,
-                    caseFieldValues
+                    caseFieldValues,
+                    unitMetaData
                   }}
                   onRoleUsersInvited={userLogins => dispatch(addRoleUsers(userLogins, caseId))}
                   onRoleUserRemoved={user => dispatch(removeRoleUser(user.login, caseId))}

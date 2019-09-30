@@ -34,6 +34,8 @@ import {
 } from '../components/form-controls.mui-styles'
 import ChatBotUI from './chatbot-ui'
 import ErrorDialog from '../dialogs/error-dialog'
+import FloorPlanEditor from '../components/floor-plan-editor'
+import randToken from 'rand-token'
 
 const messagePercentWidth = 0.6 // Corresponds with width/max-width set to the text and image message containers
 
@@ -465,51 +467,13 @@ class CaseMessages extends Component {
   makeFloorPlanRenderer = ({ id, pins }) => {
     const { unitMetaData } = this.props
     const floorPlan = unitMetaData.floorPlanUrls.find(obj => obj.id === id)
-    const floorPlanPinMap = {}
-    const handleFloorPlanImageLoaded = evt => {
-      const image = evt.target
-      const parent = image.parentNode
-
-      const widthRatio = parent.offsetWidth / image.offsetWidth
-      const heightRatio = parent.offsetHeight / image.offsetHeight
-      const imageScale = widthRatio > heightRatio ? heightRatio : widthRatio
-
-      const initWidth = image.offsetWidth * imageScale
-      const initHeight = image.offsetHeight * imageScale
-
-      const initScale = initWidth / floorPlan.dimensions.width
-      const imageX = (parent.offsetWidth / 2 - initWidth / 2)
-      const imageY = (parent.offsetHeight / 2 - initHeight / 2)
-
-      Object.assign(image.style, {
-        position: 'absolute',
-        left: imageX + 'px',
-        top: imageY + 'px',
-        width: initWidth + 'px',
-        height: initHeight + 'px'
-      })
-
-      pins.forEach((pin, idx) => {
-        const pinEl = floorPlanPinMap[idx]
-        Object.assign(pinEl.style, {
-          left: (imageX + (pin[0] * initScale) - 12) + 'px',
-          top: (imageY + (pin[1] * initScale) - 20) + 'px'
-        })
-      })
-    }
+    const translatedPins = pins.map(pin => ({ x: pin[0], y: pin[1], id: randToken.generate(12) }))
     return ({ isSelf, text, creationTime }) => {
       return (
         <div className={
-          'w-80 br3 mh2 dib tc ph2 pt2 pb4 overflow-hidden h5 bg-white relative inline-flex items-center' + (isSelf ? ' ml-auto' : '')
+          'w-80 br3 mh2 dib tc ph2 pt2 pb4 bg-white inline-flex items-center relative' + (isSelf ? ' ml-auto' : '')
         }>
-          {floorPlan && (
-            <img className='w-100 obj-contain' src={floorPlan.url} alt={floorPlan.url} onLoad={handleFloorPlanImageLoaded} />
-          )}
-          {pins.map((pin, idx) => (
-            <div key={idx} className='absolute' ref={el => { floorPlanPinMap[idx] = el }}>
-              <FontIcon className='material-icons' color='var(--attention-red)' style={{ fontSize: '28px' }}>room</FontIcon>
-            </div>
-          ))}
+          <FloorPlanEditor pins={translatedPins} floorPlan={floorPlan} />
           <div className='fr f7 light-silver absolute bottom-0 right-0 lh-dbl pr2'>
             {moment(creationTime).format('HH:mm')}
           </div>

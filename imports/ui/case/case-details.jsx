@@ -6,9 +6,9 @@ import { connect } from 'react-redux'
 import FontIcon from 'material-ui/FontIcon'
 import RaisedButton from 'material-ui/RaisedButton'
 import IconButton from 'material-ui/IconButton'
-import { negate, flow } from 'lodash'
+import { negate, flow, isEqual } from 'lodash'
 import moment from 'moment'
-import { attachmentTextMatcher, placeholderEmailMatcher } from '../../util/matchers'
+import { attachmentTextMatcher, floorPlanTextMatcher, placeholderEmailMatcher } from '../../util/matchers'
 import { userInfoItem } from '/imports/util/user.js'
 import { fillDimensions } from '../../util/cloudinary-transformations'
 import UsersSearchList from '../components/users-search-list'
@@ -20,6 +20,10 @@ import { infoItemLabel, InfoItemContainer, InfoItemRow } from '../util/static-in
 import AddUserControlLine from '../components/add-user-control-line'
 import AssigneeSelectionList from '../components/assignee-selection-list'
 import CaseTargetAttrDialog from '../dialogs/case-target-attr-dialog'
+import { changeFloorPlanPins } from '/imports/state/actions/case-floor-plan-pins.actions'
+import randToken from 'rand-token'
+import FloorPlanEditor from '../components/floor-plan-editor'
+import FloorPlanUploader from '../components/floor-plan-uploader'
 
 const mediaItemsPadding = 4 // Corresponds with the classNames set to the media items
 const mediaItemRowCount = 3
@@ -63,8 +67,11 @@ const renderEditableTargetAttribute = (
 
 class CaseDetails extends Component {
   audioRefs = {}
+  floorPlanPinMap = {}
   imageMediaContainer = null
   audioMediaContainer = null
+  imageCurrDims = null
+
   constructor (props) {
     super(props)
     this.state = {
@@ -77,7 +84,12 @@ class CaseDetails extends Component {
       audioDurations: {},
       playingAudioId: null,
       computedAudioMediaItemWidth: 100,
-      computedImageMediaItemWidth: 100
+      computedImageMediaItemWidth: 100,
+      isEditingPins: false,
+      floorPlanPins: [],
+      savedFloorPlanPins: [],
+      floorPlan: null,
+      isFloorPlanLoaded: false
     }
   }
 
@@ -89,6 +101,7 @@ class CaseDetails extends Component {
 
   componentDidMount () {
     this.recalcMediaItemsWidth()
+    this.resolveFloorPlan(this.props.comments)
   }
 
   componentDidUpdate () {
@@ -104,6 +117,36 @@ class CaseDetails extends Component {
     if (nextProps.unitUsers !== this.props.unitUsers) {
       this.setState({
         normalizedUnitUsers: this.normalizeUnitUsers()
+      })
+    }
+    if (nextProps.comments !== this.props.comments) {
+      this.resolveFloorPlan(nextProps.comments)
+    }
+  }
+
+  resolveFloorPlan = comments => {
+    const { unitMetaData } = this.props
+    const floorPlanComment = comments.slice().reverse().find(comment => floorPlanTextMatcher(comment.text))
+    let activeFloorPlan, translatedPins
+    if (floorPlanComment) {
+      const { id, pins } = floorPlanTextMatcher(floorPlanComment.text)
+      const floorPlan = unitMetaData.floorPlanUrls && unitMetaData.floorPlanUrls.find(f => f.id === id)
+      activeFloorPlan = floorPlan && !floorPlan.disabled && floorPlan
+      translatedPins = pins.map(pin => ({ x: pin[0], y: pin[1], id: randToken.generate(12) }))
+    } else {
+      const floorPlan = unitMetaData.floorPlanUrls && unitMetaData.floorPlanUrls.slice(-1)[0]
+      activeFloorPlan = floorPlan && !floorPlan.disabled && floorPlan
+    }
+    if (!floorPlanComment || !activeFloorPlan) {
+      this.setState({
+        floorPlanPins: [],
+        floorPlan: activeFloorPlan
+      })
+    } else {
+      this.setState({
+        floorPlanPins: translatedPins,
+        savedFloorPlanPins: translatedPins,
+        floorPlan: activeFloorPlan
       })
     }
   }
@@ -563,7 +606,7 @@ class CaseDetails extends Component {
 
   render () {
     const { caseItem, comments, unitItem, caseUserTypes, pendingInvitations, caseUsersState, userId, userBzLogin, caseFieldValues } = this.props
-    const { normalizedUnitUsers } = this.state
+    const { normalizedUnitUsers, floorPlanPins, floorPlan } = this.state
     let successfullyAddedUsers, addUsersError
     if (parseInt(caseUsersState.caseId) === parseInt(caseItem.id)) {
       successfullyAddedUsers = caseUsersState.added
@@ -580,6 +623,7 @@ class CaseDetails extends Component {
         {this.renderStatusLine(caseItem, caseFieldValues)}
         {this.renderCategoriesLine(caseItem, caseFieldValues)}
         {this.renderPrioritySeverityLine(caseItem, caseFieldValues)}
+        {this.renderFloorPlan(floorPlan, floorPlanPins, unitItem)}
         {this.renderCreatedBy(caseUserTypes.creator)}
         {this.renderAssignedTo(
           caseUserTypes.assignee, normalizedUnitUsers, pendingInvitations, isUnitOwner, unitRoleType
@@ -593,6 +637,52 @@ class CaseDetails extends Component {
       </div>
     )
   }
+
+  saveFloorPlanPins = () => {
+    const { dispatch, caseItem } = this.props
+    const { floorPlanPins, floorPlan } = this.state
+    dispatch(changeFloorPlanPins(caseItem.id, floorPlanPins, floorPlan.id))
+  }
+
+  renderFloorPlan (floorPlan, pins, unitItem) {
+    const { isEditingPins } = this.state
+    return (
+      <div className='bt bw3 b--light-gray ph3 pv2'>
+        <div className='flex'>
+          <div className='flex-grow'>
+            {infoItemLabel('Location on floor plan')}
+          </div>
+          {floorPlan && (
+            <a className='mt1 link f7 bondi-blue underline' onClick={() => {
+              const { savedFloorPlanPins, floorPlanPins } = this.state
+              if (isEditingPins && !isEqual(savedFloorPlanPins, floorPlanPins)) {
+                this.saveFloorPlanPins()
+              }
+              this.setState({ isEditingPins: !isEditingPins })
+            }}>
+              {isEditingPins
+                ? 'Save pins'
+                : pins.length ? 'Edit pins' : 'Add pins'}
+            </a>
+          )}
+        </div>
+        <div className='mt1'>
+          <FloorPlanUploader unitMetaData={unitItem.metaData()}>
+            <div className='ba b--gray-93'>
+              <FloorPlanEditor
+                isEditing={isEditingPins}
+                pins={pins}
+                floorPlan={floorPlan}
+                isMovable
+                onPinsChanged={pins => this.setState({ floorPlanPins: pins })}
+              />
+            </div>
+          </FloorPlanUploader>
+        </div>
+      </div>
+    )
+  }
+
   renderMediaSection (comments) {
     const {
       audioDurations, playingAudioId, computedAudioMediaItemWidth: audioSize, computedImageMediaItemWidth: imageSize
@@ -704,7 +794,8 @@ CaseDetails.propTypes = {
   caseUsersState: PropTypes.object.isRequired,
   pendingInvitations: PropTypes.array,
   userBzLogin: PropTypes.string.isRequired,
-  caseFieldValues: PropTypes.object.isRequired
+  caseFieldValues: PropTypes.object.isRequired,
+  unitMetaData: PropTypes.object.isRequired
 }
 
 export default connect(() => ({}))(withRouter(CaseDetails))

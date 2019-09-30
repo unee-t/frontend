@@ -38,6 +38,7 @@ import { editUnitMetaData } from './epics/edit-unit-meta-data'
 import { uploadUnitFloorPlan } from './epics/upload-unit-floor-plan'
 import { changeUnitFloorPlanUrl } from './epics/change-unit-floor-plan-url'
 import { disableUnitFloorPlan } from './epics/disable-unit-floor-plan'
+import { changeCaseFloorPlanPins } from './epics/change-case-floor-plan-pins'
 
 export const rootEpic = combineEpics(
   createAttachment,
@@ -78,5 +79,6 @@ export const rootEpic = combineEpics(
   editUnitMetaData,
   uploadUnitFloorPlan,
   changeUnitFloorPlanUrl,
-  disableUnitFloorPlan
+  disableUnitFloorPlan,
+  changeCaseFloorPlanPins
 )

@@ -5,6 +5,9 @@ import bugzillaApi from '../util/bugzilla-api'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers } from './base/associations-helper'
 import { logger } from '../util/logger'
+import UnitMetaData from './unit-meta-data'
+import { idUrlTemplate, factoryOptions as casesFactoryOptions, transformCaseForClient } from './cases'
+import { serverHelpers } from './units'
 
 export const collectionName = 'comments'
 
@@ -13,6 +16,35 @@ export const factoryOptions = {
   collectionName,
   dataResolver: (data, caseId) => {
     return data.bugs[caseId.toString()].comments
+  }
+}
+
+const formatFloorPlanCommentText = (floorPlanId, floorPlanPins) =>
+  `[!floorPlan(${floorPlanId})]\n${floorPlanPins.map(({ x, y }) => `${x.toFixed(1)},${y.toFixed(1)}`).join(';')}`
+
+export const createFloorPlanComment = ({ unitBzId, caseId, userApiKey, floorPlanPins, errorLogParams }) => {
+  const metaData = UnitMetaData.findOne({ bzId: unitBzId })
+  const lastFloorPlan = metaData.floorPlanUrls && metaData.floorPlanUrls.slice(-1)[0]
+  if (lastFloorPlan && !lastFloorPlan.disabled) {
+    const payload = {
+      comment: formatFloorPlanCommentText(lastFloorPlan.id, floorPlanPins),
+      api_key: userApiKey
+    }
+
+    try {
+      // Creating the comment
+      const createData = bugzillaApi.callAPI('post', `/rest/bug/${caseId}/comment`, payload, false, true)
+      if (createData.data.error) {
+        throw new Meteor.Error(createData.data.error)
+      }
+      return createData.data.id
+    } catch (e) {
+      logger.error({
+        ...errorLogParams,
+        error: e
+      })
+      throw new Meteor.Error(`API Error: ${e.response ? e.response.data.message : e.message}`)
+    }
   }
 }
 
@@ -47,7 +79,7 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  'comments.insert' (text, caseId) {
+  [`${collectionName}.insert`] (text, caseId) {
     check(text, String)
     check(caseId, Number)
 
@@ -104,6 +136,46 @@ Meteor.methods({
         })
         throw new Meteor.Error(`API Error: ${e.response.data.message}`)
       }
+    }
+  },
+  [`${collectionName}.insertFloorPlan`] (caseId, floorPlanPins, floorPlanId) {
+    check(caseId, Number)
+    check(floorPlanPins, Array)
+    const currUser = Meteor.user()
+    if (Meteor.isClient) {
+      Comments.insert({
+        id: Math.round(Math.random() * Number.MAX_VALUE),
+        creator: currUser.bugzillaCreds.login,
+        creation_time: (new Date()).toISOString(),
+        bug_id: caseId,
+        text: formatFloorPlanCommentText(floorPlanId, floorPlanPins)
+      })
+    }
+    if (Meteor.isServer) {
+      const { callAPI } = bugzillaApi
+      const resp = callAPI('get', idUrlTemplate(caseId), {}, true, true)
+      const caseItem = transformCaseForClient(casesFactoryOptions.dataResolver(resp.data)[0])
+
+      const unitItem = serverHelpers.getAPIUnitByName(caseItem.selectedUnit)
+
+      const commentId = createFloorPlanComment({
+        unitBzId: unitItem.id,
+        userApiKey: currUser.bugzillaCreds.apiKey,
+        errorLogParams: {
+          user: Meteor.userId(),
+          method: `${collectionName}.insertFloorPlan`,
+          args: [caseId, floorPlanPins]
+        },
+        caseId,
+        floorPlanPins
+      })
+
+      // Fetching the full comment object by the returned id from the creation operation
+      const commentData = callAPI(
+        'get', `/rest/bug/comment/${commentId}`, { api_key: currUser.bugzillaCreds.apiKey }, false, true
+      )
+      const newComment = commentData.data.comments[commentId.toString()]
+      publicationObj.handleAdded(newComment)
     }
   }
 })
