@@ -27,6 +27,7 @@ script:
 
 matrix:
   include:
+    - env: DEPLOY=none
     - env: DEPLOY=demo
       if: tag IS present
       deploy:
