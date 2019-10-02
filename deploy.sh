@@ -39,19 +39,6 @@ shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 export COMMIT=$(git rev-parse --short HEAD)
 
-# Run deploy hooks
-for hook in deploy-hooks/*
-do
-	[[ -x $hook ]] || continue
-	if "$hook"
-	then
-		echo OK: "$hook"
-	else
-		echo FAIL: "$hook"
-		exit 1
-	fi
-done
-
 if ! aws configure --profile $AWS_PROFILE list
 then
 	echo Profile $AWS_PROFILE does not exist >&2
