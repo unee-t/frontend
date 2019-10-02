@@ -1,6 +1,5 @@
 import { Migrations } from 'meteor/percolate:migrations'
-import UnitRolesData from '../api/unit-roles-data'
-import { defaultRoleVisibility } from '../api/units'
+import UnitRolesData, { defaultRoleVisibility } from '../api/unit-roles-data'
 
 Migrations.add({
   version: 13,

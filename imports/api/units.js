@@ -7,8 +7,13 @@ import _ from 'lodash'
 import publicationFactory from './base/rest-resource-factory'
 import { makeAssociationFactory, withUsers, withDocs } from './base/associations-helper'
 import UnitMetaData, { unitTypes, collectionName as unitMetaCollName } from './unit-meta-data'
-import UnitRolesData, { possibleRoles, roleEnum, collectionName as unitRolesCollName } from './unit-roles-data'
-import PendingInvitations, { REPLACE_DEFAULT, collectionName as pendingInvitationsCollName } from './pending-invitations'
+import UnitRolesData, {
+  possibleRoles,
+  roleSortOrder,
+  addUserToRole,
+  collectionName as unitRolesCollName
+} from './unit-roles-data'
+import { REPLACE_DEFAULT } from './pending-invitations'
 import { callAPI } from '../util/bugzilla-api'
 import { logger } from '../util/logger'
 import FailedUnitCreations from './failed-unit-creations'
@@ -24,23 +29,6 @@ export const factoryOptions = {
 }
 
 export let serverHelpers
-
-export const defaultRoleVisibility = {
-  [roleEnum.TENANT]: true,
-  [roleEnum.OWNER_LANDLORD]: true,
-  [roleEnum.CONTRACTOR]: true,
-  [roleEnum.MGT_COMPANY]: true,
-  [roleEnum.AGENT]: true,
-  'Occupant': true
-}
-
-const roleSortOrder = [
-  roleEnum.TENANT,
-  roleEnum.OWNER_LANDLORD,
-  roleEnum.AGENT,
-  roleEnum.MGT_COMPANY,
-  roleEnum.CONTRACTOR
-]
 
 if (Meteor.isServer) {
   serverHelpers = {
@@ -190,129 +178,6 @@ export const getUnitRoles = (unit, userId) => {
     ),
     ({ login }) => login // Filtering out duplicates in case a user shows up in a component and has a finalized invitation
   )
-}
-
-export const addUserToRole = (
-  invitingUser, inviteeUser, unitBzId, role, invType, isOccupant, errorLogParams = {}, doLiveUpdate, isVisible = true,
-  isDefaultInvited = true, roleVisibility = defaultRoleVisibility
-) => {
-  // Filling up role visibility in case some of it is missing
-  roleVisibility = Object.assign({}, defaultRoleVisibility, roleVisibility)
-
-  // Creating matching invitation records
-  const invitationObj = {
-    invitedBy: invitingUser.bugzillaCreds.id,
-    invitee: inviteeUser.bugzillaCreds.id,
-    mefeInvitationIdIntValue: getIncrementFor(pendingInvitationsCollName),
-    type: invType,
-    unitId: unitBzId,
-    role,
-    isOccupant
-  }
-
-  // TODO: Once all dependencies of role resolving are moved from invitations to UnitRolesData, remove this
-  // Creating the invitation as pending first
-  const invitationId = PendingInvitations.insert(invitationObj)
-
-  // Linking invitation to user
-  Meteor.users.update(inviteeUser._id, {
-    $push: {
-      receivedInvites: {
-        unitId: invitationObj.unitId,
-        invitedBy: invitingUser._id,
-        timestamp: Date.now(),
-        type: invitationObj.type,
-        invitationId,
-        role,
-        isOccupant
-      }
-    }
-  })
-
-  // Adding to the user to a role on BZ using lambda
-  try {
-    HTTP.call('POST', process.env.INVITE_LAMBDA_URL, {
-      data: [Object.assign({ _id: invitationId }, invitationObj)],
-      headers: {
-        Authorization: `Bearer ${process.env.API_ACCESS_TOKEN}`
-      }
-    })
-  } catch (e) {
-    logger.error({
-      ...errorLogParams,
-      step: 'INVITE lambda request, unit cleanup might be necessary',
-      error: e
-    })
-    throw new Meteor.Error('Invite API Lambda error', e, { lambdaStatusCode: e.response.statusCode })
-  }
-
-  // Marking the pending invitation as "done", now that the API responded with success
-  PendingInvitations.update({ _id: invitationId }, {
-    $set: {
-      done: true
-    }
-  })
-  Meteor.users.update({
-    _id: inviteeUser._id,
-    'receivedInvites.invitationId': invitationId
-  }, {
-    $set: {
-      'receivedInvites.$.done': true
-    }
-  })
-
-  // Updating the roles collection to sync with BZ's state
-  const unitRoleQuery = {
-    roleType: role,
-    unitBzId
-  }
-
-  const unitRoleModifier = {
-    $push: {
-      members: {
-        id: inviteeUser._id,
-        isVisible,
-        isDefaultInvited,
-        isOccupant,
-        roleVisibility
-      }
-    }
-  }
-
-  UnitRolesData.update(unitRoleQuery, unitRoleModifier)
-
-  // Matching the role if the defaultAssigneeId is not defined and sets it to the current user. Does nothing otherwise
-  let doForceAssigneeUpdate
-  switch (invType) {
-    case REPLACE_DEFAULT:
-      doForceAssigneeUpdate = true
-      break
-    default:
-      doForceAssigneeUpdate = false
-  }
-  const assigneeUpdateQuery = doForceAssigneeUpdate ? unitRoleQuery : {
-    defaultAssigneeId: -1,
-    ...unitRoleQuery
-  }
-  UnitRolesData.update(assigneeUpdateQuery, {
-    $set: {
-      defaultAssigneeId: inviteeUser._id
-    }
-  })
-
-  if (doLiveUpdate) {
-    try {
-      const response = callAPI('get', `/rest/product?ids=${unitBzId}`, {}, true, true)
-      const unitItem = factoryOptions.dataResolver(response.data)[0]
-      pubObj.handleChanged(unitItem, ['components'])
-    } catch (e) {
-      logger.error({
-        ...errorLogParams,
-        step: 'Fetching unit info for live update after invite, proceeding with no error',
-        error: e
-      })
-    }
-  }
 }
 
 const rolesProjByOwnership = (userId, unitItem) => {
