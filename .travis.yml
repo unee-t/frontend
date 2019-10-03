@@ -33,10 +33,7 @@ matrix:
       deploy:
         provider: script
         skip_cleanup: true
-        script:
-          - AWS_ACCESS_KEY_ID=$AWS_915001051872_ID
-            AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET
-            ./deploy.sh -d
+        script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET ./deploy.sh -d
         on:
           tags: true
     - env: DEPLOY=prod
@@ -44,12 +41,7 @@ matrix:
       deploy:
         provider: script
         skip_cleanup: true
-        script:
-          - AWS_ACCESS_KEY_ID=$AWS_192458993663_ID
-            AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET
-            ./deploy.sh -p
-          - AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET aws cloudfront create-invalidation
-            --distribution-id E173XT6X8V4A18 --paths '/*'
+        script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
         on:
           tags: true
 
