@@ -1,18 +1,62 @@
 // @flow
 import { Meteor } from 'meteor/meteor'
+import { Accounts } from 'meteor/accounts-base'
 import userApiKey, { bodyExtractor, headerExtractor, makeComposedExtractor } from './middleware/user-api-key-middleware'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../util/logger'
 import { createCase } from '../cases'
 import { serverHelpers } from '../units'
 import UnitMetaData from '../unit-meta-data'
+import UnitRolesData, { addUserToRole, roleEnum } from '../unit-roles-data'
+import { emailValidator } from '../../util/validators'
 
 import type { Request, Response } from './rest-types'
-import { roleEnum } from '../unit-roles-data'
+import { KEEP_DEFAULT } from '../pending-invitations'
 
 const allowedRoles = Object.values(roleEnum).filter(val => val !== roleEnum.CONTRACTOR)
 
 const isDateString = str => typeof str === 'string' && !isNaN((new Date(str)).getTime())
+
+type User = {
+  _id: string
+}
+
+const attemptUserGeneration = (userAliasId: string, creator: User, roleType: string, unitBzId: number) => {
+  if (emailValidator(userAliasId)) {
+    if (Accounts.findUserByEmail(userAliasId)) {
+      logger.warn(`Creating user by alias ID '${userAliasId}' failed, another user with this email address already exists`)
+      return false
+    }
+    const userId = Accounts.createUser({
+      email: userAliasId,
+      profile: {
+        isLimited: true,
+        creatorId: creator._id
+      }
+    })
+
+    Meteor.users.update({ _id: userId }, {
+      $set: {
+        'emails.0.verified': true,
+        apiAliases: {
+          userId: creator._id,
+          id: userAliasId
+        }
+      }
+    })
+
+    const newUser = Meteor.users.findOne({ _id: userId })
+
+    addUserToRole(creator, newUser, unitBzId, roleType, KEEP_DEFAULT, false, {
+      user: creator._id,
+      apiEndpoint: `POST /api/cases`,
+      step: 'attemptUserGeneration',
+      args: [userAliasId, creator, roleType, unitBzId]
+    })
+
+    return newUser
+  }
+}
 
 export default userApiKey((req: Request, res: Response) => {
   const errorLog = 'API request for "POST /cases" failed: '
@@ -88,6 +132,23 @@ export default userApiKey((req: Request, res: Response) => {
     nextStepsBy
   } = req.body
 
+  const unitMeta = unitId
+    ? UnitMetaData.findOne({ _id: unitId })
+    : UnitMetaData.findOne({
+      apiAliases: {
+        userId: req.user._id,
+        id: unitAliasId
+      }
+    })
+  if (!unitMeta) {
+    const message = 'No unit found for ' + (unitId ? `unitId ${unitId}` : `unitAliasId ${unitAliasId}`)
+    logger.warn(errorLog + message)
+    res.send(400, message)
+    return
+  }
+
+  const mainUserRole = UnitRolesData.findOne({ 'members.id': req.user._id, unitId })
+
   let reporter
   if (!reporterId && !reporterAliasId) {
     reporter = req.user
@@ -102,31 +163,21 @@ export default userApiKey((req: Request, res: Response) => {
       })
 
     if (!reporter) {
-      const message = 'No user found as reporter for ' + (reporterId ? `reporterId ${reporterId}` : `reporterAliasId ${reporterAliasId}`)
-      logger.warn(errorLog + message)
-      res.send(400, message)
-      return
+      if (reporterAliasId && mainUserRole) {
+        reporter = attemptUserGeneration(reporterAliasId, req.user, mainUserRole.roleType, unitMeta.bzId)
+      }
+      if (!reporter) {
+        const message = 'No user found as reporter for ' + (reporterId ? `reporterId ${reporterId}` : `reporterAliasId ${reporterAliasId}`)
+        logger.warn(errorLog + message)
+        res.send(400, message)
+        return
+      }
     } else if (reporter.profile.creatorId !== req.user._id && reporter._id !== req.user._id) {
       const message = 'The provided apiKey doesn\'t belong to a user who is allowed to set the specified user as reporter'
       logger.warn(errorLog + message)
       res.send(403, message)
       return
     }
-  }
-
-  const unitMeta = unitId
-    ? UnitMetaData.findOne({ _id: unitId })
-    : UnitMetaData.findOne({
-      apiAliases: {
-        userId: req.user._id,
-        id: unitAliasId
-      }
-    })
-  if (!unitMeta) {
-    const message = 'No unit found for ' + (unitId ? `unitId ${unitId}` : `unitAliasId ${unitAliasId}`)
-    logger.warn(errorLog + message)
-    res.send(400, message)
-    return
   }
 
   let unitItem
@@ -146,7 +197,7 @@ export default userApiKey((req: Request, res: Response) => {
 
   let assignee
   if (assigneeId || assigneeAliasId) {
-    const assigneeUser = assigneeId
+    let assigneeUser = assigneeId
       ? Meteor.users.findOne({ _id: assigneeId })
       : Meteor.users.findOne({
         apiAliases: {
@@ -155,10 +206,15 @@ export default userApiKey((req: Request, res: Response) => {
         }
       })
     if (!assigneeUser) {
-      const message = 'No user found as assignee for ' + (assigneeId ? `assigneeId ${assigneeId}` : `assigneeAliasId ${assigneeAliasId}`)
-      logger.warn(errorLog + message)
-      res.send(400, message)
-      return
+      if (assigneeAliasId) {
+        assigneeUser = attemptUserGeneration(assigneeAliasId, req.user._id, mainUserRole.roleType, unitMeta.bzId)
+      }
+      if (!assigneeUser) {
+        const message = 'No user found as assignee for ' + (assigneeId ? `assigneeId ${assigneeId}` : `assigneeAliasId ${assigneeAliasId}`)
+        logger.warn(errorLog + message)
+        res.send(400, message)
+        return
+      }
     }
     assignee = assigneeUser.bugzillaCreds.login
   }
