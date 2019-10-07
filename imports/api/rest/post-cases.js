@@ -206,7 +206,7 @@ export default userApiKey((req: Request, res: Response) => {
         }
       })
     if (!assigneeUser) {
-      if (assigneeAliasId) {
+      if (assigneeAliasId && mainUserRole) {
         assigneeUser = attemptUserGeneration(assigneeAliasId, req.user._id, mainUserRole.roleType, unitMeta.bzId)
       }
       if (!assigneeUser) {
