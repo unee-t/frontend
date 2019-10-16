@@ -10,10 +10,11 @@ type Action = {
   type: string
 }
 
- type Info = {
-    password: string,
-    emailAddress: string
-  }
+type Info = {
+  password: string,
+  emailAddress: string,
+  promoCode: ?string
+}
 
 type Dispatch = (action: Action) => any;
 type ThunkAction = (dispatch: Dispatch) => any
@@ -28,6 +29,7 @@ export function submitSignupInfo (info: Info): ThunkAction {
       email: info.emailAddress,
       password: info.password,
       profile: {
+        promoCode: info.promoCode
       }
     }, (err) => {
       if (err) {

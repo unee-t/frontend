@@ -5,13 +5,23 @@ import randToken from 'rand-token'
 import bugzillaApi from '../../util/bugzilla-api'
 import { baseUserSchema } from '../custom-users'
 import { logger } from '../../util/logger'
+import PromoCodes from '../promo-codes'
 
 // Exported for testing purposes
 export function onCreateUser (options, user) {
   const { callAPI } = bugzillaApi
-  const { bzLogin, bzPass } = options.profile
+  const { bzLogin, bzPass, promoCode } = options.profile
   delete options.profile.bzLogin
   delete options.profile.bzPass
+
+  if (promoCode) {
+    const promoCodeRecord = PromoCodes.findOne({ code: new RegExp(promoCode.toLowerCase(), 'i') })
+    if (!promoCodeRecord) {
+      throw new Meteor.Error('Promo code does not exist')
+    } else if (promoCodeRecord.expiresOn && promoCodeRecord.expiresOn.getTime() < Date.now()) {
+      throw new Meteor.Error('This promo code has expired')
+    }
+  }
 
   // Creating a random bz pass if one was not provided
   const password = bzPass || 'a' + randToken.generate(10) + '!'

@@ -25,7 +25,8 @@ type State = {
   termsAgreement: boolean,
   info: {
     password: string,
-    emailAddress: string
+    emailAddress: string,
+    promoCode: string
   },
   errorTexts: {}
 }
@@ -35,6 +36,7 @@ type Inputs = Array<{
   identifier: string,
   placeholder: string,
   type: string,
+  optional?: boolean,
   onChange: (evt: SyntheticInputEvent<HTMLInputElement>) => void
 }>
 
@@ -47,7 +49,8 @@ export class SignupPage extends React.Component<Props, State> {
       termsAgreement: false,
       info: {
         password: '',
-        emailAddress: ''
+        emailAddress: '',
+        promoCode: ''
       },
       errorTexts: {}
     }
@@ -66,6 +69,20 @@ export class SignupPage extends React.Component<Props, State> {
             errorTexts: Object.assign({}, errorTexts, {
               emailAddress: emailValidator(value) ? null : 'Email address is invalid'
             })
+          })
+        }
+      },
+      {
+        label: 'Promo code',
+        identifier: 'promoCode',
+        optional: true,
+        placeholder: 'Signing up for a promo?',
+        type: 'text',
+        onChange: (evt) => {
+          const { value } = evt.target
+          const { info } = this.state
+          this.setState({
+            info: Object.assign({}, info, { promoCode: value })
           })
         }
       }
@@ -97,7 +114,7 @@ export class SignupPage extends React.Component<Props, State> {
   isFormValid = () => {
     const { info, errorTexts, termsAgreement } = this.state
     return (
-      this.inputs.filter(({ identifier }) => !!info[identifier]).length === this.inputs.length && // All have a value
+      this.inputs.filter(({ identifier, optional }) => optional || !!info[identifier]).length === this.inputs.length && // All have a value
       Object.keys(errorTexts).filter(key => !!errorTexts[key]).length === 0 && // No error messages
       !!info.password && // Password has a value
       !!termsAgreement
@@ -121,7 +138,13 @@ export class SignupPage extends React.Component<Props, State> {
               {this.inputs.map(({ label, identifier, placeholder, type, onChange }, i) => (
                 <InputRow key={i} label={label} placeholder={placeholder} inpType={type} value={info[identifier]}
                   onChange={evt => onChange ? onChange(evt) : this.makeInfoChange({ [identifier]: evt.target.value })}
-                  errorText={errorTexts[identifier] || userCreationState.error}
+                  errorText={
+                    errorTexts[identifier] || (
+                      userCreationState.error &&
+                      userCreationState.error.match(new RegExp(label.toLowerCase(), 'i')) &&
+                      userCreationState.error
+                    )
+                  }
                 />
               ))}
               {userCreationState.error && userCreationState.error.includes('Email') &&
