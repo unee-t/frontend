@@ -125,3 +125,16 @@ to the bugzillaCreds **id** from `db.users.find().pretty()`
 ## error: Error: url must be absolute and start with http:// or https://
 
 Your `.env` file is not set up correctly, consider `./env-setup.bash`
+
+## Mail sending
+
+The secret **MAIL_URL** environment variable configures the SMTP, so that email
+notifications can be sent. For example in **uneet-dev** environment, it begins
+with `smtps://AKIAIICB7IAWDIGLY6DA..` and you can search for the **Access key
+ID** _AKIAIICB7IAWDIGLY6DA_ in [AWS
+IAM](https://console.aws.amazon.com/iam/home#/home) to determine if it's active
+or not in <https://us-west-2.console.aws.amazon.com/ses/home?region=us-west-2#>.
+
+To help with debugging, there is a [setup mail
+script](https://github.com/unee-t/email2case/blob/master/tests/setup-mail-to.sh)
+to exercise **MAIL_URL**.
