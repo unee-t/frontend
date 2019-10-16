@@ -7,13 +7,14 @@ import { logger } from '../../util/logger'
 import { createCase } from '../cases'
 import { serverHelpers } from '../units'
 import UnitMetaData from '../unit-meta-data'
-import UnitRolesData, { addUserToRole, roleEnum } from '../unit-roles-data'
+import { addUserToRole, roleEnum } from '../unit-roles-data'
 import { emailValidator } from '../../util/validators'
 
 import type { Request, Response } from './rest-types'
 import { KEEP_DEFAULT } from '../pending-invitations'
 
-const allowedRoles = Object.values(roleEnum).filter(val => val !== roleEnum.CONTRACTOR)
+const assigneeAllowedRoles = Object.values(roleEnum).filter(val => val !== roleEnum.CONTRACTOR)
+const reporterAllowedRoles = Object.values(roleEnum)
 
 const isDateString = str => typeof str === 'string' && !isNaN((new Date(str)).getTime())
 
@@ -68,7 +69,8 @@ export default userApiKey((req: Request, res: Response) => {
     check(req.body, Match.ObjectIncluding({
       title: String,
       details: Match.Maybe(String),
-      assignedRole: Match.OneOf(...allowedRoles),
+      assignedRole: Match.OneOf(...assigneeAllowedRoles),
+      reporterRole: Match.Maybe(Match.OneOf(...reporterAllowedRoles)),
       category: Match.Maybe(String),
       subCategory: Match.Maybe(String),
       severity: Match.Maybe(String),
@@ -117,6 +119,7 @@ export default userApiKey((req: Request, res: Response) => {
     unitAliasId,
     reporterId,
     reporterAliasId,
+    reporterRole,
     title,
     details,
     category,
@@ -147,8 +150,6 @@ export default userApiKey((req: Request, res: Response) => {
     return
   }
 
-  const mainUserRole = UnitRolesData.findOne({ 'members.id': req.user._id, unitId })
-
   let reporter
   if (!reporterId && !reporterAliasId) {
     reporter = req.user
@@ -163,8 +164,8 @@ export default userApiKey((req: Request, res: Response) => {
       })
 
     if (!reporter) {
-      if (reporterAliasId && mainUserRole) {
-        reporter = attemptUserGeneration(reporterAliasId, req.user, mainUserRole.roleType, unitMeta.bzId)
+      if (reporterAliasId && reporterRole) {
+        reporter = attemptUserGeneration(reporterAliasId, req.user, reporterRole, unitMeta.bzId)
       }
       if (!reporter) {
         const message = 'No user found as reporter for ' + (reporterId ? `reporterId ${reporterId}` : `reporterAliasId ${reporterAliasId}`)
@@ -206,8 +207,8 @@ export default userApiKey((req: Request, res: Response) => {
         }
       })
     if (!assigneeUser) {
-      if (assigneeAliasId && mainUserRole) {
-        assigneeUser = attemptUserGeneration(assigneeAliasId, req.user._id, mainUserRole.roleType, unitMeta.bzId)
+      if (assigneeAliasId) {
+        assigneeUser = attemptUserGeneration(assigneeAliasId, req.user._id, assignedRole, unitMeta.bzId)
       }
       if (!assigneeUser) {
         const message = 'No user found as assignee for ' + (assigneeId ? `assigneeId ${assigneeId}` : `assigneeAliasId ${assigneeAliasId}`)

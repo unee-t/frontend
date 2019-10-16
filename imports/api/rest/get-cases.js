@@ -52,8 +52,6 @@ export default userApiKey((req, res) => {
     return
   }
 
-  console.log('bug sample', bugs[0])
-
   const productGroupDict = bugs.reduce((all, bug) => {
     all[bug.product] = all[bug.product] || []
     all[bug.product].push(bug)
