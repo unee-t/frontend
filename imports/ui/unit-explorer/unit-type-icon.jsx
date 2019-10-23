@@ -13,9 +13,12 @@ const unitTypes = [
   { icon: 'business', categories: ['Office'] },
   { icon: 'location_city', categories: ['Warehouse'] },
   { icon: 'restaurant', categories: ['Restaurant/Cafe'] },
-  { icon: 'not_listed_location', categories: [
-    'Other', 'Unknown', 'Other/Building', 'Other/Unit', 'Other/Room', 'Unknown/Building', 'Unknown/Unit', 'Unknown/Room'
-  ] }
+  {
+    icon: 'not_listed_location',
+    categories: [
+      'Other', 'Unknown', 'Other/Building', 'Other/Unit', 'Other/Room', 'Unknown/Building', 'Unknown/Unit', 'Unknown/Room'
+    ]
+  }
 ]
 
 const iconDict = unitTypes.reduce((all, def) => {
