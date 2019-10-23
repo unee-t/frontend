@@ -51,7 +51,25 @@ export const unitTypes = Object.freeze([
     name: 'Other'
   },
   {
+    name: 'Other/Building'
+  },
+  {
+    name: 'Other/Unit'
+  },
+  {
+    name: 'Other/Room'
+  },
+  {
     name: 'Unknown'
+  },
+  {
+    name: 'Unknown/Building'
+  },
+  {
+    name: 'Unknown/Unit'
+  },
+  {
+    name: 'Unknown/Room'
   }
 ])
 
