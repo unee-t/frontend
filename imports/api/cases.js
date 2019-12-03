@@ -58,6 +58,20 @@ export const severityIndex = [
   'minor'
 ]
 
+export const caseEditableFields = [
+  'title',
+  'solution',
+  'solutionDeadline',
+  'nextSteps',
+  'nextStepsBy',
+  'status',
+  'resolution',
+  'category',
+  'subCategory',
+  'priority',
+  'severity'
+]
+
 export const caseBzApiRoute = '/rest/bug'
 
 export const REPORT_KEYWORD = 'inspection_report'
@@ -360,7 +374,7 @@ export const factoryOptions = {
 export const idUrlTemplate = caseId => `${caseBzApiRoute}/${caseId}`
 
 export let reloadCaseFields
-let publicationObj
+export let publicationObj
 
 export const noReportsExp = {
   field: 'keywords',
@@ -508,8 +522,9 @@ if (Meteor.isServer) {
 }
 
 export const fieldEditMethodMaker = ({ editableFields, methodName, publicationObj }) =>
-  (caseId, changeSet) => {
+  (caseId, changeSet, userId) => {
     check(caseId, Number)
+    userId = userId || Meteor.userId()
     Object.keys(changeSet).forEach(fieldName => {
       if (!editableFields.includes(fieldName)) {
         throw new Meteor.Error(`illegal field name ${fieldName}`)
@@ -519,7 +534,7 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
         throw new Meteor.Error(`illegal value type of ${valType} set to field ${fieldName}`)
       }
     })
-    if (!Meteor.userId()) {
+    if (!userId) {
       throw new Meteor.Error('not-authorized')
     }
 
@@ -529,7 +544,7 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
       })
     } else { // is server
       const { callAPI } = bugzillaApi
-      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({ _id: Meteor.userId() })
+      const { bugzillaCreds: { apiKey } } = Meteor.users.findOne({ _id: userId })
       const changedFields = Object.keys(changeSet)
       try {
         const normalizedSet = changedFields.reduce((all, key) => {
@@ -549,7 +564,7 @@ export const fieldEditMethodMaker = ({ editableFields, methodName, publicationOb
         publicationObj.handleChanged(caseItem, changedFields)
       } catch (e) {
         logger.error({
-          user: Meteor.userId(),
+          user: userId,
           method: methodName,
           args: [caseId, changeSet],
           error: e
@@ -697,19 +712,7 @@ Meteor.methods({
   },
   [`${collectionName}.editCaseField`]: fieldEditMethodMaker({
     methodName: `${collectionName}.editCaseField`,
-    editableFields: [
-      'title',
-      'solution',
-      'solutionDeadline',
-      'nextSteps',
-      'nextStepsBy',
-      'status',
-      'resolution',
-      'category',
-      'subCategory',
-      'priority',
-      'severity'
-    ],
+    editableFields: caseEditableFields,
     clientCollection: Cases,
     publicationObj
   })

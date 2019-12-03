@@ -1,63 +1,18 @@
 // @flow
 import { Meteor } from 'meteor/meteor'
-import { Accounts } from 'meteor/accounts-base'
-import userApiKey, { bodyExtractor, headerExtractor, makeComposedExtractor } from './middleware/user-api-key-middleware'
+import userApiKey, { bodyExtractor, headerExtractor, makeComposedExtractor } from '../middleware/user-api-key-middleware'
 import { check, Match } from 'meteor/check'
-import { logger } from '../../util/logger'
-import { createCase } from '../cases'
-import { serverHelpers } from '../units'
-import UnitMetaData from '../unit-meta-data'
-import { addUserToRole, roleEnum } from '../unit-roles-data'
-import { emailValidator } from '../../util/validators'
+import { logger } from '../../../util/logger'
+import { createCase } from '../../cases'
+import { serverHelpers } from '../../units'
+import UnitMetaData from '../../unit-meta-data'
+import { attemptUserGeneration, verifyRole, assigneeAllowedRoles, isDateString } from './common'
+import { roleEnum } from '../../unit-roles-data'
+import { emailValidator } from '../../../util/validators'
 
-import type { Request, Response } from './rest-types'
-import { KEEP_DEFAULT } from '../pending-invitations'
+import type { Request, Response } from '../rest-types'
 
-const assigneeAllowedRoles = Object.values(roleEnum).filter(val => val !== roleEnum.CONTRACTOR)
 const reporterAllowedRoles = Object.values(roleEnum)
-
-const isDateString = str => typeof str === 'string' && !isNaN((new Date(str)).getTime())
-
-type User = {
-  _id: string
-}
-
-const attemptUserGeneration = (userAliasId: string, creator: User, roleType: string, unitBzId: number) => {
-  if (emailValidator(userAliasId)) {
-    if (Accounts.findUserByEmail(userAliasId)) {
-      logger.warn(`Creating user by alias ID '${userAliasId}' failed, another user with this email address already exists`)
-      return false
-    }
-    const userId = Accounts.createUser({
-      email: userAliasId,
-      profile: {
-        isLimited: true,
-        creatorId: creator._id
-      }
-    })
-
-    Meteor.users.update({ _id: userId }, {
-      $set: {
-        'emails.0.verified': true,
-        apiAliases: {
-          userId: creator._id,
-          id: userAliasId
-        }
-      }
-    })
-
-    const newUser = Meteor.users.findOne({ _id: userId })
-
-    addUserToRole(creator, newUser, unitBzId, roleType, KEEP_DEFAULT, false, {
-      user: creator._id,
-      apiEndpoint: `POST /api/cases`,
-      step: 'attemptUserGeneration',
-      args: [userAliasId, creator, roleType, unitBzId]
-    })
-
-    return newUser
-  }
-}
 
 export default userApiKey((req: Request, res: Response) => {
   const errorLog = 'API request for "POST /cases" failed: '
@@ -164,8 +119,8 @@ export default userApiKey((req: Request, res: Response) => {
       })
 
     if (!reporter) {
-      if (reporterAliasId && reporterRole) {
-        reporter = attemptUserGeneration(reporterAliasId, req.user, reporterRole, unitMeta.bzId)
+      if (reporterAliasId && reporterRole && emailValidator(reporterAliasId)) {
+        reporter = attemptUserGeneration(reporterAliasId, req.user)
       }
       if (!reporter) {
         const message = 'No user found as reporter for ' + (reporterId ? `reporterId ${reporterId}` : `reporterAliasId ${reporterAliasId}`)
@@ -179,6 +134,27 @@ export default userApiKey((req: Request, res: Response) => {
       res.send(403, message)
       return
     }
+  }
+
+  const handleVerifyError = e => {
+    if (e.reason === 'server error') {
+      res.send(500, e.message)
+    } else {
+      logger.warn(errorLog + e.message)
+      res.send(400, e.message)
+    }
+  }
+
+  try {
+    verifyRole(req.user, reporter, unitMeta, reporterRole, {
+      user: req.user._id,
+      apiEndpoint: `POST /api/cases`,
+      step: 'assign reporter to a new role in this unit',
+      args: req.body
+    })
+  } catch (e) {
+    handleVerifyError(e)
+    return
   }
 
   let unitItem
@@ -207,8 +183,8 @@ export default userApiKey((req: Request, res: Response) => {
         }
       })
     if (!assigneeUser) {
-      if (assigneeAliasId) {
-        assigneeUser = attemptUserGeneration(assigneeAliasId, req.user._id, assignedRole, unitMeta.bzId)
+      if (assigneeAliasId && emailValidator(assigneeAliasId)) {
+        assigneeUser = attemptUserGeneration(assigneeAliasId, req.user._id)
       }
       if (!assigneeUser) {
         const message = 'No user found as assignee for ' + (assigneeId ? `assigneeId ${assigneeId}` : `assigneeAliasId ${assigneeAliasId}`)
@@ -217,6 +193,19 @@ export default userApiKey((req: Request, res: Response) => {
         return
       }
     }
+
+    try {
+      verifyRole(req.user, assigneeUser, unitMeta, assignedRole, {
+        user: req.user._id,
+        apiEndpoint: `POST /api/cases`,
+        step: 'assign assignee to a new role in this unit',
+        args: req.body
+      })
+    } catch (e) {
+      handleVerifyError(e)
+      return
+    }
+
     assignee = assigneeUser.bugzillaCreds.login
   }
 

@@ -49,7 +49,7 @@ export const createFloorPlanComment = ({ unitBzId, caseId, userApiKey, floorPlan
 }
 
 export let publicationObj // Exported for testing purposes
-let FailedComments
+export let FailedComments
 if (Meteor.isServer) {
   const associationFactory = makeAssociationFactory(collectionName)
   publicationObj = publicationFactory(factoryOptions)
