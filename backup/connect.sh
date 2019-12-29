@@ -34,6 +34,8 @@ done
 AWS_PROFILE=ins-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
-MONGO_PASSWORD=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_MASTER_PASSWORD --with-decryption --query Parameters[0].Value --output text)
-MONGO_CONNECT=$(aws --profile $AWS_PROFILE ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
-mongo "mongodb://root:$MONGO_PASSWORD@$MONGO_CONNECT"
+getparam () {
+	aws --profile ins-${STAGE} ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
+}
+
+mongo "mongodb+srv://$(getparam MONGO_MASTER_USERNAME):$(getparam MONGO_MASTER_PASSWORD)@$(getparam MONGO_CONNECT)"
