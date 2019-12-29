@@ -18,3 +18,4 @@ export FROM_EMAIL=$(getparam FROM_EMAIL)
 export MAIL_URL=$(getparam MAIL_URL)
 export STAGE=dev
 export DOMAIN=unee-t.com
+export MEFE_TARGET_ARN=$(getparam MEFE_TARGET_ARN)

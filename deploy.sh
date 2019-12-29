@@ -9,10 +9,10 @@ show_help() {
 cat << EOF
 Usage: ${0##*/} [-p]
 
-By default, deploy to dev environment on AWS account 812644853088
+By default, deploy to dev environment on AWS account
 
-	-p          PRODUCTION 192458993663
-	-d          DEMO 915001051872
+	-p          PRODUCTION
+	-d          DEMO
 
 EOF
 }
@@ -83,6 +83,9 @@ test "$STAGE" == prod && export STAGE=""
 envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up \
+	--target-group-arn ${MEFE_TARGET_ARN} \
+	--container-name meteor \
+	--container-port 8080 \
 	--deployment-max-percent 100 \
 	--deployment-min-healthy-percent 50 \
 	--timeout 7
