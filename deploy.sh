@@ -85,7 +85,8 @@ envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up \
 	--target-group-arn ${MEFE_TARGET_ARN} \
 	--container-name meteor \
-	--container-port 8080 \
+	--container-port 3000 \
+	--create-log-groups \
 	--deployment-max-percent 100 \
 	--deployment-min-healthy-percent 50 \
 	--timeout 7

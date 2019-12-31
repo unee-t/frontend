@@ -10,10 +10,9 @@ services:
             - ROOT_URL=${ROOT_URL}
             - BUGZILLA_URL=${BUGZILLA_URL}
             - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
-            - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
+            - MONGO_URL=mongodb+srv://${MONGO_MASTER_USERNAME}:${MONGO_MASTER_PASSWORD}@${MONGO_CONNECT}
             - CLOUDINARY_URL=${CLOUDINARY_URL}
             - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
-            - COMMIT=${COMMIT}
             - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
             - FROM_EMAIL=${FROM_EMAIL}
             - MAIL_URL=${MAIL_URL}
