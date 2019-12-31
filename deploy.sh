@@ -34,7 +34,7 @@ do
 			;;
 	esac
 done
-AWS_PROFILE=uneet-$STAGE
+AWS_PROFILE=ins-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 export COMMIT=$(git rev-parse --short HEAD)
@@ -71,7 +71,7 @@ else
 	ecs-cli -version
 fi
 
-ecs-cli configure --cluster master --region ap-southeast-1 --compose-service-name-prefix ecscompose-service-
+ecs-cli configure --cluster master --region ap-southeast-1
 test -f aws-env.$STAGE && source aws-env.$STAGE
 
 service=$(grep -A1 services AWS-docker-compose.yml | tail -n1 | tr -cd '[[:alnum:]]')
@@ -85,7 +85,8 @@ envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 ecs-cli compose --aws-profile $AWS_PROFILE -p ${service} -f docker-compose-${service}.yml service up \
 	--target-group-arn ${MEFE_TARGET_ARN} \
 	--container-name meteor \
-	--container-port 8080 \
+	--container-port 3000 \
+	--create-log-groups \
 	--deployment-max-percent 100 \
 	--deployment-min-healthy-percent 50 \
 	--timeout 7
