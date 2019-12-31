@@ -34,7 +34,7 @@ do
 			;;
 	esac
 done
-AWS_PROFILE=uneet-$STAGE
+AWS_PROFILE=ins-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 export COMMIT=$(git rev-parse --short HEAD)
@@ -71,7 +71,7 @@ else
 	ecs-cli -version
 fi
 
-ecs-cli configure --cluster master --region ap-southeast-1 --compose-service-name-prefix ecscompose-service-
+ecs-cli configure --cluster master --region ap-southeast-1
 test -f aws-env.$STAGE && source aws-env.$STAGE
 
 service=$(grep -A1 services AWS-docker-compose.yml | tail -n1 | tr -cd '[[:alnum:]]')
