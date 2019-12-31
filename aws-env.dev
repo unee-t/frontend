@@ -1,14 +1,16 @@
 getparam () {
 	aws --profile ins-dev ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
 }
-export ROOT_URL=https://case.dev.ins.unee-t.com
+export DOMAIN=ins.unee-t.com
+export STAGE=dev
+export ROOT_URL=https://case.$STAGE.$DOMAIN
 export BUGZILLA_ADMIN_KEY=$(getparam BUGZILLA_ADMIN_KEY)
-export BUGZILLA_URL=https://dashboard.dev.ins.unee-t.com
-export INVITE_LAMBDA_URL=https://invite.dev.ins.unee-t.com
-export UNIT_CREATE_LAMBDA_URL=https://unit.dev.ins.unee-t.com/create
-export APIENROLL_LAMBDA_URL=https://apienroll.dev.ins.unee-t.com
-export PDFGEN_LAMBDA_URL=https://pdfgen.dev.ins.unee-t.com
-export PDFCONVERT_LAMBDA_URL=https://prince.dev.ins.unee-t.com
+export BUGZILLA_URL=https://dashboard.$STAGE.$DOMAIN
+export INVITE_LAMBDA_URL=https://invite.$STAGE.$DOMAIN
+export UNIT_CREATE_LAMBDA_URL=https://unit.$STAGE.$DOMAIN/create
+export APIENROLL_LAMBDA_URL=https://apienroll.$STAGE.$DOMAIN
+export PDFGEN_LAMBDA_URL=https://pdfgen.$STAGE.$DOMAIN
+export PDFCONVERT_LAMBDA_URL=https://prince.$STAGE.$DOMAIN
 export MONGO_PASSWORD=$(getparam MONGO_PASSWORD)
 export MONGO_CONNECT=$(getparam MONGO_CONNECT)
 export CLOUDINARY_PRESET=$(getparam CLOUDINARY_PRESET)
@@ -16,6 +18,4 @@ export CLOUDINARY_URL=$(getparam CLOUDINARY_URL)
 export API_ACCESS_TOKEN=$(getparam API_ACCESS_TOKEN)
 export FROM_EMAIL=$(getparam FROM_EMAIL)
 export MAIL_URL=$(getparam MAIL_URL)
-export STAGE=dev
-export DOMAIN=unee-t.com
 export MEFE_TARGET_ARN=$(getparam MEFE_TARGET_ARN)
