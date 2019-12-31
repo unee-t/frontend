@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 STAGE=dev
 
 show_help() {
