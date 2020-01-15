@@ -1,22 +1,44 @@
-getparam () {
-	aws --profile ins-dev ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
-}
-export DOMAIN=ins.unee-t.com
+#!/bin/bash
+### This file stores all environment variables for the DEV environment for this repo
+
+# This script is called as part of the Travis CI deployment routine
+# We can use the default aws profile configured in Travis CI settings to get the variables we need
+
+# We create a procedure to retrieve the variables from the AWS parameter store
+# Make sure to 
+#   - configure your AWS CLI accordingly
+#   - update the profile you need to use to access these variables if needed
+#	- PROFILE is set when .travis.yml run 
+
+	getparam () {
+		aws --profile ${PROFILE} ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
+	}
+
+# We prepare the hardcoded variables that we will need to deploy what's needed
+
 export STAGE=dev
-export ROOT_URL=https://case.$STAGE.$DOMAIN
-export BUGZILLA_ADMIN_KEY=$(getparam BUGZILLA_ADMIN_KEY)
-export BUGZILLA_URL=https://dashboard.$STAGE.$DOMAIN
-export INVITE_LAMBDA_URL=https://invite.$STAGE.$DOMAIN
-export UNIT_CREATE_LAMBDA_URL=https://unit.$STAGE.$DOMAIN/create
-export APIENROLL_LAMBDA_URL=https://apienroll.$STAGE.$DOMAIN
-export PDFGEN_LAMBDA_URL=https://pdfgen.$STAGE.$DOMAIN
-export PDFCONVERT_LAMBDA_URL=https://prince.$STAGE.$DOMAIN
-export MONGO_MASTER_USERNAME=$(getparam MONGO_MASTER_USERNAME)
-export MONGO_MASTER_PASSWORD=$(getparam MONGO_MASTER_PASSWORD)
-export MONGO_CONNECT=$(getparam MONGO_CONNECT)
-export CLOUDINARY_PRESET=$(getparam CLOUDINARY_PRESET)
-export CLOUDINARY_URL=$(getparam CLOUDINARY_URL)
-export API_ACCESS_TOKEN=$(getparam API_ACCESS_TOKEN)
-export FROM_EMAIL=$(getparam FROM_EMAIL)
-export MAIL_URL=$(getparam MAIL_URL)
-export MEFE_TARGET_ARN=$(getparam MEFE_TARGET_ARN)
+
+# Variables that are maintained in the AWS parameter store for the environment:
+
+	export DOMAIN=$(getparam DOMAIN) 
+	export BUGZILLA_ADMIN_KEY=$(getparam BUGZILLA_ADMIN_KEY)
+	export MONGO_MASTER_USERNAME=$(getparam MONGO_MASTER_USERNAME)
+	export MONGO_MASTER_PASSWORD=$(getparam MONGO_MASTER_PASSWORD)
+	export MONGO_CONNECT=$(getparam MONGO_CONNECT)
+	export CLOUDINARY_PRESET=$(getparam CLOUDINARY_PRESET)
+	export CLOUDINARY_URL=$(getparam CLOUDINARY_URL)
+	export API_ACCESS_TOKEN=$(getparam API_ACCESS_TOKEN)
+	export FROM_EMAIL=$(getparam FROM_EMAIL)
+	export MAIL_URL=$(getparam MAIL_URL)
+	export MEFE_TARGET_ARN=$(getparam MEFE_TARGET_ARN)
+
+# Variables that are built from other variables:
+
+	export ROOT_URL=https://case.$STAGE.$DOMAIN
+	export BUGZILLA_URL=https://dashboard.$STAGE.$DOMAIN
+	export INVITE_LAMBDA_URL=https://invite.$STAGE.$DOMAIN
+	export UNIT_CREATE_LAMBDA_URL=https://unit.$STAGE.$DOMAIN/create
+	export APIENROLL_LAMBDA_URL=https://apienroll.$STAGE.$DOMAIN
+	export PDFGEN_LAMBDA_URL=https://pdfgen.$STAGE.$DOMAIN
+	export PDFCONVERT_LAMBDA_URL=https://prince.$STAGE.$DOMAIN
+	

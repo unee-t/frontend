@@ -1,8 +1,41 @@
-sudo: required
+# Variables needed for this script are:
 
-language: node_js
-node_js:
-  - lts/*
+# Case 1: Stored on Travis Settings
+  # For all environments:
+    # - DOCKER_CI_REPO_NAME
+    # - DOCKER_USERNAME
+    # - DOCKER_PASSWORD
+
+  #For dev environment:
+    # - AWS_ACCOUNT_USER_ID_DEV
+    # - AWS_ACCOUNT_SECRET_DEV
+    # - AWS_PROFILE_DEV <-- is this needed?
+
+  #For Prod environment:
+    # - AWS_ACCOUNT_USER_ID_PROD
+    # - AWS_ACCOUNT_SECRET_PROD
+    # - AWS_PROFILE_PROD <-- is this needed?
+
+  #For Demo environment:
+    # - AWS_ACCOUNT_USER_ID_DEMO
+    # - AWS_ACCOUNT_SECRET_DEMO
+    # - AWS_PROFILE_DEMO <-- is this needed?
+
+# Case 2: Created when Travis CI runs
+    # - IMAGE_TAG
+
+# language: node_js
+# node_js:
+#   - lts/*
+language: generic
+services:
+  - docker
+
+env:
+  global:
+    - COMMIT=${TRAVIS_COMMIT::7}
+    #Add IMAGE_TAG variable to build docker image
+    - IMAGE_TAG=${TRAVIS_COMMIT::7}
 
 before_install:
   # Removed command as pyenv is no longer found during deploy
@@ -15,36 +48,48 @@ before_install:
     https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest &&
     chmod +x $HOME/.local/bin/ecs-cli
 
-cache:
-  directories:
-    - node_modules
+# cache:
+#   directories:
+#     - node_modules
 
 install:
-  - meteor npm install
+  # - meteor npm install
+  # #Adding script build docker image
+  - docker build -t $DOCKER_CI_REPO_NAME . 
 
-script:
-  - npm t
+# script:
+#   - npm t
+
+# #Adding script deploy docker image to docker repository
+
+after_success:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+  - docker build -t $DOCKER_CI_REPO_NAME:latest .
+  - docker tag $DOCKER_CI_REPO_NAME:latest $DOCKER_CI_REPO_NAME:$IMAGE_TAG
+  - docker push $DOCKER_CI_REPO_NAME:latest
+  - docker push $DOCKER_CI_REPO_NAME:$IMAGE_TAG
 
 matrix:
   include:
-    - env: DEPLOY=none
+    # add deploy stage for dev
+    - env: DEPLOY=dev
+      if: branch = master
+      deploy:
+        provider: script
+        script: PROFILE=$AWS_PROFILE_DEV AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
+        on:
+          branch: master
     - env: DEPLOY=demo
       if: tag IS present
       deploy:
         provider: script
-        skip_cleanup: true
-        script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET ./deploy.sh -d
+        script: PROFILE=$AWS_PROFILE_DEMO AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -s
         on:
           tags: true
     - env: DEPLOY=prod
       if: tag IS present
       deploy:
         provider: script
-        skip_cleanup: true
-        script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+        script: PROFILE=$AWS_PROFILE_PROD AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
         on:
           tags: true
-
-env:
-  global:
-    - COMMIT=${TRAVIS_COMMIT::7}
