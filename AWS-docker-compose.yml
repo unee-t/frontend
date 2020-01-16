@@ -25,7 +25,7 @@
 version: '2'
 services:
     meteor:
-        image: $(DOCKER_CI_REPO_NAME):latest     
+        image: ${TRAVIS_DOCKER_REPO_NAME}:latest     
         mem_reservation: 1g
         mem_limit: 2g
         ports:
@@ -50,6 +50,6 @@ services:
         logging:
             driver: awslogs
             options:
-                awslogs-region: $(AWS_DEFAULT_REGION)      
+                awslogs-region: ${TRAVIS_AWS_DEFAULT_REGION}      
                 awslogs-group: meteor            
                 awslogs-stream-prefix: ecs

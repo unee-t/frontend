@@ -45,24 +45,24 @@ shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 export COMMIT=$(git rev-parse --short HEAD)
 
-if ! aws configure --profile $PROFILE list
+if ! aws configure --profile $TRAVIS_PROFILE list
 then
-	echo Profile $PROFILE does not exist >&2
+	echo Profile $TRAVIS_PROFILE does not exist >&2
 
-	if ! test "$AWS_ACCESS_KEY_ID"
+	if ! test "$TRAVIS_AWS_ACCESS_KEY_ID"
 	then
-		echo Missing $AWS_ACCESS_KEY_ID >&2
+		echo Missing $TRAVIS_AWS_ACCESS_KEY_ID >&2
 		exit 1
 	fi
 
 	echo Attempting to setup one from the environment >&2
-	aws configure set profile.${PROFILE}.aws_access_key_id $AWS_ACCESS_KEY_ID
-	aws configure set profile.${PROFILE}.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-	aws configure set profile.${PROFILE}.region $AWS_REGION
+	aws configure set profile.${TRAVIS_PROFILE}.aws_access_key_id $TRAVIS_AWS_ACCESS_KEY_ID
+	aws configure set profile.${TRAVIS_PROFILE}.aws_secret_access_key $TRAVIS_AWS_SECRET_ACCESS_KEY
+	aws configure set profile.${TRAVIS_PROFILE}.region $TRAVIS_AWS_DEFAULT_REGION
 
-	if ! aws configure --profile $PROFILE list
+	if ! aws configure --profile $TRAVIS_PROFILE list
 	then
-		echo Profile $PROFILE does not exist >&2
+		echo Profile $TRAVIS_PROFILE does not exist >&2
 		exit 1
 	fi
 
@@ -77,7 +77,7 @@ else
 	ecs-cli -version
 fi
 
-ecs-cli configure --cluster master --region $AWS_REGION
+ecs-cli configure --cluster master --region $TRAVIS_AWS_DEFAULT_REGION
 test -f aws-env.$STAGE && source aws-env.$STAGE
 
 service=$(grep -A1 services AWS-docker-compose.yml | tail -n1 | tr -cd '[[:alnum:]]')
@@ -88,7 +88,7 @@ test "$STAGE" == prod && export STAGE=""
 
 envsubst < AWS-docker-compose.yml > docker-compose-${service}.yml
 
-ecs-cli compose --aws-profile $PROFILE -p ${service} -f docker-compose-${service}.yml service up \
+ecs-cli compose --aws-profile $TRAVIS_PROFILE -p ${service} -f docker-compose-${service}.yml service up \
 	--target-group-arn ${MEFE_TARGET_ARN} \
 	--container-name meteor \
 	--container-port 3000 \
@@ -97,6 +97,6 @@ ecs-cli compose --aws-profile $PROFILE -p ${service} -f docker-compose-${service
 	--deployment-min-healthy-percent 50 \
 	--timeout 7
 
-ecs-cli compose --aws-profile $PROFILE -p ${service} -f docker-compose-${service}.yml service ps
+ecs-cli compose --aws-profile $TRAVIS_PROFILE -p ${service} -f docker-compose-${service}.yml service ps
 
 echo "END $0 $(date)"

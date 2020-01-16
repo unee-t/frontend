@@ -11,7 +11,7 @@
 #	- PROFILE is set when .travis.yml run 
 
 	getparam () {
-		aws --profile ${PROFILE} ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
+		aws --profile ${TRAVIS_PROFILE} ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
 	}
 
 # We prepare the hardcoded variables that we will need to deploy what's needed
