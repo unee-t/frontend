@@ -18,7 +18,7 @@ import { Subject } from 'rxjs/Subject'
 if (Meteor.isClient) {
   describe('CreateAttachment epic', () => {
     let input, output, nextSpy, ajaxStub, ajaxStream, clock, initialPublicSettings
-    const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/demo-env/image/upload'
+    const CLOUDINARY_API_ENDPOINT = 'https://api.cloudinary.com/v1_1/demo-env/image/upload'
     const CLOUDINARY_PRESET = 'asddsd23asd'
     const inputAction = {
       type: CREATE_ATTACHMENT,
@@ -34,7 +34,7 @@ if (Meteor.isClient) {
       clock = sinon.useFakeTimers()
       initialPublicSettings = Meteor.settings.public
       Meteor.settings.public = {
-        CLOUDINARY_URL,
+        CLOUDINARY_API_ENDPOINT,
         CLOUDINARY_PRESET
       }
     })
@@ -125,7 +125,7 @@ if (Meteor.isClient) {
       output.subscribe(nextSpy, null, () => {
         // Asserting proper ajax request execution
         expect(ajaxStub).to.have.been.calledWithMatch({
-          url: CLOUDINARY_URL,
+          url: CLOUDINARY_API_ENDPOINT,
           responseType: 'json',
           method: 'POST',
           body: sinon.match.any,

@@ -1,26 +1,29 @@
 #Variable for this script are set in:
-    # - Travis CI:
-    #     - DOCKER_CI_REPO_NAME
-    #     - AWS_DEFAULT_REGION
-    # - AWS Parameter Store:
-    #     - ROOT_URL
-    #     - BUGZILLA_URL
-    #     - BUGZILLA_ADMIN_KEY
-    #     - MONGO_MASTER_USERNAME
-    #     - MONGO_MASTER_PASSWORD
-    #     - MONGO_CONNECT
-    #     - CLOUDINARY_URL
-    #     - CLOUDINARY_PRESET
-    #     - API_ACCESS_TOKEN
-    #     - FROM_EMAIL
-    #     - MAIL_URL
-    #     - INVITE_LAMBDA_URL
-    #     - APIENROLL_LAMBDA_URL
-    #     - UNIT_CREATE_LAMBDA_URL
-    #     - PDFGEN_LAMBDA_URL
-    #     - PDFCONVERT_LAMBDA_URL
-    #     - STAGE
-    #     - DOMAIN
+# - Travis CI:
+#   - DOCKER_CI_REPO_NAME
+#   - AWS_DEFAULT_REGION
+# - AWS Parameter Store:
+#   - DOMAIN
+#   - STAGE
+#   - BUGZILLA_ADMIN_KEY
+#   - MONGO_MASTER_USERNAME
+#   - MONGO_MASTER_PASSWORD
+#   - MONGO_CONNECT
+#   - API_ACCESS_TOKEN
+#   - FROM_EMAIL
+#   - MAIL_URL
+# - The file `aws-env.[STAGE]`
+#   - ROOT_URL
+#   - BUGZILLA_URL
+#   - CLOUDINARY_API_ENDPOINT
+#   - INVITE_LAMBDA_URL
+#   - APIENROLL_LAMBDA_URL
+#   - UNIT_CREATE_LAMBDA_URL
+#   - PDFGEN_LAMBDA_URL
+#   - PDFCONVERT_LAMBDA_URL
+# - The File `.travis.yml`
+#   - TRAVIS_DOCKER_REPO_NAME
+#   - TRAVIS_AWS_DEFAULT_REGION
 
 version: '2'
 services:
@@ -35,7 +38,7 @@ services:
             - BUGZILLA_URL=${BUGZILLA_URL}
             - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
             - MONGO_URL=mongodb+srv://${MONGO_MASTER_USERNAME}:${MONGO_MASTER_PASSWORD}@${MONGO_CONNECT}
-            - CLOUDINARY_URL=${CLOUDINARY_URL}
+            - CLOUDINARY_API_ENDPOINT=${CLOUDINARY_API_ENDPOINT}
             - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
             - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
             - FROM_EMAIL=${FROM_EMAIL}

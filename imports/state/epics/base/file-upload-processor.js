@@ -26,7 +26,7 @@ type ActionGenerators<T> = {
 }
 export const fileUploadProcessor = <T: InputAction>(actionType: string, actionGenerators: ActionGenerators<T>) =>
   (action$: Observable, store: {}, deps: { ajax: (opts: {}) => Observable }) => {
-    const { CLOUDINARY_URL, CLOUDINARY_PRESET } = Meteor.settings.public
+    const { CLOUDINARY_API_ENDPOINT, CLOUDINARY_PRESET } = Meteor.settings.public
 
     // Creating a stream to publish upload progress actions
     const buildProgressStream = (action: T) => {
@@ -44,7 +44,7 @@ export const fileUploadProcessor = <T: InputAction>(actionType: string, actionGe
       formData.append('upload_preset', CLOUDINARY_PRESET)
 
       return deps.ajax({
-        url: CLOUDINARY_URL,
+        url: CLOUDINARY_API_ENDPOINT,
         responseType: 'json',
         method: 'POST',
         body: formData,

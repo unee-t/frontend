@@ -14,20 +14,21 @@
 		aws --profile ${TRAVIS_PROFILE} ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
 	}
 
-# We prepare the hardcoded variables that we will need to deploy what's needed
-
-export STAGE=dev
-
 # Variables that are maintained in the AWS parameter store for the environment:
 
 	export DOMAIN=$(getparam DOMAIN) 
 	export BUGZILLA_ADMIN_KEY=$(getparam BUGZILLA_ADMIN_KEY)
+	export STAGE=$(getparam STAGE)
+
 	export MONGO_MASTER_USERNAME=$(getparam MONGO_MASTER_USERNAME)
 	export MONGO_MASTER_PASSWORD=$(getparam MONGO_MASTER_PASSWORD)
 	export MONGO_CONNECT=$(getparam MONGO_CONNECT)
+	
+	export CLOUDINARY_CLOUD_NAME=$(getparam CLOUDINARY_CLOUD_NAME)
 	export CLOUDINARY_PRESET=$(getparam CLOUDINARY_PRESET)
-	export CLOUDINARY_URL=$(getparam CLOUDINARY_URL)
+	
 	export API_ACCESS_TOKEN=$(getparam API_ACCESS_TOKEN)
+	
 	export FROM_EMAIL=$(getparam FROM_EMAIL)
 	export MAIL_URL=$(getparam MAIL_URL)
 	export MEFE_TARGET_ARN=$(getparam MEFE_TARGET_ARN)
@@ -36,6 +37,12 @@ export STAGE=dev
 
 	export ROOT_URL=https://case.$STAGE.$DOMAIN
 	export BUGZILLA_URL=https://dashboard.$STAGE.$DOMAIN
+
+	export CLOUDINARY_API_ENDPOINT=https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/upload
+	# Temporary fix until issue https://github.com/Unee-T-INS/frontend/issues/15 is closed
+	export CLOUDINARY_URL=$CLOUDINARY_API_ENDPOINT
+	# END Temporary fix
+
 	export INVITE_LAMBDA_URL=https://invite.$STAGE.$DOMAIN
 	export UNIT_CREATE_LAMBDA_URL=https://unit.$STAGE.$DOMAIN/create
 	export APIENROLL_LAMBDA_URL=https://apienroll.$STAGE.$DOMAIN
