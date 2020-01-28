@@ -38,7 +38,7 @@
 	export ROOT_URL=https://case.$DOMAIN
 	export BUGZILLA_URL=https://dashboard.$DOMAIN
 
-	export CLOUDINARY_API_ENDPOINT=https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/image/upload
+	export CLOUDINARY_API_ENDPOINT=https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/auto/upload
 	# Temporary fix until issue https://github.com/Unee-T-INS/frontend/issues/15 is closed
 	export CLOUDINARY_URL=$CLOUDINARY_API_ENDPOINT
 	# END Temporary fix
