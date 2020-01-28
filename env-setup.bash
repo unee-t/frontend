@@ -21,12 +21,12 @@ EOF
 cat << EOF > .env
 BUGZILLA_ADMIN_KEY=$(ssm BUGZILLA_ADMIN_KEY)
 MAIL_URL=smtps://$(ssm SES_SMTP_USERNAME):$(ssm SES_SMTP_PASSWORD)@email-smtp.us-west-2.amazonaws.com:465
-CLOUDINARY_URL=https://api.cloudinary.com/v1_1/unee-t-staging/image/upload
+CLOUDINARY_API_ENDPOINT=https://api.cloudinary.com/v1_1/unee-t-staging/image/upload
 CLOUDINARY_PRESET=$(ssm CLOUDINARY_PRESET)
 API_ACCESS_TOKEN=$(ssm API_ACCESS_TOKEN)
 FROM_EMAIL="Local Unee-T Case <case.local@unee-t.com>"
-STAGE=dev
-DOMAIN=unee-t.com
+STAGE=$(ssm STAGE)
+DOMAIN=$(ssm DOMAIN)
 PDFGEN_LAMBDA_URL=https://pdfgen.dev.unee-t.com
 PDFCONVERT_LAMBDA_URL=https://prince.dev.unee-t.com
 EOF

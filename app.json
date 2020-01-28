@@ -22,7 +22,7 @@
     "CLOUDINARY_PRESET": {
       "required": true
     },
-    "CLOUDINARY_URL": {
+    "CLOUDINARY_API_ENDPOINT": {
       "required": true
     },
     "FROM_EMAIL": {

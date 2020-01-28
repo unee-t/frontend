@@ -1,7 +1,34 @@
+#Variable for this script are set in:
+# - Travis CI:
+#   - DOCKER_CI_REPO_NAME
+#   - AWS_DEFAULT_REGION
+# - AWS Parameter Store:
+#   - DOMAIN
+#   - STAGE
+#   - BUGZILLA_ADMIN_KEY
+#   - MONGO_MASTER_USERNAME
+#   - MONGO_MASTER_PASSWORD
+#   - MONGO_CONNECT
+#   - API_ACCESS_TOKEN
+#   - FROM_EMAIL
+#   - MAIL_URL
+# - The file `aws-env.[STAGE]`
+#   - ROOT_URL
+#   - BUGZILLA_URL
+#   - CLOUDINARY_API_ENDPOINT
+#   - INVITE_LAMBDA_URL
+#   - APIENROLL_LAMBDA_URL
+#   - UNIT_CREATE_LAMBDA_URL
+#   - PDFGEN_LAMBDA_URL
+#   - PDFCONVERT_LAMBDA_URL
+# - The File `.travis.yml`
+#   - TRAVIS_DOCKER_REPO_NAME
+#   - TRAVIS_AWS_DEFAULT_REGION
+
 version: '2'
 services:
     meteor:
-        image: uneet/frontend:$COMMIT
+        image: ${TRAVIS_DOCKER_REPO_NAME}:latest     
         mem_reservation: 1g
         mem_limit: 2g
         ports:
@@ -10,10 +37,9 @@ services:
             - ROOT_URL=${ROOT_URL}
             - BUGZILLA_URL=${BUGZILLA_URL}
             - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
-            - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
-            - CLOUDINARY_URL=${CLOUDINARY_URL}
+            - MONGO_URL=mongodb+srv://${MONGO_MASTER_USERNAME}:${MONGO_MASTER_PASSWORD}@${MONGO_CONNECT}
+            - CLOUDINARY_API_ENDPOINT=${CLOUDINARY_API_ENDPOINT}
             - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
-            - COMMIT=${COMMIT}
             - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
             - FROM_EMAIL=${FROM_EMAIL}
             - MAIL_URL=${MAIL_URL}
@@ -27,6 +53,6 @@ services:
         logging:
             driver: awslogs
             options:
-                awslogs-region: ap-southeast-1
-                awslogs-group: meteor
+                awslogs-region: ${TRAVIS_AWS_DEFAULT_REGION}      
+                awslogs-group: meteor            
                 awslogs-stream-prefix: ecs
