@@ -22,6 +22,8 @@
 
 	export MONGO_MASTER_USERNAME=$(getparam MONGO_MASTER_USERNAME)
 	# REVIEW - In previous version this was named `MONGO_PASSWORD`
+	# We need the old version so we can still connect to Mongo
+	export MONGO_PASSWORD=$(getparam MONGO_PASSWORD)
 	export MONGO_MASTER_PASSWORD=$(getparam MONGO_MASTER_PASSWORD)
 	# END - REVIEW
 	export MONGO_CONNECT=$(getparam MONGO_CONNECT)
