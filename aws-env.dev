@@ -21,10 +21,14 @@
 	export STAGE=$(getparam STAGE)
 
 	export MONGO_MASTER_USERNAME=$(getparam MONGO_MASTER_USERNAME)
+	# REVIEW - In previous version this was named `MONGO_PASSWORD`
 	export MONGO_MASTER_PASSWORD=$(getparam MONGO_MASTER_PASSWORD)
+	# END - REVIEW
 	export MONGO_CONNECT=$(getparam MONGO_CONNECT)
 	
+	# REVIEW - In previous version this was named `CLOUDINARY_URL`
 	export CLOUDINARY_CLOUD_NAME=$(getparam CLOUDINARY_CLOUD_NAME)
+	# END - REVIEW
 	export CLOUDINARY_PRESET=$(getparam CLOUDINARY_PRESET)
 	
 	export API_ACCESS_TOKEN=$(getparam API_ACCESS_TOKEN)
