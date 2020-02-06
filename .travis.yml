@@ -27,12 +27,10 @@
 language: node_js
 
 node_js:
-   - lts/*
+  - lts/*
 
-language: generic
-
-services:
-  - docker
+#services:
+#  - docker
 
 env:
   global:
