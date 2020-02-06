@@ -31,7 +31,7 @@ do
 			;;
 	esac
 done
-AWS_PROFILE=ins-$STAGE
+AWS_PROFILE=uneet-$STAGE
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 getparam () {
