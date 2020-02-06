@@ -28,7 +28,10 @@
 version: '2'
 services:
     meteor:
-        image: ${TRAVIS_DOCKER_REPO_NAME}:latest     
+        # INS change commented out - revert to previous version of the master
+        image: uneet/frontend:$COMMIT
+        # image: ${TRAVIS_DOCKER_REPO_NAME}:latest
+        # END INS change commented out - revert
         mem_reservation: 1g
         mem_limit: 2g
         ports:
@@ -37,9 +40,15 @@ services:
             - ROOT_URL=${ROOT_URL}
             - BUGZILLA_URL=${BUGZILLA_URL}
             - BUGZILLA_ADMIN_KEY=${BUGZILLA_ADMIN_KEY}
-            - MONGO_URL=mongodb+srv://${MONGO_MASTER_USERNAME}:${MONGO_MASTER_PASSWORD}@${MONGO_CONNECT}
+             # INS change commented out - revert to previous version of the master
+            - MONGO_URL=mongodb://root:${MONGO_PASSWORD}@${MONGO_CONNECT}
+            #- MONGO_URL=mongodb+srv://${MONGO_MASTER_USERNAME}:${MONGO_MASTER_PASSWORD}@${MONGO_CONNECT}
+            # END INS change commented out - revert
             - CLOUDINARY_API_ENDPOINT=${CLOUDINARY_API_ENDPOINT}
             - CLOUDINARY_PRESET=${CLOUDINARY_PRESET}
+            # This was deleted - revert to previous version of the master
+            - COMMIT=${COMMIT}
+            # END This was deleted - revert to previous version of the master
             - API_ACCESS_TOKEN=${API_ACCESS_TOKEN}
             - FROM_EMAIL=${FROM_EMAIL}
             - MAIL_URL=${MAIL_URL}
@@ -53,6 +62,6 @@ services:
         logging:
             driver: awslogs
             options:
-                awslogs-region: ${TRAVIS_AWS_DEFAULT_REGION}      
-                awslogs-group: meteor            
+                awslogs-region: ${TRAVIS_AWS_DEFAULT_REGION}
+                awslogs-group: meteor
                 awslogs-stream-prefix: ecs
