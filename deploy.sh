@@ -21,16 +21,18 @@ while getopts "pd" opt
 do
 	case $opt in
 		#Add option d for development
-		d)
-			echo "DEVELOPMENT" >&2
-			STAGE=dev
-			;;
+		# For DEV, we are using AWS Codebuild for the deployment (NOT TRAVIS)
+    	# This will need to be evaluated going forward but for now we continue like this...
+    	# We comment out the DEV option
+		# d)
+		# 	echo "DEVELOPMENT" >&2
+		# 	STAGE=dev
+		# 	;;
 		p)
 			echo "PRODUCTION" >&2
 			STAGE=prod
 			;;
-		#Change option demo from d to s
-		s)
+		d)
 			echo "DEMO" >&2
 			STAGE=demo
 			;;
