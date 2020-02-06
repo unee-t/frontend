@@ -10,6 +10,8 @@ WORKDIR /src
 COPY --chown=node:node . .
 
 RUN meteor npm install
+# Use native implementation of bcrypt for better performances
+RUN meteor npm install --save bcrypt
 RUN meteor build --architecture os.linux.x86_64 --directory /bundle
 RUN cd /bundle/bundle/programs/server && npm install
 
