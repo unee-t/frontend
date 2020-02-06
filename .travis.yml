@@ -72,6 +72,7 @@ after_success:
 
 matrix:
   include:
+    - env: DEPLOY=none
     # For DEV, we are using AWS Codebuild for the deployment (NOT TRAVIS)
     # This will need to be evaluated going forward but for now we continue like this...
     # We comment out the DEV option
