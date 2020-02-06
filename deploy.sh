@@ -43,6 +43,10 @@ do
 	esac
 done
 
+# This was deleted - revert to previous version of the master
+AWS_PROFILE=uneet-$STAGE
+# END This was deleted - revert
+
 shift "$((OPTIND-1))"   # Discard the options and sentinel --
 
 export COMMIT=$(git rev-parse --short HEAD)
@@ -79,7 +83,7 @@ else
 	ecs-cli -version
 fi
 
-ecs-cli configure --cluster master --region $TRAVIS_AWS_DEFAULT_REGION
+ecs-cli configure --cluster master --region $TRAVIS_AWS_DEFAULT_REGION --compose-service-name-prefix ecscompose-service-
 test -f aws-env.$STAGE && source aws-env.$STAGE
 
 service=$(grep -A1 services AWS-docker-compose.yml | tail -n1 | tr -cd '[[:alnum:]]')
