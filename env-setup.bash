@@ -25,8 +25,12 @@ CLOUDINARY_API_ENDPOINT=https://api.cloudinary.com/v1_1/unee-t-staging/image/upl
 CLOUDINARY_PRESET=$(ssm CLOUDINARY_PRESET)
 API_ACCESS_TOKEN=$(ssm API_ACCESS_TOKEN)
 FROM_EMAIL="Local Unee-T Case <case.local@unee-t.com>"
-STAGE=$(ssm STAGE)
-DOMAIN=$(ssm DOMAIN)
+# INS change commented out - revert to previous version of the master
+STAGE=dev
+DOMAIN=unee-t.com
+#STAGE=$(ssm STAGE)
+#DOMAIN=$(ssm DOMAIN)
+#END INS change commented out - revert to previous version of the master
 PDFGEN_LAMBDA_URL=https://pdfgen.dev.unee-t.com
 PDFCONVERT_LAMBDA_URL=https://prince.dev.unee-t.com
 EOF
