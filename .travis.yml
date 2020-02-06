@@ -55,6 +55,8 @@ cache:
 
 install:
   - meteor npm install
+  # Use native implementation of bcrypt for better performances
+  - meteor npm install --save bcrypt
   #Adding script build docker image
 #  - docker build -t $DOCKER_CI_REPO_NAME . 
 
