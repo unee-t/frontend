@@ -67,7 +67,7 @@ after_success:
   # If we have passed the Travis CI Test, we need to build the latest version of the Docker image
   # This latest version is the version that will be used when we will deploy in our environments (DEV, DEMO, PROD)
   # TODO: See https://github.com/unee-t/frontend/issues/893
-  - echo "START - We are building the `latest` version of the Docker image we need for deployment"
+  - echo "START - We are building the latest version of the Docker image we need for deployment"
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
   - docker build -t $DOCKER_CI_REPO_NAME:latest .
   - docker tag $DOCKER_CI_REPO_NAME:latest $DOCKER_CI_REPO_NAME:$IMAGE_TAG
