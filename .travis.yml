@@ -29,14 +29,14 @@ language: node_js
 node_js:
   - lts/*
 
-#services:
-#  - docker
+services:
+  - docker
 
 env:
   global:
     - COMMIT=${TRAVIS_COMMIT::7}
     #Add IMAGE_TAG variable to build docker image
-    - IMAGE_TAG=${TRAVIS_COMMIT::7}
+    - IMAGE_TAG=${COMMIT}
 
 before_install:
   # Removed command as pyenv is no longer found during deploy
@@ -67,13 +67,15 @@ after_success:
   # If we have passed the Travis CI Test, we need to build the latest version of the Docker image
   # This latest version is the version that will be used when we will deploy in our environments (DEV, DEMO, PROD)
   # TODO: See https://github.com/unee-t/frontend/issues/893
-  - echo "START - We are building the latest version of the Docker image we need for deployment"
+  - echo START - We are building the latest version of the Docker image we need for deployment
+  - docker build -t $DOCKER_CI_REPO_NAME
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-  - docker build -t $DOCKER_CI_REPO_NAME:latest .
   - docker tag $DOCKER_CI_REPO_NAME:latest $DOCKER_CI_REPO_NAME:$IMAGE_TAG
+  - echo We are pushing the latest Docker image as latest version in Dockerhub
   - docker push $DOCKER_CI_REPO_NAME:latest
+  - echo we are pushing the latest Docker image as $IMAGE_TAG version in DockerHub
   - docker push $DOCKER_CI_REPO_NAME:$IMAGE_TAG
-  - echo "END - We are building the latest version of the Docker image we need for deployment"
+  - echo END - We are building the latest version of the Docker image we need for deployment
 
 matrix:
   include:
