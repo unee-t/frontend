@@ -9,17 +9,17 @@
   #For dev environment:
     # - AWS_ACCOUNT_USER_ID_DEV
     # - AWS_ACCOUNT_SECRET_DEV
-    # - AWS_PROFILE_DEV <-- is this needed?
+    # - AWS_PROFILE_DEV
 
   #For Prod environment:
     # - AWS_ACCOUNT_USER_ID_PROD
     # - AWS_ACCOUNT_SECRET_PROD
-    # - AWS_PROFILE_PROD <-- is this needed?
+    # - AWS_PROFILE_PROD
 
   #For Demo environment:
     # - AWS_ACCOUNT_USER_ID_DEMO
     # - AWS_ACCOUNT_SECRET_DEMO
-    # - AWS_PROFILE_DEMO <-- is this needed?
+    # - AWS_PROFILE_DEMO
 
 # Case 2: Created when Travis CI runs
     # - IMAGE_TAG
