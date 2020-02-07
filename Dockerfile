@@ -15,6 +15,7 @@ ENV PATH="/home/node/.meteor:${PATH}"
 WORKDIR $SRC_DIR
 RUN npm i
 RUN meteor npm install --production
+RUN npm t
 RUN meteor build --server-only --directory $BUNDLE_DIR
 RUN cd ${BUNDLE_DIR}/bundle/programs/server && npm install
 
@@ -28,9 +29,7 @@ USER node:node
 COPY --from=builder $BUNDLE_DIR $APP_DIR
 WORKDIR $APP_DIR/bundle
 
-
 ENV PORT 3000
 EXPOSE 3000
-
 
 CMD ["node", "./main.js"]
