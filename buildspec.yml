@@ -15,6 +15,7 @@ phases:
       - echo Logging into Docker Hub...
       - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo image that we are using is $IMAGE_TAG
 
   install:
     runtime-versions:
@@ -24,6 +25,9 @@ phases:
     commands:
       - echo Build starting on `date`
       - echo Build the Docker image...
+      - echo We are using the docker image available at $IMAGE_REPO_NAME
+      - echo image that we are using is $IMAGE_TAG
+      - echo we are using the latest build for that image for deployment
       - 'sed -i "s,<\!-- COMMIT: -->,<\!-- COMMIT: $CODEBUILD_RESOLVED_SOURCE_VERSION -->,g" client/main.html'
       - docker build -t $IMAGE_REPO_NAME:latest .
       - docker tag $IMAGE_REPO_NAME:latest $IMAGE_REPO_NAME:$IMAGE_TAG
@@ -31,10 +35,12 @@ phases:
   post_build:
     commands:
       - test "$CODEBUILD_BUILD_SUCCEEDING" == "1" || exit 1
-      - echo Pushing build to Docker Hub...
-      - docker push $IMAGE_REPO_NAME:latest
-      - docker push $IMAGE_REPO_NAME:$IMAGE_TAG
-      - printf '[{"name":"%s","imageUri":"%s"}]' meteor $IMAGE_REPO_NAME:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imagedefinitions.json
+      # START - Why do we need to push the Docker image to Docker Hub again??
+      #- echo Pushing build to Docker Hub...
+      #- docker push $IMAGE_REPO_NAME:latest
+      #- docker push $IMAGE_REPO_NAME:$IMAGE_TAG
+      #- printf '[{"name":"%s","imageUri":"%s"}]' meteor $IMAGE_REPO_NAME:$IMAGE_TAG > $CODEBUILD_SRC_DIR/imagedefinitions.json
+      # END - Why do we need to push the Docker image to Docker Hub again??
 
 artifacts:
   files: imagedefinitions.json
