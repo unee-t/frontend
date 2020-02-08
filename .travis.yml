@@ -56,9 +56,7 @@ install:
 
 script:
   # Use native implementation of bcrypt for better performances
-  - cd ~/unee-t/frontend/
   - meteor npm install --save bcrypt
-  - cd ~
   # Test that all is working as intended
   - npm t
 
