@@ -1,4 +1,4 @@
-language: generic
+language: node_js
 services:
   - docker
 
@@ -7,15 +7,29 @@ env:
     - IMAGE_TAG=${TRAVIS_COMMIT::7}
 
 before_install:
+  - curl https://install.meteor.com | /bin/sh
+  - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
+    # Used in deploy.sh
   - curl -o $HOME/.local/bin/ecs-cli
     https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest &&
     chmod +x $HOME/.local/bin/ecs-cli
 
+cache:
+  directories:
+    - node_modules
+
+install:
+  - meteor npm install
+
+script:
+  - npm t
+
 after_success:
-  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
   - docker build -t $DOCKER_CI_REPO_NAME:latest .
+    # TODO: this should only happen really on branch = master
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
   - docker tag $DOCKER_CI_REPO_NAME:latest $DOCKER_CI_REPO_NAME:$IMAGE_TAG
   - docker push $DOCKER_CI_REPO_NAME:latest
   - docker push $DOCKER_CI_REPO_NAME:$IMAGE_TAG
@@ -53,8 +67,8 @@ matrix:
         script: PROFILE=$AWS_PROFILE_PROD
                 AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD
                 AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD
-                AWS_REGION=$AWS_DEFAULT_REGION .
-                /deploy.sh -p &&
+                AWS_REGION=$AWS_DEFAULT_REGION
+                ./deploy.sh -p &&
                 AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD
                 AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD
                 aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'

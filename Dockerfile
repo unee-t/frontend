@@ -15,7 +15,6 @@ ENV PATH="/home/node/.meteor:${PATH}"
 WORKDIR $SRC_DIR
 RUN npm i
 RUN meteor npm install --production
-RUN npm t
 RUN meteor build --server-only --directory $BUNDLE_DIR
 RUN cd ${BUNDLE_DIR}/bundle/programs/server && npm install
 
