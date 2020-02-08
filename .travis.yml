@@ -39,8 +39,6 @@ env:
     - IMAGE_TAG=${COMMIT}
 
 before_install:
-  # Removed command as pyenv is no longer found during deploy
-  #- pyenv global 2.7.14  # For removing SNIMissingWarning warnings
   - curl https://install.meteor.com | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
@@ -67,9 +65,9 @@ after_success:
   # If we have passed the Travis CI Test, we need to build the latest version of the Docker image
   # This latest version is the version that will be used when we will deploy in our environments (DEV, DEMO, PROD)
   # TODO: See https://github.com/unee-t/frontend/issues/893
-  - echo START - We are building the latest version of the Docker image we need for deployment
-  - docker build -t $DOCKER_CI_REPO_NAME
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+  - echo START - We are building the latest version of the Docker image we need for deployment
+  - docker build -t $DOCKER_CI_REPO_NAME:latest .
   - docker tag $DOCKER_CI_REPO_NAME:latest $DOCKER_CI_REPO_NAME:$IMAGE_TAG
   - echo We are pushing the latest Docker image as latest version in Dockerhub
   - docker push $DOCKER_CI_REPO_NAME:latest
@@ -79,7 +77,18 @@ after_success:
 
 matrix:
   include:
-    - env: DEPLOY=none
+    - env: DEPLOY=dev
+      if: branch = master
+      deploy:
+        provider: script
+        script: TRAVIS_DOCKER_REPO_NAME=$DOCKER_CI_REPO_NAME
+                TRAVIS_PROFILE=$AWS_PROFILE_DEV
+                TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV
+                TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV
+                TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+                ./deploy.sh
+        on:
+          branch: master
     # For DEV, we are using AWS Codebuild for the deployment (NOT TRAVIS)
     # We comment out the DEV option
     # This will need to be evaluated going forward (shall we revert back to TRAVIS for deployment?)
@@ -94,7 +103,7 @@ matrix:
       if: tag IS present
       deploy:
         provider: script
-        script: PROFILE=$AWS_PROFILE_DEMO AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
+        script: TRAVIS_PROFILE=$AWS_PROFILE_DEMO AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
         on:
           branch: master
           tags: true
@@ -102,7 +111,11 @@ matrix:
       if: tag IS present
       deploy:
         provider: script
-        script: PROFILE=$AWS_PROFILE_PROD AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+        # TODO - Distribution-id uses a hardcoded value 
+        # This will ONLY work for the main Unee-T installation but no other Unee-T Installation
+        # This is a problem we need to fix
+        script: TRAVIS_PROFILE=$AWS_PROFILE_PROD AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+        # END - TODO - Distribution-id uses a hardcoded value 
         on:
           branch: master
           tags: true
