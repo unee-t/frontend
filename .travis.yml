@@ -56,7 +56,7 @@ install:
 
 script:
   # Use native implementation of bcrypt for better performances
-  - meteor npm install --save bcrypt
+  - meteor npm install -global --save bcrypt
   # Test that all is working as intended
   - npm t
 
