@@ -52,12 +52,14 @@ cache:
     - node_modules
 
 install:
-  - npm install -global node-gyp \
   - meteor npm install
-  # Use native implementation of bcrypt for better performances
-  - meteor npm install --save bcrypt
 
 script:
+  # Use native implementation of bcrypt for better performances
+  - cd ~/unee-t/frontend/
+  - meteor npm install --save bcrypt
+  - cd ~
+  # Test that all is working as intended
   - npm t
 
 #Adding script deploy docker image to docker repository
