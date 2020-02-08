@@ -9,6 +9,8 @@ USER node:node
 WORKDIR /src
 COPY --chown=node:node . .
 
+RUN npm install
+RUN npm install -global node-gyp \
 RUN meteor npm install
 # Use native implementation of bcrypt for better performances
 # RUN meteor npm install --save bcrypt
