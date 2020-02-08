@@ -78,17 +78,17 @@ after_success:
 matrix:
   include:
     - env: DEPLOY=dev
-      if: branch = master
-      deploy:
-        provider: script
-        script: TRAVIS_DOCKER_REPO_NAME=$DOCKER_CI_REPO_NAME
-                TRAVIS_PROFILE=$AWS_PROFILE_DEV
-                TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV
-                TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV
-                TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
-                ./deploy.sh
-        on:
-          branch: master
+      # if: branch = master
+      # deploy:
+      #   provider: script
+      #   script: TRAVIS_DOCKER_REPO_NAME=$DOCKER_CI_REPO_NAME
+      #           TRAVIS_PROFILE=$AWS_PROFILE_DEV
+      #           TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV
+      #           TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV
+      #           TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+      #           ./deploy.sh
+      #   on:
+      #     branch: master
     # For DEV, we are using AWS Codebuild for the deployment (NOT TRAVIS)
     # We comment out the DEV option
     # This will need to be evaluated going forward (shall we revert back to TRAVIS for deployment?)
