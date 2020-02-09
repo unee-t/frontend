@@ -1,7 +1,7 @@
 language: node_js
 
-node_js: # node 12
-  - lts/*
+node_js: # Node 8 for bcrypt 1.0.3 https://github.com/kelektiv/node.bcrypt.js#version-compatibility
+  - 8
 
 services:
   - docker
