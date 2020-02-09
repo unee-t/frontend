@@ -1,7 +1,7 @@
 language: node_js
 
-node_js: # Node 8 for bcrypt 1.0.3 https://github.com/kelektiv/node.bcrypt.js#version-compatibility
-  - 8
+node_js:
+  - lts/*
 
 services:
   - docker
@@ -26,6 +26,7 @@ cache:
 
 install:
   - meteor npm install
+  - meteor npm install --save bcrypt
 
 script:
   - npm t
