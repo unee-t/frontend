@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 export const attachmentTextMatcher = text => {
-  const cloudinaryDownloadUrl = Meteor.settings.public.CLOUDINARY_URL.replace('/api.', '/res.').replace(/\/v1_1(\/[^/]+\/).*/, '$1')
+  const cloudinaryDownloadUrl = Meteor.settings.public.CLOUDINARY_API_ENDPOINT.replace('/api.', '/res.').replace(/\/v1_1(\/[^/]+\/).*/, '$1')
   const attachmentRegexStr = '^\\[!attachment\\(([a-zA-Z]+)\\)\\]\\n'
   const previewPrefixRegex = new RegExp(attachmentRegexStr + 'data:')
   const blobPrefixRegex = new RegExp(attachmentRegexStr + 'blob:')

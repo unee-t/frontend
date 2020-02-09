@@ -32,7 +32,7 @@ if (Meteor.isClient) {
     before(() => {
       initialPublicSettings = Meteor.settings.public
       Meteor.settings.public = {
-        CLOUDINARY_URL: 'https://api.cloudinary.com/v1_1/demo-env/image/upload',
+        CLOUDINARY_API_ENDPOINT: 'https://api.cloudinary.com/v1_1/demo-env/image/upload',
         CLOUDINARY_PRESET: 'asddsd23asd'
       }
       return Promise.all([import('./case-messages.jsx'), import('./case.mss')]).then(([module, stylesModule]) => {

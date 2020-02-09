@@ -1,16 +1,51 @@
-export ROOT_URL=https://case.unee-t.com
-export BUGZILLA_ADMIN_KEY=$(aws --profile uneet-prod ssm get-parameters --names BUGZILLA_ADMIN_KEY --with-decryption --query Parameters[0].Value --output text)
-export BUGZILLA_URL=https://dashboard.unee-t.com
-export INVITE_LAMBDA_URL=https://invite.unee-t.com
-export UNIT_CREATE_LAMBDA_URL=https://unit.unee-t.com/create
-export APIENROLL_LAMBDA_URL=https://apienroll.unee-t.com
-export PDFGEN_LAMBDA_URL=https://pdfgen.unee-t.com
-export PDFCONVERT_LAMBDA_URL=https://prince.unee-t.com
-export MONGO_PASSWORD=$(aws --profile uneet-prod ssm get-parameters --names MONGO_PASSWORD --with-decryption --query Parameters[0].Value --output text)
-export MONGO_CONNECT=$(aws --profile uneet-prod ssm get-parameters --names MONGO_CONNECT --query Parameters[0].Value --output text)
-export CLOUDINARY_PRESET=$(aws --profile uneet-prod ssm get-parameters --names CLOUDINARY_PRESET --with-decryption --query Parameters[0].Value --output text)
-export CLOUDINARY_URL=$(aws --profile uneet-prod ssm get-parameters --names CLOUDINARY_URL --with-decryption --query Parameters[0].Value --output text)
-export API_ACCESS_TOKEN=$(aws --profile uneet-prod ssm get-parameters --names API_ACCESS_TOKEN --with-decryption --query Parameters[0].Value --output text)
-export FROM_EMAIL=$(aws --profile uneet-prod ssm get-parameters --names FROM_EMAIL --query Parameters[0].Value --output text)
-export MAIL_URL=$(aws --profile uneet-prod ssm get-parameters --names MAIL_URL --with-decryption --query Parameters[0].Value --output text)
-export DOMAIN=unee-t.com
+#!/bin/bash
+### This file stores all environment variables for the DEV environment for this repo
+
+# This script is called as part of the Travis CI deployment routine
+# We can use the default aws profile configured in Travis CI settings to get the variables we need
+
+# We create a procedure to retrieve the variables from the AWS parameter store
+# Make sure to 
+#   - configure your AWS CLI accordingly
+#   - update the profile you need to use to access these variables if needed
+#	- PROFILE is set when .travis.yml run 
+
+	getparam () {
+		aws --profile ${TRAVIS_PROFILE} ssm get-parameters --names "$1" --with-decryption --query Parameters[0].Value --output text
+	}
+
+# Variables that are maintained in the AWS parameter store for the environment:
+
+	export DOMAIN=$(getparam DOMAIN) 
+	export BUGZILLA_ADMIN_KEY=$(getparam BUGZILLA_ADMIN_KEY)
+	export STAGE=$(getparam STAGE)
+
+	export MONGO_MASTER_USERNAME=$(getparam MONGO_MASTER_USERNAME)
+	export MONGO_MASTER_PASSWORD=$(getparam MONGO_MASTER_PASSWORD)
+	export MONGO_CONNECT=$(getparam MONGO_CONNECT)
+	
+	export CLOUDINARY_CLOUD_NAME=$(getparam CLOUDINARY_CLOUD_NAME)
+	export CLOUDINARY_PRESET=$(getparam CLOUDINARY_PRESET)
+	
+	export API_ACCESS_TOKEN=$(getparam API_ACCESS_TOKEN)
+	
+	export FROM_EMAIL=$(getparam FROM_EMAIL)
+	export MAIL_URL=$(getparam MAIL_URL)
+	export MEFE_TARGET_ARN=$(getparam MEFE_TARGET_ARN)
+
+# Variables that are built from other variables:
+
+	export ROOT_URL=https://case.$DOMAIN
+	export BUGZILLA_URL=https://dashboard.$DOMAIN
+
+	export CLOUDINARY_API_ENDPOINT=https://api.cloudinary.com/v1_1/$CLOUDINARY_CLOUD_NAME/auto/upload
+	# Temporary fix until issue https://github.com/Unee-T-INS/frontend/issues/15 is closed
+	export CLOUDINARY_URL=$CLOUDINARY_API_ENDPOINT
+	# END Temporary fix
+
+	export INVITE_LAMBDA_URL=https://invite.$DOMAIN
+	export UNIT_CREATE_LAMBDA_URL=https://unit.$DOMAIN/create
+	export APIENROLL_LAMBDA_URL=https://apienroll.$DOMAIN
+	export PDFGEN_LAMBDA_URL=https://pdfgen.$DOMAIN
+	export PDFCONVERT_LAMBDA_URL=https://prince.$DOMAIN
+	

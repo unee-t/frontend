@@ -1,12 +1,44 @@
-sudo: required
+# Variables needed for this script are:
+
+# Case 1: Stored on Travis Settings
+  # For all environments:
+    # - DOCKER_CI_REPO_NAME
+    # - DOCKER_USERNAME
+    # - DOCKER_PASSWORD
+
+  #For dev environment:
+    # - AWS_ACCOUNT_USER_ID_DEV
+    # - AWS_ACCOUNT_SECRET_DEV
+    # - AWS_PROFILE_DEV
+
+  #For Prod environment:
+    # - AWS_ACCOUNT_USER_ID_PROD
+    # - AWS_ACCOUNT_SECRET_PROD
+    # - AWS_PROFILE_PROD
+
+  #For Demo environment:
+    # - AWS_ACCOUNT_USER_ID_DEMO
+    # - AWS_ACCOUNT_SECRET_DEMO
+    # - AWS_PROFILE_DEMO
+
+# Case 2: Created when Travis CI runs
+    # - IMAGE_TAG
 
 language: node_js
+
 node_js:
   - lts/*
 
+services:
+  - docker
+
+env:
+  global:
+    - COMMIT=${TRAVIS_COMMIT::7}
+    #Add IMAGE_TAG variable to build docker image
+    - IMAGE_TAG=${COMMIT}
+
 before_install:
-  # Removed command as pyenv is no longer found during deploy
-  #- pyenv global 2.7.14  # For removing SNIMissingWarning warnings
   - curl https://install.meteor.com | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
@@ -23,28 +55,68 @@ install:
   - meteor npm install
 
 script:
+  # Use native implementation of bcrypt for better performances
+  - meteor npm install -global --save bcrypt
+  # Test that all is working as intended
   - npm t
+
+#Adding script deploy docker image to docker repository
+
+after_success:
+  # If we have passed the Travis CI Test, we need to build the latest version of the Docker image
+  # This latest version is the version that will be used when we will deploy in our environments (DEV, DEMO, PROD)
+  # TODO: See https://github.com/unee-t/frontend/issues/893
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+  - echo START - We are building the latest version of the Docker image we need for deployment
+  - docker build -t $DOCKER_CI_REPO_NAME:latest .
+  - docker tag $DOCKER_CI_REPO_NAME:latest $DOCKER_CI_REPO_NAME:$IMAGE_TAG
+  - echo We are pushing the latest Docker image as latest version in Dockerhub
+  - docker push $DOCKER_CI_REPO_NAME:latest
+  - echo we are pushing the latest Docker image as $IMAGE_TAG version in DockerHub
+  - docker push $DOCKER_CI_REPO_NAME:$IMAGE_TAG
+  - echo END - We are building the latest version of the Docker image we need for deployment
 
 matrix:
   include:
-    - env: DEPLOY=none
+    - env: DEPLOY=dev
+      # if: branch = master
+      # deploy:
+      #   provider: script
+      #   script: TRAVIS_DOCKER_REPO_NAME=$DOCKER_CI_REPO_NAME
+      #           TRAVIS_PROFILE=$AWS_PROFILE_DEV
+      #           TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV
+      #           TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV
+      #           TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
+      #           ./deploy.sh
+      #   on:
+      #     branch: master
+    # For DEV, we are using AWS Codebuild for the deployment (NOT TRAVIS)
+    # We comment out the DEV option
+    # This will need to be evaluated going forward (shall we revert back to TRAVIS for deployment?)
+#    - env: DEPLOY=dev
+#      if: branch = master
+#      deploy:
+#        provider: script
+#        script: TRAVIS_DOCKER_REPO_NAME=$DOCKER_CI_REPO_NAME TRAVIS_PROFILE=$AWS_PROFILE_DEV TRAVIS_AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEV TRAVIS_AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEV TRAVIS_AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
+#        on:
+#          branch: master
     - env: DEPLOY=demo
       if: tag IS present
       deploy:
         provider: script
-        skip_cleanup: true
-        script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET ./deploy.sh -d
+        script: TRAVIS_PROFILE=$AWS_PROFILE_DEMO AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
         on:
+          branch: master
           tags: true
     - env: DEPLOY=prod
       if: tag IS present
       deploy:
         provider: script
-        skip_cleanup: true
-        script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+        # TODO - Distribution-id uses a hardcoded value 
+        # This will ONLY work for the main Unee-T installation but no other Unee-T Installation
+        # This is a problem we need to fix
+        script: TRAVIS_PROFILE=$AWS_PROFILE_PROD AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+        # END - TODO - Distribution-id uses a hardcoded value 
         on:
+          branch: master
           tags: true
-
-env:
-  global:
-    - COMMIT=${TRAVIS_COMMIT::7}

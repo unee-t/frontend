@@ -19,9 +19,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.1.5",
-    "bcrypt": "^1.0.3",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.2",
     "classnames": "^2.2.5",
+    "fibers": "^4.0.0",
     "hammerjs": "^2.0.8",
     "history": "^4.6.3",
     "iso-3166-1-codes": "^1.0.0",

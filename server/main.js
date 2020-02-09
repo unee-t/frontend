@@ -24,7 +24,7 @@ import '../imports/server/auth/otp-authenticator'
 import '../imports/config/email'
 import '../imports/migrations'
 
-const publicClientEnvVars = ['CLOUDINARY_URL', 'CLOUDINARY_PRESET']
+const publicClientEnvVars = ['CLOUDINARY_API_ENDPOINT', 'CLOUDINARY_PRESET']
 Object.assign(Meteor.settings.public, publicClientEnvVars.reduce((obj, key) => {
   obj[key] = process.env[key]
   return obj
