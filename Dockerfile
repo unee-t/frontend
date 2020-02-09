@@ -1,4 +1,4 @@
-FROM node:8 AS builder
+FROM node:12 AS builder
 
 RUN curl -sL https://install.meteor.com | sed s/--progress-bar/-sL/g | /bin/sh
 RUN mkdir /src /bundle
@@ -15,7 +15,7 @@ RUN meteor npm install
 RUN meteor build --architecture os.linux.x86_64 --directory /bundle
 RUN cd /bundle/bundle/programs/server && npm install
 
-FROM node:8-slim
+FROM node:12-slim
 
 USER node:node
 
