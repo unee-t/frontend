@@ -68,7 +68,10 @@ script:
 
 matrix:
   include:
+    - env: DEPLOY=none
     - env: DEPLOY=dev
+      deploy:
+        branch: master
     - env: DEPLOY=demo
       if: tag IS present
       deploy:
