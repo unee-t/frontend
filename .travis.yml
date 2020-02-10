@@ -53,7 +53,7 @@ install:
   # fix Errors and vulnerabilities
   - npm audit fix
   # Install missing packages
-  - meteor npm install ajv
+  - npm install ajv
   - meteor npm install --save @babel/runtime react
   - meteor npm install --save @babel/runtime
   # Update Meteor and all packages
