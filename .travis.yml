@@ -52,8 +52,13 @@ install:
   - meteor npm install
   # fix Errors and vulnerabilities
   - npm audit fix
-  # update Meteor to the latest version
+  # Update Meteor and all packages
   - meteor update --all-packages
+  # update the Meteor packages (but NOT meteor) to the latest version
+  # - meteor update --packages-only
+  # Install missing packages
+  - meteor npm install --save @babel/runtime react
+  - meteor npm install --save @babel/runtime
 
 script:
   # List all install package for easier debugging
