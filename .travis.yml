@@ -58,6 +58,8 @@ install:
   - meteor npm install --save react
   # Update Meteor and all packages
   - meteor update --all-packages
+  # We are running this twice since there are chained dependencies
+  - meteor update --all-packages
   # update the Meteor packages (but NOT meteor) to the latest version
   # - meteor update --packages-only
   # fix Errors and vulnerabilities
