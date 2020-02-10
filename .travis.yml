@@ -50,10 +50,15 @@ cache:
 
 install:
   - meteor npm install
+  # update Meteor to the latest version
+  - meteor update
+  # fix Errors and vulnerabilities
+  - npm audit fix
 
 script:
   # List all install package for easier debugging
-  - meteor npm ls
+  #- meteor npm ls
+  # Test that our code is working as expected on that image.
   - npm t
 
 matrix:
