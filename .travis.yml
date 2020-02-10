@@ -50,10 +50,10 @@ cache:
 
 install:
   - meteor npm install
-  # update Meteor to the latest version
-  - meteor update
   # fix Errors and vulnerabilities
   - npm audit fix
+  # update Meteor to the latest version
+  - meteor update --all-package
 
 script:
   # List all install package for easier debugging
