@@ -50,16 +50,17 @@ cache:
 
 install:
   - meteor npm install
-  # fix Errors and vulnerabilities
-  - npm audit fix
   # Install missing packages
   - npm install ajv
   - meteor npm install --save @babel/runtime react
   - meteor npm install --save @babel/runtime
+  - meteor npm install jquery
   # Update Meteor and all packages
   - meteor update --all-packages
   # update the Meteor packages (but NOT meteor) to the latest version
   # - meteor update --packages-only
+  # fix Errors and vulnerabilities
+  - npm audit fix
 
 script:
   # List all install package for easier debugging
