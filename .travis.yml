@@ -53,7 +53,7 @@ install:
   # fix Errors and vulnerabilities
   - npm audit fix
   # update Meteor to the latest version
-  - meteor update --all-package
+  - meteor update --all-packages
 
 script:
   # List all install package for easier debugging
