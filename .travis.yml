@@ -52,6 +52,8 @@ install:
   - meteor npm install
 
 script:
+  # List all install package for easier debugging
+  - meteor npm ls
   - npm t
 
 matrix:
