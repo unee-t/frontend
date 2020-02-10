@@ -28,9 +28,7 @@ USER node:node
 COPY --from=builder $BUNDLE_DIR $APP_DIR
 WORKDIR $APP_DIR/bundle
 
-
 ENV PORT 3000
 EXPOSE 3000
-
 
 CMD ["node", "./main.js"]
