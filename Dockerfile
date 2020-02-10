@@ -1,4 +1,4 @@
-FROM node:8.15.1 AS builder
+FROM node:12 AS builder
 
 ENV BUNDLE_DIR /home/node/bundle
 ENV SRC_DIR /home/node/src
@@ -18,7 +18,7 @@ RUN meteor npm install --production
 RUN meteor build --server-only --directory $BUNDLE_DIR
 RUN cd ${BUNDLE_DIR}/bundle/programs/server && npm install
 
-FROM node:8.15.1-slim
+FROM node:12-slim
 
 ENV APP_DIR /home/node/app
 ENV BUNDLE_DIR /home/node/bundle
