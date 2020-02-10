@@ -55,6 +55,7 @@ install:
   - meteor npm install --save @babel/runtime react
   - meteor npm install --save @babel/runtime
   - meteor npm install jquery
+  - meteor npm install --save react
   # Update Meteor and all packages
   - meteor update --all-packages
   # update the Meteor packages (but NOT meteor) to the latest version
