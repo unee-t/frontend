@@ -44,11 +44,12 @@ before_install:
     https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest &&
     chmod +x $HOME/.local/bin/ecs-cli
 
-cache:
-  directories:
-    - node_modules
+#cache:
+#  directories:
+#    - node_modules
 
 install:
+  - npm cache verify
   - meteor npm install
   # Install missing packages
   - npm install ajv
