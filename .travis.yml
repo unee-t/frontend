@@ -24,10 +24,10 @@
 # Case 2: Created when Travis CI runs
     # - IMAGE_TAG
 
-language: node_js
+#language: node_js
 
-node_js:
-  - lts/*
+#node_js:
+#  - lts/*
 
 env:
   global:
@@ -49,14 +49,14 @@ before_install:
 #    - node_modules
 
 install:
-  - npm cache verify
+  - meteor npm cache verify
   - meteor npm install
   # Install missing packages
-  - npm install ajv
-  - meteor npm install --save @babel/runtime react
-  - meteor npm install --save @babel/runtime
-  - meteor npm install jquery
-  - meteor npm install --save react
+#  - npm install ajv
+#  - meteor npm install --save @babel/runtime react
+#  - meteor npm install --save @babel/runtime
+#  - meteor npm install jquery
+#  - meteor npm install --save react
   # Update Meteor and all packages
   #- meteor update --all-packages
   # We are running this twice since there are chained dependencies
@@ -64,9 +64,9 @@ install:
   # update the Meteor packages (but NOT meteor) to the latest version
 #  - meteor update --packages-only
   # We are running this twice since there are chained dependencies
-  - meteor update --packages-only
+#  - meteor update --packages-only
   # fix Errors and vulnerabilities
-  - npm audit fix
+#  - meteor npm audit fix
 
 script:
   # List all install package for easier debugging
