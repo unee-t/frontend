@@ -45,13 +45,13 @@ install:
 
 script:
   # Test that our code is working as expected on that image.
-  - meteor npm test
+  - meteor npm run test
 
 matrix:
   include:
     - env: DEPLOY=dev
     - env: DEPLOY=demo
-  if: tag IS present
+      if: tag IS present
       deploy:
         provider: script
         script: TRAVIS_PROFILE=$AWS_PROFILE_DEMO AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
@@ -61,7 +61,7 @@ matrix:
     - env: DEPLOY=prod
       if: tag IS present
       deploy:
-       provider: script
+        provider: script
         # TODO - Distribution-id uses a hardcoded value 
         # This will ONLY work for the main Unee-T installation but no other Unee-T Installation
         # This is a problem we need to fix
