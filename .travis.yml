@@ -42,6 +42,7 @@ before_install:
 install:
   - meteor npm cache verify
   - meteor npm install
+  - meteor npm install --save bcrypt
   # Update Meteor and all packages
   #- meteor update --all-packages
   # update the Meteor packages (but NOT meteor) to the latest version
