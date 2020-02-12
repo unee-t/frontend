@@ -1,0 +1,83 @@
+# We are using an Ubuntu image
+FROM ubuntu:16.04
+
+# We need several environment variables
+# The folder where the built application will be stored
+ENV APP_DIR /mefe
+
+# The port where the built application will be accessible
+ENV PORT 3000
+
+# We create a the user and group that we'll use use to do everything
+USER meteor:meteor
+
+# We install several things so we can build the application
+# Download Meteor
+RUN curl https://install.meteor.com | /bin/sh
+RUN export PATH="$HOME/.meteor:$PATH"
+# Install Meteor
+RUN meteor npm install
+# Install pip
+RUN sudo apt -y install python-pip
+# Upgrade pip to the latest version
+RUN pip install --upgrade pip
+# Install AWS CLI
+RUN pip install --user awscli
+RUN export PATH=$PATH:$HOME/.local/bin
+RUN curl -o $HOME/.local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest && chmod +x $HOME/.local/bin/ecs-cli
+
+# We create the folder where the app will be built
+RUN mkdir -p $APP_DIR
+# We copy the meteor `build` bundle into the $APP_DIR (make a few things easier)
+# We also make sure that the permissions are correct
+COPY bundle /app
+
+# We build the Application
+RUN cd $APP_DIR/programs/server && npm install
+
+# We make sure the application is accessible
+EXPOSE 3000
+
+# We start the app
+CMD ["node", "./main.js"]
+
+
+
+
+
+
+ENV BUNDLE_DIR /home/node/bundle
+ENV SRC_DIR /home/node/src
+ENV TMP_DIR /home/node/tmp
+
+USER node:node
+
+RUN mkdir -p $SRC_DIR $BUNDLE_DIR $TMP_DIR
+COPY --chown=node:node . $SRC_DIR
+
+RUN curl -o $TMP_DIR/meteor.sh 'https://install.meteor.com?release=1.8.1'; sh $TMP_DIR/meteor.sh
+
+ENV PATH="/home/node/.meteor:${PATH}"
+WORKDIR $SRC_DIR
+RUN npm i
+RUN meteor npm install --production
+# We build the application and put everything in a specific folder
+RUN meteor build --server-only --directory $BUNDLE_DIR
+RUN cd ${BUNDLE_DIR}/bundle/programs/server && npm install
+
+FROM node:8.15.1-slim
+
+ENV APP_DIR /home/node/app
+ENV BUNDLE_DIR /home/node/bundle
+
+USER node:node
+
+COPY --from=builder $BUNDLE_DIR $APP_DIR
+WORKDIR $APP_DIR/bundle
+
+
+ENV PORT 3000
+EXPOSE 3000
+
+
+CMD ["node", "./main.js"]
