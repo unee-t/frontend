@@ -1,50 +1,72 @@
-sudo: required
+# Variables needed for this script are:
 
-language: node_js
-node_js:
-  - lts/*
+# Case 1: Stored on Travis Settings
+  # For all environments:
+    # - DOCKER_CI_REPO_NAME
+    # - DOCKER_USERNAME
+    # - DOCKER_PASSWORD
 
+  #For dev environment:
+    # - AWS_ACCOUNT_USER_ID_DEV
+    # - AWS_ACCOUNT_SECRET_DEV
+    # - AWS_PROFILE_DEV
+
+  #For Prod environment:
+    # - AWS_ACCOUNT_USER_ID_PROD
+    # - AWS_ACCOUNT_SECRET_PROD
+    # - AWS_PROFILE_PROD
+
+  #For Demo environment:
+    # - AWS_ACCOUNT_USER_ID_DEMO
+    # - AWS_ACCOUNT_SECRET_DEMO
+    # - AWS_PROFILE_DEMO
+
+env:
+  global:
+    - COMMIT=${TRAVIS_COMMIT::7}
+    #Add IMAGE_TAG variable to build docker image
+    - IMAGE_TAG=${COMMIT}
+    
 before_install:
-  # Removed command as pyenv is no longer found during deploy
-  #- pyenv global 2.7.14  # For removing SNIMissingWarning warnings
+  # Get Meteor
   - curl https://install.meteor.com | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
+  # Install AWS CLI
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
   - curl -o $HOME/.local/bin/ecs-cli
     https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest &&
     chmod +x $HOME/.local/bin/ecs-cli
 
-cache:
-  directories:
-    - node_modules
-
 install:
   - meteor npm install
+  # fix Errors and vulnerabilities
+  #- meteor npm audit fix
 
 script:
-  - npm t
+  # Test that our code is working as expected on that image.
+  - meteor npm test
 
 matrix:
   include:
-    - env: DEPLOY=none
+    - env: DEPLOY=dev
     - env: DEPLOY=demo
-      if: tag IS present
+  if: tag IS present
       deploy:
         provider: script
-        skip_cleanup: true
-        script: AWS_ACCESS_KEY_ID=$AWS_915001051872_ID AWS_SECRET_ACCESS_KEY=$AWS_915001051872_SECRET ./deploy.sh -d
+        script: TRAVIS_PROFILE=$AWS_PROFILE_DEMO AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_DEMO AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_DEMO AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -d
         on:
+          branch: master
           tags: true
     - env: DEPLOY=prod
       if: tag IS present
       deploy:
-        provider: script
-        skip_cleanup: true
-        script: AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_192458993663_ID AWS_SECRET_ACCESS_KEY=$AWS_192458993663_SECRET aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+       provider: script
+        # TODO - Distribution-id uses a hardcoded value 
+        # This will ONLY work for the main Unee-T installation but no other Unee-T Installation
+        # This is a problem we need to fix
+        script: TRAVIS_PROFILE=$AWS_PROFILE_PROD AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD AWS_REGION=$AWS_DEFAULT_REGION ./deploy.sh -p && AWS_ACCESS_KEY_ID=$AWS_ACCOUNT_USER_ID_PROD AWS_SECRET_ACCESS_KEY=$AWS_ACCOUNT_SECRET_PROD aws cloudfront create-invalidation --distribution-id E173XT6X8V4A18 --paths '/*'
+        # END - TODO - Distribution-id uses a hardcoded value 
         on:
+          branch: master
           tags: true
-
-env:
-  global:
-    - COMMIT=${TRAVIS_COMMIT::7}
