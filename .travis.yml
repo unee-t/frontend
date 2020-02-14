@@ -29,9 +29,11 @@ env:
     - COMMIT=${TRAVIS_COMMIT::7}
     #Add IMAGE_TAG variable to build docker image
     - IMAGE_TAG=${COMMIT}
+    # What is the meteor version we are using
+    - METEOR_VERSION=1.8.1
 
 before_install:
-  - curl https://install.meteor.com | /bin/sh
+  - curl https://install.meteor.com?release=$METEOR_VERSION | /bin/sh
   - export PATH="$HOME/.meteor:$PATH"
   - pip install --user awscli
   - export PATH=$PATH:$HOME/.local/bin
