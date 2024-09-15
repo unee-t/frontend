@@ -3,6 +3,7 @@ import { json } from 'body-parser'
 import getPendingInvitations from './get-pending-invitations'
 import putPendingInvitations from './put-pending-invitations'
 import getInvitations from './get-invitations'
+import digest from './digest'
 import getConvertedInvitations from './get-converted-invitations'
 import postProcessDbChangeMessage from './post-process-db-change-message'
 import postSesNotification from './post-ses-notification'
@@ -40,6 +41,7 @@ const notFoundRoute = (req, res) => {
 
 createRoute('get', '/pending-invitations', getPendingInvitations)
 createRoute('get', '/invitations', getInvitations)
+createRoute('get', '/digest', digest)
 createRoute('get', '/converted-invitations', getConvertedInvitations)
 createRoute('put', '/pending-invitations/done', putPendingInvitations)
 createRoute('post', '/db-change-message/process', postProcessDbChangeMessage)
